@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>oneproof — evidence infrastructure for AI agents</title>
+<meta name="description" content="oneproof — open tools that let an AI agent's operator prove what happened: per-action policy authorization (onedoor), change-evidence monitoring (onewatch), and forensic provenance for retrieval pipelines (onetrace). Built on AADP, an IETF Internet-Draft.">
+<meta property="og:title" content="oneproof — logs are testimony, receipts are evidence">
+<meta property="og:description" content="Open tools for the day someone asks you to show, not tell, what your AI system did. Prevent, Detect, Prove.">
+<meta property="og:url" content="https://oneproof.dev/">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%231c1713'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23c9a227' stroke-width='3'/%3E%3Ctext x='32' y='41' font-family='Georgia,serif' font-size='26' fill='%23c9a227' text-anchor='middle'%3E1%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#f6f1e6; --paper-2:#efe7d4; --ink:#211a12; --dim:#7a6a55;
+    --line:#d9cdb6; --line-soft:#e6ddc9;
+    --gold:#c9a227; --gold-text:#8a6d14;
+    --x-ground:#1c1713; --x-panel:#241d17; --x-line:#3a2f26;
+    --x-ink:#e8ddcc; --x-dim:#a5947d;
+    --allow:#7cc79a; --review:#e4a05e; --refuse:#e28a80;
+    --serif:'Newsreader',Georgia,'Times New Roman',serif;
+    --mono:'IBM Plex Mono','Courier New',monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--serif); font-size:18px; line-height:1.62;
+    background-image:repeating-linear-gradient(180deg, rgba(33,26,18,.018) 0 1px, transparent 1px 29px);
+  }
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
+  a{color:var(--ink); text-decoration-color:var(--gold); text-decoration-thickness:1.5px; text-underline-offset:3px}
+  a:hover{color:var(--gold-text)}
+  a:focus-visible, button:focus-visible{outline:2px solid var(--gold-text); outline-offset:3px; border-radius:2px}
+
+
+  .wrap{max-width:1000px; margin:0 auto; padding:0 28px}
+
+  header.masthead{
+    display:flex; align-items:baseline; justify-content:space-between; gap:16px;
+    padding:26px 0 18px; border-bottom:1.5px solid var(--ink); flex-wrap:wrap;
+  }
+  .wordmark{font-family:var(--serif); font-weight:600; font-size:26px; letter-spacing:.01em}
+  .wordmark .seal{color:var(--gold-text)}
+  .wordmark .tld{color:var(--dim); font-weight:400}
+  nav.doors-nav{display:flex; gap:22px; font-family:var(--mono); font-size:12.5px; letter-spacing:.1em; text-transform:uppercase}
+  nav.doors-nav a{text-decoration:none; color:var(--dim)}
+  nav.doors-nav a:hover{color:var(--ink)}
+
+  .tag{
+    display:inline-block; font-family:var(--mono); font-size:11px; font-weight:500;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--dim);
+    border:1px solid var(--line); background:var(--paper-2);
+    padding:4px 10px; border-radius:2px;
+  }
+  .tag.gold{border-color:var(--gold); color:var(--gold-text)}
+
+  /* ---------- hero ---------- */
+  .hero{padding:64px 0 24px}
+  .hero-grid{display:grid; grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr); gap:48px; align-items:start}
+  @media (max-width:860px){ .hero-grid{grid-template-columns:1fr} }
+  h1{
+    font-size:clamp(40px,5.6vw,58px); line-height:1.06; font-weight:500; margin:18px 0 22px;
+    letter-spacing:-.012em; text-wrap:balance;
+  }
+  h1 em{font-style:italic; font-weight:500}
+  .hero p.lede{font-size:20px; line-height:1.55; color:var(--ink); max-width:34em; margin:0 0 26px}
+  .cmd{
+    font-family:var(--mono); font-size:14.5px; background:var(--x-ground); color:var(--x-ink);
+    border-radius:4px; padding:14px 18px; display:block; overflow-x:auto; white-space:pre; line-height:1.7;
+  }
+  .cmd .c{color:var(--x-dim)}
+  .cmd .g{color:var(--gold)}
+  .hero-note{font-family:var(--mono); font-size:12px; color:var(--dim); margin-top:10px; letter-spacing:.04em}
+
+  /* exhibit cards: dark panels matted on paper */
+  figure.exhibit{margin:0; border:1px solid var(--line); background:#fbf8f0; padding:12px; border-radius:3px; box-shadow:0 1px 0 rgba(33,26,18,.08)}
+  figure.exhibit .mat{background:var(--x-ground); border-radius:3px; padding:18px 18px 16px; overflow-x:auto}
+  figure.exhibit figcaption{
+    display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--dim); padding:10px 4px 0;
+  }
+  .receipt{font-family:var(--mono); font-size:12.3px; line-height:1.75; color:var(--x-ink); min-width:0; white-space:pre}
+  .receipt .k{color:var(--x-dim)}
+  .receipt .d{color:var(--x-dim)}
+  .receipt .allow{color:var(--allow); font-weight:600}
+  .receipt .refuse{color:var(--refuse); font-weight:600}
+  .receipt .rule{border-top:1px solid var(--x-line); margin:8px 0}
+  .receipt .gold{color:var(--gold)}
+
+  /* ---------- rainy day ---------- */
+  .rainy{padding:56px 0; border-top:1px solid var(--line)}
+  .rainy .inner{max-width:44em; margin:0 auto}
+  .rainy p{font-size:21px; line-height:1.65; margin:18px 0 0}
+  .rainy p:first-of-type{margin-top:22px}
+  .pull{
+    font-size:26px; font-style:italic; line-height:1.45; margin:30px 0 0; padding-left:22px;
+    border-left:3px solid var(--gold); text-wrap:balance;
+  }
+
+  /* ---------- doors ---------- */
+  .doors{padding:56px 0; border-top:1px solid var(--line)}
+  .sec-head{display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:8px}
+  h2{font-size:34px; font-weight:500; margin:14px 0 6px; letter-spacing:-.01em}
+  .sec-sub{color:var(--dim); font-size:17px; max-width:38em; margin:0 0 30px}
+  .door-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:22px}
+  @media (max-width:900px){ .door-grid{grid-template-columns:1fr} }
+  .door{border:1px solid var(--line); background:#fbf8f0; border-radius:3px; padding:14px; display:flex; flex-direction:column; gap:14px}
+  .door .shot{background:var(--x-ground); border-radius:3px; padding:14px; font-family:var(--mono); font-size:11.5px; line-height:1.8; color:var(--x-ink); overflow-x:auto; white-space:pre}
+  .door .shot .k{color:var(--x-dim)}
+  .door .shot .bar{display:inline-block; height:7px; border-radius:2px; vertical-align:middle}
+  .door h3{font-size:23px; font-weight:600; margin:0}
+  .door h3 .prod{font-style:italic; font-weight:500; color:var(--gold-text)}
+  .door p{margin:0; font-size:16.5px; line-height:1.58; color:var(--ink)}
+  .door .foot{margin-top:auto; display:flex; flex-direction:column; gap:8px}
+  .status{
+    font-family:var(--mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--dim); border-top:1px dashed var(--line); padding-top:10px;
+  }
+  .status b{color:var(--ink); font-weight:600}
+  .door a.more{font-family:var(--mono); font-size:12.5px; letter-spacing:.04em}
+
+  /* ---------- aadp ---------- */
+  .aadp{padding:56px 0; border-top:1px solid var(--line)}
+  .aadp-grid{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr); gap:44px; align-items:start}
+  @media (max-width:860px){ .aadp-grid{grid-template-columns:1fr} }
+  .aadp p{font-size:17.5px; max-width:36em}
+  .spec-card{border:1px solid var(--line); background:var(--paper-2); border-radius:3px; padding:20px 22px; font-size:15.5px}
+  .spec-card .name{font-family:var(--mono); font-size:13.5px; font-weight:600; letter-spacing:.02em}
+  .spec-card dl{margin:12px 0 0; display:grid; grid-template-columns:auto 1fr; gap:6px 16px}
+  .spec-card dt{font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); padding-top:2px}
+  .spec-card dd{margin:0}
+
+  /* ---------- honesty ---------- */
+  .honesty{padding:56px 0; border-top:1px solid var(--line)}
+  .rules{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:26px; margin-top:26px}
+  @media (max-width:900px){ .rules{grid-template-columns:1fr} }
+  .rule-card{border-top:2px solid var(--ink); padding-top:14px}
+  .rule-card h4{font-size:19px; font-weight:600; margin:0 0 8px}
+  .rule-card p{margin:0; font-size:16px; color:var(--ink); line-height:1.58}
+  .rule-card p em{color:var(--gold-text)}
+
+  /* ---------- reading ---------- */
+  .reading{padding:56px 0; border-top:1px solid var(--line)}
+  .read-list{list-style:none; margin:22px 0 0; padding:0; border-top:1px solid var(--line)}
+  .read-list li{border-bottom:1px solid var(--line); padding:16px 4px; display:flex; justify-content:space-between; gap:18px; flex-wrap:wrap; align-items:baseline}
+  .read-list .t{font-size:19px}
+  .read-list .t i{color:var(--dim); font-style:normal; font-size:15.5px}
+  .read-list .when{font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim)}
+
+  /* ---------- contact / footer ---------- */
+  footer{border-top:1.5px solid var(--ink); margin-top:26px; padding:36px 0 46px}
+  .foot-grid{display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap; align-items:baseline}
+  .foot-grid .colophon{font-size:15px; color:var(--dim); max-width:30em}
+  .foot-links{font-family:var(--mono); font-size:13px; display:flex; flex-direction:column; gap:8px}
+  .fineprint{font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--dim); margin-top:26px; border-top:1px dashed var(--line); padding-top:14px; line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="wordmark"><span class="seal">one</span>proof<span class="tld">.dev</span></div>
+    <nav class="doors-nav" aria-label="sections">
+      <a href="#prevent">Prevent</a>
+      <a href="#detect">Detect</a>
+      <a href="#prove">Prove</a>
+      <a href="#aadp">The&nbsp;protocol</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <!-- 1 · hero -->
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <span class="tag gold">Evidence infrastructure for AI agents</span>
+        <h1>Logs are testimony.<br><em>Receipts are evidence.</em></h1>
+        <p class="lede">
+          oneproof is a small suite of open tools for the day someone asks you to show —
+          not tell — what your AI system did. Authorize each agent action against ratified
+          policy. Detect when the system you verified changes. Trace an answer back to the
+          exact passage it came from.
+        </p>
+        <code class="cmd"><span class="c"># Prevent is shipped today — install it from PyPI</span>
+<span class="g">$</span> pip install onedoor</code>
+        <div class="hero-note">onedoor v0.6.2 · Apache-2.0 · no framework, no telemetry, runs on your machine</div>
+      </div>
+
+      <figure class="exhibit">
+        <div class="mat">
+          <div class="receipt"><span class="k">action</span>   payments.transfer   <span class="d">tier 2</span>
+<span class="k">amount</span>   € 480.00            <span class="d">cap € 500.00</span>
+<span class="k">policy</span>   <span class="gold">ver 29e85d2c…5166</span>   <span class="d">ratified</span>
+<div class="rule"></div><span class="k">verdict</span>  <span class="allow">ALLOW</span>               <span class="d">undo 900 s</span>
+<div class="rule"></div><span class="k">action</span>   payments.transfer
+<span class="k">amount</span>   € 2 340.00          <span class="d">cap € 500.00</span>
+<span class="k">verdict</span>  <span class="refuse">REFUSE</span>              <span class="d">exceeds cap</span></div>
+        </div>
+        <figcaption>
+          <span>Exhibit A — two verdicts under one ratified policy version</span>
+          <span>worked example</span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 2 · the rainy day -->
+  <section class="rainy">
+    <div class="inner">
+      <span class="tag">The rainy day</span>
+      <p>
+        Every AI deployment has a sunny-day story: the demo works, the dashboard is green,
+        the agent is helpful. Nobody builds for the other day — the day a transfer goes out
+        that should have been refused, the day an answer cites a document that says the
+        opposite, the day an auditor, a customer, or a court asks a simple question:
+        <em>what exactly happened, and how do you know?</em>
+      </p>
+      <p>
+        On that day, a dashboard is an opinion and a log is testimony — something your own
+        system says about itself, kept in a form your own system can quietly change. What
+        that day requires is evidence: records made <em>before</em> the question was asked,
+        in a form a stranger can check without trusting you.
+      </p>
+      <p class="pull">Observability takes the demo meeting. Evidence takes the deposition.</p>
+    </div>
+  </section>
+
+  <!-- 3 · three doors -->
+  <section class="doors" id="doors">
+    <div class="sec-head">
+      <h2>Three doors, one discipline</h2>
+      <span class="tag">The suite</span>
+    </div>
+    <p class="sec-sub">
+      Each tool answers one question with a record a stranger can verify. Use one alone,
+      or all three together.
+    </p>
+
+    <div class="door-grid">
+      <article class="door" id="prevent">
+        <div class="shot" aria-hidden="true"><span class="k">POLICY LEDGER</span> · payments pack
+transfer  cap € 500 <span class="bar" style="width:52px;background:#7cc79a"></span>
+refunds   cap € 300 <span class="bar" style="width:34px;background:#7cc79a"></span>
+version   <span style="color:#c9a227">29e85d2c…5166</span>  ratified</div>
+        <h3>Prevent — <span class="prod">onedoor</span></h3>
+        <p>
+          A policy engine for agent actions. Define caps, bounds, and undo windows; ratify
+          a version; every action is then checked against that ratified snapshot — allow,
+          review, or refuse — and every verdict names the exact policy version that decided it.
+        </p>
+        <div class="foot">
+          <div class="status"><b>Shipped</b> · v0.6.2 on PyPI · Apache-2.0</div>
+          <a class="more" href="https://github.com/shamiksaharcciit-oss/onedoor">github.com/shamiksaharcciit-oss/onedoor →</a>
+        </div>
+      </article>
+
+      <article class="door" id="detect">
+        <div class="shot" aria-hidden="true"><span class="k">CHANGE EVIDENCE</span>
+baseline   verified · byte-identical
+watch      74/74 pins hold
+<span style="color:#e4a05e">a system that changes will say so</span></div>
+        <h3>Detect — <span class="prod">onewatch</span></h3>
+        <p>
+          Change-evidence monitoring. The system you audited on Monday is not automatically
+          the system running on Friday. onewatch keeps verifiable baselines so that when
+          something underneath you changes, you hold a record that it did — evidence,
+          not a feeling.
+        </p>
+        <div class="foot">
+          <div class="status"><b>Public September 10</b> · verification tooling open</div>
+          <a class="more" href="#contact">Ask for early details →</a>
+        </div>
+      </article>
+
+      <article class="door" id="prove">
+        <div class="shot" aria-hidden="true"><span class="k">STAGE RECEIPTS</span>
+source → clean → chunk → retrieve
+answer cites <span style="color:#c9a227">chunk #41 · §4.1</span>
+chars 1,204–1,451 · 2 checks ✓</div>
+        <h3>Prove — <span class="prod">onetrace</span></h3>
+        <p>
+          Forensic provenance for retrieval pipelines. A receipt at every stage — source
+          bytes, cleaning, chunking, retrieval, assembly, the model call — so an answer
+          traces to the exact passage that produced it, and every step can be re-derived
+          from the records alone.
+        </p>
+        <div class="foot">
+          <div class="status"><b>Paper &amp; code in preparation</b> · verifier ships open</div>
+          <a class="more" href="#reading">Read the engineering case →</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 4 · AADP -->
+  <section class="aadp" id="aadp">
+    <div class="aadp-grid">
+      <div>
+        <span class="tag">The protocol underneath</span>
+        <h2>Written down where no vendor can move it</h2>
+        <p>
+          The rules oneproof enforces are not proprietary behavior — they follow a
+          published protocol. <strong>AADP, the Agent Action Decision Protocol,</strong>
+          specifies per-action authorization for AI agents: how an action is described,
+          how a decision is made against ratified policy, and what record the decision
+          leaves behind.
+        </p>
+        <p>
+          It is an individual-submission Internet-Draft at the IETF, with a public
+          interoperability fixture and independent external review — so an implementation
+          you write is checkable against the same text as ours.
+        </p>
+      </div>
+      <div class="spec-card">
+        <div class="name">draft-saha-aadp</div>
+        <dl>
+          <dt>Title</dt><dd>The Agent Action Decision Protocol (AADP): Per-Action Authorization for AI Agents</dd>
+          <dt>Status</dt><dd>Internet-Draft, individual submission · −01 posted; −02 in preparation</dd>
+          <dt>Fixture</dt><dd>CDX-AADP-INPUT-PROVENANCE-001 interoperability fixture (public)</dd>
+          <dt>Reference</dt><dd><a href="https://datatracker.ietf.org/doc/draft-saha-aadp/">datatracker.ietf.org/doc/draft-saha-aadp</a></dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · honest proof strip -->
+  <section class="honesty">
+    <span class="tag">House rules for claims</span>
+    <h2>What this site will not do</h2>
+    <div class="rules">
+      <div class="rule-card">
+        <h4>No aspiration dressed as capability</h4>
+        <p>
+          If a feature is planned, it is labeled <em>planned</em>. If a number comes from a
+          worked example, it is labeled a <em>worked example</em>. Nothing on this site
+          describes what we hope the tools will do as if they already do it.
+        </p>
+      </div>
+      <div class="rule-card">
+        <h4>Cryptography is opt-in, off by default</h4>
+        <p>
+          Receipt chaining, signing, and anchoring exist as options you turn on
+          deliberately — and every claim about them travels with that sentence. A default
+          you didn't choose is not a guarantee you hold.
+        </p>
+      </div>
+      <div class="rule-card">
+        <h4>Three outcomes, honestly reported</h4>
+        <p>
+          A verification can come back <em>verified</em>, <em>contradicted</em>, or
+          <em>couldn't&nbsp;check</em> — and couldn't-check is never rounded up to verified.
+          A checker that only ever says yes is a decoration.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · reading -->
+  <section class="reading" id="reading">
+    <div class="sec-head">
+      <h2>Read the case</h2>
+      <span class="tag">Publishing the week of Sept 8</span>
+    </div>
+    <ul class="read-list">
+      <li><span class="t">Why logs stop working the day it matters <i>— the launch essay</i></span><span class="when">Sept 8</span></li>
+      <li><span class="t">The deposition test <i>— a buyer's checklist for AI evidence</i></span><span class="when">Sept 8</span></li>
+      <li><span class="t">Prevent, demonstrated from public bytes <i>— onedoor walkthrough</i></span><span class="when">Sept 9</span></li>
+      <li><span class="t">Debugging ingestion with stage receipts <i>— the engineering case for onetrace</i></span><span class="when">Sept 11</span></li>
+    </ul>
+  </section>
+
+  <!-- 7 · contact -->
+  <footer id="contact">
+    <div class="foot-grid">
+      <div>
+        <div class="wordmark" style="font-size:21px"><span class="seal">one</span>proof<span class="tld">.dev</span></div>
+        <p class="colophon">
+          Built in Amsterdam. Apache-2.0 across the suite. Small tools, no framework,
+          no telemetry — records you can hand to someone who doesn't trust you.
+        </p>
+      </div>
+      <div class="foot-links">
+        <a href="https://github.com/shamiksaharcciit-oss/onedoor">GitHub — onedoor</a>
+        <a href="https://datatracker.ietf.org/doc/draft-saha-aadp/">IETF — draft-saha-aadp</a>
+        <a href="mailto:hello@oneproof.dev">hello@oneproof.dev</a>
+      </div>
+    </div>
+    <div class="fineprint">
+      © 2026 oneproof · Digests, amounts, and receipts shown are illustrative worked examples drawn from the public
+      design fixtures, not customer data.
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
