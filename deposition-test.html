@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The deposition test — a buyer's checklist for AI evidence · oneproof</title>
+<meta name="description" content="Eight questions to ask a vendor, or your own platform team, before you rely on an AI system's records: not about features, but about whether a claim survives someone with no reason to be generous. And how to run the test in one procurement conversation.">
+<meta property="og:title" content="The deposition test — a buyer's checklist for AI evidence">
+<meta property="og:description" content="What survives being handed to someone who distrusts both you and the software is evidence. What does not is testimony wearing an evidence badge. Eight questions, each with the good answer and the tell.">
+<meta property="og:url" content="https://oneproof.dev/deposition-test.html">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<link rel="canonical" href="https://oneproof.dev/deposition-test.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%231c1713'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23c9a227' stroke-width='3'/%3E%3Ctext x='32' y='41' font-family='Georgia,serif' font-size='26' fill='%23c9a227' text-anchor='middle'%3E1%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#f6f1e6; --paper-2:#efe7d4; --ink:#211a12; --dim:#716250;
+    --line:#d9cdb6; --line-soft:#e6ddc9;
+    --gold:#c9a227; --gold-text:#7d620f;
+    --x-ground:#1c1713; --x-panel:#241d17; --x-line:#3a2f26; --x-ink:#e8ddcc; --x-dim:#a5947d;
+    --allow:#7cc79a; --review:#e4a05e; --refuse:#e28a80;
+    --serif:'Newsreader',Georgia,'Times New Roman',serif;
+    --mono:'IBM Plex Mono','Courier New',monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.62;
+    background-image:repeating-linear-gradient(180deg,rgba(33,26,18,.018) 0 1px,transparent 1px 29px)}
+  a{color:var(--gold-text)}
+  .wrap{max-width:860px;margin:0 auto;padding:0 22px}
+  .masthead{display:flex;justify-content:space-between;align-items:baseline;padding:26px 0 18px;border-bottom:1px solid var(--line)}
+  .wordmark{font-weight:600;font-size:21px;letter-spacing:.01em;text-decoration:none;color:var(--ink)}
+  .wordmark .seal{color:var(--gold-text)} .wordmark .tld{color:var(--dim);font-weight:400}
+  .crumb{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+  .crumb a{color:var(--dim);text-decoration:none}
+  .status{margin:26px 0 0;border:1px solid var(--line);background:var(--paper-2);padding:14px 18px;font-size:15.5px;line-height:1.5}
+  .status b{color:var(--gold-text)}
+  h1{font-weight:500;font-size:44px;line-height:1.08;letter-spacing:-.015em;margin:34px 0 10px}
+  .lede{font-size:21px;line-height:1.5;color:var(--dim);margin:0 0 8px}
+  h2{font-weight:500;font-size:29px;line-height:1.15;margin:54px 0 12px;letter-spacing:-.01em}
+  h2 .n{font-family:var(--mono);font-size:13px;color:var(--gold-text);letter-spacing:.1em;display:block;margin-bottom:6px}
+  h3{font-weight:600;font-size:19px;margin:28px 0 6px}
+  p{margin:0 0 16px}
+  .rule{border-left:3px solid var(--gold);padding:10px 18px;margin:22px 0;background:var(--paper-2)}
+  .rule p{margin:0}
+  .rule .law{font-weight:600}
+  code{font-family:var(--mono);font-size:.86em;background:var(--paper-2);padding:1px 5px;border-radius:3px}
+  pre{font-family:var(--mono);font-size:13.5px;line-height:1.55;background:var(--x-ground);color:var(--x-ink);
+    padding:16px 18px;border-radius:6px;overflow-x:auto;margin:14px 0 20px}
+  pre .c{color:var(--x-dim)} pre .g{color:var(--allow)} pre .r{color:var(--refuse)} pre .a{color:var(--review)}
+  table{border-collapse:collapse;width:100%;font-size:15.5px;margin:14px 0 22px}
+  th,td{text-align:left;vertical-align:top;padding:9px 10px;border-top:1px solid var(--line-soft)}
+  th{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:500;border-top:0}
+  td code{white-space:nowrap}
+  .tbl{overflow-x:auto;margin:0 -22px;padding:0 22px}
+  .badge{display:inline-block;font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;padding:3px 9px;border-radius:999px;border:1px solid;white-space:nowrap}
+  .b-rec{color:#1f6b45;border-color:#7cc79a;background:#e8f4ed}
+  .b-dec{color:#8a4b12;border-color:#e4a05e;background:#faefe3}
+  .gap{border:1px dashed var(--line);padding:14px 18px;margin:18px 0;color:var(--dim);font-size:16px}
+  .gap b{color:var(--ink)}
+  .exhibit-link{display:block;border:1px solid var(--line);background:var(--paper-2);padding:14px 18px;margin:18px 0;text-decoration:none;color:var(--ink)}
+  .exhibit-link span{display:block;font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+  .cmds{background:var(--x-ground);color:var(--x-ink);border-radius:6px;padding:18px 20px;margin:16px 0 22px}
+  .cmds pre{background:none;padding:0;margin:0 0 6px}
+  .cmds .c{color:var(--x-dim)}
+  footer{margin-top:64px;border-top:1px solid var(--line);padding:26px 0 40px;font-size:15px;color:var(--dim)}
+  footer a{color:var(--gold-text)}
+  .fine{font-size:13.5px;margin-top:14px}
+  @media (max-width:640px){h1{font-size:34px} body{font-size:17px} .lede{font-size:19px}}
+
+  .q{border-top:1px solid var(--line);padding:26px 0 8px;position:relative}
+  .q h2{margin:0 0 10px;padding-left:64px;font-size:26px}
+  .qn{position:absolute;left:0;top:26px;width:46px;height:46px;border-radius:50%;border:2px solid var(--gold);
+      color:var(--gold-text);font-family:var(--mono);font-weight:600;font-size:18px;display:flex;align-items:center;justify-content:center}
+  .q p{padding-left:64px;font-size:17.5px}
+  .lab{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid;margin-right:6px;white-space:nowrap;font-weight:600}
+  .lab.good{color:#1f6b45;border-color:#7cc79a;background:#e8f4ed}
+  .lab.tell{color:#8a4b12;border-color:#e4a05e;background:#faefe3}
+  .test{background:var(--x-ground);color:var(--x-ink);border-radius:8px;padding:26px 28px;margin:44px 0 26px}
+  .test h2{color:var(--x-ink);margin-top:0;font-size:26px}
+  .test p{color:var(--x-ink)} .test b{color:#e9d08a}
+  .test .steps{margin:14px 0 0;padding-left:22px} .test .steps li{margin-bottom:8px}
+  @media (max-width:640px){.q h2,.q p{padding-left:0} .qn{position:static;margin-bottom:10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <a class="wordmark" href="/"><span class="seal">one</span>proof<span class="tld">.dev</span></a>
+  <div class="crumb"><a href="/">home</a> · the deposition test</div>
+</header>
+
+<h1>The deposition test</h1>
+<p class="lede">A buyer's checklist for AI evidence. A companion to <em>logs are testimony, not
+evidence</em> — 8 September 2026.</p>
+
+<p>Most AI-governance tools are bought on a sunny-day demonstration: the dashboard is green, the
+audit trail scrolls convincingly, the reports export to PDF. None of that is the test that
+matters. The test that matters is the rainy day — the moment an auditor, a regulator, an insurer,
+or a disputing counterparty asks what a system did and on what basis, and will not accept your
+account of it as the answer.</p>
+
+<div class="rule"><p>Call it the deposition test. Imagine the record you keep today being handed to
+someone who distrusts both you and the software that produced it, with instructions to check it
+themselves. <span class="law">What survives that handover is evidence. What does not is testimony
+wearing an evidence badge.</span></p></div>
+
+<p>Here is what to ask a vendor — or your own platform team — before you rely on the answer. None
+of these questions is about features. Each is about whether a claim survives someone who has no
+reason to be generous.</p>
+
+<section class="q">
+  <div class="qn">1</div>
+  <h2>Can a third party verify a record without calling you?</h2>
+  <p>Ask for the exact procedure by which an outside party checks one record — one decision, one answer — using only what you would hand them. If the procedure at any point requires your API, your database, your login, or your cooperation, then the evidence is your service, not the record. A service can be decommissioned, migrated, or simply disbelieved. <b class='lab good'>The good answer</b> a file you can export, plus a public reference point, plus a check anyone can run offline. <b class='lab tell'>The tell</b> "you'd log into our portal."</p>
+</section>
+<section class="q">
+  <div class="qn">2</div>
+  <h2>Is the record bound to the action, or only to the session?</h2>
+  <p>Ask whether the record ties to <em>this specific action, with these specific parameters, authorised for these specific reasons</em> — or only to "this agent was allowed to operate here." Fraud and error that happen inside a valid session, through approved channels, are invisible to session-level records, and that is precisely where the loss sits. <b class='lab tell'>The tell</b> the demo shows roles and scopes, not per-action decisions.</p>
+</section>
+<section class="q">
+  <div class="qn">3</div>
+  <h2>Does the record carry what produced the decision — not just the decision?</h2>
+  <p>Ask which policy version was in force, which model and configuration actually ran (not which was configured), and what the inputs were as received. A verdict without its causes tells you an incident happened without telling you whether it recurs. "Why did this look correct at the time" is almost always the real question. <b class='lab tell'>The tell</b> the record shows the outcome and a timestamp, and nothing about the state that decided it.</p>
+</section>
+<section class="q">
+  <div class="qn">4</div>
+  <h2>Can the answer be re-derived, or only re-run?</h2>
+  <p>Ask what happens when someone tries to reproduce a result a year later, after the model is deprecated and the pipeline rebuilt. Re-running is a new measurement with a new instrument; it can disagree with the original for reasons unrelated to what actually happened. Evidence is re-derivable from the sealed record; it does not depend on the live system still existing in its original form. <b class='lab tell'>The tell</b> "we'd just run it again."</p>
+</section>
+<section class="q">
+  <div class="qn">5</div>
+  <h2>Does absence mean something definite?</h2>
+  <p>Ask what a missing record proves. If a gap might mean the action never happened, or might mean logging failed, or might mean something filtered it downstream, then the presence of records proves little either. <b class='lab good'>The good answer</b> the system can say, of a given action, that its silence is itself a recorded fact. <b class='lab tell'>The tell</b> "we'd have to look into why it's not there."</p>
+</section>
+<section class="q">
+  <div class="qn">6</div>
+  <h2>Where does the check live — and who can change it?</h2>
+  <p>Ask where the logic that decides whether a record is self-consistent actually runs. If the rule for checking the data lives only in the vendor's codebase, the counterparty can read your fields but cannot check them. Evidence travels with its own verifier, or with a written specification precise enough that a second party can build one. <b class='lab tell'>The tell</b> the data is exportable but the meaning of it is not.</p>
+</section>
+<section class="q">
+  <div class="qn">7</div>
+  <h2>Are cryptographic guarantees on by default, or described in the brochure?</h2>
+  <p>Ask which protections — signing, tamper-evidence, independent anchoring — are actually engaged in your configuration, versus available in principle. A default you did not deliberately turn on is not a guarantee you hold. <b class='lab tell'>The tell</b> the security page lists capabilities without saying which are active for you.</p>
+</section>
+<section class="q">
+  <div class="qn">8</div>
+  <h2>When a check fails, how many answers can it give?</h2>
+  <p>A verifier that can only say "valid" is a decoration. Ask whether it distinguishes <em>verified</em>, <em>contradicted</em>, and <em>could-not-check</em> — and confirm that a corrupted download is reported as unreadable, not as a failed record. Telling a counterparty their evidence is bad when what is bad is their copy of it is the most expensive error the whole system can make. <b class='lab tell'>The tell</b> a single green tick, and no vocabulary for the other outcomes.</p>
+</section>
+
+<div class="test">
+<h2>How to run the test in a procurement conversation</h2>
+<p>Take one real decision the system made last week. Then:</p>
+<ol class="steps">
+<li>Ask the vendor to produce <b>the record for it</b> and hand you the files.</li>
+<li>Ask for <b>the procedure</b> to confirm — on your own laptop, with their software uninstalled — that the decision was authorised under the policy that was in force at the time.</li>
+<li><b>Change one byte</b> of the file, and confirm the check notices.</li>
+</ol>
+<p>If that exercise can be completed, you are buying evidence. If it cannot, you are buying a more
+elaborate way to give testimony — which is fine for operations, and worth exactly nothing on the
+day the question is external.</p>
+</div>
+
+<p>This is not a counsel of distrust. It is the recognition that trust does not survive scale,
+staff turnover, and an outside party with no reason to extend it — and that the record is what
+remains when the people who could vouch for the system have moved on.</p>
+
+<footer>
+  <div>The properties behind these questions, worked through end to end with a running example,
+  are on the <a href="/">home page</a>. The per-action authorisation
+  protocol is an individual-submission Internet-Draft at the IETF:
+  <a href="https://datatracker.ietf.org/doc/draft-saha-aadp/">draft-saha-aadp</a>.</div>
+  <div class="fine">© 2026 oneproof · Apache-2.0 across the suite.</div>
+</footer>
+
+</div>
+</body>
+</html>
