@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where it fits — oneproof in a typical AI stack · oneproof</title>
+<meta name="description" content="One picture: where onedoor, the canary and onetrace sit in a typical AI system — beside the tools you already run, not instead of them.">
+<meta property="og:title" content="Where it fits — oneproof in a typical AI stack">
+<meta property="og:description" content="Your existing monitoring tells you what the system is doing. oneproof adds the receipts: what it did to your documents and actions, checkable by someone who does not trust you.">
+<meta property="og:url" content="https://oneproof.dev/where-it-fits.html">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<link rel="canonical" href="https://oneproof.dev/where-it-fits.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%231c1713'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23c9a227' stroke-width='3'/%3E%3Ctext x='32' y='41' font-family='Georgia,serif' font-size='26' fill='%23c9a227' text-anchor='middle'%3E1%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#f6f1e6; --paper-2:#efe7d4; --ink:#211a12; --dim:#716250;
+    --line:#d9cdb6; --line-soft:#e6ddc9;
+    --gold:#c9a227; --gold-text:#7d620f;
+    --x-ground:#1c1713; --x-panel:#241d17; --x-line:#3a2f26; --x-ink:#e8ddcc; --x-dim:#a5947d;
+    --allow:#7cc79a; --review:#e4a05e; --refuse:#e28a80;
+    --serif:'Newsreader',Georgia,'Times New Roman',serif;
+    --mono:'IBM Plex Mono','Courier New',monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.62;
+    background-image:repeating-linear-gradient(180deg,rgba(33,26,18,.018) 0 1px,transparent 1px 29px)}
+  a{color:var(--gold-text)}
+  .wrap{max-width:860px;margin:0 auto;padding:0 22px}
+  .masthead{display:flex;justify-content:space-between;align-items:baseline;padding:26px 0 18px;border-bottom:1px solid var(--line)}
+  .wordmark{font-weight:600;font-size:21px;letter-spacing:.01em;text-decoration:none;color:var(--ink)}
+  .wordmark .seal{color:var(--gold-text)} .wordmark .tld{color:var(--dim);font-weight:400}
+  .crumb{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+  .crumb a{color:var(--dim);text-decoration:none}
+  .status{margin:26px 0 0;border:1px solid var(--line);background:var(--paper-2);padding:14px 18px;font-size:15.5px;line-height:1.5}
+  .status b{color:var(--gold-text)}
+  h1{font-weight:500;font-size:44px;line-height:1.08;letter-spacing:-.015em;margin:34px 0 10px}
+  .lede{font-size:21px;line-height:1.5;color:var(--dim);margin:0 0 8px}
+  h2{font-weight:500;font-size:29px;line-height:1.15;margin:54px 0 12px;letter-spacing:-.01em}
+  h2 .n{font-family:var(--mono);font-size:13px;color:var(--gold-text);letter-spacing:.1em;display:block;margin-bottom:6px}
+  h3{font-weight:600;font-size:19px;margin:28px 0 6px}
+  p{margin:0 0 16px}
+  .rule{border-left:3px solid var(--gold);padding:10px 18px;margin:22px 0;background:var(--paper-2)}
+  .rule p{margin:0}
+  .rule .law{font-weight:600}
+  code{font-family:var(--mono);font-size:.86em;background:var(--paper-2);padding:1px 5px;border-radius:3px}
+  pre{font-family:var(--mono);font-size:13.5px;line-height:1.55;background:var(--x-ground);color:var(--x-ink);
+    padding:16px 18px;border-radius:6px;overflow-x:auto;margin:14px 0 20px}
+  pre .c{color:var(--x-dim)} pre .g{color:var(--allow)} pre .r{color:var(--refuse)} pre .a{color:var(--review)}
+  table{border-collapse:collapse;width:100%;font-size:15.5px;margin:14px 0 22px}
+  th,td{text-align:left;vertical-align:top;padding:9px 10px;border-top:1px solid var(--line-soft)}
+  th{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:500;border-top:0}
+  td code{white-space:nowrap}
+  .tbl{overflow-x:auto;margin:0 -22px;padding:0 22px}
+  .badge{display:inline-block;font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;padding:3px 9px;border-radius:999px;border:1px solid;white-space:nowrap}
+  .b-rec{color:#1f6b45;border-color:#7cc79a;background:#e8f4ed}
+  .b-dec{color:#8a4b12;border-color:#e4a05e;background:#faefe3}
+  .gap{border:1px dashed var(--line);padding:14px 18px;margin:18px 0;color:var(--dim);font-size:16px}
+  .gap b{color:var(--ink)}
+  .exhibit-link{display:block;border:1px solid var(--line);background:var(--paper-2);padding:14px 18px;margin:18px 0;text-decoration:none;color:var(--ink)}
+  .exhibit-link span{display:block;font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+  .cmds{background:var(--x-ground);color:var(--x-ink);border-radius:6px;padding:18px 20px;margin:16px 0 22px}
+  .cmds pre{background:none;padding:0;margin:0 0 6px}
+  .cmds .c{color:var(--x-dim)}
+  footer{margin-top:64px;border-top:1px solid var(--line);padding:26px 0 40px;font-size:15px;color:var(--dim)}
+  footer a{color:var(--gold-text)}
+  .fine{font-size:13.5px;margin-top:14px}
+  @media (max-width:640px){h1{font-size:34px} body{font-size:17px} .lede{font-size:19px}}
+
+  .q{border-top:1px solid var(--line);padding:26px 0 8px;position:relative}
+  .q h2{margin:0 0 10px;padding-left:64px;font-size:26px}
+  .qn{position:absolute;left:0;top:26px;width:46px;height:46px;border-radius:50%;border:2px solid var(--gold);
+      color:var(--gold-text);font-family:var(--mono);font-weight:600;font-size:18px;display:flex;align-items:center;justify-content:center}
+  .q p{padding-left:64px;font-size:17.5px}
+  .lab{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid;margin-right:6px;white-space:nowrap;font-weight:600}
+  .lab.good{color:#1f6b45;border-color:#7cc79a;background:#e8f4ed}
+  .lab.tell{color:#8a4b12;border-color:#e4a05e;background:#faefe3}
+  .test{background:var(--x-ground);color:var(--x-ink);border-radius:8px;padding:26px 28px;margin:44px 0 26px}
+  .test h2{color:var(--x-ink);margin-top:0;font-size:26px}
+  .test p{color:var(--x-ink)} .test b{color:#e9d08a}
+  .test .steps{margin:14px 0 0;padding-left:22px} .test .steps li{margin-bottom:8px}
+  @media (max-width:640px){.q h2,.q p{padding-left:0} .qn{position:static;margin-bottom:10px}}
+
+  .diagram{position:relative;left:50%;transform:translateX(-50%);width:min(1240px,calc(100vw - 44px));margin:26px 0 8px;overflow-x:auto}
+  .diagram .t{font-family:var(--serif)} .diagram .m{font-family:var(--mono)}
+  .diagram svg{display:block;width:100%;min-width:900px;height:auto;max-width:1240px;margin:0 auto}
+  .three{border-top:1px solid var(--line);margin-top:26px}
+  .three .row{display:grid;grid-template-columns:150px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid var(--line-soft);font-size:17px}
+  .three .k{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-text);padding-top:4px}
+  .three .k b{display:block;font-family:var(--serif);font-size:19px;letter-spacing:0;text-transform:none;color:var(--ink);font-weight:600;margin-top:2px}
+  @media (max-width:640px){.three .row{grid-template-columns:1fr}}
+</style>
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <a class="wordmark" href="/"><span class="seal">one</span>proof<span class="tld">.dev</span></a>
+    <span class="crumb"><a href="/">home</a> · where it fits</span>
+  </header>
+
+  <h1>Where it fits</h1>
+  <p class="lede">You already have monitoring, logs and access control. They tell you what the system is doing. oneproof adds the receipts: what it actually did to your documents and your actions — kept in a form someone who does not trust you can check.</p>
+
+  <p>Nothing in your stack moves. The three tools attach at three places, and each answers one question a reviewer eventually asks.</p>
+
+  <div class="three">
+    <div class="row"><div class="k">Prevent<b>onedoor</b></div><div>One door in front of every consequential action. Before the system pays, sends, deletes or approves, the action is checked against your rules — and the decision is written down with the rule that was in force. <span style="color:var(--dim)">Shipped, open source, on PyPI.</span></div></div>
+    <div class="row"><div class="k">Detect<b>the canary</b></div><div>Asks the system secret questions from the outside, on a schedule, and records whether the answers moved. It tells you <em>that</em> something changed and when — a model, an index, a prompt — even when nobody told you. <span style="color:var(--dim)">Verification package publishes 10 September.</span></div></div>
+    <div class="row"><div class="k">Prove<b>onetrace</b></div><div>Every answer comes with its receipts. Each step a document goes through — opened, split, searched, quoted — leaves one, so you can show the exact sentence in the actual file an answer came from, and see the step where it changed. <span style="color:var(--dim)">Method published; the code follows.</span></div></div>
+  </div>
+
+  <h2><span class="n">THE PICTURE</span>A typical AI system, with the evidence plane beside it</h2>
+  <p>Left: the tools you already run, for the people who operate the system. Centre: the stack itself. Right: the receipts, for the person who was not in the room. The dotted line between the two planes is a pointer each way, so a trace can find its receipt and a receipt its trace.</p>
+
+  <div class="diagram">
+<svg viewBox="0 90 1520 920" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Where oneproof sits in a generic GenAI solution">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#716250"/></marker>
+    <marker id="arrg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7d620f"/></marker>
+  </defs>
+
+  <!-- title -->
+
+  <!-- ===== left column: observability & security (existing) ===== -->
+  <g>
+    <rect x="0" y="100" width="250" height="700" rx="8" fill="#ffffff" stroke="#d9cdb6"/>
+    <text x="125" y="132" text-anchor="middle" class="t" font-size="18" font-weight="700" fill="#211a12">Observability &amp; security</text>
+    <text x="125" y="154" text-anchor="middle" class="m" font-size="12" fill="#716250">existing · for the operator</text>
+    <line x1="24" y1="170" x2="226" y2="170" stroke="#e6ddc9"/>
+    <g class="t" font-size="15" fill="#211a12">
+      <text x="24" y="200">Tracing, spans, metrics</text>
+      <text x="24" y="228">Logs, dashboards, alerts</text>
+      <text x="24" y="256">Identity &amp; access (IAM)</text>
+      <text x="24" y="284">Secrets, network policy</text>
+      <text x="24" y="312">Eval &amp; guardrail tools</text>
+    </g>
+    <line x1="24" y1="336" x2="226" y2="336" stroke="#e6ddc9"/>
+    <g class="t" font-size="14" fill="#716250">
+      <text x="24" y="364">Answers:</text>
+      <text x="24" y="388" font-style="italic">"What is the system doing?"</text>
+      <text x="24" y="424">Live, sampled, retained</text>
+      <text x="24" y="446">for a period, written by</text>
+      <text x="24" y="468">the operator, read by the</text>
+      <text x="24" y="490">operator.</text>
+      <text x="24" y="526">Keeps its job. Nothing</text>
+      <text x="24" y="548">here is replaced.</text>
+    </g>
+    <!-- pointer join -->
+    <g class="m" font-size="12" fill="#7d620f">
+      <text x="24" y="720">two-way pointer:</text>
+      <text x="24" y="740">span ↔ receipt digest</text>
+    </g>
+    <path d="M226 732 H 1270" stroke="#c9a227" stroke-width="1.5" stroke-dasharray="6 5" marker-end="url(#arrg)" marker-start="url(#arrg)"/>
+  </g>
+
+  <!-- ===== centre: the generic stack ===== -->
+  <g id="stack">
+    <!-- users -->
+    <rect x="300" y="100" width="880" height="72" rx="8" fill="#ffffff" stroke="#d9cdb6"/>
+    <text x="324" y="132" class="t" font-size="18" font-weight="700">Users &amp; channels</text>
+    <text x="324" y="156" class="t" font-size="15" fill="#716250">chat, copilots, back-office automations, API consumers</text>
+
+    <!-- application / agent -->
+    <rect x="300" y="196" width="880" height="118" rx="8" fill="#ffffff" stroke="#d9cdb6"/>
+    <text x="324" y="228" class="t" font-size="18" font-weight="700">Application &amp; agent layer</text>
+    <text x="324" y="252" class="t" font-size="15" fill="#716250">agent runtime · orchestration frameworks · low-code flow canvases · prompt assembly</text>
+    <text x="324" y="276" class="t" font-size="15" fill="#716250">plans steps, calls models, retrieves knowledge, invokes tools, produces the answer or the action</text>
+    <text x="324" y="300" class="m" font-size="12" fill="#716250">the agent decides what to do here — and, unaided, writes its own account of what it did</text>
+
+    <!-- model layer -->
+    <rect x="300" y="338" width="430" height="96" rx="8" fill="#ffffff" stroke="#d9cdb6"/>
+    <text x="324" y="370" class="t" font-size="18" font-weight="700">Model layer</text>
+    <text x="324" y="394" class="t" font-size="15" fill="#716250">hosted / self-hosted LLMs, embedding models,</text>
+    <text x="324" y="416" class="t" font-size="15" fill="#716250">re-rankers — versions change, often silently</text>
+    <rect x="522" y="348" width="196" height="20" rx="10" fill="none" stroke="#c9a227"/>
+    <text x="620" y="362" text-anchor="middle" class="m" font-size="10.5" fill="#7d620f">a change here shows in the canary</text>
+
+    <!-- knowledge layer -->
+    <rect x="750" y="338" width="430" height="96" rx="8" fill="#ffffff" stroke="#d9cdb6"/>
+    <text x="774" y="370" class="t" font-size="18" font-weight="700">Knowledge &amp; data</text>
+    <text x="774" y="394" class="t" font-size="15" fill="#716250">ingestion pipeline: convert → clean → split → embed</text>
+    <text x="774" y="416" class="t" font-size="15" fill="#716250">→ index · vector / search store · source documents</text>
+    <rect x="972" y="348" width="196" height="20" rx="10" fill="none" stroke="#c9a227"/>
+    <text x="1070" y="362" text-anchor="middle" class="m" font-size="10.5" fill="#7d620f">a change here shows in the canary</text>
+
+    <!-- tools & external systems -->
+    <rect x="300" y="530" width="880" height="96" rx="8" fill="#ffffff" stroke="#d9cdb6"/>
+    <text x="324" y="562" class="t" font-size="18" font-weight="700">Tools &amp; external systems</text>
+    <text x="324" y="586" class="t" font-size="15" fill="#716250">tool servers (MCP) · enterprise APIs · payments, tickets, records, email · other agents</text>
+    <text x="324" y="608" class="m" font-size="12" fill="#716250">where actions become consequential and irreversible</text>
+
+    <!-- platform -->
+    <rect x="300" y="650" width="880" height="56" rx="8" fill="#ffffff" stroke="#d9cdb6"/>
+    <text x="324" y="684" class="t" font-size="18" font-weight="700">Platform &amp; infrastructure <tspan class="t" font-size="15" font-weight="400" fill="#716250">— cloud, containers, storage, networking, CI/CD</tspan></text>
+
+    <!-- flow arrows within stack -->
+    <path d="M740 172 V 196" stroke="#716250" stroke-width="1.5" marker-end="url(#arr)"/>
+    <path d="M515 314 V 338" stroke="#716250" stroke-width="1.5" marker-end="url(#arr)"/>
+    <path d="M965 314 V 338" stroke="#716250" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- ===== onedoor: the door between agent and tools ===== -->
+    <path d="M740 314 V 458" stroke="#716250" stroke-width="1.5"/>
+    <rect x="560" y="458" width="360" height="52" rx="26" fill="#211a12" stroke="#c9a227" stroke-width="2"/>
+    <text x="740" y="480" text-anchor="middle" class="t" font-size="17" font-weight="700" fill="#f6f1e6"><tspan fill="#c9a227">PREVENT</tspan> · onedoor</text>
+    <text x="740" y="500" text-anchor="middle" class="m" font-size="12" fill="#e8ddcc">one door in front of every consequential action</text>
+    <path d="M740 510 V 530" stroke="#716250" stroke-width="1.5" marker-end="url(#arr)"/>
+    <!-- side label -->
+    <g class="t" font-size="13" fill="#7d620f">
+      <text x="935" y="466">decides per call, against ratified rules</text>
+      <text x="935" y="484">and live state · no policy = denial ·</text>
+      <text x="935" y="502">irreversible never autonomous · AADP</text>
+    </g>
+    <text x="324" y="490" class="m" font-size="12" fill="#716250">agent → verdict → action</text>
+  </g>
+
+  <!-- ===== right column: evidence plane (oneproof) ===== -->
+  <g>
+    <rect x="1230" y="100" width="290" height="700" rx="8" fill="#211a12" stroke="#c9a227" stroke-width="1.5"/>
+    <text x="1375" y="132" text-anchor="middle" class="t" font-size="18" font-weight="700" fill="#f6f1e6">Evidence plane</text>
+    <text x="1375" y="154" text-anchor="middle" class="m" font-size="12" fill="#c9a227">oneproof · for the stranger</text>
+    <line x1="1254" y1="170" x2="1496" y2="170" stroke="#3a2f26"/>
+
+    <!-- onetrace -->
+    <text x="1254" y="200" class="t" font-size="16" font-weight="700" fill="#c9a227">PROVE · onetrace</text>
+    <g class="t" font-size="14" fill="#e8ddcc">
+      <text x="1254" y="224">A receipt at every step a document</text>
+      <text x="1254" y="244">takes — converted, split, retrieved,</text>
+      <text x="1254" y="264">quoted — so any sentence in an</text>
+      <text x="1254" y="284">answer traces to its exact place in</text>
+      <text x="1254" y="304">the original file.</text>
+    </g>
+    <text x="1254" y="326" class="m" font-size="11.5" fill="#a5947d">method published · code follows</text>
+
+    <!-- onewatch -->
+    <text x="1254" y="366" class="t" font-size="16" font-weight="700" fill="#c9a227">DETECT · the canary</text>
+    <g class="t" font-size="14" fill="#e8ddcc">
+      <text x="1254" y="390">Probes from outside, on a schedule,</text>
+      <text x="1254" y="410">with secret questions; every run</text>
+      <text x="1254" y="430">sealed against a tolerance band</text>
+      <text x="1254" y="450">fixed before the run.</text>
+    </g>
+    <text x="1254" y="472" class="m" font-size="11.5" fill="#a5947d">verification package · 10 Sept</text>
+
+    <!-- onedoor evidence -->
+    <text x="1254" y="512" class="t" font-size="16" font-weight="700" fill="#c9a227">PREVENT · onedoor</text>
+    <g class="t" font-size="14" fill="#e8ddcc">
+      <text x="1254" y="536">Every verdict is evidence: the</text>
+      <text x="1254" y="556">rule, the version in force, the</text>
+      <text x="1254" y="576">live state, the outcome — enough</text>
+      <text x="1254" y="596">to re-derive the decision later.</text>
+    </g>
+    <text x="1254" y="618" class="m" font-size="11.5" fill="#a5947d">on PyPI · protocol AADP at the IETF</text>
+
+    <line x1="1254" y1="640" x2="1496" y2="640" stroke="#3a2f26"/>
+    <g class="t" font-size="14" fill="#e8ddcc">
+      <text x="1254" y="666">Answers:</text>
+      <text x="1254" y="688" font-style="italic">"What did this run do to these bytes,</text>
+      <text x="1254" y="708" font-style="italic">and can someone who doesn't trust</text>
+      <text x="1254" y="728" font-style="italic">us check it?"</text>
+      <text x="1254" y="760">Unsampled. Durable. Written in a</text>
+      <text x="1254" y="780">fixed shape. Checkable offline.</text>
+    </g>
+  </g>
+
+  <!-- ===== attachment lines from stack to evidence plane ===== -->
+  <path d="M1180 390 H 1230" stroke="#c9a227" stroke-width="2" marker-end="url(#arrg)"/>
+  <text x="1224" y="380" text-anchor="end" class="m" font-size="11" fill="#7d620f">receipts</text>
+  <path d="M920 484 H 1230" stroke="#c9a227" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#arrg)" transform="translate(0,40)"/>
+  <text x="1075" y="540" text-anchor="middle" class="m" font-size="11" fill="#7d620f">verdict records</text>
+
+  <!-- ===== canary: outside the box ===== -->
+  <g>
+    <rect x="300" y="740" width="880" height="60" rx="8" fill="none" stroke="#c9a227" stroke-width="1.5" stroke-dasharray="7 5"/>
+    <text x="324" y="766" class="t" font-size="16" font-weight="700" fill="#7d620f">DETECT · the canary probes from OUTSIDE the box</text>
+    <text x="324" y="788" class="t" font-size="14" fill="#716250">through the same door a user comes through. It detects THAT something changed, and when — onetrace's receipts say WHERE.</text>
+    <path d="M1150 740 V 172" stroke="#c9a227" stroke-width="1.5" stroke-dasharray="7 5" marker-end="url(#arrg)" opacity="0.7"/>
+    <text x="1158" y="215" class="m" font-size="11" fill="#7d620f">probe path</text>
+    <path d="M1180 772 H 1230" stroke="#c9a227" stroke-width="2" marker-end="url(#arrg)"/>
+    <text x="1224" y="760" text-anchor="end" class="m" font-size="11" fill="#7d620f">sealed runs</text>
+  </g>
+
+  <!-- ===== the stranger with the verifier ===== -->
+  <g>
+    <rect x="0" y="840" width="1520" height="120" rx="8" fill="#ffffff" stroke="#d9cdb6"/>
+    <text x="24" y="874" class="t" font-size="18" font-weight="700">The stranger with the verifier — outside everything above</text>
+    <g class="t" font-size="15" fill="#716250">
+      <text x="24" y="902">An auditor, a counterparty, a court, a customer. Holds only the records. Runs one open verifier, offline: no network, no key, no account, no call to us.</text>
+      <text x="24" y="926">Every check reports PASS, FAIL, or NOT RUN with a reason. It establishes what the records assert — and says out loud what it could not establish.</text>
+    </g>
+    <path d="M1375 800 V 840" stroke="#c9a227" stroke-width="2" marker-end="url(#arrg)"/>
+    <text x="1360" y="826" text-anchor="end" class="m" font-size="11" fill="#7d620f">records handed over</text>
+  </g>
+
+  <!-- footer -->
+  <text x="0" y="996" class="m" font-size="11.5" fill="#716250">oneproof.dev · onedoor v0.7.0 shipped · canary verification package 10 Sept 2026 · onetrace method published, code in preparation · not a certification · anchoring opt-in, off by default · Apache-2.0</text>
+</svg>
+  </div>
+  <p class="fine" style="color:var(--dim)">The picture scrolls sideways on a small screen. Status as of 7 September 2026; when a status changes, this page is superseded in place, carrying its prior digest.</p>
+
+  <h2><span class="n">WHAT IT IS NOT</span>Three things this does not replace</h2>
+  <p>It is not your monitoring — that keeps its job; receipts answer a different question, later, for a different reader. It is not a judge of whether an answer is right — a receipt shows where an answer came from, not that it was correct. And it is not a certificate — it makes records checkable; whether you trust the people who ran the system is still your call, now made with the record in front of you.</p>
+
+<footer>
+  <div>The properties behind this picture, worked through end to end with a running example, are on the <a href="/">home page</a>. The buyer's questions are in <a href="/deposition-test.html">the deposition test</a>.</div>
+  <div class="fine">Page views on this site are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data; the tools themselves report to no one.<br>© 2026 oneproof · Apache-2.0 across the suite · Digests shown are illustrative worked examples from the public design fixtures, not customer data.</div>
+</footer>
+
+</div>
+</body>
+</html>
