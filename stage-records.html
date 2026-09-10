@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stage records — the format and the digest recipes · oneproof</title>
+<meta name="description" content="The stage-record format and its digest recipes, set out in full: the envelope every stage carries, how each kind of artifact is hashed, how the chain links, what anchoring proves and what it does not, and how to check any of it with standard tools.">
+<meta property="og:title" content="Stage records — the format and the digest recipes">
+<meta property="og:description" content="One record per stage, digests over exact bytes, a chain a stranger can recompute. The format behind the ten-record diagram, specified for an implementer.">
+<meta property="og:url" content="https://oneproof.dev/stage-records.html">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<link rel="canonical" href="https://oneproof.dev/stage-records.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%231c1713'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23c9a227' stroke-width='3'/%3E%3Ctext x='32' y='41' font-family='Georgia,serif' font-size='26' fill='%23c9a227' text-anchor='middle'%3E1%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#f6f1e6; --paper-2:#efe7d4; --ink:#211a12; --dim:#716250;
+    --line:#d9cdb6; --line-soft:#e6ddc9;
+    --gold:#c9a227; --gold-text:#7d620f;
+    --x-ground:#1c1713; --x-panel:#241d17; --x-line:#3a2f26; --x-ink:#e8ddcc; --x-dim:#a5947d;
+    --allow:#7cc79a; --review:#e4a05e; --refuse:#e28a80;
+    --serif:'Newsreader',Georgia,'Times New Roman',serif;
+    --mono:'IBM Plex Mono','Courier New',monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.62;
+    background-image:repeating-linear-gradient(180deg,rgba(33,26,18,.018) 0 1px,transparent 1px 29px)}
+  a{color:var(--gold-text)}
+  .wrap{max-width:860px;margin:0 auto;padding:0 22px}
+  .masthead{display:flex;justify-content:space-between;align-items:baseline;padding:26px 0 18px;border-bottom:1px solid var(--line)}
+  .wordmark{font-weight:600;font-size:21px;letter-spacing:.01em;text-decoration:none;color:var(--ink)}
+  .wordmark .seal{color:var(--gold-text)} .wordmark .tld{color:var(--dim);font-weight:400}
+  .crumb{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+  .crumb a{color:var(--dim);text-decoration:none}
+  .status{margin:26px 0 0;border:1px solid var(--line);background:var(--paper-2);padding:14px 18px;font-size:15.5px;line-height:1.5}
+  .status b{color:var(--gold-text)}
+  h1{font-weight:500;font-size:44px;line-height:1.08;letter-spacing:-.015em;margin:34px 0 10px}
+  .lede{font-size:21px;line-height:1.5;color:var(--dim);margin:0 0 8px}
+  h2{font-weight:500;font-size:29px;line-height:1.15;margin:54px 0 12px;letter-spacing:-.01em}
+  h2 .n{font-family:var(--mono);font-size:13px;color:var(--gold-text);letter-spacing:.1em;display:block;margin-bottom:6px}
+  h3{font-weight:600;font-size:19px;margin:28px 0 6px}
+  p{margin:0 0 16px}
+  .rule{border-left:3px solid var(--gold);padding:10px 18px;margin:22px 0;background:var(--paper-2)}
+  .rule p{margin:0}
+  .rule .law{font-weight:600}
+  code{font-family:var(--mono);font-size:.86em;background:var(--paper-2);padding:1px 5px;border-radius:3px}
+  pre{font-family:var(--mono);font-size:13.5px;line-height:1.55;background:var(--x-ground);color:var(--x-ink);
+    padding:16px 18px;border-radius:6px;overflow-x:auto;margin:14px 0 20px}
+  pre .c{color:var(--x-dim)} pre .g{color:var(--allow)} pre .r{color:var(--refuse)} pre .a{color:var(--review)}
+  table{border-collapse:collapse;width:100%;font-size:15.5px;margin:14px 0 22px}
+  th,td{text-align:left;vertical-align:top;padding:9px 10px;border-top:1px solid var(--line-soft)}
+  th{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:500;border-top:0}
+  td code{white-space:nowrap}
+  .tbl{overflow-x:auto;margin:0 -22px;padding:0 22px}
+  .badge{display:inline-block;font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;padding:3px 9px;border-radius:999px;border:1px solid;white-space:nowrap}
+  .b-rec{color:#1f6b45;border-color:#7cc79a;background:#e8f4ed}
+  .b-dec{color:#8a4b12;border-color:#e4a05e;background:#faefe3}
+  .gap{border:1px dashed var(--line);padding:14px 18px;margin:18px 0;color:var(--dim);font-size:16px}
+  .gap b{color:var(--ink)}
+  .exhibit-link{display:block;border:1px solid var(--line);background:var(--paper-2);padding:14px 18px;margin:18px 0;text-decoration:none;color:var(--ink)}
+  .exhibit-link span{display:block;font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+  .cmds{background:var(--x-ground);color:var(--x-ink);border-radius:6px;padding:18px 20px;margin:16px 0 22px}
+  .cmds pre{background:none;padding:0;margin:0 0 6px}
+  .cmds .c{color:var(--x-dim)}
+  footer{margin-top:64px;border-top:1px solid var(--line);padding:26px 0 40px;font-size:15px;color:var(--dim)}
+  footer a{color:var(--gold-text)}
+  .fine{font-size:13.5px;margin-top:14px}
+  @media (max-width:640px){h1{font-size:34px} body{font-size:17px} .lede{font-size:19px}}
+</style>
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <a class="wordmark" href="/"><span class="seal">one</span>proof<span class="tld">.dev</span></a>
+  <div class="crumb"><a href="/">home</a> · <a href="/#prove">prove</a> · stage records</div>
+</header>
+
+<div class="status">
+  <b>Preview.</b> This page specifies a record format,
+  <code>stage-receipt/0.0-preview</code>, beside its Internet-Draft
+  (<a href="https://datatracker.ietf.org/doc/draft-saha-stage-receipts/"><code>draft-saha-stage-receipts-00</code></a>, posted 8 September 2026 — a draft, not a standard). Nothing here is a released
+  implementation or a stable schema. It is published now so that the sample records and the
+  reference verifier that accompany it can be checked by anyone, today, with standard tools and
+  no trust in the publisher. The reference pipeline that emits these records is in preparation;
+  the verifier ships open.
+</div>
+
+<h1>Stage records</h1>
+<p class="lede">One record per stage. Digests over exact bytes. A chain a stranger can recompute.
+The format behind the <a href="/#doors">ten-record diagram</a>, set out for someone who has to
+implement it — or check it — without asking us anything.</p>
+
+<!-- ============================================================ -->
+<h2><span class="n">§0</span>The one rule everything else serves</h2>
+
+<p>A digest is only meaningful if the byte recipe is stated. <em>"The hash of the document"</em>
+is not a claim. <em>"SHA-256 over the stored bytes of artifact X, 1,482,331 bytes"</em> is.
+Every recipe on this page therefore answers the same three questions: <b>which bytes, produced
+how, hashed with what.</b></p>
+
+<p>The algorithm is <b>SHA-256</b> throughout — one algorithm per record set, named once in the
+format field, because per-record algorithm choice is an invitation to downgrade games. A digest
+is written as <code>sha256:</code> followed by 64 lowercase hex characters.</p>
+
+<div class="rule"><p><span class="law">The store-then-digest law.</span> Normalise once, at write
+time — then digest exactly what you stored, and never re-normalise on read. If a verifier has to
+"prepare" bytes before hashing them, the preparation is part of the instrument and must be pinned
+like one.</p></div>
+
+<!-- ============================================================ -->
+<h2><span class="n">§1</span>The record envelope — every stage, no exceptions</h2>
+
+<p>A stage record is a JSON object with thirteen required top-level fields. A verifier fails a
+record that lacks any of them. Nothing is inferred and nothing is defaulted: an absent field is
+absent.</p>
+
+<div class="tbl"><table>
+<tr><th>Field</th><th>What it must contain</th></tr>
+<tr><td><code>format</code></td><td>The format identifier, <code>stage-receipt/0.0-preview</code>. Names the algorithm and the canonical form for the whole record.</td></tr>
+<tr><td><code>run_id</code></td><td>Identifier of the run this stage belongs to. Every record in one chain shares it.</td></tr>
+<tr><td><code>stage</code></td><td><code>{ index, name }</code> — position in the chain and the stage's name. The index is a decimal string.</td></tr>
+<tr><td><code>prev</code></td><td>The digest of the <em>previous record's exact file bytes</em>, or <code>null</code> for the first stage. This is the chain link.</td></tr>
+<tr><td><code>time</code></td><td><code>{ started, ended }</code> — RFC 3339 timestamps that <b>carry their zone</b>. A timestamp without its zone is half a timestamp and is refused.</td></tr>
+<tr><td><code>instrument</code></td><td><code>{ id, kind, version, config_digest, manifest_digest, rederivable }</code> — the tool that ran this stage, <b>named and pinned</b>. A record whose instrument cannot be identified is invalid; the conforming producer behaviour is refusal, not a blank field.</td></tr>
+<tr><td><code>inputs</code></td><td>List of <code>{ name, digest, bytes, media_type, trust_class }</code>. Each digest resolves to an earlier record's output or to a source in custody — never a prose reference.</td></tr>
+<tr><td><code>outputs</code></td><td>Same shape. What this stage produced, by digest.</td></tr>
+<tr><td><code>assertions</code></td><td>What the stage claims about its work, with a <code>constants</code> object naming <b>every transform constant the claims depend on</b>. A relation that holds only under an unstated constant tests the constant, not the relation.</td></tr>
+<tr><td><code>outcome</code></td><td><code>{ class, note? }</code> — one of <code>ok</code>, <code>refused</code>, <code>error</code>. A refusal is a result. An <code>error</code> carries status, body and origin; an error without its body is a status code wearing an explanation.</td></tr>
+<tr><td><code>coverage</code></td><td><code>{ declared_stages, emitting_stages, completeness, boundaries }</code> — the stages the pipeline declares, the stages that actually emitted, and whether they agree. <code>completeness</code> is <code>complete</code> or <code>incomplete</code>, never absent; <code>complete</code> asserted while a declared stage is missing from the emitting list is a failure, not a warning.</td></tr>
+<tr><td><code>emission</code></td><td><code>{ policy, gaps }</code> — the policy under which records were emitted (the reference is <code>fail-closed</code>) and any declared gaps.</td></tr>
+<tr><td><code>anchor</code></td><td><code>{ state, reason? }</code> — <code>anchored</code> or <code>unanchored</code>. Absence is a failure: unanchored is a state, not a silence. See §6.</td></tr>
+</table></div>
+
+<h3>Trust classes</h3>
+<p>Every input and output declares one of <code>operator-authored</code>,
+<code>model-generated</code>, or <code>externally-sourced</code>. This does not make
+externally-sourced content safe; it makes it <em>visible</em>, which is the most a record format
+can honestly promise to any reader downstream — human or model.</p>
+
+<h3>Three states that must not collapse</h3>
+<p><b>Absent</b>, <b>declared-none</b>, and <b>recorded</b> are three distinct states and must
+round-trip distinguishably. An empty <code>inputs</code> list is a declaration; a missing
+<code>inputs</code> field is a defect. A failed measurement is not a measured zero.</p>
+
+<h3>Three different three-way splits — kept apart on purpose</h3>
+<p>Three things on this page each have exactly three outcomes, and they are not the same three.
+A stage's <code>outcome.class</code> is <code>ok</code> / <code>refused</code> / <code>error</code>
+— what the stage did. A verification stage's per-claim result is <em>supported</em> /
+<em>contradicted</em> / <em>couldn't-check</em> — what the evidence says about one claim. A
+verifier's report on a record is <em>PASS</em> / <em>FAIL</em> / <em>NOT RUN, with reason</em> —
+what a stranger could establish. Collapsing any of them to two is how a system ends up reporting
+a pass for something it never examined.</p>
+
+<!-- ============================================================ -->
+<h2><span class="n">§2</span>The canonical form — specified as runnable code</h2>
+
+<p>A record's digest is taken over its file bytes, so the file's bytes must <em>be</em> the
+canonical serialisation of the object they encode — not equivalent to it, identical. The
+canonical form, in full:</p>
+
+<ol>
+<li>UTF-8, no byte-order mark.</li>
+<li>JSON, object keys sorted by Unicode code point.</li>
+<li>No whitespace outside string literals.</li>
+<li><b>No JSON numbers.</b> Every numeric value — counts, offsets, indices, scores, byte lengths — is a decimal string. A format that serialises <code>500.00</code> as a float has already lost the distinction between <code>"500.00"</code> and <code>"500"</code>, and float re-serialisation is not stable across languages.</li>
+<li>No <code>NaN</code>, no <code>Infinity</code>, no <code>-0</code>.</li>
+<li>The file contains exactly the canonical bytes and nothing else — <b>no trailing newline</b>.</li>
+<li><b>A record never contains its own digest.</b> A record cannot contain the proof of its own final state; the digest lives in the chain manifest and in the next record's <code>prev</code>.</li>
+</ol>
+
+<pre>import hashlib, json
+
+def canonical(obj) -> bytes:
+    <span class="c"># refuse any JSON number, refuse a self-digest, then:</span>
+    return json.dumps(obj, sort_keys=True, ensure_ascii=False,
+                      separators=(",", ":"), allow_nan=False).encode("utf-8")
+
+def digest(obj) -> str:
+    return "sha256:" + hashlib.sha256(canonical(obj)).hexdigest()</pre>
+
+<p><code>jq -S</code> sorts keys but reformats numbers and appends a newline — use it to
+inspect, never to produce. The reference canonicaliser ships with the samples as a
+~40-line script whose only job is to answer <em>"is this file its own canonical form?"</em></p>
+
+<!-- ============================================================ -->
+<h2><span class="n">§3</span>Digest recipes — one per kind of artifact</h2>
+
+<p>The envelope says <em>what</em> is digested. These recipes say <em>which bytes</em>, for each
+kind of thing a stage can touch.</p>
+
+<h3>R1 · File bytes — binary artifacts (PDF, image, wheel, model weights)</h3>
+<p>Hash the file exactly as stored. No transformation of any kind.</p>
+<pre>sha256sum FrameworkAgreement_2025.pdf            <span class="c"># Linux / macOS</span>
+certutil -hashfile file.pdf SHA256               <span class="c"># Windows</span>
+python -c "import hashlib,sys; print(hashlib.sha256(open(sys.argv[1],'rb').read()).hexdigest())" f.pdf</pre>
+
+<h3>R2 · Text artifacts — converted text, cleaned text, prompts, answers</h3>
+<p>Normalise once at write time — UTF-8, LF line endings, no BOM — write to the store, then hash
+the stored bytes with R1. The record may note the normalisation so a verifier who receives the
+text through a lossy channel (email, copy-paste) knows how to reconstitute the exact bytes.
+<b>CRLF is the first cause of false mismatches; kill it at write time, never at verify time.</b></p>
+
+<h3>R3 · Chunks and spans — parts of a digested parent</h3>
+<p>A chunk's own digest is SHA-256 over the UTF-8 bytes of the chunk text (R2 rules). Its
+<em>location</em> is a pair of offsets into the parent's stored bytes. <b>State the offset unit
+in the record.</b> This reference uses byte offsets into the parent's stored UTF-8; code-point
+offsets are equally valid but must be declared. A record that does not name its offset unit
+cannot be checked. Verify: <code>parent_bytes[start:end]</code> must hash to the chunk digest.</p>
+
+<div class="gap"><b>Two conformance levels, and the record says which.</b> The stored-span shape
+above is the format's full profile. A pipeline may instead record <em>containment lineage</em>:
+each chunk names its parent, and the chunk text is verifiably a substring of the parent's stored
+blocks under the chunker's declared join — with spans produced as a <em>derived quantity</em> at
+check time, that derivation itself receipted with three outcomes (unique / ambiguous, with the
+occurrence count / not found). The reference pipeline currently implements the derived-span
+level; the diagram on the home page shows it. A record conforms at either level provided it
+declares which. A claim of stored spans that the bytes do not back is worse than either.</div>
+
+<h3>R4 · Manifests — set-valued outputs (chunk sets, ranked results, a census)</h3>
+<p>Serialise as canonical JSON (§2) and hash those bytes. Arrays stay in the stage's declared
+order — chunk sequence, rank order — because order is part of what the stage asserts.</p>
+
+<h3>R5 · Merkle root — large sets, external anchoring</h3>
+<p>Leaves are item digests in manifest order. Pair adjacent leaves, hash the concatenation of the
+two raw 32-byte digests, repeat to the root. <b>State the odd-leaf rule in the record</b> (this
+reference: promote the odd leaf unchanged). One published root commits to every leaf, and any
+single item is verifiable with a log-sized proof path.</p>
+
+<h3>R6 · The record itself — and therefore the chain</h3>
+<p>The record is a JSON object; serialise it in canonical form <b>including its
+<code>prev</code> field</b>, hash the bytes, and that digest is what the next record's
+<code>prev</code> cites and what the manifest lists. Editing any historical record changes its
+digest, which breaks every later record's link. Tampering surfaces as a broken chain, not as an
+argument.</p>
+
+<h3>R7 · Wire bytes — external calls, request and response</h3>
+<p>Hash the raw bytes as sent and as received — before parsing, before re-serialisation, before
+pretty-printing. <b>The JSON you parsed is not the JSON you received; only the received bytes
+are evidence.</b> Capture at the transport boundary.</p>
+
+<h3>R8 · Anchoring — what makes the timestamps testify</h3>
+<p>The chain head (or a Merkle root over many) is published somewhere the operator does not
+control the history of, on a cadence: a commit or tag in a public repository, an OpenTimestamps
+attestation, a transparency-log entry. The anchor proves the record existed <em>by</em> that
+moment — which is what turns "our clock said 14:02" into "the world can bound when this record
+was made." §6 states what anchoring does and does not establish.</p>
+
+<h3>R9 · What never gets digested into anything — secrets</h3>
+<p>Keys, credentials, personal data. The record carries digests <em>of artifacts</em>, and
+artifacts must be reviewed as publishable before their digests are anchored — because an
+anchored digest of a secret is a commitment you can never unwind. A value inside a published
+preimage is frozen the moment the first hash is published.</p>
+
+<!-- ============================================================ -->
+<h2><span class="n">§4</span>Receipts and declarations</h2>
+
+<p>Not every stage can be replayed, and the format refuses to pretend otherwise. The instrument
+carries <code>rederivable</code>, and the diagram carries the same fact as two badges:</p>
+
+<p><span class="badge b-rec">RECEIPT · re-derivable</span> &nbsp; The stage can be run again
+from its recorded inputs under its pinned instrument and must produce the same output bytes.
+Conversion with a pinned tool, chunking under a declared rule, retrieval against a frozen index,
+prompt assembly, a verification pass — these are receipts.</p>
+
+<p><span class="badge b-dec">DECLARED · bytes frozen</span> &nbsp; The stage cannot be replayed
+— a call to a vendor-hosted model, an external API answering from world-state, a
+non-deterministic generation — so the record freezes exactly what went in and what came out,
+digests both, and <b>says on its face that it cannot promise repeatability</b>. A declaration is
+weaker than a receipt and is labelled as weaker. A record that quietly implies replayability it
+does not have is the defect this distinction exists to prevent.</p>
+
+<!-- ============================================================ -->
+<h2><span class="n">§5</span>Per stage — the worked example</h2>
+
+<p>The format is stage-agnostic: any pipeline declares its own stages in
+<code>coverage.declared_stages</code>. The table below is the ten-stage retrieval pipeline of the
+<a href="/#doors">home-page diagram</a> — one worked example, not a required shape. The sample
+chain published beside this page is a four-stage subset of it.</p>
+
+<div class="tbl"><table>
+<tr><th>Stage</th><th>Beyond the envelope, the record must carry</th><th>Recipes</th><th>Promise</th></tr>
+<tr><td><b>S0</b> Source custody</td><td>file digest, byte length, depositor, acquisition time</td><td>R1</td><td><span class="badge b-rec">receipt</span> — identity</td></tr>
+<tr><td><b>S1</b> Conversion</td><td>tool publicly obtainable at pinned version; in and out digests</td><td>R1 in → R2 out</td><td><span class="badge b-rec">receipt</span></td></tr>
+<tr><td><b>S2</b> Cleaning</td><td>a census: every exclusion by page, span, and reason <em>code</em>; totals — <b>present even when zero</b></td><td>R2 out; census R4</td><td><span class="badge b-rec">receipt</span></td></tr>
+<tr><td><b>S3</b> Chunking</td><td>per-chunk digests; manifest of (parent digest, start, end, seq); offset unit named</td><td>R3; R4</td><td><span class="badge b-rec">receipt</span></td></tr>
+<tr><td><b>S4</b> Embedding / index</td><td>model identity; weights digest if local; snapshot id and digest</td><td>R1 / R4</td><td><span class="badge b-rec">receipt</span> pinned local weights · <span class="badge b-dec">declared</span> hosted API</td></tr>
+<tr><td><b>S5</b> Retrieval</td><td>query bytes digest; snapshot id; the full ranked list with scores as decimal strings</td><td>R2 query; R4 results</td><td><span class="badge b-rec">receipt</span> vs the frozen snapshot</td></tr>
+<tr><td><b>S6</b> External call</td><td>endpoint identity; wall-clock moment; request and response wire digests; provider signature if offered</td><td>R7; R4 if summarised</td><td><span class="badge b-dec">declared</span> world-state</td></tr>
+<tr><td><b>S7</b> Prompt assembly</td><td>digest of <b>every</b> ingredient — template, chunks, tool responses — and of the assembled prompt</td><td>R2; ingredient list R4</td><td><span class="badge b-rec">receipt</span></td></tr>
+<tr><td><b>S8</b> Generation</td><td>prompt digest; model id, version, parameters; output digest — <b>and nothing implying repeatability</b></td><td>R2 out</td><td><span class="badge b-dec">declared</span> non-deterministic instrument</td></tr>
+<tr><td><b>S9</b> Verification</td><td>per claim: span, target parent digest, offsets, outcome, reason if it couldn't be checked; the three-outcome totals and how they were derived</td><td>R3 checks; report R4 + R6</td><td><span class="badge b-rec">receipt</span></td></tr>
+</table></div>
+
+<div class="rule"><p><span class="law">Closure check — run before checking any single offset.</span>
+Every digest cited anywhere must resolve to a record in the chain; every record must be reachable
+walking back from the final answer's record; the walk must end at S0. A record set that fails
+closure has steps off the books, and no per-claim result can rescue it.</p></div>
+
+<a class="exhibit-link" href="/#doors"><span>Exhibit B · on the home page</span>One question, ten
+records — the diagram this table describes, with each stage's badge, digest, and what it admits it
+cannot re-derive.</a>
+
+<!-- ============================================================ -->
+<h2><span class="n">§6</span>The chain, the manifest, and the limit of a green chain</h2>
+
+<p>A run publishes its records beside a <b>manifest</b>: the ordered list of
+<code>{ index, stage, file, digest }</code>, a <code>chain_head</code> equal to the digest of
+the last record, the run identifier, and the manifest's own anchor state. A verifier checks
+that each record's <code>prev</code> equals the digest of the preceding record's exact bytes
+and that the head matches the last one.</p>
+
+<div class="rule"><p><span class="law">A hash proves a record is consistent with itself, never
+that it is the record that was made.</span> A chain that verifies establishes that these records
+are consistent with each other. It does not establish that they are the records that were
+produced at the time: an operator holding every copy can rewrite one and recompute every
+downstream link. Only <b>anchoring</b> to a commitment the operator cannot rewrite converts
+consistency into originality — and <b>the anchor cadence is the tamper window</b>.</p></div>
+
+<p>That is why the format requires the anchor state to be declared on every record, and why a
+conforming verifier, on any record marked <code>unanchored</code>, must emit <b>NOT RUN —
+originality</b> with the reason stated. A verifier that lets a green chain imply originality is
+lying by omission. The reference verifier prints, for every unanchored sample:</p>
+
+<pre><span class="a">[NOT-RUN]</span> originality -- record is declared unanchored;
+          this verifier can establish consistency, not originality</pre>
+
+<p>Anchoring, chaining, and signing are each <b>opt-in and off by default</b> in any
+implementation of this format. A record that declares itself unanchored is conforming; a record
+that omits the declaration is not.</p>
+
+<!-- ============================================================ -->
+<h2><span class="n">§7</span>The five classic ways a digest lies</h2>
+
+<ol>
+<li><b>CRLF / BOM drift.</b> A Windows checkout rewrites line endings; the hash mismatches on text that looks identical. Fix at write time (R2). Verifiers clone with <code>git clone -c core.longpaths=true</code> and autocrlf off.</li>
+<li><b>JSON re-serialisation.</b> Same data, different bytes — key order, whitespace, <code>1.0842</code> becoming <code>1.08420000000000005</code>. Only canonical bytes (§2) are hashable; only wire bytes (R7) are evidence.</li>
+<li><b>Hashing the parsed, not the received.</b> A pretty-printed API response digests differently from what arrived. Capture at the boundary.</li>
+<li><b>Unstated offset units.</b> Bytes, code points, and UTF-16 units silently disagree the moment text leaves ASCII. Name the unit in the record.</li>
+<li><b>Self-reported time.</b> A timestamp without an anchor is testimony. Anchor the chain head; let the batch bound the clock.</li>
+</ol>
+
+<!-- ============================================================ -->
+<h2><span class="n">§8</span>What this format does not yet do</h2>
+
+<div class="gap"><b>Non-linear topology.</b> The chain as specified is linear. Fan-out, fan-in,
+retries as distinct attempts, branches and loops are an open requirement and are not
+represented in the samples. This is the largest hole, and it is named rather than cropped out of
+the picture.</div>
+<div class="gap"><b>Anchoring.</b> Declared, required, not implemented in the reference. Every
+sample is <code>unanchored</code> and says so; the verifier reports originality as NOT RUN with
+that reason.</div>
+<div class="gap"><b>Signatures.</b> Sequenced behind actor identity; not present.</div>
+
+<!-- ============================================================ -->
+<h2><span class="n">§9</span>Check it yourself — standard tools, no network, no key</h2>
+
+<p>A sample chain, its manifest, the reference canonicaliser, a ~140-line reference verifier,
+and <b>ten rejection vectors</b> a conforming verifier must refuse — each with the reason it
+must be refused — publish at <a href="/samples/">oneproof.dev/samples/</a> on
+<b>11 September 2026</b>. Three commands check the whole thing:</p>
+
+<div class="cmds">
+<pre>sha256sum receipts/*.json MANIFEST.json   <span class="c"># our digests, your tool</span>
+python3 canonicalize.py receipts/*.json   <span class="c"># is each file its own canonical form?</span>
+python3 verify.py MANIFEST.json           <span class="c"># the chain, offline</span></pre>
+</div>
+
+<p>A conforming verifier requires no network, no key, no account, no licence, and no live third
+party; is implementable from the specification and the vectors alone; and never mutates what it
+checks. <b>A format with no rejection vectors has not specified anything</b> — it has described a
+happy path and left every implementer to guess at the edges. An implementation claiming
+conformance must refuse all ten, and must refuse them <em>for the stated reason</em>; refusing
+the right file for the wrong reason is a failing test that happens to look green.</p>
+
+<p>One verifier checking one format is a claim. <b>Two independent verifiers agreeing on the same
+records is evidence.</b> If you write one, publish your results against the samples and the
+vectors — including every place where you and the reference disagree. A disagreement between two
+verifiers is the most valuable bug report this format can receive, because it means the
+specification is ambiguous and the ambiguity was found before anyone depended on it.</p>
+
+<h3>The toolbox — nothing bespoke</h3>
+<p><code>sha256sum</code> / <code>certutil</code> for R1–R3 · <code>python hashlib</code> +
+<code>json.dumps(sort_keys=True, separators=(',',':'))</code> for §2 and R4–R6 · transport-level
+capture for R7 · a public repository, OpenTimestamps, or a transparency log for R8. No new
+cryptography anywhere. The method is the discipline of <em>which bytes</em>, not new primitives.</p>
+
+<footer>
+  <div>Companion to the <a href="/#doors">ten-record diagram</a> and to the sample package of 11 September.
+  The Internet-Draft, <a href="https://datatracker.ietf.org/doc/draft-saha-stage-receipts/"><code>draft-saha-stage-receipts-00</code></a>, was posted on 8 September; this page is the
+  implementer's reference beside it, and will be superseded in place, carrying its prior
+  digest, rather than edited quietly.</div>
+  <div class="fine">Page views on this site are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data; the tools themselves report to no one.<br>© 2026 oneproof · Apache-2.0 across the suite · Digests shown on this site are illustrative
+  worked examples from the public design fixtures, not customer data.</div>
+</footer>
+
+</div>
+</body>
+</html>
