@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sample stage receipts, the reference verifier, ten rejection vectors · oneproof</title>
+<meta name="description" content="A four-stage sample chain, its manifest, the reference canonicaliser and verifier, ten rejection vectors, the Validation Battery, and the verifier specification — check them yourself with standard tools, no network, no key.">
+<link rel="canonical" href="https://oneproof.dev/samples/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%231c1713'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23c9a227' stroke-width='3'/%3E%3Ctext x='32' y='41' font-family='Georgia,serif' font-size='26' fill='%23c9a227' text-anchor='middle'%3E1%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{--paper:#f6f1e6;--paper-2:#efe7d4;--ink:#211a12;--dim:#716250;--line:#d9cdb6;--line-soft:#e6ddc9;--gold:#c9a227;--gold-text:#7d620f;--x-ground:#1c1713;--x-ink:#e8ddcc;--x-dim:#a5947d;--allow:#7cc79a;--review:#e4a05e;--serif:'Newsreader',Georgia,serif;--mono:'IBM Plex Mono','Courier New',monospace}
+  *{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.62;background-image:repeating-linear-gradient(180deg,rgba(33,26,18,.018) 0 1px,transparent 1px 29px)}
+  a{color:var(--gold-text)} .wrap{max-width:860px;margin:0 auto;padding:0 22px}
+  .masthead{display:flex;justify-content:space-between;align-items:baseline;padding:26px 0 18px;border-bottom:1px solid var(--line)}
+  .wordmark{font-weight:600;font-size:21px;text-decoration:none;color:var(--ink)} .wordmark .seal{color:var(--gold-text)} .wordmark .tld{color:var(--dim);font-weight:400}
+  .crumb{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase} .crumb a{color:var(--dim);text-decoration:none}
+  .status{margin:26px 0 0;border:1px solid var(--line);background:var(--paper-2);padding:14px 18px;font-size:15.5px;line-height:1.5} .status b{color:var(--gold-text)}
+  h1{font-weight:500;font-size:40px;line-height:1.1;letter-spacing:-.015em;margin:34px 0 10px}
+  .lede{font-size:20px;color:var(--dim);margin:0 0 8px}
+  h2{font-weight:500;font-size:27px;margin:44px 0 12px}
+  p{margin:0 0 16px}
+  code{font-family:var(--mono);font-size:.86em;background:var(--paper-2);padding:1px 5px;border-radius:3px}
+  pre{font-family:var(--mono);font-size:13.5px;line-height:1.55;background:var(--x-ground);color:var(--x-ink);padding:16px 18px;border-radius:6px;overflow-x:auto;margin:14px 0 20px} pre .c{color:var(--x-dim)} pre .g{color:var(--allow)} pre .a{color:var(--review)}
+  table{border-collapse:collapse;width:100%;font-size:15.5px;margin:14px 0 22px} td{vertical-align:top;padding:9px 10px;border-top:1px solid var(--line-soft)} td:first-child{white-space:nowrap}
+  .dl{border:1px solid var(--line);background:var(--paper-2);padding:16px 18px;margin:18px 0} .dl code{background:none;padding:0;word-break:break-all}
+  .rule{border-left:3px solid var(--gold);padding:10px 18px;margin:22px 0;background:var(--paper-2)} .rule p{margin:0}
+  footer{margin-top:56px;border-top:1px solid var(--line);padding:26px 0 40px;font-size:15px;color:var(--dim)}
+  @media (max-width:640px){h1{font-size:32px} body{font-size:17px}}
+</style>
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body><div class="wrap">
+<header class="masthead">
+  <a class="wordmark" href="/"><span class="seal">one</span>proof<span class="tld">.dev</span></a>
+  <div class="crumb"><a href="/">home</a> · <a href="/stage-records.html">stage records</a> · samples</div>
+</header>
+
+<div class="status"><b>Preview artifact, 11 September 2026.</b> Illustrative samples of a record format whose
+first Internet-Draft is on the datatracker (<a href="https://datatracker.ietf.org/doc/draft-saha-stage-receipts/"><code>draft-saha-stage-receipts-00</code></a>,
+posted 8 September 2026) and of its <b>forthcoming</b> reference SDK. The draft is a draft, not a standard; the SDK does
+not exist yet. Nothing here is a released implementation, a stable schema, or a capability claim. It is
+published for one reason: the Validation Battery says what a conforming implementation must do, and a claim like
+that is worth more if you can hold something in your hand and check it.</div>
+
+<h1>Sample receipts, the reference verifier,<br>ten rejection vectors</h1>
+<p class="lede">Check them yourself. <b>No network. No key. No account. No call home.</b> A verifier that needs any of
+those has made you trust someone again, which is the problem this format exists to remove.</p>
+
+<h2>Three commands</h2>
+<pre>sha256sum receipts/*.json MANIFEST.json   <span class="c"># our digests, your tool</span>
+python3 canonicalize.py receipts/*.json   <span class="c"># is each file its own canonical form?</span>
+python3 verify.py MANIFEST.json           <span class="c"># the chain, offline</span></pre>
+<p>Or everything, including the rejection vectors: <code>./run_checks.sh</code>. Expect
+<code>103 pass, 0 fail, 4 not-run -&gt; PASS</code> and <code>10/10 vectors refused</code>. The four not-run are
+originality checks on records that declare themselves unanchored — the verifier says so, by name, rather than
+passing them.</p>
+
+<div class="dl"><b>Download the whole package:</b> <a href="stage-receipts-preview-2026-09-11.tar.gz">stage-receipts-preview-2026-09-11.tar.gz</a><br>
+<code>sha256 39de2320f81efe802c5e72c6dcbd83dd3a4efe214718a250ce96196787e0437d</code><br>
+<span style="font-size:14px;color:var(--dim)">Built reproducibly — fixed owner, order and timestamps — so the digest is the same for anyone who rebuilds it from these files.</span></div>
+
+<h2>What is here</h2>
+<table><tr><td><code>README.md</code></td><td>Start here — what is in the package and the three commands</td></tr>
+<tr><td><code>MANIFEST.json</code></td><td>The chain: four ordered digests and the chain head</td></tr>
+<tr><td><code>receipts/</code></td><td>01-retrieve · 02-rerank · 03-generate · 04-verify — read the third first; it records a refusal</td></tr>
+<tr><td><code>canonicalize.py</code></td><td>The canonical form, specified as ~40 lines of runnable code</td></tr>
+<tr><td><code>verify.py</code></td><td>The reference verifier — ~140 lines, no dependencies, no network</td></tr>
+<tr><td><code>rejection/</code></td><td>Ten vectors a conforming verifier must refuse, each with its reason, plus INDEX.json</td></tr>
+<tr><td><code>check_rejections.py</code></td><td>Runs the ten vectors through the verifier and reports each refusal</td></tr>
+<tr><td><code>run_checks.sh</code></td><td>Everything above, in order</td></tr>
+<tr><td><code>_build.py · _build_rejections.py</code></td><td>How the samples were generated, so nothing is hand-waved</td></tr>
+<tr><td><code>validation-battery.md</code></td><td>The acceptance tests the format and its SDK will be held to — published before the code</td></tr>
+<tr><td><code>verifier-specification.md</code></td><td>What any independent verifier must do, and must not</td></tr>
+<tr><td><code>watch/</code></td><td>STATUS.json — every open requirement and commitment, machine-readable; whatchanged.py to diff it</td></tr>
+<tr><td><code>SHA256SUMS</code></td><td>Every file above, by digest. <code>sha256sum -c SHA256SUMS</code></td></tr></table>
+
+<h2>Read the third receipt first</h2>
+<p><code>receipts/03-generate.json</code> records a <b>refusal</b>. The generator produced no claim that could be
+bound to a retrieved passage, so the run has no answer — and the receipt says so, in its own outcome class, with a
+reason. The fourth receipt then records zero claims examined and states how that zero was derived.</p>
+<div class="rule"><p>That is the sample we would most like you to look at. A format that only records successes is a
+marketing surface. <b>Nothing to verify is a result, not an absence.</b></p></div>
+
+<h2>What these samples do not show</h2>
+<p><b>Non-linear topology.</b> This chain is linear. Fan-out, fan-in, retries as distinct attempts, branches and loops
+are an open requirement and are not represented. It is the largest hole, named rather than cropped out.
+<b>Anchoring.</b> Every receipt declares <code>anchor.state: unanchored</code>; the verifier reports originality as
+not-run with that reason. These records are consistent with themselves; they are not evidence that they are the
+records that were made. <b>Signatures.</b> Sequenced behind actor identity; not present. <b>Payload contents.</b> The
+digests reference bytes not published with the samples; the structure is the point.</p>
+
+<h2>Two pre-commitments, made here</h2>
+<p><b>The <a href="validation-battery.md">Validation Battery</a> is the acceptance battery</b> the format and its
+reference SDK will be held to. It is published before the code so it cannot drift toward whatever the code turns out
+to do, and the reference implementation ships with its results attached, uncurated — every test, including the ones
+it fails. <b>The Internet-Draft, <a href="https://datatracker.ietf.org/doc/draft-saha-stage-receipts/"><code>draft-saha-stage-receipts-00</code></a>, was posted on 8 September</b> —
+the second and last under a two-draft discipline. Both are recorded, with a date, in <a href="watch/STATUS.json">watch/STATUS.json</a>,
+which you can diff rather than take on trust.</p>
+
+<h2>Write the second verifier</h2>
+<p>One verifier checking one format is a claim. Two independent verifiers agreeing on the same records is evidence.
+The <a href="verifier-specification.md">specification</a> is written so that a second implementation can be built by
+someone who has never spoken to us. If you write one, publish your results against these samples and the ten vectors —
+including every place where you and the reference disagree. That disagreement is the most valuable bug report this
+format can receive.</p>
+
+<footer>Companion to the <a href="/stage-records.html">Stage Records specification</a>. Every file here is listed by
+digest in <code>SHA256SUMS</code>; the manifest is <code>01b471d7ada75bfe…</code>, the battery <code>f95b9057c65986d6…</code>, the
+verifier specification <code>af0c91bd1c351748…</code>. Superseded in place, carrying the prior digest, never edited quietly.<br>
+<span style="font-size:13.5px">Page views on this site are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data; the tools themselves report to no one.<br>© 2026 oneproof · Apache-2.0 across the suite · Digests reference illustrative fixtures, not customer data.</span></footer>
+</div></body></html>
