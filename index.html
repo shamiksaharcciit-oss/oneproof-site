@@ -217,29 +217,27 @@
     <div class="hero-grid">
       <div>
         <span class="tag gold">Evidence infrastructure for AI agents</span>
-        <h1>Logs are testimony.<br><em>Receipts are evidence.</em></h1>
+        <h1>Same question. Same document.<br><em>A different answer.</em></h1>
         <p class="lede">
-          Open tools for the day someone asks you to show — not tell — what your
-          AI system did. Prevent with ratified policy. Detect when the verified
-          system changes. Prove where every answer came from.
+          Ask your document assistant what the notice period is, and it says sixty
+          days. Last week — same question, same contract — it said ninety. Every log
+          says every step succeeded. onetrace is the receipt each stage writes as it
+          runs: put the good run beside the bad one, and find the first step where
+          they stopped matching.
         </p>
-        <code class="cmd"><span class="c"># Prevent is shipped today — install it from PyPI</span>
-<span class="g">$</span> pip install onedoor</code>
-        <div class="hero-note">onedoor v0.7.0 · Apache-2.0 · no framework, no telemetry, runs on your machine</div>
+        <code class="cmd"><span class="c"># check a record yourself — no key, no account, no network</span>
+<span class="g">$</span> python3 verify.py MANIFEST.json</code>
+        <div class="hero-note">worked by hand from the records today — a method, not a button · verifier + ten rejection vectors at <a href="/samples/">/samples/</a></div>
       </div>
 
       <figure class="exhibit">
-        <div class="mat">
-          <div class="receipt"><span class="ln"><span class="k">action</span>   payments.transfer   <span class="d">tier 2</span></span>
-<span class="ln"><span class="k">amount</span>   € 480.00            <span class="d">cap € 500.00</span></span>
-<span class="ln"><span class="k">policy</span>   <span class="gold">ver 29e85d2c…5166</span>   <span class="d">ratified</span></span>
-<div class="rule"></div><span class="ln"><span class="k">verdict</span>  <span class="allow">ALLOW</span>               <span class="d">undo 900 s</span></span>
-<div class="rule"></div><span class="ln"><span class="k">action</span>   payments.transfer</span>
-<span class="ln"><span class="k">amount</span>   € 2 340.00          <span class="d">cap € 500.00</span></span>
-<span class="ln"><span class="k">verdict</span>  <span class="refuse">REFUSE</span>              <span class="d">exceeds cap</span></span></div>
+        <div class="mat" style="padding:0; overflow:hidden">
+          <img src="img/onetrace-first-difference.png"
+               alt="Two runs of the same question one week apart: nine stages compared, three unchanged with the same digest, first difference at the split step, and the clause that was retrieved last week not retrieved today"
+               style="width:100%; height:auto; display:block">
         </div>
         <figcaption>
-          <span>Exhibit A — two verdicts under one ratified policy version</span>
+          <span>Exhibit A — same question, one week apart; first difference at <b>split</b></span>
           <span>worked example</span>
         </figcaption>
       </figure>
