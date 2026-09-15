@@ -26,7 +26,10 @@
   .dl{border:1px solid var(--line);background:var(--paper-2);padding:16px 18px;margin:18px 0} .dl code{background:none;padding:0;word-break:break-all}
   .rule{border-left:3px solid var(--gold);padding:10px 18px;margin:22px 0;background:var(--paper-2)} .rule p{margin:0}
   footer{margin-top:56px;border-top:1px solid var(--line);padding:26px 0 40px;font-size:15px;color:var(--dim)}
-  @media (max-width:640px){h1{font-size:32px} body{font-size:17px}}
+  @media (max-width:640px){h1{font-size:32px} body{font-size:17px}
+    /* the first column is nowrap for legibility on a desktop; on a phone that
+       one cell was widening the page instead of the table. */
+    td:first-child{white-space:normal} table{display:block;overflow-x:auto}}
 </style>
 <script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
@@ -56,9 +59,14 @@ python3 verify.py MANIFEST.json           <span class="c"># the chain, offline</
 originality checks on records that declare themselves unanchored — the verifier says so, by name, rather than
 passing them.</p>
 
-<div class="dl"><b>Download the whole package:</b> <a href="stage-receipts-preview-2026-09-11.tar.gz">stage-receipts-preview-2026-09-11.tar.gz</a><br>
-<code>sha256 39de2320f81efe802c5e72c6dcbd83dd3a4efe214718a250ce96196787e0437d</code><br>
-<span style="font-size:14px;color:var(--dim)">Built reproducibly — fixed owner, order and timestamps — so the digest is the same for anyone who rebuilds it from these files.</span></div>
+<div class="dl"><b>Download the whole package:</b> <a href="stage-receipts-preview-2026-09-16.tar.gz">stage-receipts-preview-2026-09-16.tar.gz</a><br>
+<code>sha256 6c832273c28ba0f30bda07a6587068f6a9787690f5c6d6ad31e1920b4ad501bc</code><br>
+<span style="font-size:14px;color:var(--dim)">Built reproducibly — fixed owner, order and timestamps — so the digest is the same for anyone who rebuilds it from these files.</span><br>
+<span style="font-size:14px;color:var(--dim)">Supersedes <a href="stage-receipts-preview-2026-09-11.tar.gz">stage-receipts-preview-2026-09-11.tar.gz</a>
+(<code>sha256 39de2320f81efe802c5e72c6dcbd83dd3a4efe214718a250ce96196787e0437d</code>), which stays at its
+address rather than being overwritten. One file differs: <code>watch/STATUS.json</code>, where the notes on
+requirements 5, 7, 9 and 11 were extended after an outside reading. <b>No requirement changed state</b> —
+<code>whatchanged.py</code> diffs states and will report nothing, which is the correct answer.</span></div>
 
 <h2>What is here</h2>
 <table><tr><td><code>README.md</code></td><td>Start here — what is in the package and the three commands</td></tr>

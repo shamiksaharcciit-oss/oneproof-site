@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Answer Lineage — the upgrade that changed the answer, and nothing failed · oneproof</title>
+<meta name="description" content="A routine pipeline upgrade changed what an AI system answered. Nothing errored and every log was green. The record locates the fault in nine comparisons — on thirteen documents and on 47,430 real SEC filings alike — and measures that it moved 99.96% of them without opening one. Plus the finding we did not go looking for: on a GPU, batch size alone changed which documents were read.">
+<meta property="og:title" content="The upgrade changed the answer. Nothing failed.">
+<meta property="og:description" content="Before: ninety days, from a retrieved passage. After: not stated in retrieved evidence. Same question, same documents, no error anywhere — and on a GPU, batch size alone changed which documents were read.">
+<meta property="og:url" content="https://oneproof.dev/answer-lineage.html">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<link rel="canonical" href="https://oneproof.dev/answer-lineage.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%231c1713'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23c9a227' stroke-width='3'/%3E%3Ctext x='32' y='41' font-family='Georgia,serif' font-size='26' fill='%23c9a227' text-anchor='middle'%3E1%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#f6f1e6; --paper-2:#efe7d4; --ink:#211a12; --dim:#716250;
+    --line:#d9cdb6; --line-soft:#e6ddc9;
+    --gold:#c9a227; --gold-text:#7d620f;
+    --x-ground:#1c1713; --x-panel:#241d17; --x-line:#3a2f26; --x-ink:#e8ddcc; --x-dim:#a5947d;
+    --allow:#7cc79a; --review:#e4a05e; --refuse:#e28a80;
+    --serif:'Newsreader',Georgia,'Times New Roman',serif;
+    --mono:'IBM Plex Mono','Courier New',monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.62;
+    background-image:repeating-linear-gradient(180deg,rgba(33,26,18,.018) 0 1px,transparent 1px 29px)}
+  a{color:var(--gold-text)}
+  a:focus-visible{outline:2px solid var(--gold-text);outline-offset:3px;border-radius:2px}
+  @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+  .wrap{max-width:780px;margin:0 auto;padding:0 22px}
+  .masthead{display:flex;justify-content:space-between;align-items:baseline;padding:26px 0 18px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .wordmark{font-weight:600;font-size:21px;letter-spacing:.01em;text-decoration:none;color:var(--ink)}
+  .wordmark .seal{color:var(--gold-text)} .wordmark .tld{color:var(--dim);font-weight:400}
+  .crumb{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+  .crumb a{color:var(--dim);text-decoration:none}
+  .layers{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;
+    text-transform:uppercase;padding:12px 0 0;color:var(--dim)}
+  .layers a{text-decoration:none;color:var(--dim)} .layers a:hover{color:var(--ink)}
+  .layers b{color:var(--ink);font-weight:600}
+  .status{margin:22px 0 0;border:1px solid var(--line);background:var(--paper-2);padding:14px 18px;font-size:15.5px;line-height:1.5}
+  .status b{color:var(--gold-text)}
+  h1{font-weight:500;font-size:44px;line-height:1.08;letter-spacing:-.015em;margin:34px 0 14px}
+  .lede{font-size:21px;line-height:1.5;color:var(--dim);margin:0 0 8px}
+  h2{font-weight:500;font-size:29px;line-height:1.15;margin:54px 0 12px;letter-spacing:-.01em}
+  h2 .n{font-family:var(--mono);font-size:13px;color:var(--gold-text);letter-spacing:.1em;display:block;margin-bottom:6px}
+  h3{font-weight:600;font-size:19px;margin:28px 0 6px}
+  p{margin:0 0 16px}
+  ul{margin:0 0 16px;padding-left:1.15em} li{margin:0 0 9px}
+  .rule{border-left:3px solid var(--gold);padding:12px 18px;margin:22px 0;background:var(--paper-2)}
+  .rule p{margin:0}
+  .pull{border-left:3px solid var(--gold);padding:14px 20px;margin:24px 0;background:var(--paper-2);font-size:21px;line-height:1.4}
+  .pull p{margin:0}
+  .pull .who{display:block;font-family:var(--mono);font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);margin-top:10px}
+  code{font-family:var(--mono);font-size:.86em;background:var(--paper-2);padding:1px 5px;border-radius:3px}
+  pre{font-family:var(--mono);font-size:13.5px;line-height:1.55;background:var(--x-ground);color:var(--x-ink);
+    padding:16px 18px;border-radius:6px;overflow-x:auto;margin:14px 0 20px}
+  pre .c{color:var(--x-dim)} pre .g{color:var(--allow)} pre .r{color:var(--refuse)} pre .a{color:var(--review)}
+  table{border-collapse:collapse;width:100%;font-size:16px;margin:14px 0 22px}
+  th,td{text-align:left;vertical-align:top;padding:10px 10px;border-top:1px solid var(--line-soft)}
+  th{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:500;border-top:0}
+  .tbl{overflow-x:auto;margin:0 -22px;padding:0 22px}
+  .gap{border:1px dashed var(--line);padding:14px 18px;margin:18px 0;color:var(--dim);font-size:16px}
+  .gap b{color:var(--ink)}
+  .cmds{background:var(--x-ground);color:var(--x-ink);border-radius:6px;padding:18px 20px;margin:16px 0 22px}
+  .cmds pre{background:none;padding:0;margin:0 0 6px}
+  .cmds .c{color:var(--x-dim)}
+  .next{display:block;border:1px solid var(--line);background:var(--paper-2);padding:15px 18px;margin:14px 0;
+    text-decoration:none;color:var(--ink)}
+  .next:hover{border-color:var(--gold)}
+  .next span{display:block;font-family:var(--mono);font-size:11.5px;color:var(--dim);letter-spacing:.11em;
+    text-transform:uppercase;margin-bottom:5px}
+  .next b{font-weight:600}
+  .lab{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);
+    background:#fbf8f0;padding:12px;border-radius:3px;margin:30px 0 10px;box-shadow:0 1px 0 rgba(33,26,18,.08)}
+  .lab:hover{border-color:var(--gold)}
+  .lab .mat{background:var(--x-ground);border-radius:3px;padding:22px 22px 20px;overflow-x:auto}
+  .lab .k{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--x-dim);margin-bottom:16px}
+  .lab .headline{font-size:24px;line-height:1.25;color:var(--x-ink);margin:0 0 18px;max-width:22ch}
+  .lab .headline em{font-style:normal;color:var(--gold)}
+  .bignum{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin:0 0 14px}
+  .bignum .v{font-family:var(--mono);font-size:46px;line-height:1;color:var(--gold)}
+  .bignum .l{color:var(--x-ink);font-size:17px;line-height:1.35;max-width:26ch}
+  .lab .fine{font-family:var(--mono);font-size:11.5px;line-height:1.6;color:var(--x-dim);margin:0}
+  .lab .go{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);padding:12px 4px 1px}
+  .lab .go b{color:var(--gold-text);font-weight:600}
+  footer{margin-top:64px;border-top:1px solid var(--line);padding:26px 0 40px;font-size:15px;color:var(--dim)}
+  footer a{color:var(--gold-text)}
+  footer .fine{font-size:13.5px;margin-top:14px}
+  @media (max-width:640px){h1{font-size:33px} body{font-size:17px} .lede{font-size:19px} .pull{font-size:19px}
+    .bignum .v{font-size:38px} .lab .headline{font-size:21px}}
+</style>
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <a class="wordmark" href="/"><span class="seal">one</span>proof<span class="tld">.dev</span></a>
+  <div class="crumb"><a href="/">home</a> · <a href="/#prove">prove</a> · answer lineage</div>
+</header>
+<nav class="layers">
+  <span><b>The case</b></span> ·
+  <a href="answer-lineage-report.html">The report</a> ·
+  <a href="stage-records.html">The record format</a>
+</nav>
+
+<div class="status">
+  <b>This is not a product screenshot.</b> The report it links to is assembled by a script from
+  two real runs' own receipts, indexes and chunk stores. There are no buttons on it, because
+  there is no app yet. What exists is the method and the records — and those you can check.
+  <br><br>The tool is <b>onetrace</b>. <b>Answer Lineage</b> is what this particular report is
+  called — one question, two runs, laid side by side. If you are asking someone for budget, the
+  noun is onetrace.
+</div>
+
+<h1>The upgrade changed the answer. Nothing failed.</h1>
+<p class="lede">No error. No exception. No alert. Every log green, every stage reporting success
+— and a question your system used to answer correctly now comes back with nothing.</p>
+
+<h2><span class="n">The incident</span>One question, two runs, three weeks apart</h2>
+
+<div class="tbl"><table>
+  <tr><th>&nbsp;</th><th>before the upgrade</th><th>after</th></tr>
+  <tr><td><b>What notice is required to terminate the agreement early?</b></td>
+      <td><b>ninety days</b><br><span style="color:var(--dim);font-size:14.5px">taken from a passage the system retrieved and read</span></td>
+      <td><b>not stated in retrieved evidence</b><br><span style="color:var(--dim);font-size:14.5px">no passage it read mentioned a notice period</span></td></tr>
+</table></div>
+
+<p>The change between the two runs was routine: an improvement to how documents are cut into
+passages before they are indexed. One line of configuration. The sort of change that ships on a
+Tuesday afternoon with a one-line commit message.</p>
+
+<p>The documents did not change. The question did not change. The model did not change. And the
+second answer is not <em>wrong</em> — the system correctly declined to state something it had no
+evidence for. That is the part that makes it dangerous: <b>an honest refusal and a silent
+regression look identical from the outside.</b></p>
+
+<h2><span class="n">Why you cannot find it</span>Logs tell you it worked</h2>
+
+<p>Every stage in that pipeline logged success, because every stage succeeded. Documents were
+read, converted, cleaned, cut, embedded, indexed, searched, and answered. Nothing in that
+sequence has anything to say about the fact that one of its steps quietly moved the sentence
+you needed out of reach.</p>
+
+<p>So the investigation becomes archaeology. Someone re-runs the old configuration, if it still
+exists. Someone diffs a database. Someone reads documents. In the meantime nobody can tell you
+whether this affected one question or ten thousand — and that, not the fix, is the expensive
+part.</p>
+
+<div class="rule"><p>A log is testimony: it tells you what a system says it did. A record is
+evidence: it lets someone else check.</p></div>
+
+<h2><span class="n">What the record does instead</span>Nine comparisons, and an answer in minutes</h2>
+
+<p>If each stage of the run records what went in and what came out — as a digest, not as a copy
+— then the two runs can be laid side by side and compared stage by stage. The first stage whose
+output disagrees <b>is</b> the fault site. Everything above it is identical; everything below it
+is consequence, not cause.</p>
+
+<p>That comparison does not get harder as your corpus grows, because you are comparing
+<em>stages</em>, not documents. The number is set by the shape of your pipeline, not the size of
+your data — which is why the report opposite locates the fault in nine comparisons, and would
+still be nine at a thousand times the volume.</p>
+
+<p>Two things fall out of the same records without reading a single document: which stage broke
+it, and how far it spread.</p>
+
+<h2><span class="n">The part that sells itself</span>The answer was there. It was never read.</h2>
+
+<p>The report shows one document in full under both runs. Before the upgrade it was cut into two
+passages, and the second one — the one containing <em>"ninety (90) days after notice is given"</em>
+— was retrieved and read.</p>
+
+<p>After the upgrade the same document is cut into ten passages. That sentence is still there.
+It is still in the index. It carries the same digest, so it is provably the same text. It sits at
+position nine of ten — and the search never reached it.</p>
+
+<div class="pull">
+  <p>Nothing was lost. Nothing errored. The evidence was in the building the whole time, and the
+  system answered as though it were not.</p>
+</div>
+
+<p>You can see that on screen: the same digest, present in both runs, marked retrieved in one and
+not in the other. That is the difference between knowing something went wrong and being able to
+point at it.</p>
+
+<h2><span class="n">At scale</span>47,430 real filings, nineteen gigabytes</h2>
+
+<p>Everything above is a handful of test documents, deliberately small so that anyone can rebuild
+them. The same method was then run over <b>47,430 real SEC filings — 19,282,360,450 bytes</b>,
+with the same one-line change to how documents are cut. This is what it printed, unedited:</p>
+
+<pre>stage         baseline            candidate           verdict
+--------------------------------------------------------------------
+document in   0211c293efe0        0211c293efe0        <span class="g">same root</span>
+converted     0211c293efe0        0211c293efe0        <span class="g">same root</span>
+cleaned       a6ad8533e58a        a6ad8533e58a        <span class="g">same root</span>
+split         f46e4fd5c847        5973d5fe20b7        <span class="a">FIRST DIFFERENCE</span>
+embedded      3317f5ba98bd        8879c65c2fe3        downstream
+indexed       5e023c0999bf        72704d9fe7d5        downstream
+retrieved     cff666115d20        006e8fded426        downstream
+prompt built  16e73d452a19        64a63d68cc3d        downstream
+answer        9cc0cc2a5861        9cc0cc2a5861        <span class="g">same digest</span>
+
+FIRST DIFFERENCE -&gt; 'split'   (root/digest comparisons: 9)
+  documents 47430   chunks 3380256 -&gt; 8995469
+
+BLAST RADIUS (chunk-index digests only, no chunk text read)
+  documents whose chunk set moved  47412 of 47430</pre>
+
+<h3>The work did not grow with the data.</h3>
+<p><code>root/digest comparisons: 9</code> — the same nine as on thirteen documents, because the
+comparison is over stages, not over documents. Nine on thirteen files, nine on forty-seven
+thousand, and nine again on a second, larger change to the same corpus.</p>
+
+<h3>The reach was computed without opening a document.</h3>
+<p>One configuration line moved the passages of <b>47,412 of 47,430 documents — 99.96%</b>.
+Eighteen were provably untouched. That figure comes from comparing recorded fingerprints, as the
+output says: <em>chunk-index digests only, no chunk text read.</em> On nineteen gigabytes, that is
+minutes rather than a week, and it is the number the room actually wants: not "something changed"
+but "this much changed, and these did not."</p>
+
+<h3>The final answer was identical — and that is not the good news it looks like.</h3>
+<p>Both runs ended on the same digest because both gave the same answer: <em>not stated in
+retrieved evidence</em>. <b>The answer is stable here because it is a refusal</b> — the evidence
+retrieved was uniformly useless on both sides, and the system honestly declined twice. It is not
+evidence that the system is robust, and we will not let it be read that way. What it does show is
+that the three layers move independently: the configuration differed by one line, the artifacts
+by 2.66&times;, and the answer not at all.</p>
+
+<h3>A louder change, the same shape.</h3>
+<p>Three constants instead of one line: chunks went from 3,380,256 to <b>17,136,566</b> —
+5.07&times; — and <b>47,429 of 47,430</b> documents moved, with exactly one left untouched. First
+difference still at the same stage, still nine comparisons. The same "minor" change is quiet on
+one corpus and loud on another, and nothing but the record tells you which one you got.</p>
+
+<p><b>And the seam in this, before you find it yourself.</b> The vivid failure at the top of this
+page — <em>ninety days</em> becoming <em>not stated</em> — happened on thirteen documents. On
+forty-seven thousand, what we demonstrated was reach, not a changed answer: the answer was a
+refusal before and after. So the small run shows you the failure mode and the large run shows you
+that locating it and measuring it stays cheap at scale. Neither one shows both. We would rather
+you read that here than notice it later and wonder what else was arranged.</p>
+
+<h2><span class="n">The finding we did not go looking for</span>Batch size changed which documents were read</h2>
+
+<p>The design rests on a claim worth testing: that a recorded stage can be rebuilt rather than
+stored forever. So we ran the same stage on three machines — a Linux container, a Windows laptop,
+and a rented Linux box with a different minor version of the numerical library — and got
+<b>byte-identical fingerprints on all three</b>. The rebuild claim holds.</p>
+
+<p>Then the same test on a graphics card, over 300,000 passages, changing nothing but how many
+items were processed at a time:</p>
+
+<div class="tbl"><table>
+  <tr><th>what changed</th><th>largest numeric difference</th><th>same documents retrieved?</th><th>consequence</th></tr>
+  <tr><td>nothing — run it twice</td><td><code>0</code></td><td>yes</td><td>reproduced exactly</td></tr>
+  <tr><td>one item at a time</td><td><code>0.0000000596</code></td><td>yes</td><td>none</td></tr>
+  <tr><td><b>256 items at a time</b></td><td><code>0.0000000745</code></td><td><b>no</b></td><td><b>different evidence read</b></td></tr>
+  <tr><td><b>half precision</b></td><td><code>0.000141</code></td><td><b>no</b></td><td><b>different evidence read</b></td></tr>
+</table></div>
+
+<p>Read the third row again. A difference in the eighth decimal place — far below anything a
+person would call a change — was enough to reorder which passages came back as most relevant. The
+system then read different documents. Nothing errored. Every log was green.</p>
+
+<div class="pull">
+  <p>Production inference batches dynamically: how many items are processed together depends on
+  how busy the server is. So the same question, asked at two different times of day, can rest on
+  different evidence — and nothing in an ordinary system records that it happened.</p>
+</div>
+
+<p><b>Two limits on that, stated here rather than discovered by someone else.</b> The test used a
+fixed random projection as a stand-in, not a production embedding model, so the mechanism is
+established and the <em>frequency</em> in a real system is not. And the visible answer did not
+change in this test either — again because the retrieved evidence was useless and the refusal was
+honest both times.</p>
+
+<div class="rule"><p>Reproducibility is not a property of "the code". It is a property of a
+specific combination of code, configuration, numeric precision and batching — which is exactly
+why it has to be recorded per run and measured, rather than assumed.</p></div>
+
+<h2><span class="n">Your pipeline</span>Does this survive a pipeline shaped like yours?</h2>
+
+<p>Partly, and here is the boundary. The ladder on this page is a <b>linear chain</b> — one
+document in, one answer out, stages in a row. Real pipelines are usually not that. If yours has
+multi-query fan-out, a reranker, a router, a cache, retries as separate attempts, loops, or tool
+calls that reach outside the system, then it has a <em>shape</em>, and the comparison above
+assumes a sequence.</p>
+
+<p>The record format says so in its own specification rather than in a footnote here. Its
+scope clause covers linear chains; fan-out, fan-in, branches, loops, compensation,
+exactly-once versus at-least-once delivery, out-of-order arrival and disagreeing clocks are
+named as <b>a recognised requirement and the largest thing it does not yet do</b>. Two
+consequences that are in the format today and are worth more than a promise:</p>
+
+<ul>
+<li>A producer <b>must declare the boundary</b> of what it recorded rather than flatten a shape
+into a sequence that did not occur. Silence about a branch is not permitted; a declared gap is.</li>
+<li>Where coverage is declared incomplete, <b>no consumer may assert a root cause across the
+undeclared boundary</b>. The format forbids the conclusion rather than trusting everyone to be
+careful.</li>
+</ul>
+
+<p>So on a pipeline like yours, today, you get a correct answer over the parts that are a chain
+and an explicit refusal to conclude across the parts that are not. That is less than you want. It
+is considerably more than a tool that would have given you a confident answer anyway.</p>
+
+<h2><span class="n">What it costs</span>Measured, on the run above</h2>
+
+<p>One shard of that forty-seven-thousand-document run holds <b>5,932 receipts over 1,483
+documents</b> — four stages each — totalling <b>8.4 MB</b>. Mean receipt <b>1,411 bytes</b>,
+tightly distributed: smallest 1,354, largest 1,476. That is about <b>5.6 KB of record per
+document</b>.</p>
+
+<p><b>Read that as a ratio against your own documents, not ours.</b> The cost is fixed per
+document per stage, so on SEC filings averaging roughly 400 KB it is about one and a half percent
+of the bytes it describes — and on two-kilobyte support tickets the same 5.6 KB would be several
+times the document. Chunk-index entries scale with chunk count rather than bytes, so a chunker
+that produces more passages costs more record. If your corpus is short documents, measure this
+before you budget for it.</p>
+
+<p><b>Time:</b> not isolated as its own number, and we will not invent one. What is measured is
+the whole ingest with recording switched on — 47,430 documents in 78 minutes 40 seconds, about
+100 ms per document, and <b>I/O bound on network storage rather than CPU</b>. Recording was not
+the bottleneck in that run; that is not the same as saying it is free in yours.</p>
+
+<h2><span class="n">For the compliance conversation</span>What a record contains, and who can read it</h2>
+
+<p><b>A receipt carries digests, not content.</b> Each stage records what went in and what came
+out as a hash, along with the stage identity and its configuration digest — not the document, not
+the passage, not the answer. That is why the comparison can run over nineteen gigabytes without
+opening anything, and it is the answer to the first question your risk function will ask about
+residency and retention.</p>
+
+<p><b>The report is a different object.</b> The page linked above shows passage text, which does
+not come from the receipts — it comes from the chunk store the run already had. The digests prove
+that a passage is the same text in both runs; reading the text requires your own store, on your
+own side of the wall. Keep the receipts and discard the store and you can still locate a first
+difference and measure its reach; you simply cannot render the passage.</p>
+
+<p><b>A checker needs nothing from you but the records.</b> A conforming verifier requires no
+network, no key, no account, no licence and no live third party, and never modifies what it
+checks. An auditor with the record files and standard tools can reach the same conclusions
+offline, without credentials to your systems and without asking us anything.</p>
+
+<h2><span class="n">What you can check</span>And what you are taking on trust</h2>
+
+<p><b>Checkable by you, today, with no trust in us:</b> the record format, the sample records, the
+reference verifier and ten rejection vectors a conforming verifier must refuse — all published, all
+runnable with standard tools, on the <a href="/samples/">samples page</a>. The report linked above
+is assembled from runs of that public fixture set.</p>
+
+<p><b>Not checkable by you today:</b> the forty-seven-thousand-filing figures on this page. They
+are measurements we made, read back out of the runs' own records rather than transcribed from a
+screen, and the records still exist. Rebuilding them yourself means re-fetching nineteen gigabytes
+of public filings, which is possible and is not a small afternoon. We would rather say that
+plainly than let the size of a number do work that its checkability has not earned.</p>
+
+<h2><span class="n">What this is, and what it is not</span>Stated plainly, because the distinction is the product</h2>
+
+<p><b>What exists today:</b> the record format, published with sample records, a reference
+verifier and ten rejection vectors anyone can run; and the method — comparing two runs' records
+to locate a first difference and measure its reach. The report is that method, performed on real
+runs and assembled into a page by a script.</p>
+
+<p><b>What does not exist yet:</b> a product you click, and — the question you are actually
+asking — <b>a library that emits these records from your pipeline for you</b>. The format is
+specified well enough that you could emit conforming records yourself today, and the verifier that
+would judge them is published; but the instrumentation that would do it for you is not shipped,
+and this page is not going to give it a date it has not earned. The three commands that would run
+the comparison in one step are specified and not shipped either. There is no dashboard, no login,
+no service. We would rather tell you the method works now than promise you a button.</p>
+
+<a class="next" href="answer-lineage-report.html"><span>The exhibit</span>
+  <b>Read the report &rarr;</b> — two runs, nine comparisons, the stage they parted at, and the
+  passage that was present and never read.</a>
+
+<a class="next" href="stage-records.html"><span>For the engineer</span>
+  <b>The record format &rarr;</b> — what each stage writes, how the digests are computed, and how
+  to check any of it with standard tools and no trust in us.</a>
+
+<h2><span class="n">Where it fits</span>The Prove door</h2>
+
+<p>This is <b>onetrace</b>, the Prove door of the oneproof suite: forensic provenance for the
+retrieval pipeline underneath an AI system. It answers, after the fact, what a given answer
+actually rested on — and when two runs disagree, where they stopped agreeing.</p>
+
+<div class="rule"><p>Measured instead of asserted — from the architecture you choose before you
+build, to the evidence an answer rests on, to the authorization an action required.</p></div>
+
+<footer>
+  <div>The report on this page is generated from two recorded runs of a public fixture set. The
+  other three doors: <a href="/#prevent">Prevent</a> · <a href="/#detect">Detect</a> ·
+  <a href="/#choose">Choose</a>. See <a href="/where-it-fits.html">where they fit</a>, and the
+  <a href="/samples/">sample records and reference verifier</a>.</div>
+  <div class="fine">Page views on this site are counted by GoatCounter, an open-source counter
+  that sets no cookies and stores no personal data; the tools themselves report to no one.<br>
+  &copy; 2026 oneproof · Apache-2.0 across the suite · Digests shown on this site are worked
+  examples from public design fixtures, not customer data.</div>
+</footer>
+
+</div>
+</body>
+</html>

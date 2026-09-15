@@ -74,7 +74,7 @@
   .wordmark{font-family:var(--serif); font-weight:600; font-size:26px; letter-spacing:.01em}
   .wordmark .seal{color:var(--gold-text)}
   .wordmark .tld{color:var(--dim); font-weight:400}
-  nav.doors-nav{display:flex; gap:22px; font-family:var(--mono); font-size:12.5px; letter-spacing:.1em; text-transform:uppercase}
+  nav.doors-nav{display:flex; flex-wrap:wrap; gap:10px 22px; font-family:var(--mono); font-size:12.5px; letter-spacing:.1em; text-transform:uppercase}
   nav.doors-nav a{text-decoration:none; color:var(--dim)}
   nav.doors-nav a:hover{color:var(--ink)}
 
@@ -89,7 +89,7 @@
   /* ---------- hero ---------- */
   .hero{padding:64px 0 24px}
   .hero-grid{display:grid; grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr); gap:48px; align-items:start}
-  @media (max-width:860px){ .hero-grid{grid-template-columns:1fr} }
+  @media (max-width:860px){ .hero-grid{grid-template-columns:minmax(0,1fr)} }
   h1{
     font-size:clamp(40px,5.6vw,58px); line-height:1.06; font-weight:500; margin:18px 0 22px;
     letter-spacing:-.012em; text-wrap:balance;
@@ -144,7 +144,7 @@
   .sec-head{display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:8px}
   h2{font-size:34px; font-weight:500; margin:14px 0 6px; letter-spacing:-.01em}
   .sec-sub{color:var(--dim); font-size:17px; max-width:38em; margin:0 0 30px}
-  .door-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:22px}
+  .door-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px}
   @media (max-width:900px){ .door-grid{grid-template-columns:1fr} }
   .door{border:1px solid var(--line); background:#fbf8f0; border-radius:3px; padding:14px; display:flex; flex-direction:column; gap:14px}
   .door .shot{background:var(--x-ground); border-radius:3px; padding:14px; font-family:var(--mono); font-size:11.5px; line-height:1.8; color:var(--x-ink); overflow-x:auto; white-space:pre}
@@ -207,6 +207,7 @@
       <a href="#prevent">Prevent</a>
       <a href="#detect">Detect</a>
       <a href="#prove">Prove</a>
+      <a href="#choose">Choose</a>
       <a href="#aadp">The&nbsp;protocol</a>
       <a href="#contact">Contact</a>
     </nav>
@@ -276,16 +277,17 @@
     </figure>
   </section>
 
-  <!-- 3 · three doors -->
+  <!-- 3 · four doors -->
   <section class="doors" id="doors">
     <div class="sec-head">
-      <h2>Three doors, one discipline</h2>
+      <h2>Four doors, one discipline</h2>
       <span class="tag">The suite</span>
     </div>
     <p class="sec-sub">
-      Different questions, one discipline: a record at every step — from the evidence
-      an answer rests on to the authorization an action required — each checkable by
-      someone who doesn't trust us. Use one alone, or all three together.
+      Different questions, one discipline: measured instead of asserted — from the
+      architecture you choose before you build, to the evidence an answer rests on, to
+      the authorization an action required. Each checkable by someone who doesn't trust
+      us. Use one alone, or all four together.
     </p>
     <p class="sec-sub" style="margin-top:-18px"><a href="/where-it-fits.html">Where it fits in a typical AI stack — one picture →</a></p>
 
@@ -321,8 +323,8 @@ will say so</span></div>
           not a feeling.
         </p>
         <div class="foot">
-          <div class="status"><b>Public September 10</b> · verification tooling open</div>
-          <a class="more" href="#contact">Ask for early details →</a>
+          <div class="status"><b>Public since 10 September</b> · verification tooling open</div>
+          <a class="more" href="https://github.com/shamiksaharcciit-oss/onewatch">The repository, and the retirement on the record →</a>
         </div>
       </article>
 
@@ -340,7 +342,27 @@ chars 1,204–1,451 · 2 checks ✓</div>
         </p>
         <div class="foot">
           <div class="status"><b>Paper &amp; code in preparation</b> · verifier ships open</div>
+          <a class="more" href="/answer-lineage.html">The upgrade that changed the answer →</a>
           <a class="more" href="/stage-records.html">The record format and digest recipes →</a>
+        </div>
+      </article>
+
+      <article class="door" id="choose">
+        <div class="shot" aria-hidden="true"><span class="k">ARCHITECTURE CHOICE</span>
+8 option(s): 0 meets, 6 fails,
+2 couldnt_check
+<span style="color:#e4a05e">nothing is recommended</span></div>
+        <h3>Choose — <span class="prod">oneground</span></h3>
+        <p>
+          Which vector database, which index, which configuration — measured on your own
+          data before you build on it, rather than chosen from a blog post and a guess. A
+          sample of your own vectors, three architectures tried against the right answers,
+          one run on a real engine, and a report your team can argue with. Your data never
+          leaves your machine.
+        </p>
+        <div class="foot">
+          <div class="status"><b>Preview release: 16 September</b> · your data stays on your machine</div>
+          <a class="more" href="/oneground/">Try it on 150,000 public vectors →</a>
         </div>
       </article>
     </div>
@@ -369,7 +391,7 @@ chars 1,204–1,451 · 2 checks ✓</div>
         <div class="name">draft-saha-aadp</div>
         <dl>
           <dt>Title</dt><dd>The Agent Action Decision Protocol (AADP): Per-Action Authorization for AI Agents</dd>
-          <dt>Status</dt><dd>Internet-Draft, individual submission · −01 posted; −02 in preparation</dd>
+          <dt>Status</dt><dd>Internet-Draft, individual submission · −02 posted</dd>
           <dt>Fixture</dt><dd>CDX-AADP-INPUT-PROVENANCE-001 interoperability fixture (public)</dd>
           <dt>Reference</dt><dd><a href="https://datatracker.ietf.org/doc/draft-saha-aadp/">datatracker.ietf.org/doc/draft-saha-aadp</a></dd>
         </dl>

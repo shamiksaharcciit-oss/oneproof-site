@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>oneground — how it works, and how to check it · oneproof</title>
+<meta name="description" content="The four commands, how recall and latency are measured differently and why, the full refusal output with its field names, what the lab computes in 768 dimensions, and how to verify every figure on these pages against the data it came from.">
+<meta property="og:title" content="oneground — how it works, and how to check it">
+<meta property="og:description" content="For the engineer who will run it: the method, the refusal output, and the commands that check our published figures against our published data.">
+<meta property="og:url" content="https://oneproof.dev/oneground/how-it-works.html">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<link rel="canonical" href="https://oneproof.dev/oneground/how-it-works.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%231c1713'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23c9a227' stroke-width='3'/%3E%3Ctext x='32' y='41' font-family='Georgia,serif' font-size='26' fill='%23c9a227' text-anchor='middle'%3E1%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#f6f1e6; --paper-2:#efe7d4; --ink:#211a12; --dim:#716250;
+    --line:#d9cdb6; --line-soft:#e6ddc9;
+    --gold:#c9a227; --gold-text:#7d620f;
+    --x-ground:#1c1713; --x-panel:#241d17; --x-line:#3a2f26; --x-ink:#e8ddcc; --x-dim:#a5947d;
+    --allow:#7cc79a; --review:#e4a05e; --refuse:#e28a80;
+    --serif:'Newsreader',Georgia,'Times New Roman',serif;
+    --mono:'IBM Plex Mono','Courier New',monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.62;
+    background-image:repeating-linear-gradient(180deg,rgba(33,26,18,.018) 0 1px,transparent 1px 29px)}
+  a{color:var(--gold-text)}
+  a:focus-visible{outline:2px solid var(--gold-text);outline-offset:3px;border-radius:2px}
+  @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+  .wrap{max-width:780px;margin:0 auto;padding:0 22px}
+  .masthead{display:flex;justify-content:space-between;align-items:baseline;padding:26px 0 18px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .wordmark{font-weight:600;font-size:21px;letter-spacing:.01em;text-decoration:none;color:var(--ink)}
+  .wordmark .seal{color:var(--gold-text)} .wordmark .tld{color:var(--dim);font-weight:400}
+  .crumb{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+  .crumb a{color:var(--dim);text-decoration:none}
+  .layers{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;
+    text-transform:uppercase;padding:12px 0 0;color:var(--dim)}
+  .layers a{text-decoration:none;color:var(--dim)} .layers a:hover{color:var(--ink)}
+  .layers b{color:var(--ink);font-weight:600}
+  .status{margin:22px 0 0;border:1px solid var(--line);background:var(--paper-2);padding:14px 18px;font-size:15.5px;line-height:1.5}
+  .status b{color:var(--gold-text)}
+  h1{font-weight:500;font-size:44px;line-height:1.08;letter-spacing:-.015em;margin:34px 0 14px}
+  .lede{font-size:21px;line-height:1.5;color:var(--dim);margin:0 0 8px}
+  h2{font-weight:500;font-size:29px;line-height:1.15;margin:54px 0 12px;letter-spacing:-.01em}
+  h2 .n{font-family:var(--mono);font-size:13px;color:var(--gold-text);letter-spacing:.1em;display:block;margin-bottom:6px}
+  h3{font-weight:600;font-size:19px;margin:28px 0 6px}
+  p{margin:0 0 16px}
+  ul{margin:0 0 16px;padding-left:1.15em} li{margin:0 0 9px}
+  .rule{border-left:3px solid var(--gold);padding:12px 18px;margin:22px 0;background:var(--paper-2)}
+  .rule p{margin:0}
+  .pull{border-left:3px solid var(--gold);padding:14px 20px;margin:24px 0;background:var(--paper-2);font-size:21px;line-height:1.4}
+  .pull p{margin:0}
+  .pull .who{display:block;font-family:var(--mono);font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);margin-top:10px}
+  code{font-family:var(--mono);font-size:.86em;background:var(--paper-2);padding:1px 5px;border-radius:3px}
+  pre{font-family:var(--mono);font-size:13.5px;line-height:1.55;background:var(--x-ground);color:var(--x-ink);
+    padding:16px 18px;border-radius:6px;overflow-x:auto;margin:14px 0 20px}
+  pre .c{color:var(--x-dim)} pre .g{color:var(--allow)} pre .r{color:var(--refuse)} pre .a{color:var(--review)}
+  table{border-collapse:collapse;width:100%;font-size:16px;margin:14px 0 22px}
+  th,td{text-align:left;vertical-align:top;padding:10px 10px;border-top:1px solid var(--line-soft)}
+  th{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:500;border-top:0}
+  .tbl{overflow-x:auto;margin:0 -22px;padding:0 22px}
+  .gap{border:1px dashed var(--line);padding:14px 18px;margin:18px 0;color:var(--dim);font-size:16px}
+  .gap b{color:var(--ink)}
+  .cmds{background:var(--x-ground);color:var(--x-ink);border-radius:6px;padding:18px 20px;margin:16px 0 22px}
+  .cmds pre{background:none;padding:0;margin:0 0 6px}
+  .cmds .c{color:var(--x-dim)}
+  .next{display:block;border:1px solid var(--line);background:var(--paper-2);padding:15px 18px;margin:14px 0;
+    text-decoration:none;color:var(--ink)}
+  .next:hover{border-color:var(--gold)}
+  .next span{display:block;font-family:var(--mono);font-size:11.5px;color:var(--dim);letter-spacing:.11em;
+    text-transform:uppercase;margin-bottom:5px}
+  .next b{font-weight:600}
+  .lab{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);
+    background:#fbf8f0;padding:12px;border-radius:3px;margin:30px 0 10px;box-shadow:0 1px 0 rgba(33,26,18,.08)}
+  .lab:hover{border-color:var(--gold)}
+  .lab .mat{background:var(--x-ground);border-radius:3px;padding:22px 22px 20px;overflow-x:auto}
+  .lab .k{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--x-dim);margin-bottom:16px}
+  .lab .headline{font-size:25px;line-height:1.24;color:var(--x-ink);margin:0 0 18px;max-width:34ch;text-wrap:balance}
+  .lab .headline em{font-style:normal;color:var(--gold)}
+  .bignum{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin:0 0 14px}
+  .bignum .v{font-family:var(--mono);font-size:46px;line-height:1;color:var(--gold)}
+  .bignum .l{color:var(--x-ink);font-size:17px;line-height:1.4;max-width:34ch;flex:1 1 20ch}
+  .lab .fine{font-family:var(--mono);font-size:11.5px;line-height:1.6;color:var(--x-dim);margin:0}
+  .lab .go{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);padding:12px 4px 1px}
+  .lab .go b{color:var(--gold-text);font-weight:600}
+  footer{margin-top:64px;border-top:1px solid var(--line);padding:26px 0 40px;font-size:15px;color:var(--dim)}
+  footer a{color:var(--gold-text)}
+  footer .fine{font-size:13.5px;margin-top:14px}
+  @media (max-width:640px){h1{font-size:33px} body{font-size:17px} .lede{font-size:19px} .pull{font-size:19px}
+    .bignum .v{font-size:38px} .lab .headline{font-size:21px}}
+</style>
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <a class="wordmark" href="/"><span class="seal">one</span>proof<span class="tld">.dev</span></a>
+  <div class="crumb"><a href="/">home</a> · <a href="/#choose">choose</a> · <a href="./">oneground</a> · how it works</div>
+</header>
+<nav class="layers">
+  <a href="./">The case</a> ·
+  <span><b>How it works</b></span> ·
+  <a href="lab/">The lab, live</a>
+</nav>
+
+<div class="status">
+  <b>For the engineer who will run it.</b> Everything below is a command, a number, or a file
+  path. The argument for the tool is <a href="./">on the previous page</a>; this one is the
+  method and the checks.
+</div>
+
+<h1>How it works, and how to check it</h1>
+<p class="lede">Retrieval quality is measured by exhaustive search on a sample of your own
+documents. Speed is measured only on a real engine under load. The two are never mixed, and
+where a constraint could not be checked, the report says so instead of rounding.</p>
+
+<h2><span class="n">01</span>The four commands</h2>
+
+<div class="cmds">
+<pre>oneground characterize   <span class="c"># exact right answers for your queries</span>
+oneground simulate       <span class="c"># score every architecture against that truth</span>
+oneground verify         <span class="c"># the real engine under load -- the only latency</span>
+oneground report         <span class="c"># the verdict, and what was not measured</span></pre>
+</div>
+
+<p><code>characterize</code> computes exact nearest neighbours for a held-out query set by
+brute force over the sample. That is the expensive step and the reason the rest is cheap:
+once the right answers are known, every candidate architecture can be scored against them
+without standing any of them up.</p>
+
+<p><code>simulate</code> therefore answers "how well does this find things" in minutes on a
+laptop. It does <em>not</em> answer "how fast is it", and does not pretend to.</p>
+
+<p><code>verify</code> is the only source of latency and throughput figures. It runs a real
+engine under real load, on your hardware or on a machine you rent. Latency is never taken from
+simulation. <b>The preview runs Qdrant.</b> A second engine, pgvector, arrives on 23 September,
+measured in turn on the same host with the same corpus and the same query set — each carrying its
+own number and its own verdict, because two engines on two machines are not a comparison.</p>
+
+<h3>What a run takes as input</h3>
+<p>One requirements file drives a run. The corpus sample is either
+<code>vectors</code> (an <code>(n, dim)</code> float32 array, optionally with ids) or
+<code>text</code> plus a pinned <code>model</code> whose weights are hashed into the record.
+Queries are supplied as text or as vectors, with their source declared —
+<code>logs</code>, <code>written</code> or <code>synthetic</code> — because queries drawn from
+production and queries someone invented are not the same evidence. Optional metadata enables
+drift and filtered-search measurement. Sampling method and full corpus size are <em>recorded,
+not enforced</em>. Constraints — recall, p95 latency at a given QPS, storage amplification,
+memory and budget — are declared by you, and the report marks every field as measured or
+declared beside its value. Omit the sample entirely and you get capacity arithmetic and no
+verdicts, which is the correct output for a run with nothing measured in it.</p>
+
+<h2><span class="n">02</span>The output you are most likely to see first</h2>
+
+<p>On a real corpus, before any engine has been run — this is the
+<a href="https://github.com/shamiksaharcciit-oss/oneground/tree/main/fixtures/arxiv-150k/report">published
+report</a>'s own summary, <code>{"options": 8, "meets": 0, "fails": 6, "couldnt_check": 2}</code>
+with <code>recommendation: null</code>:</p>
+
+<pre>8 option(s): 0 meets, 6 fails, 2 <span class="a">couldnt_check</span>
+
+No option meets every constraint, so nothing is recommended.
+Recommending an option whose constraints could not all be checked
+would be rounding couldn't-check up to a verdict.
+
+To decide latency_p95: run `oneground verify` against a real engine
+in the environment the constraint targets. Latency is never taken
+from simulation.</pre>
+
+<p>Run the same corpus through <code>verify</code> against a real engine and it resolves —
+but not into a clean win. <b>This second block is from a run whose report is not published</b>,
+so unlike the one above you cannot open it today; it is quoted because it is the honest other
+half of the same corpus:</p>
+
+<pre>8 option(s): 1 meets, 6 fails, 1 <span class="a">couldnt_check</span>
+
+Recommended: single_node_hnsw[M=32,efConstruction=200,efSearch=128]
+  indistinguishable on recall from: hash_sharded[M=32,efSearch=96,shards=3]
+    hash_sharded[...]: <span class="a">couldnt_check</span> -- could not be checked on
+    latency_p95, qps. Indistinguishable on recall is not
+    indistinguishable overall.</pre>
+
+<p>Both are real output from the same corpus at different stages. Note what the second one
+does <em>not</em> do: the alternative that matched on recall is not folded into the
+recommendation, because recall is not the whole constraint set. Three outcomes —
+<code>meets</code>, <code>fails</code>, <code>couldnt_check</code> — and the third is never
+rounded up to either of the others.</p>
+
+<h2><span class="n">03</span>What the lab computes</h2>
+
+<p><a href="lab/">The lab</a> plots 150,000 arXiv abstracts embedded with
+<code>bge-base-en-v1.5</code>, partitioned into 256 regions by k-means. Semantic sharding
+copies a vector into every region whose centroid lies within <strong>ε</strong> of its
+nearest. Move ε and the copy counts are recomputed in the browser from four real centroid
+distances per vector carried in <code>data/base.bin</code> — not from a lookup table, and not
+from anything generated in the page.</p>
+
+<div class="tbl"><table>
+  <tr><th>at ε = 0.20, the published reference</th><th>value</th></tr>
+  <tr><td>Vectors copied at all (more than one region)</td><td><code>144,563</code> of 150,000</td></tr>
+  <tr><td>Storage amplification — mean copies per vector</td><td><code>3.7152</code> against a published <code>3.715</code></td></tr>
+  <tr><td>Copies per vector — 1 / 2 / 3 / 4</td><td><code>3.6% · 5.6% · 6.5% · 84.3%</code></td></tr>
+  <tr><td>Boundary crispness</td><td><code>0.0362</code> against a published <code>0.036</code></td></tr>
+  <tr><td>Held-out queries with exact top-10 by brute force</td><td><code>2,000</code></td></tr>
+</table></div>
+
+<div class="rule"><p>The 2-D placement in the lab is UMAP and is <b>illustrative</b>. Regions,
+distances and copy counts are computed in the full 768 dimensions.</p></div>
+
+<p>The page refuses to render if its own arithmetic disagrees with the export's — which is
+the same discipline as the refusal above, applied to a picture.</p>
+
+<h2 id="checks"><span class="n">04</span>Checking all of it, without taking our word</h2>
+
+<p>Three independent checks, each of which can fail — and each with a different
+precondition, stated here because two of them are cheap and one is not:</p>
+
+<div class="cmds">
+<pre class="c"># 1. does this host serve the repository's bytes? every file, by digest
+#    needs: a clone. stdlib only, no install, no assets.</pre>
+<pre>python site/teaser/check_hosted.py https://oneproof.dev/oneground/lab</pre>
+<pre class="c"># 2. re-derive the lab's counters from base.bin, independently of the page
+#    needs: a clone. stdlib only, no install, no assets.</pre>
+<pre>python site/teaser/verify_teaser_data.py</pre>
+<pre class="c"># 3. recompute the fixture's published figures from the published data
+#    needs: a clone, a pinned environment, and ~0.5 GB of release assets
+#    extracted to ~/oneground-assets/arxiv-150k. NOT a bare pip install.</pre>
+<pre>oneground fixture verify arxiv-150k</pre>
+</div>
+
+<p><b>Check 3 will not run from a fresh <code>pip install</code> alone</b>, and we would rather
+put that here than let you find it at a terminal. It resolves <code>fixtures/arxiv-150k</code>
+and <code>requirements.txt</code> from the current working directory, so it expects to be run
+inside a checkout; it refuses outright if the environment is not pinned, because recomputing a
+published number under unknown library versions produces a figure nobody can stand behind; and
+the vectors themselves are a separate release asset, not repository content. Checks 1 and 2 are
+the ones you can run in the next five minutes.</p>
+
+<p>The first reports one of three outcomes per file — <code>verified</code>,
+<code>contradicted</code>, <code>couldnt_check</code> — and exits non-zero only on a
+contradiction; an absent file is a gap, not a verdict. The second exits non-zero on any
+disagreement with the fixture's published values. Digests for every file the lab serves are
+in <a href="lab/data/MANIFEST.sha256"><code>lab/data/MANIFEST.sha256</code></a>.</p>
+
+<p>The lab directory on this site is oneground's own <code>site/teaser/</code>, copied byte
+for byte with nothing edited. That is deliberate: if we restyled it, check 1 would report
+<code>contradicted</code> and you would have no way to tell our edit from a bad deploy.</p>
+
+<h2 id="published"><span class="n">05</span>The fixtures, and the tool's own accuracy</h2>
+
+<p>Two public reference collections ship with specifications and digests:
+<code>arxiv-150k</code> and <code>stackexchange-150k</code>. Each has a fixture spec
+(<code>fixtures/&lt;name&gt;.fixture.yaml</code>), a manifest, its characterization, and its
+ground truth, so a figure quoted from either can be traced to the bytes it came from. The
+arxiv-150k decision is published in full —
+<a href="https://github.com/shamiksaharcciit-oss/oneground/tree/main/fixtures/arxiv-150k/report"><code>report.json</code>,
+<code>report.html</code>, <code>simulate.json</code>, <code>verify.json</code>,
+<code>verify_info.json</code> and <code>characterization.json</code></a>, digests in the
+fixture's manifest — so the refusal quoted above is not a screenshot of something you have to
+take on trust.</p>
+
+<p>Every report cites the calibration run it was generated under.
+<code>oneground calibrate show</code> renders the calibration history; the history itself lives
+in the repository at <code>calibration/history.jsonl</code>, so a bare install prints "empty" and
+names the command that writes the first line, while a checkout prints the full record of
+oneground measured against published benchmark results over time. Read the tool's own error
+before you read its answer.</p>
+
+<h2><span class="n">06</span>Limits, stated rather than discovered later</h2>
+
+<h3>Simulation gives recall, never latency.</h3>
+<p>Scoring against known-correct answers needs no running engine. Timing does. Any
+latency or throughput constraint left unmeasured comes back as
+<code>couldnt_check</code> with the command that would settle it.</p>
+
+<h3>The lab runs on the fixture's data, not yours.</h3>
+<p>What is live on this site is the public collection. An interactive lab over your own
+vectors does not exist. Measuring your own documents is what the command-line tool does.</p>
+
+<h3>It works from a sample.</h3>
+<p>Ten to twenty thousand documents, not your whole archive — and the report says so, rather
+than implying the sample was the corpus.</p>
+
+<h3>It measures retrieval, not generation.</h3>
+<p>Which documents come back, not the answer your model writes on top of them. That is a
+different question and a different tool.</p>
+
+<h3>It does not measure chunking.</h3>
+<p>How documents are cut into passages before indexing is not measured in this release; there
+is a design note and no implementation. It is stated here because chunking plausibly moves
+retrieval more than the index choice does, so a tool silent about it should say so rather than
+let you assume coverage it does not have.</p>
+
+<h2><span class="n">07</span>On 23 September</h2>
+
+<p>Already built and already in the public repository today: a second engine measured in turn
+on one host; latency runs repeated three times with the spread reported, so a pass means it
+passed every time; a saturation measurement — how much traffic the setup takes before it
+breaks, and where; a second reference collection, so the data's contribution can be separated
+from the engine's; and a check for documents longer than the embedding model's context, which
+are being silently truncated before they are ever searched.</p>
+
+<a class="next" href="./"><span>Back</span><b>The case for it &rarr;</b> — what it is for, what
+it costs, and what does not leave your building.</a>
+
+<a class="next" href="lab/"><span>The instrument</span><b>The lab, live &rarr;</b> — 150,000
+real vectors, one query followed through every hop, and the verdict at the end.</a>
+
+<footer>
+  <div>Repository and release: <a href="https://github.com/shamiksaharcciit-oss/oneground">github.com/shamiksaharcciit-oss/oneground</a> ·
+  package: <a href="https://pypi.org/project/oneground/">pypi.org/project/oneground</a>.
+  <br><br>The other three doors: <a href="/#prevent">Prevent</a> · <a href="/#detect">Detect</a> ·
+  <a href="/#prove">Prove</a>. See <a href="/where-it-fits.html">where they fit</a>.</div>
+  <div class="fine">Page views on this site are counted by GoatCounter, an open-source counter
+  that sets no cookies and stores no personal data; the tools themselves report to no one.<br>
+  &copy; 2026 oneproof · Apache-2.0 across the suite · Every figure on this page is measured on
+  the public arXiv-150k fixture, not customer data.</div>
+</footer>
+
+</div>
+</body>
+</html>

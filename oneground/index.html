@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>oneground — is your AI search set up right? Measure it · oneproof</title>
+<meta name="description" content="Nobody can tell you whether your AI search was set up right — not your vendor, not the benchmark you were shown. oneground measures it on your own documents, tries the alternatives, and leaves evidence you can hand to someone who doesn't trust you. Free, open, runs on your own machine.">
+<meta property="og:title" content="oneground — pick your retrieval setup from evidence, not folklore">
+<meta property="og:description" content="You chose a vector database. You've never tested it against your own documents, you've never seen how the alternatives would do, and nobody can show you why that choice was made.">
+<meta property="og:url" content="https://oneproof.dev/oneground/">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<link rel="canonical" href="https://oneproof.dev/oneground/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%231c1713'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23c9a227' stroke-width='3'/%3E%3Ctext x='32' y='41' font-family='Georgia,serif' font-size='26' fill='%23c9a227' text-anchor='middle'%3E1%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#f6f1e6; --paper-2:#efe7d4; --ink:#211a12; --dim:#716250;
+    --line:#d9cdb6; --line-soft:#e6ddc9;
+    --gold:#c9a227; --gold-text:#7d620f;
+    --x-ground:#1c1713; --x-panel:#241d17; --x-line:#3a2f26; --x-ink:#e8ddcc; --x-dim:#a5947d;
+    --allow:#7cc79a; --review:#e4a05e; --refuse:#e28a80;
+    --serif:'Newsreader',Georgia,'Times New Roman',serif;
+    --mono:'IBM Plex Mono','Courier New',monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.62;
+    background-image:repeating-linear-gradient(180deg,rgba(33,26,18,.018) 0 1px,transparent 1px 29px)}
+  a{color:var(--gold-text)}
+  a:focus-visible{outline:2px solid var(--gold-text);outline-offset:3px;border-radius:2px}
+  @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+  .wrap{max-width:780px;margin:0 auto;padding:0 22px}
+  .masthead{display:flex;justify-content:space-between;align-items:baseline;padding:26px 0 18px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .wordmark{font-weight:600;font-size:21px;letter-spacing:.01em;text-decoration:none;color:var(--ink)}
+  .wordmark .seal{color:var(--gold-text)} .wordmark .tld{color:var(--dim);font-weight:400}
+  .crumb{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+  .crumb a{color:var(--dim);text-decoration:none}
+  .layers{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;
+    text-transform:uppercase;padding:12px 0 0;color:var(--dim)}
+  .layers a{text-decoration:none;color:var(--dim)} .layers a:hover{color:var(--ink)}
+  .layers b{color:var(--ink);font-weight:600}
+  .status{margin:22px 0 0;border:1px solid var(--line);background:var(--paper-2);padding:14px 18px;font-size:15.5px;line-height:1.5}
+  .status b{color:var(--gold-text)}
+  h1{font-weight:500;font-size:44px;line-height:1.08;letter-spacing:-.015em;margin:34px 0 14px}
+  .lede{font-size:21px;line-height:1.5;color:var(--dim);margin:0 0 8px}
+  h2{font-weight:500;font-size:29px;line-height:1.15;margin:54px 0 12px;letter-spacing:-.01em}
+  h2 .n{font-family:var(--mono);font-size:13px;color:var(--gold-text);letter-spacing:.1em;display:block;margin-bottom:6px}
+  h3{font-weight:600;font-size:19px;margin:28px 0 6px}
+  p{margin:0 0 16px}
+  ul{margin:0 0 16px;padding-left:1.15em} li{margin:0 0 9px}
+  .rule{border-left:3px solid var(--gold);padding:12px 18px;margin:22px 0;background:var(--paper-2)}
+  .rule p{margin:0}
+  .pull{border-left:3px solid var(--gold);padding:14px 20px;margin:24px 0;background:var(--paper-2);font-size:21px;line-height:1.4}
+  .pull p{margin:0}
+  .pull .who{display:block;font-family:var(--mono);font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);margin-top:10px}
+  code{font-family:var(--mono);font-size:.86em;background:var(--paper-2);padding:1px 5px;border-radius:3px}
+  pre{font-family:var(--mono);font-size:13.5px;line-height:1.55;background:var(--x-ground);color:var(--x-ink);
+    padding:16px 18px;border-radius:6px;overflow-x:auto;margin:14px 0 20px}
+  pre .c{color:var(--x-dim)} pre .g{color:var(--allow)} pre .r{color:var(--refuse)} pre .a{color:var(--review)}
+  table{border-collapse:collapse;width:100%;font-size:16px;margin:14px 0 22px}
+  th,td{text-align:left;vertical-align:top;padding:10px 10px;border-top:1px solid var(--line-soft)}
+  th{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:500;border-top:0}
+  .tbl{overflow-x:auto;margin:0 -22px;padding:0 22px}
+  .gap{border:1px dashed var(--line);padding:14px 18px;margin:18px 0;color:var(--dim);font-size:16px}
+  .gap b{color:var(--ink)}
+  .cmds{background:var(--x-ground);color:var(--x-ink);border-radius:6px;padding:18px 20px;margin:16px 0 22px}
+  .cmds pre{background:none;padding:0;margin:0 0 6px}
+  .cmds .c{color:var(--x-dim)}
+  .next{display:block;border:1px solid var(--line);background:var(--paper-2);padding:15px 18px;margin:14px 0;
+    text-decoration:none;color:var(--ink)}
+  .next:hover{border-color:var(--gold)}
+  .next span{display:block;font-family:var(--mono);font-size:11.5px;color:var(--dim);letter-spacing:.11em;
+    text-transform:uppercase;margin-bottom:5px}
+  .next b{font-weight:600}
+  .lab{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);
+    background:#fbf8f0;padding:12px;border-radius:3px;margin:30px 0 10px;box-shadow:0 1px 0 rgba(33,26,18,.08)}
+  .lab:hover{border-color:var(--gold)}
+  .lab .mat{background:var(--x-ground);border-radius:3px;padding:22px 22px 20px;overflow-x:auto}
+  .lab .k{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--x-dim);margin-bottom:16px}
+  .lab .headline{font-size:25px;line-height:1.24;color:var(--x-ink);margin:0 0 18px;max-width:34ch;text-wrap:balance}
+  .lab .headline em{font-style:normal;color:var(--gold)}
+  .bignum{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin:0 0 14px}
+  .bignum .v{font-family:var(--mono);font-size:46px;line-height:1;color:var(--gold)}
+  .bignum .l{color:var(--x-ink);font-size:17px;line-height:1.4;max-width:34ch;flex:1 1 20ch}
+  .lab .fine{font-family:var(--mono);font-size:11.5px;line-height:1.6;color:var(--x-dim);margin:0}
+  .lab .go{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);padding:12px 4px 1px}
+  .lab .go b{color:var(--gold-text);font-weight:600}
+  footer{margin-top:64px;border-top:1px solid var(--line);padding:26px 0 40px;font-size:15px;color:var(--dim)}
+  footer a{color:var(--gold-text)}
+  footer .fine{font-size:13.5px;margin-top:14px}
+  @media (max-width:640px){h1{font-size:33px} body{font-size:17px} .lede{font-size:19px} .pull{font-size:19px}
+    .bignum .v{font-size:38px} .lab .headline{font-size:21px}}
+</style>
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <a class="wordmark" href="/"><span class="seal">one</span>proof<span class="tld">.dev</span></a>
+  <div class="crumb"><a href="/">home</a> · <a href="/#choose">choose</a> · oneground</div>
+</header>
+<nav class="layers">
+  <span><b>The case</b></span> ·
+  <a href="how-it-works.html">How it works</a> ·
+  <a href="lab/">The lab, live</a>
+</nav>
+
+<div class="status">
+  <b>Preview release: 16 September.</b> Free and open source. It runs on your own machine —
+  no upload, no account, nothing sent to us.
+</div>
+
+<h1>Nobody can tell you whether your AI&nbsp;search was set up right.</h1>
+<p class="lede">Not your vendor. Not the benchmark you were shown. Not, if you ask them
+plainly, your own team. oneground measures it — on your documents, against the right
+answers — and gives you the evidence rather than an opinion.</p>
+
+<a class="lab" href="lab/">
+  <div class="mat">
+    <span class="k">See it first · 150,000 real documents</span>
+    <p class="headline">One setting decides whether you store your data once, or <em>four times over</em>.</p>
+    <div class="bignum">
+      <span class="v">84%</span>
+      <span class="l">of these documents end up copied into four places at once — at the setting most people leave alone</span>
+    </div>
+    <p class="fine">Every dot is a real document. Move the control and watch the copying happen.
+      Positions in the picture are an illustration; the counting is done in full. These 150,000
+      documents are public ones, not yours — measuring your own is what the tool does, from the
+      command line.</p>
+  </div>
+  <div class="go"><span>Takes about a minute · nothing to install</span><span><b>Open the lab &rarr;</b></span></div>
+</a>
+
+<h2><span class="n">The problem</span>Three things nobody can tell you</h2>
+
+<h3>One — how it performs on <em>your</em> documents.</h3>
+<p>You know how the system performed in the vendor's benchmark, on the vendor's data. Your
+documents are not that data. They are longer, or shorter, or more repetitive, or all about
+the same eleven topics. Whether the setup you are paying for suits <em>them</em> has never
+been measured — because measuring it meant knowing the right answer for thousands of real
+questions, and nobody had that.</p>
+
+<h3>Two — what the alternatives would have done.</h3>
+<p>Trying a different setup means standing it up, loading your documents, writing the tests,
+running them: a week of engineering to answer a question that might come back "no change."
+So it isn't done. The first choice becomes the only choice, and stays load-bearing for
+years.</p>
+
+<h3>Three — why the choice was made at all.</h3>
+<p>Ask your team why this system, this configuration. You will get a blog post, a benchmark
+on someone else's data, and a name. The reasoning lives in people's heads and leaves when
+they do. When quality drops, or the bill needs defending, there is nothing to show.</p>
+
+<div class="rule"><p>None of this is carelessness. The measurement was impractical. That is
+what changed.</p></div>
+
+<h2><span class="n">The answer</span>What you get instead</h2>
+
+<h3>A measurement on your own documents.</h3>
+<p>Give it a sample — ten to twenty thousand documents, not the whole archive. It works out
+the right answers by exhaustive search, then measures how well each realistic setup actually
+finds them. Not a proxy and not a leaderboard: your data, scored against truth.</p>
+<p><b>What you hand it, concretely:</b> either the vectors you already have, or your text plus
+the name of the model you embed with — pinned, so the report records which model produced the
+numbers. Plus a set of queries: real ones from your logs if you have them, which is better than
+invented ones and is recorded either way. If you have neither a sample nor vectors, it will still
+do capacity arithmetic from what you declare — and it will refuse to issue verdicts from
+declarations, because a declaration is not a measurement.</p>
+
+<h3>The alternatives, tried — without your team standing them up.</h3>
+<p>Three architectures and many configurations, all scored the same way on the same sample,
+in minutes on a laptop. Speed is the one thing that needs a real system running, and for
+that it uses one, under real load, on your own hardware or on a machine you rent for about
+the price of a coffee.</p>
+
+<h3>A record you can hand to someone who doesn't trust you.</h3>
+<p>Not a summary — the evidence. What was measured, with which settings, on which sample,
+producing which number. What <em>couldn't</em> be measured, named rather than quietly filled
+in. And the tool's own accuracy, dated: every report says when oneground last checked itself
+against published results, and by how much it was off.</p>
+
+<div class="rule"><p>That last part is the difference between a benchmark and an audit.</p></div>
+
+<p>What it turns up is rarely what you would guess. On one public collection, the clever
+architecture everyone reaches for scored <em>worse</em> than the simplest one — and cost
+nearly four times the storage. On a second collection the ranking held, but the answers went
+stale in the opposite direction. One set of documents is never the whole story, and now you
+can see which story yours tells.</p>
+
+<h2><span class="n">Why it is worth having</span>It is willing to tell you nothing</h2>
+
+<p>Most tools in this space are built to produce a recommendation. This one is built to
+produce a defensible one, which means it will sometimes decline:</p>
+
+<div class="pull">
+  <p>No option meets every constraint, so nothing is recommended.</p>
+  <span class="who">the most common first result, on a real corpus &middot;
+    <a href="how-it-works.html#published">the report it came from is published</a></span>
+</div>
+
+<p>It won't call a coin flip a pass. The same setup measured twice came back at 38
+milliseconds and 43, against a 40-millisecond target: one run says pass, the other says
+fail. It reports the spread and withholds the verdict.</p>
+
+<p>It won't compare things that weren't measured the same way — two systems on two machines
+are not comparable, so it refuses, and tells you exactly what to run to make them so.</p>
+
+<p>It won't measure your network and call it your database. When the round trip is most of
+the number, it says so rather than reporting a figure that is mostly your own connection.</p>
+
+<p>A tool that always answers is a tool you cannot cite. This one can be cited, because the
+places it declines are marked.</p>
+
+<h2><span class="n">The business case</span>Cost, risk, and what leaves your building</h2>
+
+<div class="tbl"><table>
+  <tr><th>the question</th><th>what oneground gives you</th></tr>
+  <tr><td>How does our AI search perform on our own documents?</td><td>A measurement of your sample against the right answers, not a vendor benchmark.</td></tr>
+  <tr><td>What would a different setup have done?</td><td>The realistic alternatives scored on that same sample, in minutes.</td></tr>
+  <tr><td>Why did we choose this, and can we defend it?</td><td>A record of what was measured, what wasn't, and how accurate the tool itself is.</td></tr>
+</table></div>
+
+<h3>What it costs</h3>
+<p>Free and open source, permanently. The analysis runs on a laptop. A speed test under real
+load runs on a machine you rent, under your own account, for about the price of a coffee —
+and the tool shows the price, asks before spending, and shuts the machine down itself.</p>
+
+<h3>What leaves your building</h3>
+<p>Nothing. No upload, no account, no telemetry, no oneground server. For the rented-machine
+speed test, your sample goes to a machine <em>you</em> rent and comes back as a file.</p>
+
+<h3>When to use it</h3>
+<p>Before committing to a vector database. After a migration, to show the new setup beats the
+old one. When search quality drops and nobody can say why. When the infrastructure bill needs
+defending.</p>
+
+<h3>What it does not do</h3>
+<p>It measures retrieval — which documents come back — not the answers your AI writes on top
+of them. It works from a sample, not your whole archive, and says so. It will not rank systems
+it has not actually run. And it will not produce a number it cannot stand behind.</p>
+<p><b>It does not measure chunking</b> — how your documents are cut up before they are indexed.
+That is named here rather than left for you to find out, because chunking is arguably the
+decision that changes retrieval most, and a tool that measured everything <em>except</em> the
+biggest lever would be worth knowing about in advance. It is on the roadmap and no code
+implements it today, so nothing on this page depends on it.</p>
+
+<h2><span class="n">Where to start</span>Ten minutes to the first measured answer</h2>
+
+<p>Send your engineering lead this page. To <em>use</em> it, one command:</p>
+
+<div class="cmds">
+<pre>pip install oneground</pre>
+</div>
+
+<p>To <em>check us</em> before you use it — which is the point of the project — clone the
+repository and run this. It is standard library Python: no install, no account, no downloads
+beyond the clone itself.</p>
+
+<div class="cmds">
+<pre class="c"># recompute the figures on the lab page from the data that page ships</pre>
+<pre>python site/teaser/verify_teaser_data.py</pre>
+</div>
+
+<p>It re-derives the numbers independently of the page and exits non-zero if any of them
+disagree. There is a second script beside it, <code>check_hosted.py</code>, which asks whether
+the copy of the lab served from this site is byte-for-byte the copy in the repository.</p>
+
+<p><b>Re-verifying the whole 150,000-vector fixture is a heavier job, and we would rather say so
+than let you discover it.</b> <code>oneground fixture verify arxiv-150k</code> is the command,
+and it needs a checkout of the repository, a pinned environment, and roughly half a gigabyte of
+separately published data. It is not something a fresh <code>pip install</code> can do on its
+own. <a href="how-it-works.html#checks">What each check needs</a> is set out plainly.</p>
+
+<a class="next" href="how-it-works.html"><span>For the engineer who will run it</span>
+  <b>How it works &rarr;</b> — the four commands, the measurement method, the full refusal
+  output, and how to check the figures on this page against the data they came from.</a>
+
+<a class="next" href="lab/"><span>For everyone</span>
+  <b>The lab, live &rarr;</b> — 150,000 real documents, one query followed all the way
+  through, and the verdict at the end of it.</a>
+
+<h2><span class="n">What is next</span>Today, and 23 September</h2>
+
+<p><b>Today:</b> measure your documents, compare the setups, test against a real system, and
+get the decision with the evidence behind it.</p>
+
+<p><b>On 23 September</b> — already built and already in the public repository today: a second
+database with a head-to-head on one machine, speed tests run three times with the spread
+reported, a measurement of how much traffic your setup takes before it breaks, a second
+reference collection, and a warning if your own documents are being silently cut off before
+they are ever searched — a quiet and common cause of bad results.</p>
+
+<p>We are naming that now, before the date, because it is in the repository for you to look
+at today. We would rather be checkable than impressive.</p>
+
+<h2><span class="n">Someone else's machine</span>The check we did not do ourselves</h2>
+
+<p>On 15 September, on a machine that is not the developer's, a clean clone of the repository was
+checked against its own published values. Every digest reproduced. The figures on this page were
+recomputed from <code>base.bin</code> and agreed: storage amplification <b>3.7152</b> against a
+published 3.715, boundary crispness <b>0.0362</b> against 0.036, p99 copies <b>4</b>, the copies
+histogram <b>3.6 / 5.6 / 6.5 / 84.3%</b>, and <b>144,563</b> vectors copied. All 2,000 held-out
+queries agreed with the routed-region recall, with zero disagreements. The run reported
+<code>ALL CHECKS PASSED</code>.</p>
+
+<div class="gap"><b>What that is not.</b> It was run by the owner of this site, not by an
+unrelated third party — and it checked the lab's published data, not the full 150,000-vector
+fixture, which needs a pinned environment and half a gigabyte of separately published assets. We
+would rather name both limits than let a green result do more work than it earned.</div>
+
+<div class="rule"><p>oneground is the Choose door of the oneproof suite. Measured instead of
+asserted — from the architecture you choose before you build, to the evidence an answer rests
+on, to the authorization an action required.</p></div>
+
+<footer>
+  <div>The other three doors: <a href="/#prevent">Prevent</a> · <a href="/#detect">Detect</a> ·
+  <a href="/#prove">Prove</a>. See <a href="/where-it-fits.html">where they fit</a>.
+  <br><br>oneground is Apache-2.0 and free, permanently.</div>
+  <div class="fine">Page views on this site are counted by GoatCounter, an open-source counter
+  that sets no cookies and stores no personal data; the tools themselves report to no one.<br>
+  &copy; 2026 oneproof · Apache-2.0 across the suite · Figures on this page are measured on a
+  public collection of 150,000 documents, not customer data.</div>
+</footer>
+
+</div>
+</body>
+</html>
