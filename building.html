@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What we're building — designs, specifications, and what is not built yet · oneproof</title>
+<meta name="description" content="Design work that has not shipped, specifications with no implementation behind them yet, and a machine-readable register of every open requirement. Separated from what is shipped, and labelled.">
+<meta property="og:title" content="What we're building — and what is not built yet">
+<meta property="og:description" content="Interface designs that do not exist as software, specifications with nothing behind them yet, and a register anyone can diff. Kept apart from what actually ships.">
+<meta property="og:url" content="https://oneproof.dev/building.html">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<link rel="canonical" href="https://oneproof.dev/building.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%231c1713'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23c9a227' stroke-width='3'/%3E%3Ctext x='32' y='41' font-family='Georgia,serif' font-size='26' fill='%23c9a227' text-anchor='middle'%3E1%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#f6f1e6; --paper-2:#efe7d4; --ink:#211a12; --dim:#716250;
+    --line:#d9cdb6; --line-soft:#e6ddc9;
+    --gold:#c9a227; --gold-text:#7d620f;
+    --x-ground:#1c1713; --x-panel:#241d17; --x-line:#3a2f26; --x-ink:#e8ddcc; --x-dim:#a5947d;
+    --allow:#7cc79a; --review:#e4a05e; --refuse:#e28a80;
+    --serif:'Newsreader',Georgia,'Times New Roman',serif;
+    --mono:'IBM Plex Mono','Courier New',monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.62;
+    background-image:repeating-linear-gradient(180deg,rgba(33,26,18,.018) 0 1px,transparent 1px 29px)}
+  a{color:var(--gold-text)}
+  a:focus-visible{outline:2px solid var(--gold-text);outline-offset:3px;border-radius:2px}
+  @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+  .wrap{max-width:780px;margin:0 auto;padding:0 22px}
+  .masthead{display:flex;justify-content:space-between;align-items:baseline;padding:26px 0 18px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .wordmark{font-weight:600;font-size:21px;letter-spacing:.01em;text-decoration:none;color:var(--ink)}
+  .wordmark .seal{color:var(--gold-text)} .wordmark .tld{color:var(--dim);font-weight:400}
+  .crumb{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+  .crumb a{color:var(--dim);text-decoration:none}
+  .layers{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;
+    text-transform:uppercase;padding:12px 0 0;color:var(--dim)}
+  .layers a{text-decoration:none;color:var(--dim)} .layers a:hover{color:var(--ink)}
+  .layers b{color:var(--ink);font-weight:600}
+  .status{margin:22px 0 0;border:1px solid var(--line);background:var(--paper-2);padding:14px 18px;font-size:15.5px;line-height:1.5}
+  .status b{color:var(--gold-text)}
+  h1{font-weight:500;font-size:44px;line-height:1.08;letter-spacing:-.015em;margin:34px 0 14px}
+  .lede{font-size:21px;line-height:1.5;color:var(--dim);margin:0 0 8px}
+  h2{font-weight:500;font-size:29px;line-height:1.15;margin:54px 0 12px;letter-spacing:-.01em}
+  h2 .n{font-family:var(--mono);font-size:13px;color:var(--gold-text);letter-spacing:.1em;display:block;margin-bottom:6px}
+  h3{font-weight:600;font-size:19px;margin:28px 0 6px}
+  p{margin:0 0 16px}
+  .rule{border-left:3px solid var(--gold);padding:12px 18px;margin:22px 0;background:var(--paper-2)}
+  .rule p{margin:0}
+  .pull{border-left:3px solid var(--gold);padding:14px 20px;margin:24px 0;background:var(--paper-2);font-size:21px;line-height:1.4}
+  .pull p{margin:0}
+  .pull .who{display:block;font-family:var(--mono);font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);margin-top:10px}
+  code{font-family:var(--mono);font-size:.86em;background:var(--paper-2);padding:1px 5px;border-radius:3px}
+  pre{font-family:var(--mono);font-size:13.5px;line-height:1.55;background:var(--x-ground);color:var(--x-ink);
+    padding:16px 18px;border-radius:6px;overflow-x:auto;margin:14px 0 20px}
+  pre .c{color:var(--x-dim)} pre .g{color:var(--allow)} pre .r{color:var(--refuse)} pre .a{color:var(--review)}
+  table{border-collapse:collapse;width:100%;font-size:16px;margin:14px 0 22px}
+  th,td{text-align:left;vertical-align:top;padding:10px 10px;border-top:1px solid var(--line-soft)}
+  th{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:500;border-top:0}
+  .tbl{overflow-x:auto;margin:0 -22px;padding:0 22px}
+  .gap{border:1px dashed var(--line);padding:14px 18px;margin:18px 0;color:var(--dim);font-size:16px}
+  .gap b{color:var(--ink)}
+  .cmds{background:var(--x-ground);color:var(--x-ink);border-radius:6px;padding:18px 20px;margin:16px 0 22px}
+  .cmds pre{background:none;padding:0;margin:0 0 6px}
+  .cmds .c{color:var(--x-dim)}
+  .next{display:block;border:1px solid var(--line);background:var(--paper-2);padding:15px 18px;margin:14px 0;
+    text-decoration:none;color:var(--ink)}
+  .next:hover{border-color:var(--gold)}
+  .next span{display:block;font-family:var(--mono);font-size:11.5px;color:var(--dim);letter-spacing:.11em;
+    text-transform:uppercase;margin-bottom:5px}
+  .next b{font-weight:600}
+  .lab{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);
+    background:#fbf8f0;padding:12px;border-radius:3px;margin:30px 0 10px;box-shadow:0 1px 0 rgba(33,26,18,.08)}
+  .lab:hover{border-color:var(--gold)}
+  .lab .mat{background:var(--x-ground);border-radius:3px;padding:22px 22px 20px;overflow-x:auto}
+  .lab .k{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--x-dim);margin-bottom:16px}
+  .lab .headline{font-size:24px;line-height:1.25;color:var(--x-ink);margin:0 0 18px;max-width:22ch}
+  .lab .headline em{font-style:normal;color:var(--gold)}
+  .bignum{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin:0 0 14px}
+  .bignum .v{font-family:var(--mono);font-size:46px;line-height:1;color:var(--gold)}
+  .bignum .l{color:var(--x-ink);font-size:17px;line-height:1.35;max-width:26ch}
+  .lab .fine{font-family:var(--mono);font-size:11.5px;line-height:1.6;color:var(--x-dim);margin:0}
+  .lab .go{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);padding:12px 4px 1px}
+  .lab .go b{color:var(--gold-text);font-weight:600}
+  footer{margin-top:64px;border-top:1px solid var(--line);padding:26px 0 40px;font-size:15px;color:var(--dim)}
+  footer a{color:var(--gold-text)}
+  footer .fine{font-size:13.5px;margin-top:14px}
+  @media (max-width:640px){h1{font-size:33px} body{font-size:17px} .lede{font-size:19px} .pull{font-size:19px}
+    .bignum .v{font-size:38px} .lab .headline{font-size:21px}}
+  .fig{border:1px solid var(--line);background:#fbf8f0;border-radius:4px;padding:10px;margin:8px 0 26px}
+  .fig img{display:block;width:100%;height:auto;border-radius:2px}
+</style>
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <a class="wordmark" href="/"><span class="seal">one</span>proof<span class="tld">.dev</span></a>
+  <div class="crumb"><a href="/">home</a> · what we're building</div>
+</header>
+
+<div class="status" style="border-left:3px solid var(--gold)">
+  <b>Nothing on this page is something you can install today.</b> It holds design work that has
+  not been built, specifications with no implementation behind them yet, and a register of what
+  is still open. It is kept on its own page, and labelled, so that nothing here can be mistaken
+  for the four tools that do exist. Those are <a href="/">on the home page</a>.
+</div>
+
+<h1>What we're building</h1>
+<p class="lede">Roadmaps are usually a way of being credited for work that has not happened. This
+one is written so you can check it: every claim below is either a design you can open, a
+specification you can read, or a state in a machine-readable file you can diff against next
+month's.</p>
+
+<h2><span class="n">The three states</span>What each word on this page means</h2>
+
+<div class="tbl"><table>
+  <tr><th>state</th><th>meaning</th></tr>
+  <tr><td><b>Shipped</b></td><td>Installable or readable today, by you, without asking us. It has a version, a licence and an address.</td></tr>
+  <tr><td><b>Specified, not built</b></td><td>Written down in enough detail that someone else could implement it — and nobody has, including us.</td></tr>
+  <tr><td><b>Designed, not built</b></td><td>A picture of something. No code behind it. The most flattering and least trustworthy kind of artifact, which is why it lives here.</td></tr>
+</table></div>
+
+<h2><span class="n">01</span>Interface designs — no software behind them</h2>
+<p>oneground today is a set of commands that write files. These are studies of what an interface
+over those commands could look like. <b>They are not screenshots.</b> Every figure in them is
+illustrative, and each one carries that on its own face so it cannot be separated from the claim
+by a screenshot or a shared link.</p>
+
+<a class="next" href="building/oneground-interface.html">
+  <span>Design · not built</span>
+  <b>A run, in five steps &rarr;</b> — what the file you write, the corpus measurement, the
+  architectures, the engine run and the decision could look like as one flow.
+</a>
+<figure class="fig"><img src="building/design-interface.png" alt="An interface study for oneground: five steps across the top, a form describing the corpus and the constraints, and a margin rail of evidence." loading="lazy"></figure>
+
+<a class="next" href="building/oneground-workspace.html">
+  <span>Design · not built</span>
+  <b>A run workspace &rarr;</b> — the same run as a working surface: steps on the left, the
+  decision in the middle, and an evidence drawer that names the file and field behind any figure
+  you click.
+</a>
+<figure class="fig"><img src="building/design-workspace.png" alt="A workspace study for oneground: steps in a left rail, a decision table in the middle, and an evidence drawer on the right." loading="lazy"></figure>
+
+<div class="rule"><p>The thing worth taking from these is not the layout. It is that every number
+in them is designed to carry the file and field it was read from — which is a property of the
+output format, and that part is real.</p></div>
+
+<h2><span class="n">02</span>What is shipped, for contrast</h2>
+<div class="tbl"><table>
+  <tr><th>what</th><th>where</th></tr>
+  <tr><td><b>onedoor</b> — per-action authorization</td><td>v0.7.0 on PyPI · Apache-2.0 · <a href="https://github.com/shamiksaharcciit-oss/onedoor">source public</a></td></tr>
+  <tr><td><b>onewatch</b> — change evidence</td><td>public since 10 September · Apache-2.0 · <a href="https://github.com/shamiksaharcciit-oss/onewatch">source public</a></td></tr>
+  <tr><td><b>oneground</b> — retrieval architecture choice</td><td>preview on PyPI · <a href="/oneground/">the case</a> · <a href="/oneground/lab/">the live lab</a></td></tr>
+  <tr><td><b>Stage records</b> — the format, samples and verifier</td><td><a href="/stage-records.html">the format</a> · <a href="/samples/">samples, verifier, ten rejection vectors</a></td></tr>
+  <tr><td><b>Two Internet-Drafts</b></td><td><a href="https://datatracker.ietf.org/doc/draft-saha-aadp/">draft-saha-aadp &minus;02</a> · <a href="https://datatracker.ietf.org/doc/draft-saha-stage-receipts/">draft-saha-stage-receipts &minus;00</a></td></tr>
+</table></div>
+
+<h2><span class="n">03</span>Specified, and not built</h2>
+<p>The record format publishes its own open requirements. Thirteen of them, each with a state and
+a note about whether the validation battery can even test it. <b>Nine have not been started.</b>
+That is not a confession — it is the point of publishing a register rather than a roadmap.</p>
+
+<div class="tbl"><table>
+  <tr><th>#</th><th>requirement</th><th>state</th><th>can the battery test it?</th></tr>
+  <tr><td>10</td><td>Content trust class</td><td><b>specified</b></td><td>testable</td></tr>
+  <tr><td>11</td><td>Emission failure semantics</td><td><b>specified</b></td><td>testable</td></tr>
+  <tr><td>2</td><td>Epoch anchoring — <em>load-bearing</em></td><td>not started</td><td>partial</td></tr>
+  <tr><td>7</td><td>Receipt topology / DAG — <em>load-bearing, and the battery's largest hole</em></td><td>not started</td><td>not yet</td></tr>
+  <tr><td>9</td><td>Coverage attestation and causal completeness</td><td>not started</td><td>testable</td></tr>
+  <tr><td>1, 3, 4, 5, 6, 8, 12, 13</td><td>Merkle manifest · tenant isolation · signature envelope · dependency record · key lifecycle · disclosure layer · schema evolution · external effect records</td><td>not started</td><td>mixed</td></tr>
+</table></div>
+
+<p>The reference SDK for stage records has <b>not been started</b>, and the validation battery it
+will be judged against was published <em>before</em> it — deliberately, so the exam cannot be
+written to fit the answer. Two of the four battery rings are specified; two are not started.
+Dates for each live in the register rather than in prose here, because a date in prose ages and a
+field in a file can be diffed.</p>
+
+<h2><span class="n">04</span>How to hold us to this</h2>
+<p>None of the above is a promise you have to take on trust, because it is published as data
+rather than as a paragraph:</p>
+
+<div class="cmds">
+<pre class="c"># the register itself — every requirement, every state, machine-readable</pre>
+<pre>curl -s https://oneproof.dev/samples/watch/STATUS.json</pre>
+<pre class="c"># what changed since you last looked — it diffs STATES, not notes</pre>
+<pre>python watch/whatchanged.py old.json new.json</pre>
+</div>
+
+<p>It diffs states rather than prose on purpose: a roadmap where the words get warmer while
+nothing moves is the failure mode this file exists to prevent. If a requirement is still
+<code>not-started</code> next month, the diff will say so, and it will say so whether or not we
+mention it.</p>
+
+<a class="next" href="/samples/"><span>Check it</span><b>The samples package &rarr;</b> — the register,
+the reference verifier, ten rejection vectors a conforming verifier must refuse, and the
+validation battery, all runnable offline.</a>
+
+<footer>
+  <div>Designs on this page are studies, not products. Where something is shipped it is named with
+  its version and its address; where it is not, it says so. The four things that do exist are on
+  the <a href="/">home page</a>.</div>
+  <div class="fine">Page views on this site are counted by GoatCounter, an open-source counter that
+  sets no cookies and stores no personal data; the tools themselves report to no one.<br>
+  &copy; 2026 oneproof · Apache-2.0 across the suite · Figures in the interface studies are
+  illustrative and are labelled as such on the studies themselves.</div>
+</footer>
+
+</div>
+</body>
+</html>

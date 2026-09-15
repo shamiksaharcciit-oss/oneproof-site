@@ -3,42 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>oneproof — evidence infrastructure for AI agents</title>
-<meta name="description" content="oneproof — open tools that let an AI agent's operator prove what happened: per-action policy authorization (onedoor), change-evidence monitoring (onewatch), and forensic provenance for retrieval pipelines (onetrace). Built on AADP, an IETF Internet-Draft.">
-<meta property="og:title" content="oneproof — logs are testimony, receipts are evidence">
-<meta property="og:description" content="Open tools for the day someone asks you to show, not tell, what your AI system did. Prevent, Detect, Prove.">
+<title>oneproof — the evidence layer for AI systems</title>
+<meta name="description" content="An evidence layer for AI systems: a way to independently reconstruct, compare and verify what an AI system actually did. Four open tools — choose the architecture, authorize the action, detect the change, prove the answer.">
+<meta property="og:title" content="oneproof — the evidence layer for AI systems">
+<meta property="og:description" content="Observability tells you what your AI system says it did. An evidence layer lets someone else check. Four open tools, measured instead of asserted.">
 <meta property="og:url" content="https://oneproof.dev/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://oneproof.dev/og.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="oneproof — logs are testimony, receipts are evidence">
-<meta name="twitter:description" content="Open tools for the day someone asks you to show, not tell, what your AI system did. Prevent, Detect, Prove.">
-<meta name="twitter:image" content="https://oneproof.dev/og.png">
 <link rel="canonical" href="https://oneproof.dev/">
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "oneproof",
-  "url": "https://oneproof.dev/",
-  "description": "Evidence infrastructure for AI agents: per-action policy authorization (onedoor), change-evidence monitoring (onewatch), and forensic provenance for retrieval pipelines (onetrace), built on AADP, an IETF Internet-Draft."
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "onedoor",
-  "applicationCategory": "DeveloperApplication",
-  "operatingSystem": "Windows, macOS, Linux",
-  "softwareVersion": "0.7.0",
-  "license": "https://www.apache.org/licenses/LICENSE-2.0",
-  "url": "https://github.com/shamiksaharcciit-oss/onedoor",
-  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"}
-}
-</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%231c1713'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23c9a227' stroke-width='3'/%3E%3Ctext x='32' y='41' font-family='Georgia,serif' font-size='26' fill='%23c9a227' text-anchor='middle'%3E1%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
@@ -46,443 +18,745 @@
     --paper:#f6f1e6; --paper-2:#efe7d4; --ink:#211a12; --dim:#716250;
     --line:#d9cdb6; --line-soft:#e6ddc9;
     --gold:#c9a227; --gold-text:#7d620f;
-    --x-ground:#1c1713; --x-panel:#241d17; --x-line:#3a2f26;
-    --x-ink:#e8ddcc; --x-dim:#a5947d;
+    --x-ground:#1c1713; --x-panel:#241d17; --x-line:#3a2f26; --x-ink:#e8ddcc; --x-dim:#a5947d;
     --allow:#7cc79a; --review:#e4a05e; --refuse:#e28a80;
     --serif:'Newsreader',Georgia,'Times New Roman',serif;
     --mono:'IBM Plex Mono','Courier New',monospace;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{
-    margin:0; background:var(--paper); color:var(--ink);
-    font-family:var(--serif); font-size:18px; line-height:1.62;
-    background-image:repeating-linear-gradient(180deg, rgba(33,26,18,.018) 0 1px, transparent 1px 29px);
-  }
-  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
-  a{color:var(--ink); text-decoration-color:var(--gold); text-decoration-thickness:1.5px; text-underline-offset:3px}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;
+    background-image:repeating-linear-gradient(180deg,rgba(33,26,18,.018) 0 1px,transparent 1px 29px)}
+  @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+  a{color:var(--ink);text-decoration-color:var(--gold);text-decoration-thickness:1.5px;text-underline-offset:3px}
   a:hover{color:var(--gold-text)}
-  a:focus-visible, button:focus-visible{outline:2px solid var(--gold-text); outline-offset:3px; border-radius:2px}
+  a:focus-visible{outline:2px solid var(--gold-text);outline-offset:3px;border-radius:2px}
+  img,svg{max-width:100%}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 26px}
+  .narrow{max-width:760px}
 
-
-  .wrap{max-width:1000px; margin:0 auto; padding:0 28px}
-
-  header.masthead{
-    display:flex; align-items:baseline; justify-content:space-between; gap:16px;
-    padding:26px 0 18px; border-bottom:1.5px solid var(--ink); flex-wrap:wrap;
-  }
-  .wordmark{font-family:var(--serif); font-weight:600; font-size:26px; letter-spacing:.01em}
-  .wordmark .seal{color:var(--gold-text)}
-  .wordmark .tld{color:var(--dim); font-weight:400}
-  nav.doors-nav{display:flex; flex-wrap:wrap; gap:10px 22px; font-family:var(--mono); font-size:12.5px; letter-spacing:.1em; text-transform:uppercase}
-  nav.doors-nav a{text-decoration:none; color:var(--dim)}
-  nav.doors-nav a:hover{color:var(--ink)}
-
-  .tag{
-    display:inline-block; font-family:var(--mono); font-size:11px; font-weight:500;
-    letter-spacing:.16em; text-transform:uppercase; color:var(--dim);
-    border:1px solid var(--line); background:var(--paper-2);
-    padding:4px 10px; border-radius:2px;
-  }
-  .tag.gold{border-color:var(--gold); color:var(--gold-text)}
+  header.masthead{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+    padding:24px 0 16px;border-bottom:1.5px solid var(--ink);flex-wrap:wrap}
+  .wordmark{font-weight:600;font-size:25px;letter-spacing:.01em;text-decoration:none;color:var(--ink)}
+  .wordmark .seal{color:var(--gold-text)} .wordmark .tld{color:var(--dim);font-weight:400}
+  nav.top{display:flex;flex-wrap:wrap;gap:9px 20px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+  nav.top a{text-decoration:none;color:var(--dim)} nav.top a:hover{color:var(--ink)}
 
   /* ---------- hero ---------- */
-  .hero{padding:64px 0 24px}
-  .hero-grid{display:grid; grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr); gap:48px; align-items:start}
-  @media (max-width:860px){ .hero-grid{grid-template-columns:minmax(0,1fr)} }
-  h1{
-    font-size:clamp(40px,5.6vw,58px); line-height:1.06; font-weight:500; margin:18px 0 22px;
-    letter-spacing:-.012em; text-wrap:balance;
-  }
-  h1 em{font-style:italic; font-weight:500}
-  .hero p.lede{font-size:20px; line-height:1.55; color:var(--ink); max-width:34em; margin:0 0 26px}
-  .cmd{
-    font-family:var(--mono); font-size:14.5px; background:var(--x-ground); color:var(--x-ink);
-    border-radius:4px; padding:14px 18px; display:block; overflow-x:auto; white-space:pre; line-height:1.7;
-  }
-  .cmd .c{color:var(--x-dim)}
-  .cmd .g{color:var(--gold)}
-  .hero-note{font-family:var(--mono); font-size:12px; color:var(--dim); margin-top:10px; letter-spacing:.04em}
+  .hero{padding:56px 0 10px}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-text);margin:0 0 18px}
+  h1{font-size:clamp(38px,5.4vw,62px);line-height:1.04;font-weight:500;margin:0 0 22px;letter-spacing:-.015em;text-wrap:balance;max-width:19ch}
+  h1 em{font-style:italic;font-weight:500;color:var(--gold-text)}
+  .hero .lede{font-size:clamp(20px,2.2vw,24px);line-height:1.45;max-width:30em;margin:0 0 30px;color:var(--ink)}
+  .hero .lede b{font-weight:600}
+  .cta{display:flex;flex-wrap:wrap;gap:12px 14px;align-items:center;margin-bottom:8px}
+  .cta a{display:inline-block;font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-decoration:none;
+    padding:11px 18px;border-radius:3px;border:1px solid var(--ink);color:var(--ink);background:none}
+  .cta a.solid{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .cta a:hover{border-color:var(--gold);color:var(--gold-text)}
+  .cta a.solid:hover{background:var(--x-ground);color:var(--paper)}
 
-  /* exhibit cards: dark panels matted on paper */
-  figure.exhibit{margin:0; border:1px solid var(--line); background:#fbf8f0; padding:12px; border-radius:3px; box-shadow:0 1px 0 rgba(33,26,18,.08)}
-  figure.exhibit .mat{background:var(--x-ground); border-radius:3px; padding:18px 18px 16px; overflow-x:auto}
-  figure.exhibit figcaption{
-    display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
-    font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
-    color:var(--dim); padding:10px 4px 0;
-  }
-  .receipt{font-family:var(--mono); font-size:12.3px; line-height:1.75; color:var(--x-ink); min-width:0}
-  .receipt .ln{display:block; white-space:pre}
-  @keyframes rln{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-  @keyframes stamp{0%{opacity:0;transform:scale(1.7)}60%{opacity:1;transform:scale(.95)}100%{opacity:1;transform:scale(1)}}
-  .receipt.play .ln,.receipt.play .rule{opacity:0;animation:rln .5s ease forwards}
-  .receipt.play .allow,.receipt.play .refuse{display:inline-block;opacity:0;animation:stamp .4s cubic-bezier(.2,1.4,.4,1) forwards}
-  .chain{padding:56px 0 8px}
-  .chain .exhibit{margin-top:18px}
-  .chain-scroll{overflow-x:auto; background:#fbf8f0; border-radius:3px}
-  .chain-scroll svg{display:block; min-width:880px; width:100%; height:auto}
-  .receipt .k{color:var(--x-dim)}
-  .receipt .d{color:var(--x-dim)}
-  .receipt .allow{color:var(--allow); font-weight:600}
-  .receipt .refuse{color:var(--refuse); font-weight:600}
-  .receipt .rule{border-top:1px solid var(--x-line); margin:8px 0}
-  .receipt .gold{color:var(--gold)}
+  h2{font-size:clamp(28px,3.4vw,40px);line-height:1.12;font-weight:500;margin:0 0 14px;letter-spacing:-.014em;text-wrap:balance}
+  h2 .n{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-text);margin-bottom:10px;font-weight:500}
+  h3{font-size:21px;font-weight:600;margin:0 0 8px}
+  p{margin:0 0 16px}
+  .band{padding:64px 0;border-top:1px solid var(--line)}
+  .band.dark{background:var(--x-ground);color:var(--x-ink);border-top:none}
+  .band.dark h2{color:var(--x-ink)} .band.dark h2 .n{color:var(--gold)}
+  .band.dark p{color:var(--x-dim)}
+  .band.dark .fig{background:#15110e;border-color:var(--x-line)}
+  .lead{font-size:20px;color:var(--dim);max-width:34em}
+  .band.dark .lead{color:var(--x-dim)}
 
-  /* ---------- rainy day ---------- */
-  .rainy{padding:56px 0; border-top:1px solid var(--line)}
-  .rainy .inner{max-width:44em; margin:0 auto}
-  .rainy p{font-size:21px; line-height:1.65; margin:18px 0 0}
-  .rainy p:first-of-type{margin-top:22px}
-  .pull{
-    font-size:26px; font-style:italic; line-height:1.45; margin:30px 0 0; padding-left:22px;
-    border-left:3px solid var(--gold); text-wrap:balance;
-  }
+  /* ---------- figures ---------- */
+  .fig{border:1px solid var(--line);background:#fbf8f0;border-radius:4px;padding:18px;margin:26px 0 10px}
+  .fig svg{display:block;width:100%;height:auto}
+  .figcap{font-family:var(--mono);font-size:11.5px;line-height:1.6;color:var(--dim);
+    display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:12px 4px 0}
+  .figcap b{color:var(--ink);font-weight:600}
+  .band.dark .figcap{color:var(--x-dim)} .band.dark .figcap b{color:var(--x-ink)}
+  .scroll{overflow-x:auto}
+  .scroll svg{min-width:720px}
+  /* ---------- the four doors ---------- */
+  .doors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:34px}
+  @media (max-width:820px){.doors{grid-template-columns:minmax(0,1fr)}}
+  .door{border:1px solid var(--line);background:#fbf8f0;border-radius:4px;padding:20px 22px 18px;
+    display:flex;flex-direction:column;box-shadow:0 1px 0 rgba(33,26,18,.06)}
+  .door .when{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-text);margin-bottom:12px}
+  .door h3{font-size:24px;font-weight:500;margin:0 0 4px;letter-spacing:-.01em}
+  .door h3 .prod{font-style:italic;color:var(--gold-text)}
+  .door .q{font-size:18px;color:var(--ink);margin:0 0 14px;font-weight:500}
+  .door p{font-size:16.5px;color:var(--dim);margin:0 0 16px}
+  .door .shot{background:var(--x-ground);color:var(--x-ink);border-radius:3px;padding:14px 16px;
+    font-family:var(--mono);font-size:12px;line-height:1.7;white-space:pre;overflow-x:auto;margin:0 0 16px}
+  .door .shot .k{display:block;color:var(--x-dim);font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
+  .door .shot .g{color:var(--allow)} .door .shot .a{color:var(--review)} .door .shot .r{color:var(--refuse)} .door .shot .d{color:var(--x-dim)}
+  .door .links{margin-top:auto;padding-top:12px;border-top:1px dashed var(--line);
+    display:flex;flex-direction:column;gap:7px;font-family:var(--mono);font-size:12.5px}
+  .door .links a{text-decoration:none;color:var(--gold-text)}
+  .door .links a:hover{text-decoration:underline}
+  .door .links .who{color:var(--dim);letter-spacing:.06em;text-transform:uppercase;font-size:10.5px}
+  .door .status{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:12px}
+  .door .status b{color:var(--gold-text);font-weight:600}
 
-  /* ---------- doors ---------- */
-  .doors{padding:56px 0; border-top:1px solid var(--line)}
-  .sec-head{display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:8px}
-  h2{font-size:34px; font-weight:500; margin:14px 0 6px; letter-spacing:-.01em}
-  .sec-sub{color:var(--dim); font-size:17px; max-width:38em; margin:0 0 30px}
-  .door-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px}
-  @media (max-width:900px){ .door-grid{grid-template-columns:1fr} }
-  .door{border:1px solid var(--line); background:#fbf8f0; border-radius:3px; padding:14px; display:flex; flex-direction:column; gap:14px}
-  .door .shot{background:var(--x-ground); border-radius:3px; padding:14px; font-family:var(--mono); font-size:11.5px; line-height:1.8; color:var(--x-ink); overflow-x:auto; white-space:pre}
-  .door .shot .k{color:var(--x-dim)}
-  .door .shot .bar{display:inline-block; height:7px; border-radius:2px; vertical-align:middle}
-  .door h3{font-size:23px; font-weight:600; margin:0}
-  .door h3 .prod{font-style:italic; font-weight:500; color:var(--gold-text)}
-  .door p{margin:0; font-size:16.5px; line-height:1.58; color:var(--ink)}
-  .door .foot{margin-top:auto; display:flex; flex-direction:column; gap:8px}
-  .status{
-    font-family:var(--mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
-    color:var(--dim); border-top:1px dashed var(--line); padding-top:10px;
-  }
-  .status b{color:var(--ink); font-weight:600}
-  .door a.more{font-family:var(--mono); font-size:12.5px; letter-spacing:.04em}
+  /* ---------- exhibits ---------- */
+  .exhibits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:30px}
+  @media (max-width:900px){.exhibits{grid-template-columns:minmax(0,1fr)}}
+  .ex{background:#15110e;border:1px solid var(--x-line);border-radius:4px;padding:18px 18px 14px;display:flex;flex-direction:column}
+  .ex .t{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--x-dim);margin-bottom:12px}
+  .ex pre{font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--x-ink);margin:0 0 12px;white-space:pre-wrap;word-break:break-word}
+  .ex .g{color:var(--allow)} .ex .a{color:var(--review)} .ex .r{color:var(--refuse)} .ex .d{color:var(--x-dim)}
+  .ex .why{font-family:var(--serif);font-size:15.5px;line-height:1.5;color:var(--x-dim);margin:auto 0 0}
+  .ex .why b{color:var(--x-ink);font-weight:600}
 
-  /* ---------- aadp ---------- */
-  .aadp{padding:56px 0; border-top:1px solid var(--line)}
-  .aadp-grid{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr); gap:44px; align-items:start}
-  @media (max-width:860px){ .aadp-grid{grid-template-columns:1fr} }
-  .aadp p{font-size:17.5px; max-width:36em}
-  .spec-card{border:1px solid var(--line); background:var(--paper-2); border-radius:3px; padding:20px 22px; font-size:15.5px}
-  .spec-card .name{font-family:var(--mono); font-size:13.5px; font-weight:600; letter-spacing:.02em}
-  .spec-card dl{margin:12px 0 0; display:grid; grid-template-columns:auto 1fr; gap:6px 16px}
-  .spec-card dt{font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); padding-top:2px}
-  .spec-card dd{margin:0}
+  /* ---------- drill-down ---------- */
+  .paths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:30px}
+  @media (max-width:900px){.paths{grid-template-columns:minmax(0,1fr)}}
+  .path{border:1px solid var(--line);background:var(--paper-2);border-radius:4px;padding:18px 20px}
+  .path .who{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-text);margin-bottom:10px}
+  .path h3{font-size:19px;margin-bottom:8px}
+  .path p{font-size:16px;color:var(--dim);margin-bottom:12px}
+  .path ul{margin:0;padding-left:1.1em;font-family:var(--mono);font-size:12.5px;line-height:1.9}
+  .path li{margin:0}
+  .path a{color:var(--gold-text)}
 
-  /* ---------- honesty ---------- */
-  .honesty{padding:56px 0; border-top:1px solid var(--line)}
-  .rules{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:26px; margin-top:26px}
-  @media (max-width:900px){ .rules{grid-template-columns:1fr} }
-  .rule-card{border-top:2px solid var(--ink); padding-top:14px}
-  .rule-card h4{font-size:19px; font-weight:600; margin:0 0 8px}
-  .rule-card p{margin:0; font-size:16px; color:var(--ink); line-height:1.58}
-  .rule-card p em{color:var(--gold-text)}
+  /* ---------- pull ---------- */
+  .pull{border-left:3px solid var(--gold);padding:16px 22px;margin:30px 0;background:var(--paper-2);
+    font-size:clamp(20px,2.3vw,25px);line-height:1.38;max-width:26em}
+  .pull p{margin:0}
+  .band.dark .pull{background:#15110e;border-left-color:var(--gold);color:var(--x-ink)}
 
-  /* ---------- reading ---------- */
-  .reading{padding:56px 0; border-top:1px solid var(--line)}
-  .read-list{list-style:none; margin:22px 0 0; padding:0; border-top:1px solid var(--line)}
-  .read-list li{border-bottom:1px solid var(--line); padding:16px 4px; display:flex; justify-content:space-between; gap:18px; flex-wrap:wrap; align-items:baseline}
-  .read-list .t{font-size:19px}
-  .read-list .t i{color:var(--dim); font-style:normal; font-size:15.5px}
-  .read-list .when{font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim)}
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:4px;overflow:hidden;margin:30px 0 8px}
+  @media (max-width:820px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .stat{background:#fbf8f0;padding:18px}
+  .stat .v{font-family:var(--mono);font-size:clamp(22px,3vw,30px);color:var(--gold-text);line-height:1.1}
+  .stat .l{font-size:14.5px;color:var(--dim);margin-top:8px;line-height:1.4}
+  .band.dark .stats{background:var(--x-line);border-color:var(--x-line)}
+  .band.dark .stat{background:#15110e} .band.dark .stat .v{color:var(--gold)} .band.dark .stat .l{color:var(--x-dim)}
 
-  /* ---------- contact / footer ---------- */
-  footer{border-top:1.5px solid var(--ink); margin-top:26px; padding:36px 0 46px}
-  .foot-grid{display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap; align-items:baseline}
-  .foot-grid .colophon{font-size:15px; color:var(--dim); max-width:30em}
-  .foot-links{font-family:var(--mono); font-size:13px; display:flex; flex-direction:column; gap:8px}
-  .fineprint{font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--dim); margin-top:26px; border-top:1px dashed var(--line); padding-top:14px; line-height:1.9}
+  footer{margin-top:0;border-top:1px solid var(--line);padding:34px 0 48px;font-size:15.5px;color:var(--dim)}
+  footer a{color:var(--gold-text)}
+  footer .fine{font-size:13.5px;margin-top:16px}
+
+  /* ---------- the switcher ---------- */
+  .switch{margin-top:30px}
+  .tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--x-line);padding-bottom:0}
+  .tabs button{font-family:var(--mono);font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;
+    background:none;border:none;border-bottom:2px solid transparent;color:var(--x-dim);
+    padding:11px 16px;cursor:pointer;margin-bottom:-1px}
+  .tabs button:hover{color:var(--x-ink)}
+  .tabs button[aria-selected="true"]{color:var(--gold);border-bottom-color:var(--gold)}
+  .tabs button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px;border-radius:2px}
+  .pane{display:grid;grid-template-columns:minmax(0,1.06fr) minmax(0,.94fr);gap:30px;
+    padding:26px 0 6px;align-items:start}
+  .pane[hidden]{display:none}
+  @media (max-width:880px){.pane{grid-template-columns:minmax(0,1fr);gap:20px}}
+  .pane pre{font-family:var(--mono);font-size:12.5px;line-height:1.8;color:var(--x-ink);
+    background:#15110e;border:1px solid var(--x-line);border-radius:4px;
+    padding:20px 22px;margin:0;overflow-x:auto}
+  .pane pre .g{color:var(--allow)} .pane pre .a{color:var(--review)}
+  .pane pre .r{color:var(--refuse)} .pane pre .d{color:var(--x-dim)}
+  .pane .say h3{font-size:clamp(20px,2.2vw,25px);font-weight:500;line-height:1.24;
+    color:var(--x-ink);margin:0 0 14px;letter-spacing:-.01em;max-width:20ch}
+  .pane .say p{font-size:17px;line-height:1.55;color:var(--x-dim);margin:0 0 14px}
+  .pane .say .src{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--x-dim);margin:0}
+  .pane .say .src a{color:var(--gold)}
 </style>
 <script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
+
 <div class="wrap">
+<header class="masthead">
+  <a class="wordmark" href="/"><span class="seal">one</span>proof<span class="tld">.dev</span></a>
+  <nav class="top">
+    <a href="#layer">The layer</a>
+    <a href="#doors">The four doors</a>
+    <a href="#real">See it</a>
+    <a href="#deeper">Go deeper</a>
+    <a href="/building.html">What we're building</a>
+  </nav>
+</header>
 
-  <header class="masthead">
-    <div class="wordmark"><span class="seal">one</span>proof<span class="tld">.dev</span></div>
-    <nav class="doors-nav" aria-label="sections">
-      <a href="#prevent">Prevent</a>
-      <a href="#detect">Detect</a>
-      <a href="#prove">Prove</a>
-      <a href="#choose">Choose</a>
-      <a href="#aadp">The&nbsp;protocol</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </header>
+<section class="hero">
+  <p class="kicker">Evidence infrastructure for AI systems</p>
+  <h1>Show, don't <em>tell</em>, what your AI system did.</h1>
+  <p class="lede">oneproof is an <b>evidence layer</b> for AI systems — a way to independently
+    reconstruct, compare and verify what a system actually did, by someone who wasn't there
+    when it did it.</p>
+  <div class="cta">
+    <a class="solid" href="#doors">The four doors &rarr;</a>
+    <a href="/oneground/lab/">Open the live lab</a>
+    <a href="/answer-lineage.html">Read a real forensic report</a>
+  </div>
+</section>
 
-  <!-- 1 · hero -->
-  <section class="hero">
-    <div class="hero-grid">
-      <div>
-        <span class="tag gold">Evidence infrastructure for AI agents</span>
-        <h1>Same question. Same document.<br><em>A different answer.</em></h1>
-        <p class="lede">
-          Ask your document assistant what the notice period is, and it says sixty
-          days. Last week — same question, same contract — it said ninety. Every log
-          says every step succeeded. onetrace is the receipt each stage writes as it
-          runs: put the good run beside the bad one, and find the first step where
-          they stopped matching.
-        </p>
-        <code class="cmd"><span class="c"># check a record yourself — no key, no account, no network</span>
-<span class="g">$</span> python3 verify.py MANIFEST.json</code>
-        <div class="hero-note">worked by hand from the records today — a method, not a button · verifier + ten rejection vectors at <a href="/samples/">/samples/</a></div>
-      </div>
+<figure class="fig scroll" style="margin-bottom:0">
+  <svg viewBox="0 0 1000 522" role="img" aria-label="Where the evidence layer sits: each stage of an AI system emits one record carrying what went in, what came out and what ran.">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#211a12"/>
+    </marker>
+    <marker id="arg" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#c9a227"/>
+    </marker>
+  </defs>
+  <style>
+    .lbl{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;fill:#716250}
+    .lbl.gold{fill:#7d620f}
+    .box{fill:#f6f1e6;stroke:#d9cdb6;stroke-width:1.2}
+    .bt{font-family:'Newsreader',Georgia,serif;font-size:18px;fill:#211a12}
+    .bs{font-family:'IBM Plex Mono',monospace;font-size:11px;fill:#8a7c68}
+    .rec{font-family:'IBM Plex Mono',monospace;font-size:11px;fill:#e8ddcc}
+    .recd{font-family:'IBM Plex Mono',monospace;font-size:11px;fill:#a5947d}
+    .verb{font-family:'Newsreader',Georgia,serif;font-size:19px;fill:#211a12}
+    .verbs{font-family:'IBM Plex Mono',monospace;font-size:11px;fill:#8a7c68}
+    .tap{fill:#c9a227}
+  </style>
 
-      <figure class="exhibit">
-        <div class="mat" style="padding:0; overflow:hidden">
-          <img src="img/onetrace-first-difference.png"
-               alt="Two runs of the same question one week apart: nine stages compared, three unchanged with the same digest, first difference at the split step, and the clause that was retrieved last week not retrieved today"
-               style="width:100%; height:auto; display:block">
-        </div>
-        <figcaption>
-          <span>Exhibit A — same question, one week apart; first difference at <b>split</b></span>
-          <span>worked example</span>
-        </figcaption>
-      </figure>
+  <text x="40" y="26" class="lbl">Your AI system — what already exists</text>
+  <text x="596" y="26" class="lbl gold">The evidence layer — what oneproof adds</text>
+
+  <!-- observability bracket -->
+  <path d="M28 62 L18 62 L18 432 L28 432" fill="none" stroke="#b9ae98" stroke-width="1.2"/>
+
+  <!-- stack -->
+  <g>
+    <rect x="40" y="52" width="420" height="62" rx="3" class="box"/>
+    <text x="58" y="78" class="bt">A question someone needs answered</text>
+    <text x="58" y="98" class="bs">"what notice is required to terminate early?"</text>
+
+    <rect x="40" y="128" width="420" height="62" rx="3" class="box"/>
+    <text x="58" y="154" class="bt">Agent and application logic</text>
+    <text x="58" y="174" class="bs">planning · tool selection · orchestration</text>
+
+    <rect x="40" y="204" width="420" height="62" rx="3" class="box"/>
+    <text x="58" y="230" class="bt">Retrieval</text>
+    <text x="58" y="250" class="bs">read · convert · clean · chunk · embed · index · search</text>
+
+    <rect x="40" y="280" width="420" height="62" rx="3" class="box"/>
+    <text x="58" y="306" class="bt">The model</text>
+    <text x="58" y="326" class="bs">prompt assembled · generation · citation</text>
+
+    <rect x="40" y="356" width="420" height="62" rx="3" class="box"/>
+    <text x="58" y="382" class="bt">An answer someone acts on</text>
+    <text x="58" y="402" class="bs">"ninety days" — or "not stated in retrieved evidence"</text>
+  </g>
+  <path d="M250 114 L250 126" stroke="#211a12" stroke-width="1.3" marker-end="url(#ar)"/>
+  <path d="M250 190 L250 202" stroke="#211a12" stroke-width="1.3" marker-end="url(#ar)"/>
+  <path d="M250 266 L250 278" stroke="#211a12" stroke-width="1.3" marker-end="url(#ar)"/>
+  <path d="M250 342 L250 354" stroke="#211a12" stroke-width="1.3" marker-end="url(#ar)"/>
+
+  <!-- evidence panel -->
+  <rect x="560" y="40" width="400" height="392" rx="4" fill="#1c1713"/>
+
+  <!-- taps -->
+  <g stroke="#c9a227" stroke-width="1.2" stroke-dasharray="3 3" fill="none">
+    <path d="M460 83  L560 83"  marker-end="url(#arg)"/>
+    <path d="M460 159 L560 159" marker-end="url(#arg)"/>
+    <path d="M460 235 L560 235" marker-end="url(#arg)"/>
+    <path d="M460 311 L560 311" marker-end="url(#arg)"/>
+    <path d="M460 387 L560 387" marker-end="url(#arg)"/>
+  </g>
+  <g class="tap">
+    <circle cx="460" cy="83" r="3.4"/><circle cx="460" cy="159" r="3.4"/>
+    <circle cx="460" cy="235" r="3.4"/><circle cx="460" cy="311" r="3.4"/><circle cx="460" cy="387" r="3.4"/>
+  </g>
+
+  <!-- records -->
+  <g>
+    <text x="586" y="72" class="recd">question</text>
+    <text x="586" y="90" class="rec">in <tspan fill="#c9a227">—</tspan>   out <tspan fill="#c9a227">0211c293</tspan>   cfg <tspan fill="#c9a227">a19c</tspan></text>
+    <line x1="586" y1="104" x2="934" y2="104" stroke="#3a2f26"/>
+
+    <text x="586" y="148" class="recd">plan · tools</text>
+    <text x="586" y="166" class="rec">in <tspan fill="#c9a227">0211c293</tspan>   out <tspan fill="#c9a227">a6ad8533</tspan>   cfg <tspan fill="#c9a227">7f31</tspan></text>
+    <line x1="586" y1="180" x2="934" y2="180" stroke="#3a2f26"/>
+
+    <text x="586" y="224" class="recd">retrieval — one record per stage</text>
+    <text x="586" y="242" class="rec">in <tspan fill="#c9a227">a6ad8533</tspan>   out <tspan fill="#c9a227">f46e4fd5</tspan>   cfg <tspan fill="#c9a227">3e08</tspan></text>
+    <line x1="586" y1="256" x2="934" y2="256" stroke="#3a2f26"/>
+
+    <text x="586" y="300" class="recd">prompt · model</text>
+    <text x="586" y="318" class="rec">in <tspan fill="#c9a227">16e73d45</tspan>   out <tspan fill="#c9a227">9cc0cc2a</tspan>   cfg <tspan fill="#c9a227">b204</tspan></text>
+    <line x1="586" y1="332" x2="934" y2="332" stroke="#3a2f26"/>
+
+    <text x="586" y="376" class="recd">answer</text>
+    <text x="586" y="394" class="rec">digest <tspan fill="#c9a227">9cc0cc2a</tspan>   supported <tspan fill="#e28a80">false</tspan></text>
+  </g>
+  <text x="586" y="420" class="recd">digests, not copies — the record holds no document text</text>
+
+  <!-- left annotation -->
+  <text x="40" y="452" class="verbs">what you have today: logs and traces — ran, returned OK, 340 ms</text>
+  <text x="40" y="470" class="verbs">what they cannot tell you: what it did it to</text>
+
+  <!-- verbs -->
+  <line x1="560" y1="452" x2="960" y2="452" stroke="#d9cdb6"/>
+  <text x="560" y="476" class="verb">Reconstruct</text>
+  <text x="560" y="494" class="verbs">rebuild a stage</text>
+  <text x="560" y="508" class="verbs">from its record</text>
+  <text x="700" y="476" class="verb">Compare</text>
+  <text x="700" y="494" class="verbs">two runs,</text>
+  <text x="700" y="508" class="verbs">stage by stage</text>
+  <text x="840" y="476" class="verb">Verify</text>
+  <text x="840" y="494" class="verbs">by someone who</text>
+  <text x="840" y="508" class="verbs">was not there</text>
+</svg>
+
+</figure>
+<p class="figcap wrap" style="padding-left:0;padding-right:0">
+  <span><b>Where it sits.</b> One record per stage — what went in, what came out, what ran. Digests, not copies.</span>
+  <span>Nothing in the system above has to change its behaviour to be recorded.</span>
+</p>
+</div>
+
+<section class="band" id="layer">
+  <div class="wrap">
+    <h2><span class="n">Why a layer, and why now</span>Observability tells you it worked. It cannot tell you what it worked on.</h2>
+    <p class="lead">Every stage logs success, because every stage succeeded. Nothing in that sequence
+      has anything to say about the fact that one step quietly moved the sentence you needed out of reach.</p>
+
+    <div class="pull"><p>A log is testimony: it tells you what a system says it did.<br>
+      A record is evidence: it lets someone else check.</p></div>
+
+    <div class="stats">
+      <div class="stat"><div class="v">9</div><div class="l">comparisons to locate a fault — the same nine at thirteen documents and at forty‑seven thousand</div></div>
+      <div class="stat"><div class="v">99.96%</div><div class="l">of documents shown to be affected, computed without opening one of them</div></div>
+      <div class="stat"><div class="v">3</div><div class="l">machines, two operating systems, identical digests — so a stage can be rebuilt instead of stored</div></div>
+      <div class="stat"><div class="v">0</div><div class="l">network calls, keys or accounts a checker needs. Offline, or it isn't evidence</div></div>
     </div>
-  </section>
+    <p class="figcap" style="padding-left:0"><span>Every figure on this page is measured and traceable to a published file. <a href="/answer-lineage.html">Where each one comes from &rarr;</a></span></p>
+  </div>
+</section>
 
-  <!-- 2 · the rainy day -->
-  <section class="rainy">
-    <div class="inner">
-      <span class="tag">The rainy day</span>
-      <p>
-        Every AI deployment has a sunny-day story: the demo works, the dashboard is
-        green. Then comes the other day — a transfer that should have been refused, an
-        answer citing a document that says the opposite, an auditor asking:
-        <em>what exactly happened, and how do you know?</em> On that day a log is
-        testimony — something your system says about itself, in a form it can quietly
-        change. That day requires evidence: records made <em>before</em> the question
-        was asked, in a form a stranger can check without trusting you.
-      </p>
-      <p class="pull">Observability takes the demo meeting. Evidence takes the deposition.</p>
-    </div>
-  </section>
+<section class="band dark" id="real">
+  <div class="wrap">
+    <h2><span class="n">What it looks like when you have it</span>Two runs of the same question, laid side by side.</h2>
+    <p class="lead">A routine upgrade changed what the system answered. No error, no alert, every log green.
+      This is the record doing the work a log cannot.</p>
+    <figure class="fig scroll">
+      <svg viewBox="0 0 1000 570" role="img" aria-label="Two runs of the same question compared stage by stage: the first stage whose output digest differs is the fault site, everything below it is consequence, and the reach is measured from index digests without reading a document.">
+  <defs>
+    <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#c9a227"/>
+    </marker>
+  </defs>
+  <style>
+    .h{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;fill:#a5947d}
+    .st{font-family:'IBM Plex Mono',monospace;font-size:13px;fill:#e8ddcc}
+    .dg{font-family:'IBM Plex Mono',monospace;font-size:12px;fill:#a5947d}
+    .vd{font-family:'IBM Plex Mono',monospace;font-size:11px;fill:#7cc79a}
+    .vdn{font-family:'IBM Plex Mono',monospace;font-size:11px;fill:#6d6055}
+    .vda{font-family:'IBM Plex Mono',monospace;font-size:11px;fill:#e4a05e;font-weight:600}
+    .op{font-family:'Newsreader',Georgia,serif;font-size:17px;fill:#e8ddcc}
+    .opn{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;fill:#c9a227}
+    .ops{font-family:'IBM Plex Mono',monospace;font-size:11px;fill:#a5947d}
+    .big{font-family:'IBM Plex Mono',monospace;font-size:22px;fill:#c9a227}
+  </style>
 
+  <rect x="0" y="0" width="1000" height="570" rx="4" fill="#1c1713"/>
+  <text x="30" y="30" class="h">one question &#183; two recorded runs &#183; one configuration line changed</text>
 
-  <!-- 2b · the shape of the evidence -->
-  <section class="chain">
-    <span class="tag">The shape of the evidence</span>
-    <figure class="exhibit">
-      <div class="chain-scroll">
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" role="img" aria-label="A ten-stage pipeline from source document to verified citation, showing which stages are re-derivable receipts and which are frozen declarations."><defs><marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#23303b"/></marker><marker id="ahl" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#23303b"/></marker></defs><rect width="1920" height="1080" fill="#faf8f3"/><text x="60" y="72" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" fill="#23303b">One question, ten records</text><text x="60" y="104" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#5c6b7a">&#8220;Maximum single-invoice value for Meridian Fabrication under the 2025 framework agreement, in USD?&#8221; — every stage carries its own provenance contract</text><rect x="1418" y="48" width="176" height="26" rx="13" fill="#e5f3ec" stroke="#1a7a4b" stroke-width="1"/><text x="1506" y="65.5" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#1a7a4b" text-anchor="middle">RECEIPT · re-derivable ✓</text><rect x="1604.4" y="48" width="170" height="26" rx="13" fill="#fdeeda" stroke="#b45309" stroke-width="1"/><text x="1689" y="65.5" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#b45309" text-anchor="middle">DECLARED · bytes frozen</text><text x="1418" y="102" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" fill="#5c6b7a">a receipt replays; a declaration admits it cannot — both are integrity-checkable</text><rect x="60" y="180" width="310" height="250" rx="10" fill="#ffffff" stroke="#d8d2c4" stroke-width="1.5"/><text x="76" y="216" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#23303b">S0&#8201;&#183;&#8201;Source custody</text><text x="76" y="242" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#5c6b7a">FrameworkAgreement_2025.pdf</text><text x="76" y="270" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">sha256 9f3a…c2</text><text x="76" y="290" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">1,482,331 bytes · filed copy</text><text x="76" y="322" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">identity record — everything</text><text x="76" y="340" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">traces back to these bytes</text><rect x="76" y="388" width="176" height="26" rx="13" fill="#e5f3ec" stroke="#1a7a4b" stroke-width="1"/><text x="164" y="405.5" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#1a7a4b" text-anchor="middle">RECEIPT · re-derivable ✓</text><rect x="432" y="180" width="310" height="250" rx="10" fill="#ffffff" stroke="#d8d2c4" stroke-width="1.5"/><text x="448" y="216" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#23303b">S1&#8201;&#183;&#8201;Conversion</text><text x="448" y="242" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#5c6b7a">pdftotext 23.11 · -layout</text><text x="448" y="270" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">in  9f3a…c2</text><text x="448" y="290" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">out 41d0…8e</text><text x="448" y="322" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">same tool, same bytes —</text><text x="448" y="340" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">anyone can replay it</text><rect x="448" y="388" width="176" height="26" rx="13" fill="#e5f3ec" stroke="#1a7a4b" stroke-width="1"/><text x="536" y="405.5" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#1a7a4b" text-anchor="middle">RECEIPT · re-derivable ✓</text><rect x="804" y="180" width="310" height="250" rx="10" fill="#ffffff" stroke="#d8d2c4" stroke-width="1.5"/><text x="820" y="216" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#23303b">S2&#8201;&#183;&#8201;Cleaning</text><text x="820" y="242" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#5c6b7a">clean.py v1.4 · rules pinned</text><text x="820" y="270" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">in  41d0…8e</text><text x="820" y="290" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">out 7bb2…19</text><text x="820" y="322" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">census: 2 tables unparsed —</text><text x="820" y="340" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">counted + listed, not hidden</text><rect x="820" y="388" width="176" height="26" rx="13" fill="#e5f3ec" stroke="#1a7a4b" stroke-width="1"/><text x="908" y="405.5" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#1a7a4b" text-anchor="middle">RECEIPT · re-derivable ✓</text><rect x="1176" y="180" width="310" height="250" rx="10" fill="#ffffff" stroke="#d8d2c4" stroke-width="1.5"/><text x="1192" y="216" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#23303b">S3&#8201;&#183;&#8201;Chunking</text><text x="1192" y="242" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#5c6b7a">chunker v2.0 · 800 / 120</text><text x="1192" y="270" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">out 412 chunks · #217 e51c…03</text><text x="1192" y="290" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">#217 = clause 7.3</text><text x="1192" y="322" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">origin: parent text S2 —</text><text x="1192" y="340" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">containment re-derivable</text><rect x="1192" y="388" width="176" height="26" rx="13" fill="#e5f3ec" stroke="#1a7a4b" stroke-width="1"/><text x="1280" y="405.5" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#1a7a4b" text-anchor="middle">RECEIPT · re-derivable ✓</text><rect x="1548" y="180" width="310" height="250" rx="10" fill="#ffffff" stroke="#d8d2c4" stroke-width="1.5"/><text x="1564" y="216" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#23303b">S4&#8201;&#183;&#8201;Embedding · index</text><text x="1564" y="242" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#5c6b7a">embed model + version</text><text x="1564" y="270" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">in  chunk digests</text><text x="1564" y="290" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">out idx-2026-08-28-a</text><text x="1564" y="322" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">pinned local weights: receipt;</text><text x="1564" y="340" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">hosted API: declared</text><rect x="1564" y="388" width="71" height="26" rx="13" fill="#e5f3ec" stroke="#1a7a4b" stroke-width="1"/><text x="1599" y="405.5" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#1a7a4b" text-anchor="middle">pinned ✓</text><rect x="1642.8" y="388" width="110" height="26" rx="13" fill="#fdeeda" stroke="#b45309" stroke-width="1"/><text x="1698" y="405.5" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#b45309" text-anchor="middle">API → declared</text><rect x="1548" y="640" width="310" height="250" rx="10" fill="#ffffff" stroke="#d8d2c4" stroke-width="1.5"/><text x="1564" y="676" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#23303b">S5&#8201;&#183;&#8201;Retrieval</text><text x="1564" y="702" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#5c6b7a">query 22ae…f7 vs snapshot</text><text x="1564" y="730" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">out top-5 ids + scores</text><text x="1564" y="750" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">#217 ranked first</text><text x="1564" y="782" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">deterministic against</text><text x="1564" y="800" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">the frozen index</text><rect x="1564" y="848" width="176" height="26" rx="13" fill="#e5f3ec" stroke="#1a7a4b" stroke-width="1"/><text x="1652" y="865.5" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#1a7a4b" text-anchor="middle">RECEIPT · re-derivable ✓</text><rect x="1176" y="640" width="310" height="250" rx="10" fill="#ffffff" stroke="#d8d2c4" stroke-width="1.5"/><text x="1192" y="676" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#23303b">S6&#8201;&#183;&#8201;External tool — FX API</text><text x="1192" y="702" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#5c6b7a">ECB rates · 14:02:11 CET</text><text x="1192" y="730" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">req frozen · resp cc17…4b</text><text x="1192" y="750" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">{"EURUSD": 1.0842}</text><text x="1192" y="782" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">world-state: proves what it</text><text x="1192" y="800" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">answered then, not tomorrow</text><rect x="1192" y="848" width="170" height="26" rx="13" fill="#fdeeda" stroke="#b45309" stroke-width="1"/><text x="1277" y="865.5" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#b45309" text-anchor="middle">DECLARED · bytes frozen</text><rect x="804" y="640" width="310" height="250" rx="10" fill="#ffffff" stroke="#d8d2c4" stroke-width="1.5"/><text x="820" y="676" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#23303b">S7&#8201;&#183;&#8201;Prompt assembly</text><text x="820" y="702" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#5c6b7a">template v3 + chunks + FX resp</text><text x="820" y="730" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">out b90d…61</text><text x="820" y="782" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">what the model saw —</text><text x="820" y="800" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">answerable to the byte</text><rect x="820" y="848" width="176" height="26" rx="13" fill="#e5f3ec" stroke="#1a7a4b" stroke-width="1"/><text x="908" y="865.5" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#1a7a4b" text-anchor="middle">RECEIPT · re-derivable ✓</text><rect x="432" y="640" width="310" height="250" rx="10" fill="#ffffff" stroke="#d8d2c4" stroke-width="1.5"/><text x="448" y="676" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#23303b">S8&#8201;&#183;&#8201;LLM generation</text><text x="448" y="702" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#5c6b7a">model id · params recorded</text><text x="448" y="730" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">out 5e2f…9a (frozen)</text><text x="448" y="782" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">cannot promise repeatability —</text><text x="448" y="800" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">and says so on its face</text><rect x="448" y="848" width="170" height="26" rx="13" fill="#fdeeda" stroke="#b45309" stroke-width="1"/><text x="533" y="865.5" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#b45309" text-anchor="middle">DECLARED · bytes frozen</text><rect x="60" y="640" width="310" height="250" rx="10" fill="#ffffff" stroke="#d8d2c4" stroke-width="1.5"/><text x="76" y="676" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#23303b">S9&#8201;&#183;&#8201;Citation check</text><text x="76" y="702" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#5c6b7a">claim → containment → span → bytes</text><text x="76" y="730" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">€250,000 · clause 7.3</text><text x="76" y="750" font-family="Consolas, Menlo, monospace" font-size="12.5" fill="#23303b">VERIFIED · derived span · unique match</text><text x="76" y="782" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">3 outcomes kept apart: verified /</text><text x="76" y="800" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-style="italic" fill="#5c6b7a">contradicting / couldn't-check</text><rect x="76" y="848" width="176" height="26" rx="13" fill="#e5f3ec" stroke="#1a7a4b" stroke-width="1"/><text x="164" y="865.5" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#1a7a4b" text-anchor="middle">RECEIPT · re-derivable ✓</text><line x1="374" y1="305.0" x2="424" y2="305.0" stroke="#23303b" stroke-width="2" marker-end="url(#ah)"/><text x="399" y="295.0" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" fill="#5c6b7a" text-anchor="middle">pdf</text><line x1="746" y1="305.0" x2="796" y2="305.0" stroke="#23303b" stroke-width="2" marker-end="url(#ah)"/><text x="771" y="295.0" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" fill="#5c6b7a" text-anchor="middle">text</text><line x1="1118" y1="305.0" x2="1168" y2="305.0" stroke="#23303b" stroke-width="2" marker-end="url(#ah)"/><text x="1143" y="295.0" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" fill="#5c6b7a" text-anchor="middle">text</text><line x1="1490" y1="305.0" x2="1540" y2="305.0" stroke="#23303b" stroke-width="2" marker-end="url(#ah)"/><text x="1515" y="295.0" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" fill="#5c6b7a" text-anchor="middle">chunks</text><line x1="1703.0" y1="434" x2="1703.0" y2="630" stroke="#23303b" stroke-width="2" marker-end="url(#ah)"/><text x="1717.0" y="539.0" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" fill="#5c6b7a">index snapshot</text><line x1="1544" y1="765.0" x2="1494" y2="765.0" stroke="#23303b" stroke-width="2" marker-end="url(#ahl)"/><text x="1517" y="755.0" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" fill="#5c6b7a" text-anchor="middle">chunks</text><line x1="1172" y1="765.0" x2="1122" y2="765.0" stroke="#23303b" stroke-width="2" marker-end="url(#ahl)"/><text x="1145" y="755.0" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" fill="#5c6b7a" text-anchor="middle">rate</text><line x1="800" y1="765.0" x2="750" y2="765.0" stroke="#23303b" stroke-width="2" marker-end="url(#ahl)"/><text x="773" y="755.0" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" fill="#5c6b7a" text-anchor="middle">prompt</text><line x1="428" y1="765.0" x2="378" y2="765.0" stroke="#23303b" stroke-width="2" marker-end="url(#ahl)"/><text x="401" y="755.0" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" fill="#5c6b7a" text-anchor="middle">answer</text><text x="960.0" y="990" font-family="Georgia, serif" font-size="19" font-style="italic" fill="#23303b" text-anchor="middle">Freeze what you can&#8217;t re-derive &#183; receipt everything you can &#183; count what fell through &#183; let the checker be someone who doesn&#8217;t trust you.</text><text x="960.0" y="1030" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#5c6b7a" text-anchor="middle">onetrace — stage-receipt method, worked example at the derived-span profile (the level the reference pipeline implements) · six receipts, two declarations, one mixed stage, one mechanical check</text></svg>
-      </div>
-      <figcaption>
-        <span>Exhibit B — ten records behind one answer</span>
-        <span><a href="/stage-records.html">the format, specified →</a></span>
-      </figcaption>
+  <text x="30" y="64" class="h">stage</text>
+  <text x="200" y="64" class="h">baseline</text>
+  <text x="340" y="64" class="h">candidate</text>
+  <text x="490" y="64" class="h">verdict</text>
+  <line x1="30" y1="74" x2="640" y2="74" stroke="#3a2f26"/>
+
+  <text x="30" y="100" class="st">document in</text><text x="200" y="100" class="dg">0211c293efe0</text><text x="340" y="100" class="dg">0211c293efe0</text><text x="490" y="100" class="vd">&#9679; same root</text>
+  <text x="30" y="128" class="st">converted</text><text x="200" y="128" class="dg">0211c293efe0</text><text x="340" y="128" class="dg">0211c293efe0</text><text x="490" y="128" class="vd">&#9679; same root</text>
+  <text x="30" y="156" class="st">cleaned</text><text x="200" y="156" class="dg">a6ad8533e58a</text><text x="340" y="156" class="dg">a6ad8533e58a</text><text x="490" y="156" class="vd">&#9679; same root</text>
+
+  <rect x="20" y="168" width="624" height="34" rx="2" fill="#2a2008"/>
+  <rect x="20" y="168" width="3" height="34" fill="#c9a227"/>
+  <text x="30" y="191" class="st">split</text><text x="200" y="191" class="dg" fill="#e8ddcc">f46e4fd5c847</text><text x="340" y="191" class="dg" fill="#e4a05e">5973d5fe20b7</text><text x="490" y="191" class="vda">&#9679; FIRST DIFFERENCE</text>
+
+  <text x="30" y="228" class="st">embedded</text><text x="200" y="228" class="dg">3317f5ba98bd</text><text x="340" y="228" class="dg">8879c65c2fe3</text><text x="490" y="228" class="vdn">&#9679; downstream</text>
+  <text x="30" y="256" class="st">indexed</text><text x="200" y="256" class="dg">5e023c0999bf</text><text x="340" y="256" class="dg">72704d9fe7d5</text><text x="490" y="256" class="vdn">&#9679; downstream</text>
+  <text x="30" y="284" class="st">retrieved</text><text x="200" y="284" class="dg">cff666115d20</text><text x="340" y="284" class="dg">006e8fded426</text><text x="490" y="284" class="vdn">&#9679; downstream</text>
+  <text x="30" y="312" class="st">prompt built</text><text x="200" y="312" class="dg">16e73d452a19</text><text x="340" y="312" class="dg">64a63d68cc3d</text><text x="490" y="312" class="vdn">&#9679; downstream</text>
+  <text x="30" y="340" class="st">answer</text><text x="200" y="340" class="dg">9cc0cc2a5861</text><text x="340" y="340" class="dg">9cc0cc2a5861</text><text x="490" y="340" class="vd">&#9679; same digest</text>
+
+  <line x1="30" y1="356" x2="640" y2="356" stroke="#3a2f26"/>
+  <text x="30" y="380" class="ops">nine comparisons &#8212; and the same nine at forty-seven</text>
+  <text x="30" y="396" class="ops">thousand documents. you compare stages, not documents.</text>
+
+  <rect x="30" y="418" width="610" height="122" rx="3" fill="none" stroke="#3a2f26"/>
+  <text x="48" y="444" class="opn">the change that caused it</text>
+  <text x="48" y="470" class="st">oneproof-chunker 3.4 &#8594; 3.5</text>
+  <text x="48" y="494" class="ops">divide_paragraphs False &#8594; True</text>
+  <text x="48" y="512" class="ops">max_chars 900 &#8594; 220</text>
+  <text x="48" y="530" class="ops">strategy paragraph-packing &#8594; sentence-packing</text>
+
+  <line x1="670" y1="48" x2="670" y2="540" stroke="#3a2f26"/>
+  <text x="696" y="64" class="h">what you can then do</text>
+
+  <text x="696" y="102" class="opn">01 &#183; locate</text>
+  <text x="696" y="126" class="op">Which stage broke it</text>
+  <text x="696" y="148" class="ops">the first row that disagrees. everything</text>
+  <text x="696" y="164" class="ops">above it is identical; everything below</text>
+  <text x="696" y="180" class="ops">is consequence, not cause.</text>
+
+  <text x="696" y="222" class="opn">02 &#183; measure the reach</text>
+  <text x="696" y="248" class="big">47,412 of 47,430</text>
+  <text x="696" y="272" class="ops">documents whose passages moved &#8212; computed</text>
+  <text x="696" y="288" class="ops">from index digests, with no chunk text</text>
+  <text x="696" y="304" class="ops">read. eighteen provably untouched.</text>
+
+  <text x="696" y="346" class="opn">03 &#183; replay</text>
+  <text x="696" y="370" class="op">Rebuild that one stage</text>
+  <text x="696" y="392" class="ops">and watch it produce the same wrong thing</text>
+  <text x="696" y="408" class="ops">again &#8212; or, where a stage cannot honestly</text>
+  <text x="696" y="424" class="ops">be rebuilt, have the record say so.</text>
+
+  <text x="696" y="466" class="opn">04 &#183; read the caveat</text>
+  <text x="696" y="490" class="ops">the answer digest matched on both sides</text>
+  <text x="696" y="506" class="ops">because both runs refused. that is not</text>
+  <text x="696" y="522" class="ops">robustness, and the report says so.</text>
+
+  <path d="M644 191 L684 191" stroke="#c9a227" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#a3)" fill="none"/>
+</svg>
+
     </figure>
-  </section>
+    <p class="figcap"><span><b>Real output.</b> 47,430 SEC filings, 19.3&nbsp;GB, one configuration line changed.</span>
+      <span><a href="/answer-lineage.html" style="color:#c9a227">The full report, and the passage that was present and never read &rarr;</a></span></p>
+  </div>
+</section>
 
-  <!-- 3 · four doors -->
-  <section class="doors" id="doors">
-    <div class="sec-head">
-      <h2>Four doors, one discipline</h2>
-      <span class="tag">The suite</span>
-    </div>
-    <p class="sec-sub">
-      Different questions, one discipline: measured instead of asserted — from the
-      architecture you choose before you build, to the evidence an answer rests on, to
-      the authorization an action required. Each checkable by someone who doesn't trust
-      us. Use one alone, or all four together.
-    </p>
-    <p class="sec-sub" style="margin-top:-18px"><a href="/where-it-fits.html">Where it fits in a typical AI stack — one picture →</a></p>
+<section class="band" id="doors">
+  <div class="wrap">
+    <h2><span class="n">The four doors</span>Four questions, at four moments in the life of a system.</h2>
+    <p class="lead">One discipline across all of them: measured instead of asserted, and every answer
+      checkable by someone who does not trust us. Use one alone, or all four together.</p>
 
-    <div class="door-grid">
-      <article class="door" id="prevent">
-        <div class="shot" aria-hidden="true"><span class="k">POLICY LEDGER</span> · payments pack
-transfer  cap € 500 <span class="bar" style="width:52px;background:#7cc79a"></span>
-refunds   cap € 300 <span class="bar" style="width:34px;background:#7cc79a"></span>
-version   <span style="color:#c9a227">29e85d2c…5166</span>  ratified</div>
-        <h3>Prevent — <span class="prod">onedoor</span></h3>
-        <p>
-          A policy engine for agent actions. Define caps, bounds, and undo windows; ratify
-          a version; every action is then checked against that ratified snapshot — allow,
-          review, or refuse — and every verdict names the exact policy version that decided it.
-        </p>
-        <div class="foot">
-          <div class="status"><b>Shipped</b> · v0.7.0 on PyPI · Apache-2.0 · <a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/v0.7.0/docs/OneDoor_User_Manual.pdf">user manual (PDF)</a></div>
-          <a class="more" href="https://github.com/shamiksaharcciit-oss/onedoor">github.com/shamiksaharcciit-oss/onedoor →</a>
-        </div>
-      </article>
+    <figure class="fig scroll">
+      <svg viewBox="0 0 1000 286" role="img" aria-label="The four doors across the life of an AI system: choose before you build, prevent at every action, detect continuously, prove after the fact.">
+  <style>
+    .ph{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;fill:#7d620f}
+    .nm{font-family:'Newsreader',Georgia,serif;font-size:25px;fill:#211a12}
+    .pr{font-family:'Newsreader',Georgia,serif;font-size:19px;font-style:italic;fill:#7d620f}
+    .q{font-family:'Newsreader',Georgia,serif;font-size:16px;fill:#211a12}
+    .s{font-family:'IBM Plex Mono',monospace;font-size:11px;fill:#8a7c68}
+    .ax{stroke:#b9ae98;stroke-width:1.2}
+  </style>
 
-      <article class="door" id="detect">
-        <div class="shot" aria-hidden="true"><span class="k">CHANGE EVIDENCE</span>
-baseline  byte-identical ✓
-watch     74/74 pins hold
-<span style="color:#e4a05e">a system that changes
-will say so</span></div>
-        <h3>Detect — <span class="prod">onewatch</span></h3>
-        <p>
-          Change-evidence monitoring. The system you audited on Monday is not automatically
-          the system running on Friday. onewatch keeps verifiable baselines so that when
-          something underneath you changes, you hold a record that it did — evidence,
-          not a feeling.
-        </p>
-        <div class="foot">
-          <div class="status"><b>Public since 10 September</b> · verification tooling open</div>
-          <a class="more" href="https://github.com/shamiksaharcciit-oss/onewatch">The repository, and the retirement on the record →</a>
+  <!-- axis -->
+  <line x1="40" y1="70" x2="960" y2="70" class="ax"/>
+  <g fill="#c9a227">
+    <circle cx="96" cy="70" r="7"/><circle cx="336" cy="70" r="7"/>
+    <circle cx="576" cy="70" r="7"/><circle cx="816" cy="70" r="7"/>
+  </g>
+  <g fill="#f6f1e6">
+    <circle cx="96" cy="70" r="2.6"/><circle cx="336" cy="70" r="2.6"/>
+    <circle cx="576" cy="70" r="2.6"/><circle cx="816" cy="70" r="2.6"/>
+  </g>
+  <text x="40" y="30" class="s">time &#8594;</text>
+
+  <g>
+    <text x="40" y="52" class="ph">Before you build</text>
+    <text x="40" y="112" class="nm">Choose</text>
+    <text x="40" y="136" class="pr">oneground</text>
+    <text x="40" y="168" class="q">Is this the right retrieval</text>
+    <text x="40" y="188" class="q">setup for our documents?</text>
+    <text x="40" y="216" class="s">measured on your own data,</text>
+    <text x="40" y="232" class="s">against the right answers</text>
+    <text x="40" y="262" class="s">preview &#183; free &#183; on your machine</text>
+  </g>
+
+  <g>
+    <text x="280" y="52" class="ph">At every action</text>
+    <text x="280" y="112" class="nm">Prevent</text>
+    <text x="280" y="136" class="pr">onedoor</text>
+    <text x="280" y="168" class="q">Was this action allowed,</text>
+    <text x="280" y="188" class="q">and who says so?</text>
+    <text x="280" y="216" class="s">per-action authorization,</text>
+    <text x="280" y="232" class="s">decided and receipted</text>
+    <text x="280" y="262" class="s">shipped &#183; v0.7.0 on PyPI</text>
+  </g>
+
+  <g>
+    <text x="520" y="52" class="ph">Continuously</text>
+    <text x="520" y="112" class="nm">Detect</text>
+    <text x="520" y="136" class="pr">onewatch</text>
+    <text x="520" y="168" class="q">Is it still the system</text>
+    <text x="520" y="188" class="q">we audited last month?</text>
+    <text x="520" y="216" class="s">verifiable baselines, so a change</text>
+    <text x="520" y="232" class="s">leaves a record that it happened</text>
+    <text x="520" y="262" class="s">public &#183; open since 10 September</text>
+  </g>
+
+  <g>
+    <text x="760" y="52" class="ph">After the fact</text>
+    <text x="760" y="112" class="nm">Prove</text>
+    <text x="760" y="136" class="pr">onetrace</text>
+    <text x="760" y="168" class="q">What did this answer</text>
+    <text x="760" y="188" class="q">actually rest on?</text>
+    <text x="760" y="216" class="s">a record at every stage, so two runs</text>
+    <text x="760" y="232" class="s">can be compared by a stranger</text>
+    <text x="760" y="262" class="s">format &#38; verifier public &#183; free</text>
+  </g>
+</svg>
+
+    </figure>
+
+    <div class="doors">
+
+      <article class="door" id="choose">
+        <div class="when">Before you build &#183; Choose</div>
+        <h3>Choose — <span class="prod">oneground</span></h3>
+        <p class="q">Is this the right retrieval setup for our documents?</p>
+        <div class="shot"><span class="k">architecture choice</span>8 option(s): 0 meets, 6 fails,
+2 <span class="a">couldnt_check</span>
+<span class="a">nothing is recommended</span></div>
+        <p>Measured on your own documents against the right answers, before you build on it.
+           Its most common first output is a refusal to recommend.</p>
+        <div class="status"><b>Preview released 16 September</b> &#183; free &#183; your data stays on your machine</div>
+        <div class="links">
+          <span class="who">Buyer</span><a href="/oneground/">What it is, what it costs, what leaves your building &rarr;</a>
+          <span class="who">Engineer</span><a href="/oneground/how-it-works.html">The method and the checks &rarr;</a>
+          <span class="who">Anyone</span><a href="/oneground/lab/">The live lab — 150,000 real vectors &rarr;</a>
         </div>
       </article>
 
       <article class="door" id="prove">
-        <div class="shot" aria-hidden="true"><span class="k">STAGE RECEIPTS</span>
-source → clean → chunk → retrieve
-answer cites <span style="color:#c9a227">chunk #41 · §4.1</span>
-chars 1,204–1,451 · 2 checks ✓</div>
+        <div class="when">After the fact &#183; Prove</div>
         <h3>Prove — <span class="prod">onetrace</span></h3>
-        <p>
-          Forensic provenance for retrieval pipelines. A receipt at every stage — source
-          bytes, cleaning, chunking, retrieval, assembly, the model call — so an answer
-          traces to the exact passage that produced it, and every step can be re-derived
-          from the records alone.
-        </p>
-        <div class="foot">
-          <div class="status"><b>Paper &amp; code in preparation</b> · verifier ships open</div>
-          <a class="more" href="/answer-lineage.html">The upgrade that changed the answer →</a>
-          <a class="more" href="/stage-records.html">The record format and digest recipes →</a>
+        <p class="q">What did this answer actually rest on?</p>
+        <div class="shot"><span class="k">stage receipts</span>split   f46e4fd5 &#8594; <span class="a">5973d5fe</span>
+<span class="a">FIRST DIFFERENCE</span>  <span class="d">&#183; 9 comparisons</span>
+reach  <span class="g">47,412 of 47,430</span> <span class="d">&#183; 0 read</span></div>
+        <p>A record at every stage, so an answer traces to the exact passage that produced it —
+           and when two runs disagree, so does the place they stopped agreeing.</p>
+        <div class="status"><b>Format, samples and verifier public</b> &#183; free &#183; the SDK is not shipped</div>
+        <div class="links">
+          <span class="who">Buyer</span><a href="/answer-lineage.html">The upgrade that changed the answer &rarr;</a>
+          <span class="who">Engineer</span><a href="/stage-records.html">The record format and digest recipes &rarr;</a>
+          <span class="who">Sceptic</span><a href="/samples/">Sample records, verifier, ten rejection vectors &rarr;</a>
         </div>
       </article>
 
-      <article class="door" id="choose">
-        <div class="shot" aria-hidden="true"><span class="k">ARCHITECTURE CHOICE</span>
-8 option(s): 0 meets, 6 fails,
-2 couldnt_check
-<span style="color:#e4a05e">nothing is recommended</span></div>
-        <h3>Choose — <span class="prod">oneground</span></h3>
-        <p>
-          Which vector database, which index, which configuration — measured on your own
-          data before you build on it, rather than chosen from a blog post and a guess. A
-          sample of your own vectors, three architectures tried against the right answers,
-          one run on a real engine, and a report your team can argue with. Your data never
-          leaves your machine.
-        </p>
-        <div class="foot">
-          <div class="status"><b>Preview release: 16 September</b> · your data stays on your machine</div>
-          <a class="more" href="/oneground/">Try it on 150,000 public vectors →</a>
+      <article class="door" id="prevent">
+        <div class="when">At every action &#183; Prevent</div>
+        <h3>Prevent — <span class="prod">onedoor</span></h3>
+        <p class="q">Was this action allowed, and who says so?</p>
+        <div class="shot"><span class="k">policy ledger</span> <span class="d">&#183; payments pack</span>
+transfer  cap &#8364; 500   <span class="g">&#9608;&#9608;&#9608;&#9608;&#9608;</span>
+refunds   cap &#8364; 300   <span class="g">&#9608;&#9608;&#9608;</span>
+version   <span class="a">29e85d2c&#8230;5166</span>  ratified</div>
+        <p>Define caps, bounds and undo windows; ratify a version; every action is then checked
+           against that ratified snapshot &#8212; allow, review or refuse &#8212; and every verdict names
+           the exact policy version that decided it.</p>
+        <div class="status"><b>Shipped</b> &#183; v0.7.0 on PyPI &#183; Apache-2.0 &#183; source public</div>
+        <div class="links">
+          <span class="who">Engineer</span><a href="https://github.com/shamiksaharcciit-oss/onedoor">The repository &rarr;</a>
+          <span class="who">Researcher</span><a href="https://datatracker.ietf.org/doc/draft-saha-aadp/">AADP — the Internet-Draft it implements &rarr;</a>
         </div>
       </article>
-    </div>
-  </section>
 
-  <!-- 4 · AADP -->
-  <section class="aadp" id="aadp">
-    <div class="aadp-grid">
-      <div>
-        <span class="tag">The protocol underneath</span>
-        <h2>Written down where no vendor can move it</h2>
-        <p>
-          The rules oneproof enforces are not proprietary behavior — they follow a
-          published protocol. <strong>AADP, the Agent Action Decision Protocol,</strong>
-          specifies per-action authorization for AI agents: how an action is described,
-          how a decision is made against ratified policy, and what record the decision
-          leaves behind.
-        </p>
-        <p>
-          It is an individual-submission Internet-Draft at the IETF, with a public
-          interoperability fixture and independent external review — so an implementation
-          you write is checkable against the same text as ours.
-        </p>
-      </div>
-      <div class="spec-card">
-        <div class="name">draft-saha-aadp</div>
-        <dl>
-          <dt>Title</dt><dd>The Agent Action Decision Protocol (AADP): Per-Action Authorization for AI Agents</dd>
-          <dt>Status</dt><dd>Internet-Draft, individual submission · −02 posted</dd>
-          <dt>Fixture</dt><dd>CDX-AADP-INPUT-PROVENANCE-001 interoperability fixture (public)</dd>
-          <dt>Reference</dt><dd><a href="https://datatracker.ietf.org/doc/draft-saha-aadp/">datatracker.ietf.org/doc/draft-saha-aadp</a></dd>
-        </dl>
-      </div>
-    </div>
-  </section>
+      <article class="door" id="detect">
+        <div class="when">Continuously &#183; Detect</div>
+        <h3>Detect — <span class="prod">onewatch</span></h3>
+        <p class="q">Is it still the system we audited last month?</p>
+        <div class="shot"><span class="k">change evidence</span>baseline  <span class="g">byte-identical</span>
+watch     <span class="g">74/74 pins hold</span>
+<span class="a">a system that changes will say so</span></div>
+        <p>Verifiable baselines, so when something underneath you changes you hold a record
+           that it did — evidence rather than a feeling.</p>
+        <div class="status"><b>Public since 10 September</b> &#183; Apache-2.0 &#183; verification tooling open</div>
+        <div class="links">
+          <span class="who">Engineer</span><a href="https://github.com/shamiksaharcciit-oss/onewatch">The repository, and the retirement on the record &rarr;</a>
+          <span class="who">Everyone</span><a href="/where-it-fits.html">Where the tools attach &rarr;</a>
+        </div>
+      </article>
 
-  <!-- 5 · honest proof strip -->
-  <section class="honesty">
-    <span class="tag">House rules for claims</span>
-    <h2>What this site will not do</h2>
-    <div class="rules">
-      <div class="rule-card">
-        <h4>No aspiration dressed as capability</h4>
-        <p>
-          If a feature is planned, it is labeled <em>planned</em>. If a number comes from a
-          worked example, it is labeled a <em>worked example</em>. Nothing on this site
-          describes what we hope the tools will do as if they already do it.
-        </p>
-      </div>
-      <div class="rule-card">
-        <h4>Cryptography is opt-in, off by default</h4>
-        <p>
-          Receipt chaining, signing, and anchoring exist as options you turn on
-          deliberately — and every claim about them travels with that sentence. A default
-          you didn't choose is not a guarantee you hold.
-        </p>
-      </div>
-      <div class="rule-card">
-        <h4>Three outcomes, honestly reported</h4>
-        <p>
-          A verification can come back <em>verified</em>, <em>contradicted</em>, or
-          <em>couldn't&nbsp;check</em> — and couldn't-check is never rounded up to verified.
-          A checker that only ever says yes is a decoration.
-        </p>
-      </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- 6 · reading -->
-  <section class="reading" id="reading">
-    <div class="sec-head">
-      <h2>Read the case</h2>
-      <span class="tag">Publishing the week of Sept 8</span>
-    </div>
-    <ul class="read-list">
-      <li><span class="t">Why logs stop working the day it matters <i>— the launch essay</i></span><span class="when">Sept 8</span></li>
-      <li><span class="t"><a href="/deposition-test.html">The deposition test</a> <i>— a buyer's checklist for AI evidence</i></span><span class="when">Sept 8</span></li>
-      <li><span class="t">Prevent, demonstrated from public bytes <i>— onedoor walkthrough</i></span><span class="when">Sept 9</span></li>
-      <li><span class="t">One door in front of your tools <i>— onedoor as an MCP proxy</i></span><span class="when">Sept 10</span></li>
-      <li><span class="t"><a href="https://github.com/shamiksaharcciit-oss/onewatch">Retiring a canary, on the record</a> <i>— the disclosure itself: the retirement, the probe set, and the evidence store to re-derive</i></span><span class="when">Sept 10</span></li>
-      <li><span class="t"><a href="/stage-records.html">Stage records — the format and the digest recipes</a> <i>— implementer's reference</i></span><span class="when">Sept 10</span></li>
-      <li><span class="t"><a href="/samples/">Sample receipts, the reference verifier, ten rejection vectors</a> <i>— check them yourself</i></span><span class="when">Sept 11</span></li>
-      <li><span class="t">Debugging ingestion with stage receipts <i>— the engineering case for onetrace</i></span><span class="when">Sept 14</span></li>
-    </ul>
-  </section>
+<section class="band dark" id="see">
+  <div class="wrap">
+    <h2><span class="n">Not mockups</span>Five real outputs. Click through them.</h2>
+    <p class="lead">Every panel below is a tool's own output from a run that happened. Where a tool
+      cannot answer it says so in its own words rather than rounding up — and each one names where
+      you can go and read it.</p>
 
-  <!-- 7 · contact -->
-  <footer id="contact">
-    <div class="foot-grid">
-      <div>
-        <div class="wordmark" style="font-size:21px"><span class="seal">one</span>proof<span class="tld">.dev</span></div>
-        <p class="colophon">
-          Built in Amsterdam. Apache-2.0 across the suite. Small tools, no framework,
-          no telemetry — records you can hand to someone who doesn't trust you.
-        </p>
+    <div class="switch">
+      <div class="tabs" role="tablist" aria-label="Real outputs">
+        <button role="tab" id="t-1" aria-controls="p-1" aria-selected="true">Choosing</button>
+        <button role="tab" id="t-2" aria-controls="p-2" aria-selected="false">Preventing</button>
+        <button role="tab" id="t-3" aria-controls="p-3" aria-selected="false">Detecting</button>
+        <button role="tab" id="t-4" aria-controls="p-4" aria-selected="false">Proving</button>
+        <button role="tab" id="t-5" aria-controls="p-5" aria-selected="false">Checking us</button>
       </div>
-      <div class="foot-links">
-        <a href="https://github.com/shamiksaharcciit-oss/onedoor">GitHub — onedoor</a>
-        <a href="https://datatracker.ietf.org/doc/draft-saha-aadp/">IETF — draft-saha-aadp</a>
-        <a href="mailto:hello@oneproof.dev">hello@oneproof.dev</a>
-      </div>
-    </div>
-    <div class="fineprint">
-      Page views on this site are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data; the tools themselves report to no one.<br>
-      © 2026 oneproof · Digests, amounts, and receipts shown are illustrative worked examples drawn from the public
-      design fixtures, not customer data.
-    </div>
-  </footer>
 
-</div>
+      <div class="pane" role="tabpanel" id="p-1" aria-labelledby="t-1">
+        <pre>8 option(s): 0 meets, 6 fails, 2 <span class="a">couldnt_check</span>
+
+<span class="d">No option meets every constraint, so nothing is
+recommended. Recommending an option whose constraints
+could not all be checked would be rounding
+couldn't-check up to a verdict.
+
+To decide latency_p95: run `oneground verify` against
+a real engine in the environment the constraint
+targets. Latency is never taken from simulation.</span></pre>
+        <div class="say">
+          <h3>A tool that always answers is a tool you cannot cite.</h3>
+          <p>Eight candidate setups, measured on a real corpus. None cleared every constraint, so
+            none is recommended — and the two it could not check are named rather than folded in.</p>
+          <p class="src">oneground · <a href="/oneground/how-it-works.html#published">the published report it came from →</a></p>
+        </div>
+      </div>
+
+      <div class="pane" role="tabpanel" id="p-2" aria-labelledby="t-2" hidden>
+        <pre><span class="d">policy ledger · payments pack</span>
+
+transfer   cap € 500     <span class="g">████████</span>
+refunds    cap € 300     <span class="g">█████</span>
+
+version    <span class="a">29e85d2c…5166</span>   <span class="g">ratified</span>
+
+<span class="d">every verdict names the version that decided it</span></pre>
+        <div class="say">
+          <h3>An action is checked against a snapshot someone ratified.</h3>
+          <p>Not against whatever the policy file happened to say at the time. Allow, review or
+            refuse — and the verdict carries the exact policy version, so a decision can still be
+            examined a year later.</p>
+          <p class="src">onedoor v0.7.0 · <a href="https://github.com/shamiksaharcciit-oss/onedoor">the repository, Apache-2.0 →</a></p>
+        </div>
+      </div>
+
+      <div class="pane" role="tabpanel" id="p-3" aria-labelledby="t-3" hidden>
+        <pre><span class="d">change evidence</span>
+
+baseline   <span class="g">byte-identical</span>
+watch      <span class="g">74 / 74 pins hold</span>
+anchor     <span class="a">38ff95db…</span>  <span class="g">match</span>
+
+<span class="a">a system that changes will say so</span></pre>
+        <div class="say">
+          <h3>The system you audited on Monday is not automatically the one running on Friday.</h3>
+          <p>Verifiable baselines, pinned and re-checked, so a change underneath you leaves a record
+            that it happened. Evidence rather than a feeling.</p>
+          <p class="src">onewatch · public since 10 September · <a href="https://github.com/shamiksaharcciit-oss/onewatch">the repository →</a></p>
+        </div>
+      </div>
+
+      <div class="pane" role="tabpanel" id="p-4" aria-labelledby="t-4" hidden>
+        <pre><span class="d">the same document, under two runs</span>
+
+baseline    #0001  219 ch  <span class="g">3155109b</span>
+                   <span class="g">RETRIEVED</span>   matches pattern
+
+candidate   #0009  219 ch  <span class="g">3155109b</span>
+                   <span class="r">not retrieved</span>
+
+<span class="d">"…ninety (90) days after notice is given…"</span></pre>
+        <div class="say">
+          <h3>Same digest. Provably the same text. Still in the index.</h3>
+          <p>Before the upgrade that document was cut into two passages and the right one was read.
+            After it, the same document is cut into ten, the sentence sits at position nine — and the
+            search never reached it. Nothing was lost and nothing errored.</p>
+          <p class="src">onetrace · <a href="/answer-lineage.html">the full report →</a></p>
+        </div>
+      </div>
+
+      <div class="pane" role="tabpanel" id="p-5" aria-labelledby="t-5" hidden>
+        <pre><span class="d">$ python check_hosted.py https://oneproof.dev/oneground/lab</span>
+
+  <span class="g">verified</span>   data/MANIFEST.sha256   31314947b8df7042…
+  <span class="g">verified</span>   base.bin        3,900,000 bytes
+  <span class="g">verified</span>   inline.js       4,702,205 bytes
+  <span class="g">verified</span>   index.html      9,196 bytes    <span class="d">…and 5 more</span>
+
+  <span class="g">9 verified · 0 contradicted · 0 couldn't-check</span>
+  <span class="g">The hosted copy is this repository's copy.</span></pre>
+        <div class="say">
+          <h3>Run against this site, by anyone, without our permission.</h3>
+          <p>Standard-library Python, no network credentials, no account. It compares what this host
+            serves to what the repository holds, file by file, and exits non-zero if they disagree.</p>
+          <p class="src">oneproof · <a href="/oneground/how-it-works.html#checks">what each check needs →</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="deeper">
+  <div class="wrap">
+    <h2><span class="n">Go deeper</span>Three ways in, depending on why you're here.</h2>
+    <div class="paths">
+      <div class="path">
+        <div class="who">If you are buying</div>
+        <h3>What it costs and what it refuses</h3>
+        <p>Cost, risk, what leaves your building, and the limits stated before you find them.</p>
+        <ul>
+          <li><a href="/oneground/">Choosing a retrieval setup</a></li>
+          <li><a href="/answer-lineage.html">Proving what an answer rested on</a></li>
+          <li><a href="/where-it-fits.html">Where the tools attach</a></li>
+        </ul>
+      </div>
+      <div class="path">
+        <div class="who">If you will run it</div>
+        <h3>Commands, formats, preconditions</h3>
+        <p>What each tool needs, what it writes, and how to check every figure against its source.</p>
+        <ul>
+          <li><a href="/oneground/how-it-works.html">oneground — method and checks</a></li>
+          <li><a href="/stage-records.html">Stage records — format and digest recipes</a></li>
+          <li><a href="/samples/">Samples, verifier, rejection vectors</a></li>
+        </ul>
+      </div>
+      <div class="path">
+        <div class="who">If you are reviewing the work</div>
+        <h3>Drafts, open requirements, failures</h3>
+        <p>The specifications, what they do not yet cover, and the register that tracks it in public.</p>
+        <ul>
+          <li><a href="https://datatracker.ietf.org/doc/draft-saha-stage-receipts/">draft-saha-stage-receipts &#183; &#8722;00</a></li>
+          <li><a href="https://datatracker.ietf.org/doc/draft-saha-aadp/">draft-saha-aadp &#183; &#8722;02</a></li>
+          <li><a href="/samples/watch/STATUS.json">The open requirement register</a></li>
+          <li><a href="/building.html">What is designed and not built</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="narrow">
+      <p>Four open tools and two Internet-Drafts, built on one idea: that an AI system should be
+      able to show what it did to someone who has no reason to take its word for it. Everything on
+      this site that can be checked without us, can be.</p>
+    </div>
+    <div class="fine">Page views are counted by GoatCounter, an open-source counter that sets no cookies and
+    stores no personal data; the tools themselves report to no one.<br>
+    &copy; 2026 oneproof &#183; Apache-2.0 across the suite &#183; Digests shown on this site are worked examples
+    from public fixtures, not customer data.</div>
+  </div>
+</footer>
+
 <script>
 (function(){
-  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  var r = document.querySelector('.receipt'); if (!r) return;
-  r.classList.add('play');
-  var els = r.querySelectorAll('.ln,.rule'), t = 0.25;
-  els.forEach(function(e,i){ e.style.animationDelay = (t + i*0.16).toFixed(2)+'s'; });
-  r.querySelectorAll('.allow,.refuse').forEach(function(s){
-    var d = parseFloat(s.parentElement.style.animationDelay) || 0;
-    s.style.animationDelay = (d + 0.3).toFixed(2)+'s';
+  var tabs=[].slice.call(document.querySelectorAll('.tabs [role=tab]'));
+  if(!tabs.length)return;
+  function select(t){
+    tabs.forEach(function(x){
+      var on=x===t;
+      x.setAttribute('aria-selected',String(on));
+      document.getElementById(x.getAttribute('aria-controls')).hidden=!on;
+    });
+  }
+  tabs.forEach(function(t){
+    t.addEventListener('click',function(){select(t)});
+    t.addEventListener('keydown',function(e){
+      var i=tabs.indexOf(t),n=null;
+      if(e.key==='ArrowRight')n=tabs[(i+1)%tabs.length];
+      if(e.key==='ArrowLeft')n=tabs[(i-1+tabs.length)%tabs.length];
+      if(e.key==='Home')n=tabs[0];
+      if(e.key==='End')n=tabs[tabs.length-1];
+      if(n){e.preventDefault();select(n);n.focus()}
+    });
   });
 })();
 </script>
