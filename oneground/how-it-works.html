@@ -228,26 +228,21 @@ precondition, stated here because two of them are cheap and one is not:</p>
 #    needs: a clone. stdlib only, no install, no assets.</pre>
 <pre>python site/teaser/verify_teaser_data.py</pre>
 <pre class="c"># 3. recompute the fixture's published figures from the published data
-#    needs: Python 3.12 or newer, a clone, and the 461 MB release asset
-#    (arxiv-150k-v1.tgz, attached to the v0.1.0-preview release).
-#    the small fixture, arxiv-smoke, ships inside the clone and needs no download.
-#    this is the sequence oneground documents; do not run only the last line.</pre>
-<pre>pip install oneground
-git clone https://github.com/shamiksaharcciit-oss/oneground &amp;&amp; cd oneground
-oneground fixture verify arxiv-smoke
-tar -xzf arxiv-150k-v1.tgz
-oneground fixture verify arxiv-150k --asset &lt;folder holding vectors.npy&gt;</pre>
+#    not runnable today from anything we can print here -- see below.</pre>
 </div>
 
-<p><b>Do not run <code>oneground fixture verify arxiv-150k</code> on its own from a fresh
-install.</b> Today it stops at the first missing precondition with an error that does not say
-which one, and both we and oneground have reproduced that. The sequence above is the one
-oneground's own release notes give: the clone carries the fixture's published values and
-manifest, the release asset carries the vectors, and <code>--asset</code> says where you put
-them. We have run checks 1 and 2 ourselves; check 3 is oneground's documented sequence and
-takes about ten minutes once the asset is extracted. On 23 September the one-line form is due to
-work from a bare install for the digests and to name all three preconditions when one is
-missing; this paragraph changes the day it does.</p>
+<p><b>Check 3 has no command on this page today, and that is deliberate.</b> Twice this week a
+command was printed here that failed from a fresh install &mdash; first
+<code>oneground fixture verify arxiv-150k</code>, then a sequence taken from the tool's own
+documentation that turned out to fail at a different step. The published wheel
+(<code>0.1.0rc1</code>) ships no fixture data, and <code>fixture verify</code> refuses an
+environment that does not match the repository's own <code>requirements.txt</code>. So there is
+no sequence we have run that we can put here, and we would rather print nothing than print a
+third thing that stops at a terminal. Checks 1 and 2 are the ones we have run ourselves, and
+they re-derive every figure the lab shows. The full-fixture check &mdash; the release asset,
+about ten minutes, verified / contradicted / couldn't-check per value &mdash; is what
+oneground's release on 23 September is for, and the commands go here the day someone outside
+oneground has run them.</p>
 
 <p>The first reports one of three outcomes per file — <code>verified</code>,
 <code>contradicted</code>, <code>couldnt_check</code> — and exits non-zero only on a
