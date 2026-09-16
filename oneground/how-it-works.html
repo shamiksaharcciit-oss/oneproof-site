@@ -67,6 +67,7 @@
   .cmds{background:var(--x-ground);color:var(--x-ink);border-radius:6px;padding:18px 20px;margin:16px 0 22px}
   .cmds pre{background:none;padding:0;margin:0 0 6px}
   .cmds .c{color:var(--x-dim)}
+  .cmds pre.out{font-size:.78em;line-height:1.45;max-height:34em;overflow:auto}
   .next{display:block;border:1px solid var(--line);background:var(--paper-2);padding:15px 18px;margin:14px 0;
     text-decoration:none;color:var(--ink)}
   .next:hover{border-color:var(--gold)}
@@ -227,22 +228,69 @@ precondition, stated here because two of them are cheap and one is not:</p>
 <pre class="c"># 2. re-derive the lab's counters from base.bin, independently of the page
 #    needs: a clone. stdlib only, no install, no assets.</pre>
 <pre>python site/teaser/verify_teaser_data.py</pre>
-<pre class="c"># 3. recompute the fixture's published figures from the published data
-#    not runnable today from anything we can print here -- see below.</pre>
+<pre class="c"># 3. recompute a fixture's published values from the published data.
+#    needs: a clone of main, a Python 3.12 virtual environment, and the
+#    repository's own pinned requirements. the small fixture ships in the clone.
+#    this sequence was run to completion by oneground on 16 September; the
+#    output is printed beneath it, unedited.</pre>
+<pre>git clone https://github.com/shamiksaharcciit-oss/oneground &amp;&amp; cd oneground
+pip install -r requirements.txt
+python -m oneground.cli fixture verify arxiv-smoke</pre>
 </div>
 
-<p><b>Check 3 has no command on this page today, and that is deliberate.</b> Twice this week a
-command was printed here that failed from a fresh install &mdash; first
-<code>oneground fixture verify arxiv-150k</code>, then a sequence taken from the tool's own
-documentation that turned out to fail at a different step. The published wheel
-(<code>0.1.0rc1</code>) ships no fixture data, and <code>fixture verify</code> refuses an
-environment that does not match the repository's own <code>requirements.txt</code>. So there is
-no sequence we have run that we can put here, and we would rather print nothing than print a
-third thing that stops at a terminal. Checks 1 and 2 are the ones we have run ourselves, and
-they re-derive every figure the lab shows. The full-fixture check &mdash; the release asset,
-about ten minutes, verified / contradicted / couldn't-check per value &mdash; is what
-oneground's release on 23 September is for, and the commands go here the day someone outside
-oneground has run them.</p>
+<p><b>What that prints, unedited, from the run it was taken from</b> (oneground, 16 September, a
+fresh clone, Python 3.12; the only change is that one home-directory path is shown as its
+documented location):</p>
+
+<div class="cmds">
+<pre class="out">python  C:\...\og-clone\.venv\Scripts\python.exe  (venv)
+fixture: arxiv-smoke
+directory: fixtures\arxiv-smoke
+manifest: MANIFEST.sha256 (11 files listed)
+
+digests
+  <span class="a">couldnt_check</span> receipt  sample.jsonl.zst               artifact not present (release asset, or not built); looked in fixtures\arxiv-smoke and ~/oneground-assets/arxiv-smoke
+  <span class="a">couldnt_check</span> receipt  vectors.npy                    artifact not present (release asset, or not built); looked in fixtures\arxiv-smoke and ~/oneground-assets/arxiv-smoke
+  <span class="g">verified</span>      receipt  queries.npy                    2359ce716b2ca7ef75c5d9f4fa4a42924df83eeac5848918b6a823efa7f7433a
+  <span class="g">verified</span>      receipt  query_ids.json                 0081604bb50d8dd48b4ae5605a05fc894dcd2ae4db41511657464772c911b8e2
+  <span class="g">verified</span>      receipt  ground_truth.npy               13919bb5174ebeb4febe037017a2e2b8bbfe4998b3ce261e7989e4649c2a9cce
+  <span class="g">verified</span>      receipt  characterization.json          07b576e27e680596d8cb52c59f01dcb18e1039a9be135c48db921e5a56dc30e1
+  <span class="g">verified</span>      declared build_info.json                fa6168a52acb45283a51f73554e3683dd24abde014e0b82a4091e0e3ebb944c1
+  <span class="a">couldnt_check</span> declared projection.npy                 artifact not present (release asset, or not built); looked in fixtures\arxiv-smoke and ~/oneground-assets/arxiv-smoke
+  <span class="g">verified</span>      declared ground_view_base.parquet       23ee242d845034ed91c01f3dd6f57817d3b5d426ce3b2b1502a61fb10c2cf948
+  <span class="g">verified</span>      declared ground_view_queries.parquet    32a562466ccb29932742d3c146892b7f9f420676ce91dfe8219c320ac70ef6c6
+  <span class="g">verified</span>      declared ground_view_centroids.parquet  b9655c45a31bd2fde2440bb05d5764d6c4611767bfa39015e64c6352beeea496
+
+values
+  <span class="a">couldnt_check</span> intrinsic_dimensionality                the spec publishes no value for this field yet, so there is nothing to reproduce. The recomputation was skipped rather than run against placeholders.
+  <span class="a">couldnt_check</span> boundary_crispness                      the spec publishes no value for this field yet, so there is nothing to reproduce. The recomputation was skipped rather than run against placeholders.
+  <span class="a">couldnt_check</span> skew_top10_share                        the spec publishes no value for this field yet, so there is nothing to reproduce. The recomputation was skipped rather than run against placeholders.
+  <span class="a">couldnt_check</span> ambiguous_query_rate                    the spec publishes no value for this field yet, so there is nothing to reproduce. The recomputation was skipped rather than run against placeholders.
+  <span class="a">couldnt_check</span> single_node_hnsw.recall_at_10           the spec publishes no value for this field yet, so there is nothing to reproduce. The recomputation was skipped rather than run against placeholders.
+  <span class="a">couldnt_check</span> semantic_sharded.recall_at_10           the spec publishes no value for this field yet, so there is nothing to reproduce. The recomputation was skipped rather than run against placeholders.
+  <span class="a">couldnt_check</span> semantic_sharded.storage_amplification  the spec publishes no value for this field yet, so there is nothing to reproduce. The recomputation was skipped rather than run against placeholders.
+  <span class="a">couldnt_check</span> drift                                   the spec publishes no value for this field yet, so there is nothing to reproduce. The recomputation was skipped rather than run against placeholders.
+
+summary: digests 8 verified, 0 contradicted, 3 <span class="a">couldnt_check</span> (6 receipt, 5 declared)
+         values  0 verified, 0 contradicted, 8 <span class="a">couldnt_check</span></pre>
+</div>
+
+<p>Three things a reader sees there, and each is the point. <b>Eight of eleven digests verify;
+the three that cannot are release-asset files, and the tool names both places it looked</b>
+rather than failing opaquely. <b>All eight values are <code>couldnt_check</code>, and
+correctly:</b> <code>arxiv-smoke</code> is a scaffold whose values are not yet published, and
+the tool says so &mdash; <em>the recomputation was skipped rather than run against
+placeholders.</em> That is the instrument declining to compare against a placeholder on its own
+fixture, which shows the discipline better than a clean pass would. And the invocation is printed
+exactly as it was run; the <code>oneground</code> console script also works from that
+environment, but the module form is what was run.</p>
+
+<p><b>The full 150,000-vector fixture is not printed here yet.</b> It needs the release asset
+(<code>arxiv-150k-v1.tgz</code>, 461 MB) and an <code>--asset</code> path, and the sequence for
+it goes on this page the day someone has run it to completion &mdash; not the day a document
+says it should work. Twice this week a command was printed here that had not been run, and both
+failed. That is the rule now: <b>a command on this page is one that has been executed, and the
+output beside it is what it produced.</b></p>
 
 <p>The first reports one of three outcomes per file — <code>verified</code>,
 <code>contradicted</code>, <code>couldnt_check</code> — and exits non-zero only on a
