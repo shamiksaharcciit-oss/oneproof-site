@@ -228,18 +228,26 @@ precondition, stated here because two of them are cheap and one is not:</p>
 #    needs: a clone. stdlib only, no install, no assets.</pre>
 <pre>python site/teaser/verify_teaser_data.py</pre>
 <pre class="c"># 3. recompute the fixture's published figures from the published data
-#    needs: a clone, a pinned environment, and ~0.5 GB of release assets
-#    extracted to ~/oneground-assets/arxiv-150k. NOT a bare pip install.</pre>
-<pre>oneground fixture verify arxiv-150k</pre>
+#    needs: Python 3.12 or newer, a clone, and the 461 MB release asset
+#    (arxiv-150k-v1.tgz, attached to the v0.1.0-preview release).
+#    the small fixture, arxiv-smoke, ships inside the clone and needs no download.
+#    this is the sequence oneground documents; do not run only the last line.</pre>
+<pre>pip install oneground
+git clone https://github.com/shamiksaharcciit-oss/oneground &amp;&amp; cd oneground
+oneground fixture verify arxiv-smoke
+tar -xzf arxiv-150k-v1.tgz
+oneground fixture verify arxiv-150k --asset &lt;folder holding vectors.npy&gt;</pre>
 </div>
 
-<p><b>Check 3 will not run from a fresh <code>pip install</code> alone</b>, and we would rather
-put that here than let you find it at a terminal. It resolves <code>fixtures/arxiv-150k</code>
-and <code>requirements.txt</code> from the current working directory, so it expects to be run
-inside a checkout; it refuses outright if the environment is not pinned, because recomputing a
-published number under unknown library versions produces a figure nobody can stand behind; and
-the vectors themselves are a separate release asset, not repository content. Checks 1 and 2 are
-the ones you can run in the next five minutes.</p>
+<p><b>Do not run <code>oneground fixture verify arxiv-150k</code> on its own from a fresh
+install.</b> Today it stops at the first missing precondition with an error that does not say
+which one, and both we and oneground have reproduced that. The sequence above is the one
+oneground's own release notes give: the clone carries the fixture's published values and
+manifest, the release asset carries the vectors, and <code>--asset</code> says where you put
+them. We have run checks 1 and 2 ourselves; check 3 is oneground's documented sequence and
+takes about ten minutes once the asset is extracted. On 23 September the one-line form is due to
+work from a bare install for the digests and to name all three preconditions when one is
+missing; this paragraph changes the day it does.</p>
 
 <p>The first reports one of three outcomes per file — <code>verified</code>,
 <code>contradicted</code>, <code>couldnt_check</code> — and exits non-zero only on a

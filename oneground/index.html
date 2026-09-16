@@ -252,7 +252,7 @@ implements it today, so nothing on this page depends on it.</p>
 <p>Send your engineering lead this page. To <em>use</em> it, one command:</p>
 
 <div class="cmds">
-<pre>pip install oneground</pre>
+<pre>pip install oneground        <span class="c"># Python 3.12 or newer</span></pre>
 </div>
 
 <p>To <em>check us</em> before you use it — which is the point of the project — clone the
@@ -269,10 +269,10 @@ disagree. There is a second script beside it, <code>check_hosted.py</code>, whic
 the copy of the lab served from this site is byte-for-byte the copy in the repository.</p>
 
 <p><b>Re-verifying the whole 150,000-vector fixture is a heavier job, and we would rather say so
-than let you discover it.</b> <code>oneground fixture verify arxiv-150k</code> is the command,
-and it needs a checkout of the repository, a pinned environment, and roughly half a gigabyte of
-separately published data. It is not something a fresh <code>pip install</code> can do on its
-own. <a href="how-it-works.html#checks">What each check needs</a> is set out plainly.</p>
+than let you discover it.</b> It takes a checkout of the repository and a 461 MB release asset,
+and about ten minutes; the one-line command you may have seen elsewhere fails from a fresh install
+today, with an error that does not say why. <a href="how-it-works.html#checks">The sequence that
+works</a> is set out step by step, as oneground documents it.</p>
 
 <a class="next" href="how-it-works.html"><span>For the engineer who will run it</span>
   <b>How it works &rarr;</b> — the four commands, the measurement method, the full refusal
