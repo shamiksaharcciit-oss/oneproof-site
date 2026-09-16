@@ -1,0 +1,147 @@
+== 1. digests, with a standard tool (no code of ours involved) ==
+bd457ff0d9f5e14547d53827e3cc9ca820e6774b33c200c458f469859ce6c62a  receipts/01-retrieve.json
+6f77deaa43da8ea76387ffa86cab67a9125cb9e4aa839e51ae1f06cf9dd00966  receipts/02-rerank.json
+fa1b7a24259eb55de8a78fd7bb4e69157b8853bea6b26e96ba52e000463653a4  receipts/03-generate.json
+cb58b51908dd70139eadaf8f65e50081db3960c8df05e78afa7c6da36df96144  receipts/04-verify.json
+01b471d7ada75bfea4916aecd4f06722f237fd2f3dbe70190f27689f8e753756  MANIFEST.json
+
+== 2. canonical form of every receipt ==
+bd457ff0d9f5e14547d53827e3cc9ca820e6774b33c200c458f469859ce6c62a  CANONICAL  receipts/01-retrieve.json
+6f77deaa43da8ea76387ffa86cab67a9125cb9e4aa839e51ae1f06cf9dd00966  CANONICAL  receipts/02-rerank.json
+fa1b7a24259eb55de8a78fd7bb4e69157b8853bea6b26e96ba52e000463653a4  CANONICAL  receipts/03-generate.json
+cb58b51908dd70139eadaf8f65e50081db3960c8df05e78afa7c6da36df96144  CANONICAL  receipts/04-verify.json
+
+== 3. the chain, verified offline ==
+[PASS   ] receipts/01-retrieve.json: bytes are canonical
+[PASS   ] receipts/01-retrieve.json: required field 'format'
+[PASS   ] receipts/01-retrieve.json: required field 'run_id'
+[PASS   ] receipts/01-retrieve.json: required field 'stage'
+[PASS   ] receipts/01-retrieve.json: required field 'prev'
+[PASS   ] receipts/01-retrieve.json: required field 'time'
+[PASS   ] receipts/01-retrieve.json: required field 'coverage'
+[PASS   ] receipts/01-retrieve.json: required field 'emission'
+[PASS   ] receipts/01-retrieve.json: required field 'anchor'
+[PASS   ] receipts/01-retrieve.json: required field 'instrument'
+[PASS   ] receipts/01-retrieve.json: required field 'inputs'
+[PASS   ] receipts/01-retrieve.json: required field 'outputs'
+[PASS   ] receipts/01-retrieve.json: required field 'assertions'
+[PASS   ] receipts/01-retrieve.json: required field 'outcome'
+[PASS   ] receipts/01-retrieve.json: time.started carries its zone
+[PASS   ] receipts/01-retrieve.json: time.ended carries its zone
+[PASS   ] receipts/01-retrieve.json: instrument is named and pinned
+[PASS   ] receipts/01-retrieve.json: inputs/question declares a trust class
+[PASS   ] receipts/01-retrieve.json: outputs/candidates declares a trust class
+[PASS   ] receipts/01-retrieve.json: assertions name their constants
+[PASS   ] receipts/01-retrieve.json: outcome class is one of ['error', 'ok', 'refused']
+[PASS   ] receipts/01-retrieve.json: coverage declares completeness
+[PASS   ] receipts/01-retrieve.json: 'complete' is consistent with the stage lists
+[PASS   ] receipts/01-retrieve.json: anchor state is declared, not absent
+[NOT-RUN] receipts/01-retrieve.json: originality -- record is declared unanchored; this verifier can establish consistency, not originality
+[PASS   ] receipts/01-retrieve.json: digest matches the manifest
+[PASS   ] receipts/01-retrieve.json: chain link
+[PASS   ] receipts/02-rerank.json: bytes are canonical
+[PASS   ] receipts/02-rerank.json: required field 'format'
+[PASS   ] receipts/02-rerank.json: required field 'run_id'
+[PASS   ] receipts/02-rerank.json: required field 'stage'
+[PASS   ] receipts/02-rerank.json: required field 'prev'
+[PASS   ] receipts/02-rerank.json: required field 'time'
+[PASS   ] receipts/02-rerank.json: required field 'coverage'
+[PASS   ] receipts/02-rerank.json: required field 'emission'
+[PASS   ] receipts/02-rerank.json: required field 'anchor'
+[PASS   ] receipts/02-rerank.json: required field 'instrument'
+[PASS   ] receipts/02-rerank.json: required field 'inputs'
+[PASS   ] receipts/02-rerank.json: required field 'outputs'
+[PASS   ] receipts/02-rerank.json: required field 'assertions'
+[PASS   ] receipts/02-rerank.json: required field 'outcome'
+[PASS   ] receipts/02-rerank.json: time.started carries its zone
+[PASS   ] receipts/02-rerank.json: time.ended carries its zone
+[PASS   ] receipts/02-rerank.json: instrument is named and pinned
+[PASS   ] receipts/02-rerank.json: inputs/candidates declares a trust class
+[PASS   ] receipts/02-rerank.json: outputs/ranked declares a trust class
+[PASS   ] receipts/02-rerank.json: assertions name their constants
+[PASS   ] receipts/02-rerank.json: outcome class is one of ['error', 'ok', 'refused']
+[PASS   ] receipts/02-rerank.json: coverage declares completeness
+[PASS   ] receipts/02-rerank.json: 'complete' is consistent with the stage lists
+[PASS   ] receipts/02-rerank.json: anchor state is declared, not absent
+[NOT-RUN] receipts/02-rerank.json: originality -- record is declared unanchored; this verifier can establish consistency, not originality
+[PASS   ] receipts/02-rerank.json: digest matches the manifest
+[PASS   ] receipts/02-rerank.json: chain link
+[PASS   ] receipts/03-generate.json: bytes are canonical
+[PASS   ] receipts/03-generate.json: required field 'format'
+[PASS   ] receipts/03-generate.json: required field 'run_id'
+[PASS   ] receipts/03-generate.json: required field 'stage'
+[PASS   ] receipts/03-generate.json: required field 'prev'
+[PASS   ] receipts/03-generate.json: required field 'time'
+[PASS   ] receipts/03-generate.json: required field 'coverage'
+[PASS   ] receipts/03-generate.json: required field 'emission'
+[PASS   ] receipts/03-generate.json: required field 'anchor'
+[PASS   ] receipts/03-generate.json: required field 'instrument'
+[PASS   ] receipts/03-generate.json: required field 'inputs'
+[PASS   ] receipts/03-generate.json: required field 'outputs'
+[PASS   ] receipts/03-generate.json: required field 'assertions'
+[PASS   ] receipts/03-generate.json: required field 'outcome'
+[PASS   ] receipts/03-generate.json: time.started carries its zone
+[PASS   ] receipts/03-generate.json: time.ended carries its zone
+[PASS   ] receipts/03-generate.json: instrument is named and pinned
+[PASS   ] receipts/03-generate.json: inputs/ranked declares a trust class
+[PASS   ] receipts/03-generate.json: inputs/evidence_passages declares a trust class
+[PASS   ] receipts/03-generate.json: assertions name their constants
+[PASS   ] receipts/03-generate.json: outcome class is one of ['error', 'ok', 'refused']
+[PASS   ] receipts/03-generate.json: coverage declares completeness
+[PASS   ] receipts/03-generate.json: 'complete' is consistent with the stage lists
+[PASS   ] receipts/03-generate.json: anchor state is declared, not absent
+[NOT-RUN] receipts/03-generate.json: originality -- record is declared unanchored; this verifier can establish consistency, not originality
+[PASS   ] receipts/03-generate.json: digest matches the manifest
+[PASS   ] receipts/03-generate.json: chain link
+[PASS   ] receipts/04-verify.json: bytes are canonical
+[PASS   ] receipts/04-verify.json: required field 'format'
+[PASS   ] receipts/04-verify.json: required field 'run_id'
+[PASS   ] receipts/04-verify.json: required field 'stage'
+[PASS   ] receipts/04-verify.json: required field 'prev'
+[PASS   ] receipts/04-verify.json: required field 'time'
+[PASS   ] receipts/04-verify.json: required field 'coverage'
+[PASS   ] receipts/04-verify.json: required field 'emission'
+[PASS   ] receipts/04-verify.json: required field 'anchor'
+[PASS   ] receipts/04-verify.json: required field 'instrument'
+[PASS   ] receipts/04-verify.json: required field 'inputs'
+[PASS   ] receipts/04-verify.json: required field 'outputs'
+[PASS   ] receipts/04-verify.json: required field 'assertions'
+[PASS   ] receipts/04-verify.json: required field 'outcome'
+[PASS   ] receipts/04-verify.json: time.started carries its zone
+[PASS   ] receipts/04-verify.json: time.ended carries its zone
+[PASS   ] receipts/04-verify.json: instrument is named and pinned
+[PASS   ] receipts/04-verify.json: assertions name their constants
+[PASS   ] receipts/04-verify.json: outcome class is one of ['error', 'ok', 'refused']
+[PASS   ] receipts/04-verify.json: coverage declares completeness
+[PASS   ] receipts/04-verify.json: 'complete' is consistent with the stage lists
+[PASS   ] receipts/04-verify.json: anchor state is declared, not absent
+[NOT-RUN] receipts/04-verify.json: originality -- record is declared unanchored; this verifier can establish consistency, not originality
+[PASS   ] receipts/04-verify.json: digest matches the manifest
+[PASS   ] receipts/04-verify.json: chain link
+[PASS   ] manifest: chain head matches the last receipt
+
+103 pass, 0 fail, 4 not-run  ->  PASS
+
+== 4. rejection vectors - every one MUST be refused ==
+[REFUSED] rejection/R01-json-number.json
+           reason required: a JSON number where a decimal string is required ('500.00' and '500' must stay distinct)
+[REFUSED] rejection/R02-null-instrument.json
+           reason required: instrument cannot be named or pinned; refusal is required, not a blank field
+[REFUSED] rejection/R03-timestamp-no-zone.json
+           reason required: a timestamp without its zone is half a timestamp
+[REFUSED] rejection/R04-missing-constants.json
+           reason required: an assertion that does not name its transform constants
+[REFUSED] rejection/R05-untrusted-class.json
+           reason required: an input with no declared trust class
+[REFUSED] rejection/R06-error-without-body.json
+           reason required: an HTTP error without its body is a status code wearing an explanation
+[REFUSED] rejection/R07-coverage-lie.json
+           reason required: 'complete' asserted while declared stages are missing from the emitting list
+[REFUSED] rejection/R08-anchor-absent.json
+           reason required: anchor state absent rather than declared; unanchored is a state, not a silence
+[REFUSED] rejection/R09-self-digest.json
+           reason required: a record may not contain the proof of its own final state
+[REFUSED] rejection/R10-not-canonical.json
+           reason required: pretty-printed; file bytes are not the canonical serialization
+
+10/10 vectors refused
