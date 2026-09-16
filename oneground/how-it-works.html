@@ -231,15 +231,19 @@ precondition, stated here because two of them are cheap and one is not:</p>
 <pre class="c"># 3. recompute a fixture's published values from the published data.
 #    needs: a clone of main, a Python 3.12 virtual environment, and the
 #    repository's own pinned requirements. the small fixture ships in the clone.
-#    this sequence was run to completion by oneground on 16 September; the
-#    output is printed beneath it, unedited.</pre>
-<pre>git clone https://github.com/shamiksaharcciit-oss/oneground &amp;&amp; cd oneground
+#    run to completion twice on 16 September, by oneground and then
+#    independently on a second machine, with byte-identical digests. the
+#    output is printed beneath it, unedited. the environment line matters:
+#    without one, pip replaces packages in your system Python to meet the pins.</pre>
+<pre>git clone https://github.com/shamiksaharcciit-oss/oneground
+cd oneground
 pip install -r requirements.txt
 python -m oneground.cli fixture verify arxiv-smoke</pre>
 </div>
 
 <p><b>What that prints, unedited, from the run it was taken from</b> (oneground, 16 September, a
-fresh clone, Python 3.12; the only change is that one home-directory path is shown as its
+fresh clone, Python 3.12; a second run on a second machine the same day produced the same eight
+digests byte for byte; the only change below is that one home-directory path is shown as its
 documented location):</p>
 
 <div class="cmds">
