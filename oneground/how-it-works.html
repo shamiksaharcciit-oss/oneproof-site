@@ -139,7 +139,7 @@ laptop. It does <em>not</em> answer "how fast is it", and does not pretend to.</
 
 <p><code>verify</code> is the only source of latency and throughput figures. It runs a real
 engine under real load, on your hardware or on a machine you rent. Latency is never taken from
-simulation. <b>The preview runs Qdrant.</b> A second engine, pgvector, arrives on 23 September,
+simulation. <b>The preview runs Qdrant.</b> A second engine, pgvector, is built and in the repository,
 measured in turn on the same host with the same corpus and the same query set — each carrying its
 own number and its own verdict, because two engines on two machines are not a comparison.</p>
 
@@ -351,14 +351,14 @@ is a design note and no implementation. It is stated here because chunking plaus
 retrieval more than the index choice does, so a tool silent about it should say so rather than
 let you assume coverage it does not have.</p>
 
-<h2><span class="n">07</span>On 23 September</h2>
+<h2><span class="n">07</span>What is next</h2>
 
 <p>Already built and already in the public repository today: a second engine measured in turn
 on one host; latency runs repeated three times with the spread reported, so a pass means it
 passed every time; a saturation measurement — how much traffic the setup takes before it
 breaks, and where; a second reference collection, so the data's contribution can be separated
 from the engine's; and a check for documents longer than the embedding model's context, which
-are being silently truncated before they are ever searched.</p>
+are being silently truncated before they are ever searched. Shipped when it is tested; dated when a witnessed run makes it true.</p>
 
 <a class="next" href="./"><span>Back</span><b>The case for it &rarr;</b> — what it is for, what
 it costs, and what does not leave your building.</a>
