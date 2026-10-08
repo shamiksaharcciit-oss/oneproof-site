@@ -1,0 +1,41 @@
+# onetrace
+
+> onetrace records one hash-chained receipt per stage of a Python pipeline (an AI/RAG/agent pipeline, or any other), so that anyone can verify the record offline and compare two runs stage by stage. `diff` and `localize` name the first stage that changed and the setting or tool version behind it. onetrace-ci turns that into a pull-request gate: pass, review, or fail.
+
+Key facts for a coding agent:
+
+- Python 3.10+. Install: `pip install onetrace` (SDK and verifier). CI gate: `pip install onetrace-ci`. Signature and anchor checks: `pip install "onetrace-verify[crypto]"`.
+- Instrument existing code with two decorators: `@ot.run` on the function that is one run, and `@ot.stage(name, ...)` on each step. Nothing else in the code changes. Called outside a run, a decorated stage is a plain function, so tests keep working.
+- What a run folder holds: each stage's outputs (which can include documents, prompts and answers), and fingerprints (SHA-256 digests) of its inputs. Treat run folders like logs that may contain sensitive data. onetrace sends no telemetry and makes no network call during a run.
+- See what changed: `onetrace diff runs/A runs/B --text` shows the first stage that differs and the text that changed in its outputs, checked against the receipts first.
+- Verify a run: `onetrace-verify --require-artifacts runs/<run_id>` (exit 0 = record intact). Compare two runs: `onetrace diff runs/A runs/B`.
+- Meaning is the human's: the trust class of what a stage reads and of what it returns, and whether the stage can be re-run, are never guessed. If omitted, the most cautious value is recorded (`externally-sourced`; not re-derivable) and the field is listed as `undeclared` on that stage. An agent must leave them omitted and ask the human, not fill them in.
+- Settings that explain a change (chunk size, top-k, model name) go in `ot.pkg(..., config={...})` or `ot.constant(key, value)`. Without them, `localize` can say a stage's output changed but not why.
+- RAG pipelines: an ingest run and a query run each get `@ot.run`. Link the query run to what it reads (`ot.corpus_from(...)`, or the external index's name and version recorded with `ot.constant`), or a comparison can't say that the index changed. A stage that groups steps (embed + search) records every hidden step's settings.
+- DAGs are supported: pass one stage's return value to another and the edge is recorded; fan-out and fan-in work. A stage runs once per run unless declared `repeats=True` (a loop or a retry; calls numbered #1, #2, …); overlapping calls of the same stage are each named, `stage_fn.instance("en")(...)`.
+- Switch off with `ONETRACE_DISABLE=1`; removing the decorators restores the original code exactly.
+- What a verified record does not show: that the output was correct; why a model wrote what it wrote; anything about code that was not decorated.
+
+## Instrumenting a codebase
+
+- [Agent recipe: instrument an existing pipeline](https://oneproof.dev/onetrace/agents/instrument.md): step-by-step instructions for a coding agent, with the rules it must not break
+- [AGENTS.md section to paste into your repo](https://oneproof.dev/onetrace/agents/AGENTS-section.md): keeps future agent edits consistent with the instrumentation
+- [Quickstart](https://oneproof.dev/onetrace/quickstart.md): install, two decorators, run, verify
+- [Decorators](https://oneproof.dev/onetrace/manual.md#16-decorators): what a decorated stage stores, the fields you didn't state, repeated and concurrent calls, `files=`, switching off, encoders, the corpus link
+- [Numbers and booleans](https://oneproof.dev/onetrace/manual.md#1616-numbers-and-booleans-rule-m-for-settings-rule-v1-for-values): how settings (rule M) and decorated values (rule V1) are encoded
+- [`@ot.run`'s defaults](https://oneproof.dev/onetrace/manual.md#1617-otruns-defaults): the policy, manifest, declared stages, intake stage and run folder a decorated run uses when you don't say
+- [Error messages and their fixes](https://oneproof.dev/onetrace/errors.md): every refusal, why it happens, the one-line fix
+
+## Checking and comparing runs
+
+- [Verifying a run](https://oneproof.dev/onetrace/manual.md#8-verifying-a-run): `onetrace-verify`, exit codes, `--require-artifacts`, `--trust`
+- [diff and localize](https://oneproof.dev/onetrace/verdicts.md): the five verdicts (`same`, `FIRST DIFFERENCE`, `downstream`, `reconverged`, `COULD NOT CHECK`) and what each means
+- [What onetrace does not claim](https://oneproof.dev/onetrace/non-claims.md)
+
+## Optional
+
+- [Recorder API](https://oneproof.dev/onetrace/manual.md#5-integrating-onetrace-into-your-code-step-by-step): full control, without decorators
+- [Anchoring a run](https://oneproof.dev/onetrace/manual.md#15-anchoring-a-run)
+- [Signing a run](https://oneproof.dev/onetrace/manual.md#17-signing-a-run): a key the human holds, `sign_with=` at close or `onetrace sign` afterwards, and `onetrace-verify --trust`
+- [Receipt format](https://oneproof.dev/onetrace/format.md): the stage-receipt format and its Internet-Draft
+- [Framework adapters](https://oneproof.dev/onetrace/README.md#adapters): plain Python, LangChain, LlamaIndex, Langflow
