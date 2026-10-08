@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>What onetrace does not claim · onetrace</title>
+<link rel="stylesheet" href="assets/onetrace.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="site">
+<a class="brand" href="index.html">onetrace</a> <span class="version">0.2.0</span>
+</header>
+<nav class="pages" aria-label="Documentation pages">
+<details open>
+<summary>Pages</summary>
+<ul>
+<li><a href="index.html">Overview</a></li>
+<li><span class="group">Start</span><ul><li><a href="quickstart.html">Quickstart</a></li><li><a href="README.html">Documentation index</a></li></ul></li><li><span class="group">For coding agents</span><ul><li><a href="agents/instrument.html">Agent recipe</a></li><li><a href="agents/AGENTS-section.html">AGENTS.md section</a></li></ul></li><li><span class="group">Reference</span><ul><li><a href="manual.html">Manual</a></li><li><a href="errors.html">Errors and fixes</a></li><li><a href="verbs.html">The three verbs</a></li><li><a href="verdicts.html">The five verdicts</a></li><li><a href="format.html">The record format</a></li><li><a href="textdiff-format.html">Text-diff format</a></li><li><a href="non-claims.html" aria-current="page">What onetrace does not claim</a></li></ul></li><li><span class="group">Adapters</span><ul><li><a href="adapters/plain-python.html">Plain Python</a></li><li><a href="adapters/langchain.html">LangChain</a></li><li><a href="adapters/llamaindex.html">LlamaIndex</a></li><li><a href="adapters/langflow.html">Langflow</a></li></ul></li>
+</ul>
+</details>
+</nav>
+<main id="content">
+<h1 id="what-onetrace-does-not-claim">What onetrace does not claim</h1>
+<p>This list exists because every one of these is an easy thing to assume onetrace does, and it
+doesn't.</p>
+<ul>
+<li>
+<p><strong>onetrace does not check whether a pipeline's output is true.</strong> It checks what was recorded,
+and whether an independent verifier can confirm that record is internally consistent and its
+chain unbroken. A pipeline that faithfully records a wrong answer produces a record that
+verifies cleanly — verification is not a truth oracle.</p>
+</li>
+<li>
+<p><strong>A trust class is not a correctness claim.</strong> <code>operator-authored</code>, <code>model-generated</code>, and
+<code>externally-sourced</code> describe <em>provenance</em> — where a byte came from — not whether it's right.
+<code>model-generated</code> doesn't mean &quot;less trustworthy&quot;; <code>operator-authored</code> doesn't mean &quot;correct.&quot;</p>
+</li>
+<li>
+<p><strong><code>same</code> does not mean &quot;nothing changed.&quot;</strong> It means a stage's output digest matched. The
+instrument that produced it, its configuration, or an asserted constant can all have changed
+without moving the verdict — that's reported as an annotation, deliberately kept separate from
+the verdict itself (see <a href="verdicts.html">the verdicts page</a>).</p>
+</li>
+<li>
+<p><strong><code>reconverged</code> is not a bug in the comparison.</strong> Two different computations landing on the
+same output is a real thing that happens; onetrace reports it as its own verdict rather than
+either hiding it inside <code>same</code> or forcing it to read as a difference.</p>
+</li>
+<li>
+<p><strong>An unanchored run's <code>originality</code> check reporting <code>NOT-RUN</code> is not a failure.</strong> It means
+exactly what it says: this verifier can establish that a record is internally consistent, not
+that it was first published by whoever holds it. Anchoring (<code>onetrace anchor</code>: a timestamp
+proof over the chain head, from a party outside the recorder) is a separate record beside the
+chain; without it, originality is a question onetrace is honest about not answering, not one it
+answers <code>PASS</code> on a technicality.</p>
+</li>
+<li>
+<p><strong>An anchor does not show when the run happened, that its output was correct, or who wrote
+the record.</strong> An anchor is a timestamp proof over a run's chain head, from a party outside the
+recorder. It establishes that this exact record existed no later than time T, as attested by
+the anchor's source, under that source's trust assumptions. It does not show:</p>
+<ul>
+<li>when the run happened (only that the record existed by T);</li>
+<li>that the output was correct;</li>
+<li>who wrote the record (that is a signature's job, below).</li>
+</ul>
+<p>An RFC 3161 anchor is only as good as the time-stamp authority's certificate and root you
+pin: the verifier checks a token against those, never against a certificate the token carries.
+An OpenTimestamps anchor checked against block headers you supply is only as good as the source
+of those headers: the verifier trusts the heights in your header file, and checks each header
+only for its own proof-of-work target, not that it is on the chain everyone else follows. The verifier reads each anchor file once and checks and reports from
+those bytes, but a folder someone else is writing to can hold something else the next moment:
+verify a copy you control, not a folder someone else is writing to.</p>
+<p>When <code>onetrace anchor</code> can't store a record, its reason can be wrong in one case. On a system
+without <code>/proc/self/fd</code> (macOS, for example), if someone moves the run folder away and puts an
+empty folder, or a link to somewhere else, at its old name just as the record is being linked,
+the reason says the temporary file's name was moved, though the file is intact in the moved
+folder. What it says about the outcome stays true: nothing is stored. Anchor a run folder nobody
+else is writing to.</p>
+</li>
+<li>
+<p><strong>A signature does not show that the key wasn't stolen or misused, that the run's output is
+correct, when the record was signed, or who the person behind the key is.</strong> A signature is an
+Ed25519 signature over a run's chain head, by a recorder's key: it shows that the holder of that
+private key signed this exact record. A signature does not show:</p>
+<ul>
+<li>that the key wasn't stolen or misused;</li>
+<li>that the run's output is correct;</li>
+<li>when the record was signed (that is an anchor's job);</li>
+<li>who the person behind the key is. The verifier knows keys, not people; your trust list is how
+you connect a key to a name, and a valid signature by a key not on it is never a pass.</li>
+</ul>
+<p>The <code>signer</code> label in a signature record is the signer's own claim, and is only ever reported
+as claimed.</p>
+</li>
+<li>
+<p><strong><code>reproduce</code> does not mean every stage is infinitely re-runnable.</strong> A stage that calls a model
+with no fixed seed, or reads from a source that's since changed, is legitimately not
+rederivable — that's <code>COULD NOT CHECK</code>, with the reason named, and the stage's originally
+recorded outputs are kept rather than discarded.</p>
+</li>
+<li>
+<p><strong>onetrace does not protect against a write-access attacker who can also recompute every
+downstream digest and chain link.</strong> Rewriting history undetected requires forging or replaying
+bytes past the verifier's own checks; closing the remaining gap (an attacker with full write
+access to storage, patient enough to recompute everything downstream) is what anchoring is
+for (manual, section 15): a rewrite changes the chain head, and an anchor made before it no longer
+binds to the record. An anchor is not part of the chain, though: the same attacker can delete
+<code>anchors/</code>, and the run still passes. Anchoring closes the gap only for a reader who expects an
+anchor, or holds one independently of the run's own storage.</p>
+</li>
+<li>
+<p><strong>The format is not finished.</strong> Format major version <code>0</code> (the current <code>stage-receipt/0.2</code>) is
+specified by an Internet-Draft that hasn't reached RFC status. Required members, canonical-form
+rules, and the rejection vectors may still change before major version <code>1</code>. Format major
+version is carried in every record and checked explicitly — a verifier that doesn't implement a
+record's version says so, by name, rather than guessing.</p>
+</li>
+<li>
+<p><strong><code>reproduce</code> does not claim bit-exact floating-point reproduction on every machine.</strong> A stage
+whose own code depends on numpy/BLAS (an embedding step, say) is claimed rederivable only on
+the environment recorded in the run — a different machine's BLAS build can legitimately produce
+different bytes for the identical code and inputs, which <code>reproduce</code> reports honestly rather
+than asserting past.</p>
+</li>
+<li>
+<p><strong>onetrace does not claim identical test behavior across every Python patch version on every
+OS.</strong> CPython 3.10.11's own random-number-generator initialization on Windows is known to fail
+outright on some current runner images, unrelated to onetrace — which fixtures reproduce there
+is a property of that Python build, not of the format or the SDK.</p>
+</li>
+<li>
+<p><strong>The ingest-r1 PDF stage requires poppler's <code>pdftotext</code>, and refuses any other build by
+design.</strong> <code>pdftotext</code> from a different vendor (xpdf, say) is not silently accepted as
+equivalent, even when it runs and produces text — ring 4's own emission checks the reported
+converter identity before writing a single receipt and refuses to run at all if it isn't
+poppler's. This is not a portability gap to be worked around; the converter's identity is part
+of the recorded configuration, and a different vendor is a different, unconfirmed instrument.</p>
+</li>
+<li>
+<p><strong>The text diff does not say why recorded outputs changed, or that either version was
+correct.</strong> <code>diff --text</code> shows what the two runs' recorded outputs contained, read only after
+each run verified and each file matched its receipt.</p>
+</li>
+<li>
+<p><strong><code>diff --text</code> never shows an input's content.</strong> Inputs are fingerprinted, not stored, so a
+changed input is named, with its trust class and digests, and nothing more.</p>
+</li>
+</ul>
+</main>
+<footer class="site">
+<p>Source: <a href="non-claims.md"><code>non-claims.md</code></a> · onetrace 0.2.0 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
+</footer>
+<script src="assets/copy.js" defer></script>
+</body>
+</html>

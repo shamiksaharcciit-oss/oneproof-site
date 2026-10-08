@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Recipe for coding agents: instrument an existing Python pipeline with onetrace · onetrace</title>
+<link rel="stylesheet" href="../assets/onetrace.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="site">
+<a class="brand" href="../index.html">onetrace</a> <span class="version">0.2.0</span>
+</header>
+<nav class="pages" aria-label="Documentation pages">
+<details open>
+<summary>Pages</summary>
+<ul>
+<li><a href="../index.html">Overview</a></li>
+<li><span class="group">Start</span><ul><li><a href="../quickstart.html">Quickstart</a></li><li><a href="../README.html">Documentation index</a></li></ul></li><li><span class="group">For coding agents</span><ul><li><a href="instrument.html" aria-current="page">Agent recipe</a></li><li><a href="AGENTS-section.html">AGENTS.md section</a></li></ul></li><li><span class="group">Reference</span><ul><li><a href="../manual.html">Manual</a></li><li><a href="../errors.html">Errors and fixes</a></li><li><a href="../verbs.html">The three verbs</a></li><li><a href="../verdicts.html">The five verdicts</a></li><li><a href="../format.html">The record format</a></li><li><a href="../textdiff-format.html">Text-diff format</a></li><li><a href="../non-claims.html">What onetrace does not claim</a></li></ul></li><li><span class="group">Adapters</span><ul><li><a href="../adapters/plain-python.html">Plain Python</a></li><li><a href="../adapters/langchain.html">LangChain</a></li><li><a href="../adapters/llamaindex.html">LlamaIndex</a></li><li><a href="../adapters/langflow.html">Langflow</a></li></ul></li>
+</ul>
+</details>
+</nav>
+<main id="content">
+<h1 id="recipe-for-coding-agents-instrument-an-existing-python-pipeline-with-onetrace">Recipe for coding agents: instrument an existing Python pipeline with onetrace</h1>
+<p>You are adding onetrace to a codebase you did not write. Your job is to add <strong>recording</strong>, not to change <strong>behaviour</strong>. When you finish, the pipeline must produce exactly the same results as before, and every run must leave a record that <code>onetrace-verify</code> accepts.</p>
+<p>Read all of this before editing. The rules in &quot;Never&quot; are hard rules. Fetch this file itself, as raw text, from https://oneproof.dev/onetrace/agents/instrument.md, and work from it, not from a summary of it.</p>
+<p><strong>The rules, in short</strong> (each is explained below):</p>
+<ol>
+<li>Add recording. Change nothing the pipeline computes: no signature, output or logic changes.</li>
+<li>Leave out <code>trust=</code>, <code>output_trust=</code>, <code>rederivable=</code> and <code>note=</code>, and ask the human about each.</li>
+<li>No secret, token or key in a decorator, <code>config=</code>, <code>ot.constant</code> or a decorated function's arguments: a step that takes a client holding a key gets a thin wrapper (§3).</li>
+<li>Never turn on signing, decorate library code, add network calls, anchoring or telemetry, or edit CI files unasked.</li>
+<li>List in <code>@ot.run(stages=[...])</code> every stage the run's own module doesn't define when it is imported.</li>
+<li>A literal setting goes in <code>config=</code>; a setting from a flag, an argument or a variable goes in <code>ot.constant</code>.</li>
+<li>Use the real services. A stubbed run says so in its run id (<code>ONETRACE_RUN_ID=stub-…</code>), and isn't proof.</li>
+<li>Run every run in full, verify it with <code>onetrace-verify --require-artifacts</code>, and compare two runs.</li>
+<li>End with the report in §7, including your questions for the human.</li>
+</ol>
+<h2 id="0-before-you-start">0. Before you start</h2>
+<ul>
+<li>Confirm Python ≥ 3.10 and that the project's tests pass <strong>before</strong> any change. Record the test command and its result. If the tests don't pass, stop and tell the human.</li>
+<li>Install: <code>pip install onetrace</code> (add it to the project's dependency file the way the project already does it: <code>pyproject.toml</code>, <code>requirements.txt</code>, lock file).</li>
+<li><strong>This needs onetrace 0.2.0 or later.</strong> Check which onetrace Python actually imports:<div class="code"><pre><code>python -c &quot;import onetrace, onetrace_verify; print(onetrace.__version__, onetrace.__file__)&quot;
+</code></pre></div>
+If the version is below 0.2.0, or the path isn't in the environment the project runs in, make a fresh virtual environment and install onetrace there.</li>
+<li>Run <code>onetrace doctor</code>. Fix what it reports before going on.</li>
+<li><strong>Your own code needs an installed distribution.</strong> <code>ot.pkg</code> reads the version of the package you name from its installed metadata. For a project that isn't installed, <code>ot.pkg</code> is refused when the stage is decorated, which for a stage at module level is when its module is imported (<code>package 'my-pipeline' is not installed, so its version can't be read</code>). For a project of scripts with no <code>pyproject.toml</code>, add a minimal one, then run <code>pip install -e .</code>, and tell the human you added it:<!-- not executed: a file to save, not a command; tests/test_agent_recipe_examples.py builds it -->
+<div class="code"><pre><code class="language-toml">[build-system]
+requires = [&quot;setuptools&gt;=77&quot;]
+build-backend = &quot;setuptools.build_meta&quot;
+
+[project]
+name = &quot;my-pipeline&quot;
+version = &quot;0.1.0&quot;
+
+[tool.setuptools]
+py-modules = []
+</code></pre></div>
+</li>
+</ul>
+<h2 id="1-find-the-run">1. Find the run</h2>
+<p>A <strong>run</strong> is one call of one function that does the whole job once: answers one question, processes one document batch, handles one request. Find that function (often <code>main</code>, <code>run</code>, <code>handle</code>, <code>answer</code>, or the function the CLI or API route calls).</p>
+<ul>
+<li>
+<p>If there are two kinds of run (for example an <strong>ingest</strong> job that builds an index, and a <strong>query</strong> that uses it), each gets its own <code>@ot.run</code>.</p>
+</li>
+<li>
+<p><strong>Link the query run to what it reads.</strong> If the query reads an index that an ingest run built:</p>
+<ul>
+<li>when the index is built before the run, by the project's own code, record that build as an <strong>ingest run</strong> (its own <code>@ot.run</code>, with its own stages), and link each query run to it with <code>@ot.run(corpus=ot.corpus_from(&lt;ingest run folder&gt;, stages=[&lt;the stages that read it&gt;]))</code>. The ingest run is verified when the query run starts. Keep the ingest runs in the same folder as the query runs: <code>onetrace diff A B --follow-corpus</code> then follows a changed link one hop into the two ingest runs and names the stage where they first differ, and why (manual, section 16.13);</li>
+<li>when the index lives in an <strong>external service</strong> (Qdrant, Pinecone, Weaviate, a database), record its identity on the stage that reads it with <code>ot.constant(...)</code>: the collection or index name, and the ingest run id or version that built it, if the code knows it. Then list the service as a question for the human (&quot;retrieve reads collection X in Qdrant, outside the run: how should it be treated?&quot;).</li>
+</ul>
+<p>Without a link, a later comparison can say <em>that</em> the retrieved chunks changed, but not that the index behind them changed.</p>
+</li>
+<li>
+<p>If you can't tell which function is one run, stop and ask the human. Do not guess.</p>
+</li>
+</ul>
+<h2 id="2-find-the-stages">2. Find the stages</h2>
+<p>A <strong>stage</strong> is a function the run calls that does one distinct step whose result matters. Typical stages in AI pipelines:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Typical <code>kind</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>load / read documents</td>
+<td><code>reader</code></td>
+</tr>
+<tr>
+<td>clean, convert, normalise</td>
+<td><code>transformer</code></td>
+</tr>
+<tr>
+<td>split into chunks</td>
+<td><code>transformer</code></td>
+</tr>
+<tr>
+<td>embed</td>
+<td><code>embedder</code></td>
+</tr>
+<tr>
+<td>build or update an index</td>
+<td><code>indexer</code></td>
+</tr>
+<tr>
+<td>retrieve</td>
+<td><code>retriever</code></td>
+</tr>
+<tr>
+<td>build the prompt</td>
+<td><code>formatter</code></td>
+</tr>
+<tr>
+<td>call a model</td>
+<td><code>model-call</code></td>
+</tr>
+<tr>
+<td>parse the model's output</td>
+<td><code>parser</code></td>
+</tr>
+<tr>
+<td>act on it (write a file, call an API)</td>
+<td><code>actuator</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Rules for choosing:</p>
+<ul>
+<li>Only functions <strong>defined in this repository</strong>. Never decorate a library function. If a single library call does several steps (for example <code>VectorStoreIndex.from_documents(docs)</code>), it is <strong>one</strong> stage, unless the human asks you to split it into small functions of the project's own.</li>
+<li>Prefer <strong>fewer, meaningful stages</strong> over many tiny ones. Five to ten is typical. Starting with just one stage is fine.</li>
+<li>A decorated stage must not call another decorated stage. Decorate the outer one or the inner ones, not both.</li>
+</ul>
+<h2 id="3-add-the-decorators">3. Add the decorators</h2>
+<div class="code"><pre><code class="language-python">import onetrace as ot
+
+@ot.run(run_dir=&quot;runs/{run_id}&quot;)
+def answer_question(question: str) -&gt; str:
+    docs = retrieve(question)
+    return generate(question, docs)
+
+@ot.stage(&quot;retrieve&quot;,
+          instrument=ot.pkg(&quot;bm25-retriever&quot;, &quot;rank_bm25&quot;, kind=&quot;retriever&quot;,
+                            config={&quot;top_k&quot;: 4}),
+          files=[&quot;data/corpus.json&quot;])
+def retrieve(question: str) -&gt; list[str]:
+    ...
+
+@ot.stage(&quot;generate&quot;,
+          instrument=ot.pkg(&quot;model-call&quot;, &quot;openai&quot;, kind=&quot;model-call&quot;,
+                            config={&quot;model&quot;: &quot;gpt-4.1-mini&quot;}))
+def generate(question: str, docs: list[str]) -&gt; str:
+    ...
+</code></pre></div>
+<ul>
+<li>
+<p><strong><code>stages=[...]</code>:</strong> by default a run records the stages its own module defines when it is imported. List every stage in the run's order, <code>@ot.run(run_dir=&quot;runs/{run_id}&quot;, stages=[&quot;retrieve&quot;, &quot;generate&quot;])</code>, when any stage is not one of those: a stage defined in another module, or a stage decorated inside a function while the run is running (a thin wrapper, below). A stage the run calls without that is refused, and the message names both fixes.</p>
+</li>
+<li>
+<p><strong>One import</strong> per file you touch: <code>import onetrace as ot</code>. Change nothing else in the file: no reformatting, no renames, no signature changes, no logic changes. The thin wrappers and the folder digest below add code without changing what the pipeline computes.</p>
+</li>
+<li>
+<p><strong><code>ot.pkg(id, package, kind=..., config=...)</code></strong>: <code>package</code> is the installed distribution that does the work (its version is read from its installed metadata; never type a version). <code>id</code> is a short stable name for the tool. For a stage that is your own code, <code>package</code> is your project's own distribution, as its <code>pyproject.toml</code> names it, installed (§0).</p>
+</li>
+<li>
+<p><strong><code>config=</code> or <code>ot.constant</code>:</strong> <code>config</code> is recorded as one digest, so when it changes a comparison says the stage's config changed, not which key. Put a setting in <code>config=</code> when it is a <strong>literal value in the code</strong>, copied exactly. A setting whose value comes from a flag, an argument, a settings file or a variable goes in <code>ot.constant(&quot;chunk_size&quot;, chunk_size)</code> inside the function, and a comparison then names it by its key (<code>constant chunk_size differs</code>). <strong>Never record the value of an environment variable that holds a key or token.</strong></p>
+</li>
+<li>
+<p><strong>Model settings:</strong> record the settings the code actually sends with the call: the model name, and whatever else it passes, each from where the code takes it. Don't add a setting the code doesn't send, to the call or to the record: a model can reject a parameter it doesn't support.</p>
+</li>
+<li>
+<p><strong><code>files=[...]</code></strong>: files the stage reads from disk (corpus, index, prompt templates). Write each path as the code opens it: a relative path is read from the directory the pipeline runs in, not from the repository root.</p>
+</li>
+<li>
+<p><strong>A folder of documents:</strong> <code>files=</code> records each file by its name, so two files with the same name in different subfolders are refused when the stage is decorated. For a folder, record one digest over its files' sorted relative paths and bytes, with <code>ot.constant</code>:</p>
+<div class="code"><pre><code class="language-python">import hashlib
+from pathlib import Path
+
+import onetrace as ot
+
+def folder_sha256(root) -&gt; str:
+    root = Path(root)
+    h = hashlib.sha256()
+    for p in sorted((q for q in root.rglob(&quot;*&quot;) if q.is_file()),
+                    key=lambda q: q.relative_to(root).as_posix()):
+        h.update(p.relative_to(root).as_posix().encode(&quot;utf-8&quot;) + b&quot;\0&quot;)
+        h.update(hashlib.sha256(p.read_bytes()).digest())
+    return h.hexdigest()
+
+@ot.stage(&quot;load&quot;, instrument=ot.pkg(&quot;loader&quot;, &quot;my-pipeline&quot;, kind=&quot;reader&quot;))
+def load(docs_dir: str) -&gt; list[str]:
+    ot.constant(&quot;docs_sha256&quot;, folder_sha256(docs_dir))
+    ...
+</code></pre></div>
+<p>A comparison then names the change as <code>constant docs_sha256 differs</code>.</p>
+</li>
+<li>
+<p><strong>A step that is a method on an object, or that receives an SDK client holding a key</strong> (a retriever index's <code>search</code>, a function given <code>client</code>): don't decorate it. Add a <strong>thin wrapper</strong>: a small inner function that takes only plain values, uses the object or client from the enclosing scope, and is the decorated stage. The key never passes through a decorated function, and what the pipeline computes doesn't change. List the stages in <code>stages=[...]</code>, since they're decorated while the run is running:</p>
+<div class="code"><pre><code class="language-python">import onetrace as ot
+
+MODEL = &quot;your-model-name&quot;
+
+def retrieve(index, question, k=2):
+    @ot.stage(&quot;retrieve&quot;, instrument=ot.pkg(&quot;bm25&quot;, &quot;my-pipeline&quot;, kind=&quot;retriever&quot;))
+    def search(question: str, k: int) -&gt; list[str]:
+        return index.search(question, k)
+    return search(question, k)
+
+def generate(client, question, passages):
+    @ot.stage(&quot;generate&quot;, instrument=ot.pkg(&quot;model-call&quot;, &quot;my-pipeline&quot;, kind=&quot;model-call&quot;,
+                                            config={&quot;model&quot;: MODEL}))
+    def call(question: str, passages: list[str]) -&gt; str:
+        return client.complete(MODEL, question + &quot;\n\n&quot; + &quot;\n&quot;.join(passages))
+    return call(question, passages)
+
+@ot.run(run_dir=&quot;runs/{run_id}&quot;, stages=[&quot;retrieve&quot;, &quot;generate&quot;])
+def answer(question: str) -&gt; str:
+    client = Client()        # the project&#x27;s own client, holding its key
+    return generate(client, question, retrieve(Index(), question))
+</code></pre></div>
+<p>The object itself isn't recorded. Record what identifies it: the ingest run that built the index (<code>ot.corpus_from</code>, §1), or its name and version with <code>ot.constant</code>.</p>
+</li>
+<li>
+<p><strong>Values between stages</strong> must be plain data: strings, bytes, ints, lists and dicts of these, pydantic models, dataclasses, numpy arrays. If a stage returns an object onetrace can't encode (an index object, a database client), don't change the function. Tell the human, and suggest either returning the saved index path or registering an encoder with <code>ot.encoder</code>.</p>
+</li>
+<li>
+<p><strong>A stage called more than once in a run:</strong> by default a stage runs once per run, and a second call is refused. For sequential repeats (a loop, a retry), declare the stage <code>repeats=True</code>: each call is numbered #1, #2, …. For calls that overlap (<code>asyncio.gather</code>, a thread pool), name each call with a stable name per branch instead, for example <code>retrieve.instance(&quot;en&quot;)(question)</code> and <code>retrieve.instance(&quot;fr&quot;)(question)</code>.</p>
+</li>
+<li>
+<p><strong>What a stage depends on, but its code doesn't show:</strong> for example, a prompt template in another module, or a settings file. Record its version or content hash with <code>ot.constant</code>, so a change to it is named as the reason.</p>
+</li>
+<li>
+<p><strong>Everything a stage uses must reach it in a way the record sees:</strong> as an argument, a <code>files=</code> entry, or <code>ot.constant</code>. A value the stage takes from a global, an enclosing function or <code>self</code> (the user's question, a settings object) is not recorded, and a comparison will then show the stage's output changing while none of its inputs changed. Don't restructure the code to fix this. Record the value with <code>ot.constant</code> (for text, its SHA-256, never the text itself), and tell the human.</p>
+</li>
+<li>
+<p><strong>A stage that groups several steps</strong> (for example <code>retrieve</code> = embed the query + search the index) stays one stage. Don't refactor to split it. Instead, <strong>record the settings of every hidden step on that stage</strong>: the embedding model, top-k, the collection name, and any filters. That's what lets a comparison say <em>why</em> the stage's output changed.</p>
+</li>
+</ul>
+<h2 id="4-leave-the-meaning-to-the-human">4. Leave the meaning to the human</h2>
+<p>These fields say what a stage <em>means</em>, and only a person may set them:</p>
+<ul>
+<li><code>trust=</code>: where the values a stage reads come from (<code>operator-authored</code>, <code>externally-sourced</code>, …);</li>
+<li><code>output_trust=</code>: the same, for what the stage returns. The trust class covers outputs too: a decorated stage's output with no stated class is recorded with the most cautious one and listed as undeclared, like an input's;</li>
+<li><code>rederivable=</code> and <code>note=</code>: whether running the stage again gives the same output (a hosted model usually doesn't).</li>
+</ul>
+<p><strong>Do not set these.</strong> Leave them out. onetrace then records the most cautious value (<code>externally-sourced</code>; not re-derivable) and lists the field as <code>undeclared</code> on that stage, so everyone can see nobody stated it. At the end, list them as questions for the human (step 7), with what you observed, for example: <em>&quot;<code>generate</code> calls a hosted model: is it re-derivable? (usually no)&quot;</em>.</p>
+<h2 id="5-check-behaviour-is-unchanged">5. Check behaviour is unchanged</h2>
+<ol>
+<li>Run the project's test command. The same tests must pass as in step 0, with the same results. If anything differs, undo your change to that function and report it.</li>
+<li><strong>Use the real services.</strong> If a service the pipeline needs is down (a vector database, a model API), stop and tell the human. Never substitute stubs or mocks silently. A run made with stubs must say so in its run id, and it doesn't count as proof. If the human agrees to stub a model API, do it on the command line, with no mock code inside the pipeline: start a local fake endpoint, point the client library at it with its base-URL environment variable, and give the run a stub id, in one line:<!-- not executed: needs a fake endpoint listening on that port, and the project's own entry point -->
+<div class="code"><pre><code>ONETRACE_RUN_ID=stub-query-1 OPENAI_BASE_URL=http://127.0.0.1:8000/v1 python -m app &quot;a question&quot;
+</code></pre></div>
+<code>OPENAI_BASE_URL</code> is the <code>openai</code> package's variable; other client libraries name their own. Each run needs a new id: a run folder that already holds anything is refused.</li>
+<li>Run <strong>every run function in full</strong> (for a RAG pipeline, the whole ingest run <em>and</em> the whole query run, all stages), the way the project normally runs it or through the test that exercises it. A folder appears under <code>runs/</code> for each, and when each run closes it prints that folder and the command that verifies it, on stderr. A shortened demo run that skips stages doesn't count.</li>
+<li>Verify it:<!-- not executed: <run_id> stands for the folder your run wrote -->
+<div class="code"><pre><code>onetrace-verify --require-artifacts runs/&lt;run_id&gt;
+</code></pre></div>
+Exit code 0 means the record is intact. The verifier's first line, on stderr, says so (<code>record intact: …</code>), or names the first failing row (<code>record NOT intact: …</code>), and under it a <code>fix (…)</code> line for each failing row says what to change and which section of the errors page explains it. Don't set <code>ONETRACE_QUIET=1</code> while you check: it silences those lines. Anything else: read that row and its <code>fix (…)</code> line; the errors page explains each one. <code>onetrace doctor</code> checks the setup and says whether the most recent run verifies, not why a row failed. Fix the instrumentation, not the pipeline.</li>
+<li><strong>Run it a second time with nothing changed, and compare:</strong> <code>onetrace diff runs/&lt;first&gt; runs/&lt;second&gt;</code>. Every stage should read <code>same</code>, except stages that call a hosted model, or read a service that changes by itself.
+<ul>
+<li>If any other stage differs, <strong>stop and find out why before anything else.</strong> The usual causes are ids generated fresh each run (uuid), timestamps written into outputs, absolute paths, and unordered sets or dict iteration.</li>
+<li>Report it to the human with the stage and the field.</li>
+<li>Until it's fixed, every comparison will blame that stage first and hide the real change.</li>
+</ul>
+</li>
+<li>Only then make one deliberate change (for example chunk size) and compare again. The first difference must be the stage you changed. <code>onetrace diff</code> and <code>onetrace localize</code> name a setting recorded with <code>ot.constant</code> by its key (&quot;constant chunk_size differs&quot;); for a setting in <code>config=</code> they say the stage's config changed, not which key. To have the key named, record the setting with <code>ot.constant</code>.</li>
+<li>For a query pipeline, also compare two <strong>different</strong> questions. <code>retrieve</code> and the model's answer should normally differ. If they don't, report it: it usually means something was stubbed or cached. Also check that every stage that uses the question (retrieve, prompt building) lists it among its inputs.</li>
+</ol>
+<h2 id="6-optional-only-if-the-human-asks">6. Optional, only if the human asks</h2>
+<ul>
+<li>CI gate: <code>pip install onetrace-ci</code>, then <code>onetrace-ci init-ci</code> (writes one workflow file and a minimal plan with a question for the human), then <code>onetrace-ci baseline propose --from runs/&lt;run_id&gt; --out baselines/golden</code>.</li>
+<li>Signing: <strong>not yours to turn on.</strong> If the human wants runs signed, they make the key (<code>onetrace keygen</code>), keep it, and add <code>sign_with=</code> themselves; the manual's section 17 explains it. <strong>Never create, print, copy or commit a private key yourself.</strong></li>
+<li>Add the onetrace section to the repository's <code>AGENTS.md</code> (see the AGENTS.md section page), so later edits keep the instrumentation consistent.</li>
+</ul>
+<h2 id="7-report-to-the-human">7. Report to the human</h2>
+<p>End with a short report:</p>
+<ul>
+<li>
+<p>the run function(s) and the stages you decorated, file and line;</p>
+</li>
+<li>
+<p>the settings recorded per stage, and any you saw but could not record;</p>
+</li>
+<li>
+<p><strong>questions</strong>: every <code>trust</code>, <code>output_trust</code> and <code>rederivable</code> you left undeclared, each with what you observed;</p>
+<ul>
+<li>whether runs should be signed, and with whose key: signing is the human's choice, with a key the human holds (<code>sign_with=</code>, <code>onetrace keygen</code>, <code>onetrace sign</code>);</li>
+<li>if a stage splits documents into chunks: onetrace can record a chunk index (<code>ot.chunks</code>) so a comparison can show which chunk changed, and with <code>keep_text=True</code> its text. That changes the function's return value and stores the corpus text in run folders, so it is the human's choice; ask;</li>
+</ul>
+</li>
+<li>
+<p>what is <strong>not</strong> covered: steps inside library calls, files read but not listed, code you did not decorate, external services the run reads or writes;</p>
+</li>
+<li>
+<p><strong>what changes the record can and can't explain.</strong> Don't report coverage as &quot;n of n stages&quot;: you chose the stages, so that number is always complete. Instead, list the likely changes and say, for each, whether a comparison of two runs would name the stage <strong>and</strong> the reason:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Likely change</th>
+<th>Explained?</th>
+<th>Why or why not</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a source document edited</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>chunk size or overlap</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>the embedding model (at ingest, and at query time)</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>top-k or retrieval filters</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>the external index changed (re-indexed or edited by hand)</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>the prompt template</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>the model, or a setting the code sends with it</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>the model simply answered differently</td>
+<td>…</td>
+<td>…</td>
+</tr>
+</tbody>
+</table></div>
+<p>Add rows for anything specific to this pipeline. Where a row says &quot;no&quot;, say what would fix it: a setting to record, or a link to add.</p>
+</li>
+<li>
+<p>the test result before and after, the <code>onetrace-verify</code> result, and the <code>onetrace diff</code> of two runs (§5).</p>
+</li>
+</ul>
+<h2 id="never">Never</h2>
+<ul>
+<li>Never change what the pipeline computes, its function signatures, or its outputs.</li>
+<li>Never set <code>trust</code>, <code>output_trust</code>, <code>rederivable</code> or <code>note</code> yourself. That includes calls to hosted models and external services: describe what you saw, and ask.
+<ul>
+<li>If your onetrace version makes you pass a trust class, pick the most cautious one, and list every choice in your report as a question.</li>
+<li>Never mark text a user typed as <code>operator-authored</code>.</li>
+</ul>
+</li>
+<li>Never put a secret, token, key or password into a decorator argument, <code>config</code>, <code>ot.constant</code>, or a stage's arguments. If a function receives an API key, or a client holding one, as an argument, don't decorate it: decorate a thin wrapper inside it (§3), or tell the human.</li>
+<li>Never create a <code>Recorder</code> at module level, and never decorate library code.</li>
+<li>Never turn on signing: no <code>sign_with=</code> on <code>@ot.run</code> or <code>Recorder</code>, and no <code>onetrace keygen</code> or <code>onetrace sign</code>. Signing is the human's choice, with the human's key.</li>
+<li>Never add network calls, anchoring, or telemetry.</li>
+<li>Never edit CI workflow files unless the human asked, and then only through <code>onetrace-ci init-ci</code>.</li>
+<li>Never claim the record shows the output is correct. It shows what each decorated stage received and produced, and that the record hasn't been altered since.</li>
+</ul>
+</main>
+<footer class="site">
+<p>Source: <a href="instrument.md"><code>instrument.md</code></a> · onetrace 0.2.0 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
+</footer>
+<script src="../assets/copy.js" defer></script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 # The three verbs
 
 Every verb calls the reference verifier first (via the installed `onetrace-verify` package,
-resolved automatically — see the [README quickstart](../README.md#install-and-quickstart)). A
+resolved automatically — see the [quickstart](quickstart.md)). A
 run or a receipt the verifier refuses is refused by the verb too; no comparison or check is
 attempted against something the verifier itself won't stand behind.
 

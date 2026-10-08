@@ -15,5 +15,5 @@ framework at all, three wired onto a real RAG/agent framework's own runtime wher
 - [LlamaIndex](adapters/llamaindex.md)
 - [Langflow](adapters/langflow.md)
 
-See the [README's quickstart](../README.md#install-and-quickstart) to run a pipeline and check
+See the [quickstart](quickstart.md) to run a pipeline and check
 it yourself before reading further.

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>The three verbs · onetrace</title>
+<link rel="stylesheet" href="assets/onetrace.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="site">
+<a class="brand" href="index.html">onetrace</a> <span class="version">0.2.0</span>
+</header>
+<nav class="pages" aria-label="Documentation pages">
+<details open>
+<summary>Pages</summary>
+<ul>
+<li><a href="index.html">Overview</a></li>
+<li><span class="group">Start</span><ul><li><a href="quickstart.html">Quickstart</a></li><li><a href="README.html">Documentation index</a></li></ul></li><li><span class="group">For coding agents</span><ul><li><a href="agents/instrument.html">Agent recipe</a></li><li><a href="agents/AGENTS-section.html">AGENTS.md section</a></li></ul></li><li><span class="group">Reference</span><ul><li><a href="manual.html">Manual</a></li><li><a href="errors.html">Errors and fixes</a></li><li><a href="verbs.html" aria-current="page">The three verbs</a></li><li><a href="verdicts.html">The five verdicts</a></li><li><a href="format.html">The record format</a></li><li><a href="textdiff-format.html">Text-diff format</a></li><li><a href="non-claims.html">What onetrace does not claim</a></li></ul></li><li><span class="group">Adapters</span><ul><li><a href="adapters/plain-python.html">Plain Python</a></li><li><a href="adapters/langchain.html">LangChain</a></li><li><a href="adapters/llamaindex.html">LlamaIndex</a></li><li><a href="adapters/langflow.html">Langflow</a></li></ul></li>
+</ul>
+</details>
+</nav>
+<main id="content">
+<h1 id="the-three-verbs">The three verbs</h1>
+<p>Every verb calls the reference verifier first (via the installed <code>onetrace-verify</code> package,
+resolved automatically — see the <a href="quickstart.html">quickstart</a>). A
+run or a receipt the verifier refuses is refused by the verb too; no comparison or check is
+attempted against something the verifier itself won't stand behind.</p>
+<h2 id="diff"><code>diff</code></h2>
+<div class="code"><pre><code>onetrace diff BASELINE CANDIDATE --out OUT_DIR
+</code></pre></div>
+<p>Compares two runs stage by stage and reports the <a href="verdicts.html">five verdicts</a> as a ladder, the
+first point of difference (if any), and annotations for anything about <em>how</em> a stage ran that
+changed without changing its output. Writes both a text report and the same information as
+canonical JSON, side by side, in <code>OUT_DIR</code>.</p>
+<h2 id="localize"><code>localize</code></h2>
+<div class="code"><pre><code>onetrace localize RUN [CANDIDATE] --out OUT_DIR
+</code></pre></div>
+<p>With one run, finds the first unclean stage in it alone — <code>clean</code> if none, <code>located</code> at the
+first <code>COULD NOT CHECK</code> or refused stage otherwise. With two runs (<code>CANDIDATE</code> given), it's the
+same comparison <code>diff</code> performs, reported the same way — <code>localize</code> and <code>diff</code> share their
+underlying ladder; the difference is intent, not mechanism.</p>
+<p><code>--doc DOC</code> (two-run form only) narrows to one document's chunk set under both runs, digest by
+digest, when a per-document stage's <code>outputs_root</code> differs and the question is <em>which</em> documents
+moved.</p>
+<h2 id="reproduce"><code>reproduce</code></h2>
+<div class="code"><pre><code>onetrace reproduce RUN [STAGE] --runner RUNNER.json --out OUT_DIR
+</code></pre></div>
+<p>Re-executes a recorded stage's own code, for real, and compares what comes out against what the
+receipt already claims. <code>RUNNER.json</code> names the command to run and how to fill in its
+parameters from the record. Each stage
+comes back <code>REPRODUCED</code>, <code>DIVERGED</code>, or <code>COULD NOT CHECK</code> — never a fourth thing, and
+<code>rederivable</code> is never declared, only measured by actually re-running the code.</p>
+<p>With <code>STAGE</code> omitted, every stage in the run is attempted. A stage the runner declares
+non-rederivable (an LLM call with no fixed seed, say) reports <code>COULD NOT CHECK</code> with the reason
+named, and its originally recorded outputs are kept rather than treated as invalidated.</p>
+<h2 id="anchor"><code>anchor</code></h2>
+<div class="code"><pre><code>onetrace anchor RUN --source rfc3161 --tsa-url URL --tsa-cert CERT --tsa-root ROOT
+onetrace anchor RUN --source opentimestamps --calendar URL [--calendar URL ...]
+onetrace anchor RUN --source opentimestamps --upgrade --headers HEADERS.json
+</code></pre></div>
+<p>Not one of the three: it compares nothing. After a run has closed, it asks a source you name to
+attest the run's chain head, and stores the answer as a new record in <code>anchors/</code>, beside the chain;
+the chain head doesn't change. It is the only onetrace command that contacts a network, and only
+when you run it; no source is built in. Before anything is stored, the record is checked the way
+the verifier will check it, and what would read <code>FAIL</code> is refused. Exit status: 0 stored (or, for
+<code>--upgrade</code>, already stored, with nothing still pending: the record holding it is named and
+nothing new is stored), 1 refused (nothing stored), 2 a usage error (nothing asked of any
+source), 3 stored but not confirmed. See the manual's section 15.</p>
+<h2 id="common-to-all-three">Common to all three</h2>
+<ul>
+<li><code>--verifier DIR</code> overrides where the reference verifier is read from; the default is the
+installed <code>onetrace-verify</code> package, resolved via <code>importlib.resources</code> — never a path
+relative to onetrace's own source location.</li>
+<li><code>--stages STAGES.json</code> is needed only for the &quot;summary&quot; record kind (two-root form with no
+chain manifest); a <code>MANIFEST.json</code>-based run doesn't need it.</li>
+<li><code>--quiet</code> suppresses the text report; the JSON report is always written.</li>
+</ul>
+</main>
+<footer class="site">
+<p>Source: <a href="verbs.md"><code>verbs.md</code></a> · onetrace 0.2.0 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
+</footer>
+<script src="assets/copy.js" defer></script>
+</body>
+</html>

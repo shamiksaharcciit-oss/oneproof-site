@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>The onetrace-textdiff/0.3 format · onetrace</title>
+<link rel="stylesheet" href="assets/onetrace.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="site">
+<a class="brand" href="index.html">onetrace</a> <span class="version">0.2.0</span>
+</header>
+<nav class="pages" aria-label="Documentation pages">
+<details open>
+<summary>Pages</summary>
+<ul>
+<li><a href="index.html">Overview</a></li>
+<li><span class="group">Start</span><ul><li><a href="quickstart.html">Quickstart</a></li><li><a href="README.html">Documentation index</a></li></ul></li><li><span class="group">For coding agents</span><ul><li><a href="agents/instrument.html">Agent recipe</a></li><li><a href="agents/AGENTS-section.html">AGENTS.md section</a></li></ul></li><li><span class="group">Reference</span><ul><li><a href="manual.html">Manual</a></li><li><a href="errors.html">Errors and fixes</a></li><li><a href="verbs.html">The three verbs</a></li><li><a href="verdicts.html">The five verdicts</a></li><li><a href="format.html">The record format</a></li><li><a href="textdiff-format.html" aria-current="page">Text-diff format</a></li><li><a href="non-claims.html">What onetrace does not claim</a></li></ul></li><li><span class="group">Adapters</span><ul><li><a href="adapters/plain-python.html">Plain Python</a></li><li><a href="adapters/langchain.html">LangChain</a></li><li><a href="adapters/llamaindex.html">LlamaIndex</a></li><li><a href="adapters/langflow.html">Langflow</a></li></ul></li>
+</ul>
+</details>
+</nav>
+<main id="content">
+<h1 id="the-onetrace-textdiff03-format">The <code>onetrace-textdiff/0.3</code> format</h1>
+<p><code>onetrace diff A B --text --json</code> prints one JSON document describing the text that changed
+between two verified runs. The same document is written under <code>text</code> in the JSON report in
+<code>--out</code> for every <code>--text</code> run. The plain text <code>--text</code> prints is drawn from the same structure,
+so the two forms always agree.</p>
+<p>The document is <strong>canonical JSON</strong>, the SDK's own form: keys sorted, no insignificant whitespace,
+UTF-8. Canonical JSON carries no numbers, so <strong>every count, index, position, line number and offset is a decimal
+string</strong>, and <code>exit</code> is too.</p>
+<h2 id="top-level">Top level</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>format</code></td>
+<td><code>&quot;onetrace-textdiff/0.3&quot;</code></td>
+</tr>
+<tr>
+<td><code>text_form</code></td>
+<td><code>&quot;escaped&quot;</code>: every <code>text</code> field is displayed text, escaped as below. It is never raw record text.</td>
+</tr>
+<tr>
+<td><code>envelope</code></td>
+<td><code>diff</code>'s own result: <code>identical</code>, <code>diverged</code>, <code>not comparable</code>, <code>refused</code> or <code>could not check</code></td>
+</tr>
+<tr>
+<td><code>exit</code></td>
+<td><code>diff</code>'s exit code, as a string. <code>--text</code> never changes it.</td>
+</tr>
+<tr>
+<td><code>shown</code></td>
+<td><code>false</code> when no text is shown: a run didn't verify, or the runs can't be compared. <code>reason</code> then says which, and there are no nodes.</td>
+</tr>
+<tr>
+<td><code>first_line</code></td>
+<td>the sentence the plain form prints first, e.g. <code>first difference: retrieve — output text changed; settings unchanged; corpus link changed; input help_centre changed</code>: the clauses that apply, in that order</td>
+</tr>
+<tr>
+<td><code>unknown_stages</code></td>
+<td><code>--stage</code> names that matched no node</td>
+</tr>
+<tr>
+<td><code>nodes</code></td>
+<td>the nodes shown, in the ladder's order</td>
+</tr>
+<tr>
+<td><code>corpus_traces</code></td>
+<td>present when a first-difference node's corpus link changed: the one-hop trace into the linked ingest runs, below. Absent otherwise. A first difference with no corpus link gets a line in the plain form only (<code>trace: no corpus link recorded at &lt;node&gt;; …</code>), and nothing here.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="a-node">A node</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>node</code>, <code>verdict</code></td>
+<td>the node id and its ladder verdict (<code>FIRST DIFFERENCE</code>, <code>downstream</code>, <code>reconverged</code>, <code>same</code>, or <code>COULD NOT CHECK</code> for a node <code>--stage</code> names)</td>
+</tr>
+<tr>
+<td><code>settings</code></td>
+<td>the settings lines, e.g. <code>settings: none changed</code> or <code>settings: 1 changed</code> then <code>  constants.temperature: 0.2 -&gt; 0.7</code>. The corpus link is not counted as a setting: when it changed, <code>corpus link changed: &lt;digest&gt; -&gt; &lt;digest&gt;</code> follows as a line of its own (with each run id once a trace reached it). A reconverged node carries its settings lines only if a setting or the link changed.</td>
+</tr>
+<tr>
+<td><code>inputs</code></td>
+<td>one line per input whose digest or trust class changed, or that is on one side only, ending <code>content not stored</code></td>
+</tr>
+<tr>
+<td><code>causes</code></td>
+<td><strong>on every <code>FIRST DIFFERENCE</code> node only:</strong> every candidate cause compared, each <code>{kind, name, baseline, candidate, status}</code> with <code>status</code> <code>same</code> or <code>changed</code>. Kinds are <code>input</code> (value <code>{digest, trust_class}</code>), <code>tool</code> (<code>instrument.id</code>, <code>instrument.kind</code>, <code>instrument.version</code>), <code>setting</code> (<code>instrument.config_digest</code>, <code>instrument.manifest_digest</code>, <code>constants.&lt;name&gt;</code>) and <code>corpus link</code> (<code>assertions.corpus_manifest</code>, by digest). The console's cause table is drawn from this list and nothing else.</td>
+</tr>
+<tr>
+<td><code>presence</code></td>
+<td>when the node exists in one run only</td>
+</tr>
+<tr>
+<td><code>outputs</code></td>
+<td>the outputs whose digests differ</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="an-output">An output</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code>, <code>media_type</code></td>
+<td>as the receipt records them</td>
+</tr>
+<tr>
+<td><code>verified</code></td>
+<td><code>true</code> when the bytes were read and their digest equals the receipt's. Otherwise <code>false</code>, with <code>reason</code> (<code>not shown: &lt;name&gt; does not match its receipt</code>, or <code>… is missing</code>), and no hunks.</td>
+</tr>
+<tr>
+<td><code>kind</code></td>
+<td><code>text</code> (a line diff: text, or JSON in canonical form), <code>chunk index</code>, <code>hits</code>, <code>binary</code>, <code>not diffed</code> (over the size or line cap), or <code>not shown</code></td>
+</tr>
+<tr>
+<td><code>presence</code></td>
+<td><code>only in the baseline</code> / <code>only in the candidate</code>, when the output exists on one side only</td>
+</tr>
+<tr>
+<td><code>notes</code></td>
+<td>lines that go with the output. With hunks: what the lines hide (<code>final newline removed</code>, <code>line endings CRLF -&gt; LF</code>). Without: why there are none (<code>binary: …</code>, <code>too large to diff (…)</code>, <code>whitespace-only change: …</code>), or, for <code>chunk index</code> and <code>hits</code>, the rendered lines themselves.</td>
+</tr>
+<tr>
+<td><code>entries</code></td>
+<td>for <code>chunk index</code> and <code>hits</code>: one per chunk or hit that a <code>notes</code> line names, as the record holds it, <strong>not escaped</strong> (unlike <code>notes</code>, which are display lines): <code>id</code>, or, for a chunk with no id of its own, <code>doc</code> and its 1-based <code>position</code>; <code>change</code> (<code>changed</code>, <code>added</code>, <code>removed</code>, <code>entered</code>, <code>left</code>, <code>moved</code>); and <code>note</code>, the index of its line in <code>notes</code>. A cut output (<code>truncated</code>) keeps the entries of the lines it keeps, renumbered. New in 0.3.</td>
+</tr>
+<tr>
+<td><code>hunks</code></td>
+<td>the line diff, below</td>
+</tr>
+<tr>
+<td><code>truncated</code></td>
+<td>present when <code>--max-lines</code> cut the output: <code>{&quot;more_lines&quot;: &quot;&lt;n&gt;&quot;}</code>, the same number the plain form prints in <code>… n more lines</code>. The JSON keeps exactly the lines the plain form still shows.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="a-hunk-and-its-lines">A hunk and its lines</h2>
+<p>A hunk is <code>{baseline: {start, lines}, candidate: {start, lines}, lines: [...]}</code>, with an optional
+<code>note</code> (<code>no line could anchor this block …</code>). Each line is:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>op</code></td>
+<td><code>&quot; &quot;</code> unchanged, <code>&quot;-&quot;</code> removed, <code>&quot;+&quot;</code> added. (The plain form's <code>~</code> line, the changed words marked, isn't here: its content is the <code>spans</code>.)</td>
+</tr>
+<tr>
+<td><code>baseline</code>, <code>candidate</code></td>
+<td>the line's 1-based number on each side, or <code>null</code> on the side it isn't on</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td>the line as displayed, escaped, and windowed if long</td>
+</tr>
+<tr>
+<td><code>spans</code></td>
+<td><code>[start, end)</code> character offsets into <code>text</code>: on a <code>-</code> line the removed words, on a <code>+</code> line the added ones</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Line numbers:</strong></p>
+<ul>
+<li>For text, they count the output's lines, split at LF.</li>
+<li>For JSON, they count the lines of its <strong>canonical pretty form</strong>, the text that is diffed: keys sorted, two-space indent, one member per line, numbers exactly as written.</li>
+</ul>
+<p><strong>Spans:</strong></p>
+<ul>
+<li>A changed line pair is compared word by word, where a word is a run of letters and digits, of whitespace, or a single other character. The spans cover the changed words.</li>
+<li>A pair too long to compare word by word (over 20,000 characters, or over 2,000 words) gets one span on each side instead: the characters between the lines' common start and common end.</li>
+</ul>
+<p><strong>Long lines:</strong> a line over 2,000 characters is shown as a window of 2,000 characters, starting 40 characters before its first difference. It's written <code>… N characters … &lt;window&gt; … M more characters</code>, and spans count those markers.</p>
+<h2 id="escaping-text_form-escaped">Escaping (<code>&quot;text_form&quot;: &quot;escaped&quot;</code>)</h2>
+<p>Text is escaped one-to-one, the same way wherever the SDK shows record text:</p>
+<ol>
+<li>
+<p><strong>A backslash is doubled:</strong> <code>\</code> becomes <code>\\</code>. This applies to text outputs. A JSON output's canonical form already writes its own backslashes as escapes, so there they are shown as written.</p>
+</li>
+<li>
+<p><strong>Every control character and line break becomes <code>\uXXXX</code>,</strong> in lowercase hex. That means the Unicode categories Cc, Cf, Zl and Zp, fixed as of Unicode 15.0 so output never varies with the Python that runs it. Beyond U+FFFF the character is written as a surrogate pair (<code>󠀁</code>). The code points are:</p>
+<p><code>0000–001F 007F–009F 00AD 0600–0605 061C 06DD 070F 0890–0891 08E2 180E 200B–200F 2028–202E 2060–2064 2066–206F FEFF FFF9–FFFB 110BD 110CD 13430–1343F 1BCA0–1BCA3 1D173–1D17A E0001 E0020–E007F</code></p>
+<p>So TAB is <code>\u0009</code>, CR <code>\u000d</code>, ESC <code>\u001b</code>, and a right-to-left override <code>‮</code>.</p>
+</li>
+<li>
+<p><strong>An undecodable byte is <code>\xNN</code></strong> (text outputs only). No <code>\uXXXX</code> can be mistaken for it.</p>
+</li>
+<li>
+<p><strong>A lone surrogate</strong> that a JSON output's own <code>\ud800</code> escape decodes to is <code>\uXXXX</code>.</p>
+</li>
+</ol>
+<p><strong>A renderer displays <code>text</code> as given, HTML-escaped if it is HTML, and never escapes it again.</strong> Escaping it again would double every backslash, and <code>spans</code> index into <code>text</code> exactly as delivered.</p>
+<h2 id="a-corpus-trace">A corpus trace</h2>
+<p>When a first-difference node's corpus link changed, the two linked ingest runs are found by chain
+head (one level down in <code>--runs-root</code>, default the folder holding the baseline), verified, and
+compared. <code>corpus_traces</code> is a list with one entry per distinct pair of chain heads, in the
+ladder's order. Each entry:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>node</code></td>
+<td>the first-difference node the trace starts from</td>
+</tr>
+<tr>
+<td><code>also_at</code></td>
+<td>the other first-difference nodes with the same pair, which get no entry of their own</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>traced</code>, <code>could not check</code>, or <code>not followed</code> (<code>--no-follow</code>)</td>
+</tr>
+<tr>
+<td><code>baseline</code>, <code>candidate</code></td>
+<td>each <code>{chain_head, run_id, path, verified}</code>. <code>path</code> is relative to <code>--runs-root</code>, written with <code>/</code>. A side that wasn't found has <code>run_id</code>, <code>path</code> and <code>verified</code> <code>null</code>. One that doesn't verify has <code>run_id</code> <code>null</code> and <code>verified</code> <code>false</code>. A side with no link has <code>chain_head</code> <code>null</code> too. With <code>not followed</code>, only <code>chain_head</code>.</td>
+</tr>
+<tr>
+<td><code>reason</code></td>
+<td>with <code>could not check</code>: <code>linked ingest run not found: &lt;digest&gt;; pass --runs-root</code>, <code>linked ingest run did not verify: &lt;path&gt;</code>, <code>the baseline records no corpus link at &lt;node&gt;</code> (or <code>the candidate</code>), <code>the linked ingest runs are not comparable: &lt;why&gt;</code>, or <code>the linked ingest runs could not be compared: &lt;why&gt;</code></td>
+</tr>
+<tr>
+<td><code>heading</code></td>
+<td><code>traced into the linked ingest runs: &lt;run id&gt; -&gt; &lt;run id&gt;</code></td>
+</tr>
+<tr>
+<td><code>first_line</code></td>
+<td>e.g. <code>started at: load — 1 of 214 documents changed (help-centre/warranty.md); settings unchanged</code></td>
+</tr>
+<tr>
+<td><code>documents</code></td>
+<td><code>{changed, total, names}</code>, counted from the chunk indexes by digest, or <code>null</code> when the runs have none</td>
+</tr>
+<tr>
+<td><code>second_hop</code></td>
+<td>the ingest runs' own changed corpus link, <code>{node, baseline, candidate}</code>, named and never followed; otherwise <code>null</code></td>
+</tr>
+<tr>
+<td><code>envelope</code></td>
+<td>the ingest comparison's result, <code>identical</code> or <code>diverged</code>. A pair that isn't comparable, or whose comparison couldn't be made, is not traced: its entry is <code>could not check</code>, with the reason.</td>
+</tr>
+<tr>
+<td><code>nodes</code></td>
+<td>the ingest comparison's nodes, shaped as above</td>
+</tr>
+</tbody>
+</table></div>
+<p>Nothing from an ingest run that doesn't verify appears, its run id and document names included.</p>
+<h2 id="what-stays-the-same">What stays the same</h2>
+<p><code>--text</code>, <code>--json</code> and the corpus trace never change a verdict or an exit code. The inputs' content is never shown,
+because inputs are fingerprinted, not stored. Stored chunk or hit text is shown only when the
+digest of its bytes equals the recorded digest.</p>
+</main>
+<footer class="site">
+<p>Source: <a href="textdiff-format.md"><code>textdiff-format.md</code></a> · onetrace 0.2.0 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
+</footer>
+<script src="assets/copy.js" defer></script>
+</body>
+</html>

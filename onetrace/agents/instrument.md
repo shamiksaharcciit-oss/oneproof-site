@@ -2,13 +2,44 @@
 
 You are adding onetrace to a codebase you did not write. Your job is to add **recording**, not to change **behaviour**. When you finish, the pipeline must produce exactly the same results as before, and every run must leave a record that `onetrace-verify` accepts.
 
-Read all of this before editing. The rules in "Never" are hard rules.
+Read all of this before editing. The rules in "Never" are hard rules. Fetch this file itself, as raw text, from https://oneproof.dev/onetrace/agents/instrument.md, and work from it, not from a summary of it.
+
+**The rules, in short** (each is explained below):
+
+1. Add recording. Change nothing the pipeline computes: no signature, output or logic changes.
+2. Leave out `trust=`, `output_trust=`, `rederivable=` and `note=`, and ask the human about each.
+3. No secret, token or key in a decorator, `config=`, `ot.constant` or a decorated function's arguments: a step that takes a client holding a key gets a thin wrapper (§3).
+4. Never turn on signing, decorate library code, add network calls, anchoring or telemetry, or edit CI files unasked.
+5. List in `@ot.run(stages=[...])` every stage the run's own module doesn't define when it is imported.
+6. A literal setting goes in `config=`; a setting from a flag, an argument or a variable goes in `ot.constant`.
+7. Use the real services. A stubbed run says so in its run id (`ONETRACE_RUN_ID=stub-…`), and isn't proof.
+8. Run every run in full, verify it with `onetrace-verify --require-artifacts`, and compare two runs.
+9. End with the report in §7, including your questions for the human.
 
 ## 0. Before you start
 
 - Confirm Python ≥ 3.10 and that the project's tests pass **before** any change. Record the test command and its result. If the tests don't pass, stop and tell the human.
 - Install: `pip install onetrace` (add it to the project's dependency file the way the project already does it: `pyproject.toml`, `requirements.txt`, lock file).
+- **This needs onetrace 0.2.0 or later.** Check which onetrace Python actually imports:
+  ```
+  python -c "import onetrace, onetrace_verify; print(onetrace.__version__, onetrace.__file__)"
+  ```
+  If the version is below 0.2.0, or the path isn't in the environment the project runs in, make a fresh virtual environment and install onetrace there.
 - Run `onetrace doctor`. Fix what it reports before going on.
+- **Your own code needs an installed distribution.** `ot.pkg` reads the version of the package you name from its installed metadata. For a project that isn't installed, `ot.pkg` is refused when the stage is decorated, which for a stage at module level is when its module is imported (`package 'my-pipeline' is not installed, so its version can't be read`). For a project of scripts with no `pyproject.toml`, add a minimal one, then run `pip install -e .`, and tell the human you added it:
+  <!-- not executed: a file to save, not a command; tests/test_agent_recipe_examples.py builds it -->
+  ```toml
+  [build-system]
+  requires = ["setuptools>=77"]
+  build-backend = "setuptools.build_meta"
+
+  [project]
+  name = "my-pipeline"
+  version = "0.1.0"
+
+  [tool.setuptools]
+  py-modules = []
+  ```
 
 ## 1. Find the run
 
@@ -16,7 +47,7 @@ A **run** is one call of one function that does the whole job once: answers one 
 
 - If there are two kinds of run (for example an **ingest** job that builds an index, and a **query** that uses it), each gets its own `@ot.run`.
 - **Link the query run to what it reads.** If the query reads an index that an ingest run built:
-  - when the ingest run is recorded with onetrace, link it with `@ot.run(corpus=ot.corpus_from(<ingest run folder>, stages=[<the stages that read it>]))`;
+  - when the index is built before the run, by the project's own code, record that build as an **ingest run** (its own `@ot.run`, with its own stages), and link each query run to it with `@ot.run(corpus=ot.corpus_from(<ingest run folder>, stages=[<the stages that read it>]))`. The ingest run is verified when the query run starts. Keep the ingest runs in the same folder as the query runs: `onetrace diff A B --follow-corpus` then follows a changed link one hop into the two ingest runs and names the stage where they first differ, and why (manual, section 16.13);
   - when the index lives in an **external service** (Qdrant, Pinecone, Weaviate, a database), record its identity on the stage that reads it with `ot.constant(...)`: the collection or index name, and the ingest run id or version that built it, if the code knows it. Then list the service as a question for the human ("retrieve reads collection X in Qdrant, outside the run: how should it be treated?").
 
   Without a link, a later comparison can say *that* the retrieved chunks changed, but not that the index behind them changed.
@@ -69,12 +100,59 @@ def generate(question: str, docs: list[str]) -> str:
     ...
 ```
 
-- **Stages in another module:** by default a run records the stages defined in its own module. When a stage is defined in a different module from the `@ot.run` function, list every stage in the run's order: `@ot.run(run_dir="runs/{run_id}", stages=["retrieve", "generate"])`. A stage the run calls without that is refused, and the message names both fixes.
-- **One import** per file you touch: `import onetrace as ot`. Change nothing else in the file: no reformatting, no renames, no signature changes, no logic changes.
-- **`ot.pkg(id, package, kind=..., config=...)`**: `package` is the installed distribution that does the work (its version is read at run time; never type a version). `id` is a short stable name for the tool. For a stage that is your own code, `package` is your project's own distribution, as its `pyproject.toml` names it; its installed version is read the same way.
-- **`config`**: only settings you can see as **literal values in the code** (chunk size, overlap, top-k, model name, temperature). Copy them exactly. If a setting comes from a variable, a settings file or an environment variable, use `ot.constant("chunk_size", chunk_size)` inside the function instead, and **never record the value of an environment variable that holds a key or token**.
-- Record with `ot.constant` every setting you'd want named when two runs are compared, such as a model name or a chunk size.
+- **`stages=[...]`:** by default a run records the stages its own module defines when it is imported. List every stage in the run's order, `@ot.run(run_dir="runs/{run_id}", stages=["retrieve", "generate"])`, when any stage is not one of those: a stage defined in another module, or a stage decorated inside a function while the run is running (a thin wrapper, below). A stage the run calls without that is refused, and the message names both fixes.
+- **One import** per file you touch: `import onetrace as ot`. Change nothing else in the file: no reformatting, no renames, no signature changes, no logic changes. The thin wrappers and the folder digest below add code without changing what the pipeline computes.
+- **`ot.pkg(id, package, kind=..., config=...)`**: `package` is the installed distribution that does the work (its version is read from its installed metadata; never type a version). `id` is a short stable name for the tool. For a stage that is your own code, `package` is your project's own distribution, as its `pyproject.toml` names it, installed (§0).
+- **`config=` or `ot.constant`:** `config` is recorded as one digest, so when it changes a comparison says the stage's config changed, not which key. Put a setting in `config=` when it is a **literal value in the code**, copied exactly. A setting whose value comes from a flag, an argument, a settings file or a variable goes in `ot.constant("chunk_size", chunk_size)` inside the function, and a comparison then names it by its key (`constant chunk_size differs`). **Never record the value of an environment variable that holds a key or token.**
+- **Model settings:** record the settings the code actually sends with the call: the model name, and whatever else it passes, each from where the code takes it. Don't add a setting the code doesn't send, to the call or to the record: a model can reject a parameter it doesn't support.
 - **`files=[...]`**: files the stage reads from disk (corpus, index, prompt templates). Write each path as the code opens it: a relative path is read from the directory the pipeline runs in, not from the repository root.
+- **A folder of documents:** `files=` records each file by its name, so two files with the same name in different subfolders are refused when the stage is decorated. For a folder, record one digest over its files' sorted relative paths and bytes, with `ot.constant`:
+  ```python
+  import hashlib
+  from pathlib import Path
+
+  import onetrace as ot
+
+  def folder_sha256(root) -> str:
+      root = Path(root)
+      h = hashlib.sha256()
+      for p in sorted((q for q in root.rglob("*") if q.is_file()),
+                      key=lambda q: q.relative_to(root).as_posix()):
+          h.update(p.relative_to(root).as_posix().encode("utf-8") + b"\0")
+          h.update(hashlib.sha256(p.read_bytes()).digest())
+      return h.hexdigest()
+
+  @ot.stage("load", instrument=ot.pkg("loader", "my-pipeline", kind="reader"))
+  def load(docs_dir: str) -> list[str]:
+      ot.constant("docs_sha256", folder_sha256(docs_dir))
+      ...
+  ```
+  A comparison then names the change as `constant docs_sha256 differs`.
+- **A step that is a method on an object, or that receives an SDK client holding a key** (a retriever index's `search`, a function given `client`): don't decorate it. Add a **thin wrapper**: a small inner function that takes only plain values, uses the object or client from the enclosing scope, and is the decorated stage. The key never passes through a decorated function, and what the pipeline computes doesn't change. List the stages in `stages=[...]`, since they're decorated while the run is running:
+  ```python
+  import onetrace as ot
+
+  MODEL = "your-model-name"
+
+  def retrieve(index, question, k=2):
+      @ot.stage("retrieve", instrument=ot.pkg("bm25", "my-pipeline", kind="retriever"))
+      def search(question: str, k: int) -> list[str]:
+          return index.search(question, k)
+      return search(question, k)
+
+  def generate(client, question, passages):
+      @ot.stage("generate", instrument=ot.pkg("model-call", "my-pipeline", kind="model-call",
+                                              config={"model": MODEL}))
+      def call(question: str, passages: list[str]) -> str:
+          return client.complete(MODEL, question + "\n\n" + "\n".join(passages))
+      return call(question, passages)
+
+  @ot.run(run_dir="runs/{run_id}", stages=["retrieve", "generate"])
+  def answer(question: str) -> str:
+      client = Client()        # the project's own client, holding its key
+      return generate(client, question, retrieve(Index(), question))
+  ```
+  The object itself isn't recorded. Record what identifies it: the ingest run that built the index (`ot.corpus_from`, §1), or its name and version with `ot.constant`.
 - **Values between stages** must be plain data: strings, bytes, ints, lists and dicts of these, pydantic models, dataclasses, numpy arrays. If a stage returns an object onetrace can't encode (an index object, a database client), don't change the function. Tell the human, and suggest either returning the saved index path or registering an encoder with `ot.encoder`.
 - **A stage called more than once in a run:** by default a stage runs once per run, and a second call is refused. For sequential repeats (a loop, a retry), declare the stage `repeats=True`: each call is numbered #1, #2, …. For calls that overlap (`asyncio.gather`, a thread pool), name each call with a stable name per branch instead, for example `retrieve.instance("en")(question)` and `retrieve.instance("fr")(question)`.
 
@@ -95,7 +173,12 @@ These fields say what a stage *means*, and only a person may set them:
 ## 5. Check behaviour is unchanged
 
 1. Run the project's test command. The same tests must pass as in step 0, with the same results. If anything differs, undo your change to that function and report it.
-2. **Use the real services.** If a service the pipeline needs is down (a vector database, a model API), stop and tell the human. Never substitute stubs or mocks silently. A run made with stubs must say so in its run id (set `ONETRACE_RUN_ID=stub-query-1` for that run), and it doesn't count as proof.
+2. **Use the real services.** If a service the pipeline needs is down (a vector database, a model API), stop and tell the human. Never substitute stubs or mocks silently. A run made with stubs must say so in its run id, and it doesn't count as proof. If the human agrees to stub a model API, do it on the command line, with no mock code inside the pipeline: start a local fake endpoint, point the client library at it with its base-URL environment variable, and give the run a stub id, in one line:
+   <!-- not executed: needs a fake endpoint listening on that port, and the project's own entry point -->
+   ```
+   ONETRACE_RUN_ID=stub-query-1 OPENAI_BASE_URL=http://127.0.0.1:8000/v1 python -m app "a question"
+   ```
+   `OPENAI_BASE_URL` is the `openai` package's variable; other client libraries name their own. Each run needs a new id: a run folder that already holds anything is refused.
 3. Run **every run function in full** (for a RAG pipeline, the whole ingest run *and* the whole query run, all stages), the way the project normally runs it or through the test that exercises it. A folder appears under `runs/` for each, and when each run closes it prints that folder and the command that verifies it, on stderr. A shortened demo run that skips stages doesn't count.
 4. Verify it:
    <!-- not executed: <run_id> stands for the folder your run wrote -->
@@ -136,7 +219,7 @@ End with a short report:
   | top-k or retrieval filters | … | … |
   | the external index changed (re-indexed or edited by hand) | … | … |
   | the prompt template | … | … |
-  | the model, or its temperature and other settings | … | … |
+  | the model, or a setting the code sends with it | … | … |
   | the model simply answered differently | … | … |
 
   Add rows for anything specific to this pipeline. Where a row says "no", say what would fix it: a setting to record, or a link to add.
@@ -148,7 +231,7 @@ End with a short report:
 - Never set `trust`, `output_trust`, `rederivable` or `note` yourself. That includes calls to hosted models and external services: describe what you saw, and ask.
   - If your onetrace version makes you pass a trust class, pick the most cautious one, and list every choice in your report as a question.
   - Never mark text a user typed as `operator-authored`.
-- Never put a secret, token, key or password into a decorator argument, `config`, `ot.constant`, or a stage's arguments. If a stage function receives an API key as an argument, don't decorate it; tell the human.
+- Never put a secret, token, key or password into a decorator argument, `config`, `ot.constant`, or a stage's arguments. If a function receives an API key, or a client holding one, as an argument, don't decorate it: decorate a thin wrapper inside it (§3), or tell the human.
 - Never create a `Recorder` at module level, and never decorate library code.
 - Never turn on signing: no `sign_with=` on `@ot.run` or `Recorder`, and no `onetrace keygen` or `onetrace sign`. Signing is the human's choice, with the human's key.
 - Never add network calls, anchoring, or telemetry.

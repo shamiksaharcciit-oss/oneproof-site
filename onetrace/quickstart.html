@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Quickstart · onetrace</title>
+<link rel="stylesheet" href="assets/onetrace.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="site">
+<a class="brand" href="index.html">onetrace</a> <span class="version">0.2.0</span>
+</header>
+<nav class="pages" aria-label="Documentation pages">
+<details open>
+<summary>Pages</summary>
+<ul>
+<li><a href="index.html">Overview</a></li>
+<li><span class="group">Start</span><ul><li><a href="quickstart.html" aria-current="page">Quickstart</a></li><li><a href="README.html">Documentation index</a></li></ul></li><li><span class="group">For coding agents</span><ul><li><a href="agents/instrument.html">Agent recipe</a></li><li><a href="agents/AGENTS-section.html">AGENTS.md section</a></li></ul></li><li><span class="group">Reference</span><ul><li><a href="manual.html">Manual</a></li><li><a href="errors.html">Errors and fixes</a></li><li><a href="verbs.html">The three verbs</a></li><li><a href="verdicts.html">The five verdicts</a></li><li><a href="format.html">The record format</a></li><li><a href="textdiff-format.html">Text-diff format</a></li><li><a href="non-claims.html">What onetrace does not claim</a></li></ul></li><li><span class="group">Adapters</span><ul><li><a href="adapters/plain-python.html">Plain Python</a></li><li><a href="adapters/langchain.html">LangChain</a></li><li><a href="adapters/llamaindex.html">LlamaIndex</a></li><li><a href="adapters/langflow.html">Langflow</a></li></ul></li>
+</ul>
+</details>
+</nav>
+<main id="content">
+<h1 id="quickstart">Quickstart</h1>
+<p>Add onetrace to a small pipeline in two steps: one stage first, then the rest. Then switch it off, and take it out. After the install, nothing here makes a network call; there's no model and no key, and it takes a few seconds.</p>
+<p>Use a fresh virtual environment with Python 3.10 or later. Each command runs from the folder you save the files in.</p>
+<!-- quickstart: run -->
+<div class="code"><pre><code>pip install onetrace
+</code></pre></div>
+<h2 id="your-pipeline">Your pipeline</h2>
+<p>A pipeline in two modules: <code>steps.py</code> finds passages, <code>app.py</code> answers from them. Save both.</p>
+<!-- quickstart: file steps.py -->
+<div class="code"><pre><code class="language-python">CORPUS = [
+    &quot;The warranty covers manufacturing defects for twelve months.&quot;,
+    &quot;Shipping delays are handled by the courier, not the warranty.&quot;,
+    &quot;Batteries have a separate six-month warranty.&quot;,
+]
+
+
+def retrieve(question: str) -&gt; list[str]:
+    words = set(question.lower().rstrip(&quot;?&quot;).split())
+    return sorted(CORPUS, key=lambda p: -len(words &amp; set(p.lower().rstrip(&quot;.&quot;).split())))[:2]
+</code></pre></div>
+<!-- quickstart: file app.py -->
+<div class="code"><pre><code class="language-python">from steps import retrieve
+
+
+def answer(question: str, passages: list[str]) -&gt; str:
+    return passages[0]
+
+
+def main(question: str) -&gt; str:
+    return answer(question, retrieve(question))
+
+
+if __name__ == &quot;__main__&quot;:
+    print(main(&quot;How long does the warranty cover defects?&quot;))
+</code></pre></div>
+<!-- quickstart: run -->
+<div class="code"><pre><code>python app.py
+</code></pre></div>
+<!-- quickstart: output -->
+<div class="code"><pre><code>The warranty covers manufacturing defects for twelve months.
+</code></pre></div>
+<h2 id="step-1-one-stage">Step 1: one stage</h2>
+<p>Add one import and two decorators to <code>app.py</code>, and change nothing else: <code>@ot.run</code> on the function that does the whole job once, and <code>@ot.stage</code> on one step.</p>
+<!-- quickstart: file app.py -->
+<div class="code"><pre><code class="language-python">import onetrace as ot
+from steps import retrieve
+
+
+@ot.stage(&quot;answer&quot;, instrument=ot.pkg(&quot;first-passage&quot;, &quot;onetrace&quot;, kind=&quot;model-call&quot;))
+def answer(question: str, passages: list[str]) -&gt; str:
+    return passages[0]
+
+
+@ot.run()
+def main(question: str) -&gt; str:
+    return answer(question, retrieve(question))
+
+
+if __name__ == &quot;__main__&quot;:
+    print(main(&quot;How long does the warranty cover defects?&quot;))
+</code></pre></div>
+<p><code>ot.pkg</code> names the tool a stage uses: a short id, the installed distribution whose version is recorded, and its <code>kind</code>. This demo isn't an installed project, so it names <code>onetrace</code>; in your own code, name the library that does the work, or your project's own distribution.</p>
+<!-- quickstart: run -->
+<div class="code"><pre><code>python app.py
+</code></pre></div>
+<!-- quickstart: output -->
+<div class="code"><pre><code>The warranty covers manufacturing defects for twelve months.
+</code></pre></div>
+<p>The run wrote a folder under <code>runs/</code>, named by its run id. <code>onetrace doctor</code> checks the installation and verifies the most recent run:</p>
+<!-- quickstart: run -->
+<div class="code"><pre><code>onetrace doctor
+</code></pre></div>
+<!-- quickstart: output -->
+<div class="code"><pre><code>...
+7 checks; all passed
+</code></pre></div>
+<p><strong>What this one-stage run records.</strong> Two receipts, not one:</p>
+<ul>
+<li><strong><code>intake</code></strong>: <code>@ot.run</code> records the run function's arguments as a stage of their own. Here, the digest of <code>question</code>.</li>
+<li><strong><code>answer</code></strong>: its arguments (<code>question</code> and <code>passages</code>), each as a SHA-256 digest of its encoding (<a href="manual.html#1616-numbers-and-booleans-rule-m-for-settings-rule-v1-for-values">rule V1</a>), and its return value, stored as <code>return.json</code> in the run folder.</li>
+</ul>
+<p>And what it doesn't:</p>
+<ul>
+<li><strong><code>retrieve</code> is not recorded at all.</strong> It isn't decorated, so the record has no step for it and no boundary in its place. Its result reaches <code>answer</code> only as an argument's digest. If the passages change, the record shows <code>answer</code>'s input changing, and nothing about why.</li>
+<li><strong>Nothing about meaning.</strong> No stage says where its input came from (<code>trust</code>), where its output came from (<code>output_trust</code>), or whether it can be re-run to the same result (<code>rederivable</code>). onetrace records the most cautious value and lists each such field as <code>undeclared</code> on the stage. A person decides those; see <a href="manual.html#16-decorators">the manual's Decorators section</a>.</li>
+</ul>
+<h2 id="step-2-the-other-stage-in-another-module">Step 2: the other stage, in another module</h2>
+<p>Decorate <code>retrieve</code> in <code>steps.py</code>:</p>
+<!-- quickstart: file steps.py -->
+<div class="code"><pre><code class="language-python">import onetrace as ot
+
+CORPUS = [
+    &quot;The warranty covers manufacturing defects for twelve months.&quot;,
+    &quot;Shipping delays are handled by the courier, not the warranty.&quot;,
+    &quot;Batteries have a separate six-month warranty.&quot;,
+]
+
+
+@ot.stage(&quot;retrieve&quot;, instrument=ot.pkg(&quot;word-overlap&quot;, &quot;onetrace&quot;, kind=&quot;retriever&quot;, config={&quot;top_k&quot;: 2}))
+def retrieve(question: str) -&gt; list[str]:
+    words = set(question.lower().rstrip(&quot;?&quot;).split())
+    return sorted(CORPUS, key=lambda p: -len(words &amp; set(p.lower().rstrip(&quot;.&quot;).split())))[:2]
+</code></pre></div>
+<p>A run records the stages defined in its own module (<a href="manual.html#1617-otruns-defaults"><code>@ot.run</code>'s defaults</a> lists them all). <code>retrieve</code> is defined in another one, so list the run's stages, in order, on <code>@ot.run</code>. Without that list, the call to <code>retrieve</code> is refused, and the message names this fix. In <code>app.py</code>, change only the <code>@ot.run</code> line:</p>
+<!-- quickstart: file app.py -->
+<div class="code"><pre><code class="language-python">import onetrace as ot
+from steps import retrieve
+
+
+@ot.stage(&quot;answer&quot;, instrument=ot.pkg(&quot;first-passage&quot;, &quot;onetrace&quot;, kind=&quot;model-call&quot;))
+def answer(question: str, passages: list[str]) -&gt; str:
+    return passages[0]
+
+
+@ot.run(stages=[&quot;retrieve&quot;, &quot;answer&quot;])
+def main(question: str) -&gt; str:
+    return answer(question, retrieve(question))
+
+
+if __name__ == &quot;__main__&quot;:
+    print(main(&quot;How long does the warranty cover defects?&quot;))
+</code></pre></div>
+<!-- quickstart: run -->
+<div class="code"><pre><code>python app.py
+</code></pre></div>
+<!-- quickstart: output -->
+<div class="code"><pre><code>The warranty covers manufacturing defects for twelve months.
+</code></pre></div>
+<!-- quickstart: run -->
+<div class="code"><pre><code>onetrace doctor
+</code></pre></div>
+<!-- quickstart: output -->
+<div class="code"><pre><code>...
+7 checks; all passed
+</code></pre></div>
+<p>Now <code>retrieve</code> has a receipt of its own. Its setting (<code>top_k</code>) is part of its instrument's recorded config, so a change to it shows as a changed config. <code>answer</code> records the passages as <code>retrieve</code>'s output: an edge from one stage to the next.</p>
+<p>When a run closes, onetrace prints two lines to stderr: the folder it wrote, and the command that verifies it (<a href="manual.html#1618-what-a-run-says-when-it-closes-onetrace_quiet1">what a run says when it closes</a>). <code>ONETRACE_QUIET=1</code> turns them off.</p>
+<!-- not executed: the run id differs on every run -->
+<div class="code"><pre><code>onetrace: run written to runs/&lt;run id&gt;
+next: onetrace-verify --require-artifacts runs/&lt;run id&gt;
+</code></pre></div>
+<p>That command verifies one run by name. In a terminal it looks like this. The first line is the verifier's summary, printed to stderr, so the rows on stdout stay exactly as the reference verifier prints them. When a row fails, it also prints to stderr, under the summary, a <code>fix (…)</code> line for each failing row: what to change, and the section of the errors page that explains it. <code>ONETRACE_QUIET=1</code> silences these stderr lines too, the summary and the fix lines alike:</p>
+<!-- not executed: the run id differs on every run -->
+<div class="code"><pre><code>$ onetrace-verify --require-artifacts runs/&lt;run id&gt;
+record intact: 3 stages, 2 output files checked
+[PASS   ] receipts/01-intake.json: receipt format
+...
+80 pass, 0 fail, 4 not-run  -&gt;  PASS
+</code></pre></div>
+<p>To compare two runs:</p>
+<!-- not executed: each run id stands for a folder under runs/ -->
+<div class="code"><pre><code>onetrace diff runs/&lt;first run id&gt; runs/&lt;second run id&gt;
+</code></pre></div>
+<h2 id="switch-it-off">Switch it off</h2>
+<p><code>ONETRACE_DISABLE=1</code> makes both decorators pass straight through: the functions run as they did before, and nothing is written.</p>
+<p>In a macOS or Linux shell:</p>
+<!-- quickstart: run os=posix -->
+<div class="code"><pre><code>ONETRACE_DISABLE=1 python app.py
+</code></pre></div>
+<!-- quickstart: output -->
+<div class="code"><pre><code>The warranty covers manufacturing defects for twelve months.
+</code></pre></div>
+<p>In Windows PowerShell:</p>
+<!-- quickstart: run os=windows -->
+<div class="code"><pre><code>$env:ONETRACE_DISABLE = &quot;1&quot;; python app.py; Remove-Item Env:ONETRACE_DISABLE
+</code></pre></div>
+<!-- quickstart: output -->
+<div class="code"><pre><code>The warranty covers manufacturing defects for twelve months.
+</code></pre></div>
+<h2 id="take-it-out">Take it out</h2>
+<p>Delete <code>import onetrace as ot</code> from both files, and the three decorator lines. What's left is the code under &quot;Your pipeline&quot;, and it runs as it did before. Your run folders stay under <code>runs/</code> until you delete them.</p>
+</main>
+<footer class="site">
+<p>Source: <a href="quickstart.md"><code>quickstart.md</code></a> · onetrace 0.2.0 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
+</footer>
+<script src="assets/copy.js" defer></script>
+</body>
+</html>

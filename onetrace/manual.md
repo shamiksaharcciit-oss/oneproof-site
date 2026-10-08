@@ -1,6 +1,6 @@
-# onetrace 0.1.2: developer manual
+# onetrace: developer manual
 
-This manual takes you from knowing nothing about onetrace to recording, verifying and comparing your own pipeline's runs. Every example in it was run against the `onetrace 0.1.1` release files, installed into a fresh virtual environment. The verifier summaries in sections 2 and 8 were re-measured with the verifier in this repository, which adds one `receipt format` row per receipt (section 14).
+This manual takes you from knowing nothing about onetrace to recording, verifying and comparing your own pipeline's runs. Its examples were first written against the `onetrace 0.1.1` release files, installed into a fresh virtual environment; sections 15–17 were written for 0.2.0. The verifier summaries in sections 2 and 8 were re-measured with the verifier in this repository, which adds one `receipt format` row per receipt (section 14).
 
 ---
 
@@ -30,7 +30,7 @@ Anyone can then check the record, and compare two runs, with tools that don't tr
 ### What onetrace does **not** do (read this before relying on it)
 
 - **It does not say your output is true or correct.** It records what happened and lets others check that record.
-- **Records in 0.1.1 are hash-chained, not signed.** Nobody's key signs a receipt. The chain proves the record hasn't been altered *relative to its own chain head*. It does **not** prove who wrote it. If you need to prove authorship or when the record existed, keep the chain head somewhere independent, such as a ticket, an email or a database you don't control. To show the record existed by a given time, anchor its chain head after the run closes (section 15).
+- **Records are hash-chained; signing (section 17) and anchoring (section 15) are optional.** The chain proves the record hasn't been altered *relative to its own chain head*. Without a signature, the chain alone does **not** show who wrote it. If you need to prove authorship or when the record existed, keep the chain head somewhere independent, such as a ticket, an email or a database you don't control. To show the record existed by a given time, anchor its chain head after the run closes (section 15).
 - **`onetrace-verify` checks your output files under `artifacts/` too, when it can recognise their layout.** If the run was written by this SDK (0.1.x), the verifier finds `artifacts/<stage>/<output>` for each receipt's own outputs and reports a `FAIL` naming any that's missing or changed. If there's no `artifacts/` folder, or its layout isn't one the verifier recognises, it reports one `NOT-RUN` row and checks no files. **The summary line can still say `PASS` in that case**, because `PASS` is about the record. If you need the files checked, run `onetrace-verify --require-artifacts`, which turns that `NOT-RUN` into a `FAIL` (section 8.3).
 - **The verifier reports "originality: not-run" on every receipt.** That's expected: a receipt can't show when it was written, so on its own the record establishes consistency, not originality. An anchor (section 15) gets a row of its own beside it, which shows the record existed by the time its source attests; not when the run happened.
 - The format is **version 0**. It may still change before version 1.
@@ -856,9 +856,9 @@ Commands: `onetrace-verify [--require-artifacts] [--json] [--headers FILE] [--ts
 
 ---
 
-## 14. Known limitations in 0.1.1
+## 14. Known limitations
 
-- Records are **hash-chained, not signed**. To show a record existed by a given time, anchor its chain head (section 15); otherwise keep the chain head somewhere independent.
+- Records are **hash-chained**; signing (section 17) and anchoring (section 15) are optional. Without them, the chain alone does not show who wrote a record. To show a record existed by a given time, anchor its chain head (section 15); otherwise keep the chain head somewhere independent.
 - Framework "adapters" are worked examples in the source distribution, not importable modules.
 - The format is version 0 and may change before version 1. Every record carries its format version. The manifest's own chain format is checked, and an unknown one is refused by name, never guessed. **A receipt's own format was not checked in 0.1.1** (0.1.0 behaved the same): only its presence was checked, not its value. **From 0.1.2 it is checked.** A missing format, one that is not a string, or one that is not a `stage-receipt/<major>.<minor>` label is a `FAIL`. A version this verifier doesn't implement (a major other than 0, or a minor that isn't ASCII decimal digits) gets one `NOT-RUN` row naming it: that receipt's digest against the manifest and its chain link are still checked, but none of its content is (canonical form, fields, originality, output files). The summary then reads `NOT VERIFIED (receipt format not implemented: N receipt(s))` and the exit code is 2, unless a check failed anywhere, which gives `FAIL` and exit 1 (section 10.4).
 - `onetrace-verify`'s artifact check only applies when it can recognise a run's own `artifacts/<stage>/<output>` layout. A run built by hand, or with a different layout, reads `NOT-RUN` for its files (section 8.3). Receipts don't record where an output file is stored, so the check depends on this SDK's folder convention; a later format version will record the path.
@@ -924,7 +924,7 @@ Each file in `anchors/` gets one row, beside the receipts' own rows. It reads PA
 
 ### 15.4 Anchoring with RFC 3161 (a time-stamp authority)
 
-An RFC 3161 time-stamp service (TSA) is the method to use where no outside calendar can be reached: its answer is checked fully offline against the service's certificate. With no outside access, point `--tsa-url` at a time-stamp service you run yourself and pin its certificate; onetrace has none built in. It needs the `[crypto]` extra (15.6).
+An RFC 3161 time-stamp service (TSA) is the method to use where no outside calendar can be reached: its answer is checked against the service's certificate with no network call. With no outside access, point `--tsa-url` at a time-stamp service you run yourself and pin its certificate; onetrace has none built in. It needs the `[crypto]` extra (15.6).
 
 ```
 onetrace anchor runs/<run_id> --source rfc3161 --tsa-url https://tsa.example/tsr \

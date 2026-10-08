@@ -1,6 +1,6 @@
 # Quickstart
 
-Add onetrace to a small pipeline in two steps: one stage first, then the rest. Then switch it off, and take it out. Everything here runs offline, with no model and no key, in a few seconds.
+Add onetrace to a small pipeline in two steps: one stage first, then the rest. Then switch it off, and take it out. After the install, nothing here makes a network call; there's no model and no key, and it takes a few seconds.
 
 Use a fresh virtual environment with Python 3.10 or later. Each command runs from the folder you save the files in.
 

@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>onetrace: developer manual · onetrace</title>
+<link rel="stylesheet" href="assets/onetrace.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="site">
+<a class="brand" href="index.html">onetrace</a> <span class="version">0.2.0</span>
+</header>
+<nav class="pages" aria-label="Documentation pages">
+<details open>
+<summary>Pages</summary>
+<ul>
+<li><a href="index.html">Overview</a></li>
+<li><span class="group">Start</span><ul><li><a href="quickstart.html">Quickstart</a></li><li><a href="README.html">Documentation index</a></li></ul></li><li><span class="group">For coding agents</span><ul><li><a href="agents/instrument.html">Agent recipe</a></li><li><a href="agents/AGENTS-section.html">AGENTS.md section</a></li></ul></li><li><span class="group">Reference</span><ul><li><a href="manual.html" aria-current="page">Manual</a></li><li><a href="errors.html">Errors and fixes</a></li><li><a href="verbs.html">The three verbs</a></li><li><a href="verdicts.html">The five verdicts</a></li><li><a href="format.html">The record format</a></li><li><a href="textdiff-format.html">Text-diff format</a></li><li><a href="non-claims.html">What onetrace does not claim</a></li></ul></li><li><span class="group">Adapters</span><ul><li><a href="adapters/plain-python.html">Plain Python</a></li><li><a href="adapters/langchain.html">LangChain</a></li><li><a href="adapters/llamaindex.html">LlamaIndex</a></li><li><a href="adapters/langflow.html">Langflow</a></li></ul></li>
+</ul>
+</details>
+</nav>
+<main id="content">
+<h1 id="onetrace-developer-manual">onetrace: developer manual</h1>
+<p>This manual takes you from knowing nothing about onetrace to recording, verifying and comparing your own pipeline's runs. Its examples were first written against the <code>onetrace 0.1.1</code> release files, installed into a fresh virtual environment; sections 15–17 were written for 0.2.0. The verifier summaries in sections 2 and 8 were re-measured with the verifier in this repository, which adds one <code>receipt format</code> row per receipt (section 14).</p>
+<hr />
+<h2 id="1-what-onetrace-is-in-one-page">1. What onetrace is, in one page</h2>
+<p>When a pipeline runs, whether it's a RAG system, a document processor or an agent, you usually end up with an output and maybe some logs. Later, when someone asks what exactly produced this answer, and whether anything changed since last week, logs are hard to trust and hard to compare.</p>
+<p>onetrace makes the pipeline write a <strong>record</strong> as it runs:</p>
+<ul>
+<li><strong>one receipt per stage</strong> (a JSON file) that says:
+<ul>
+<li>what the stage read, identified by content digest (sha256);</li>
+<li>what it wrote, again by digest;</li>
+<li>which tool did the work (the <em>instrument</em>) and exactly how it was configured;</li>
+<li>how the stage ended: <code>ok</code>, <code>refused</code> or <code>error</code>;</li>
+<li>its start and end times;</li>
+</ul>
+</li>
+<li><strong>a manifest</strong> that chains the receipts together. Each receipt's digest is recorded in order, ending in a <strong>chain head</strong>. Change, remove or reorder any receipt and the chain no longer matches.</li>
+</ul>
+<p>Anyone can then check the record, and compare two runs, with tools that don't trust your code:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>What it answers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>onetrace-verify &lt;run&gt;</code></td>
+<td>Is this record self-consistent and unbroken?</td>
+</tr>
+<tr>
+<td><code>onetrace diff A B</code></td>
+<td>Stage by stage, where do two runs differ?</td>
+</tr>
+<tr>
+<td><code>onetrace localize A [B]</code></td>
+<td>Where did things first go wrong: the first unclean stage in one run, or the first difference between two runs, and its cause?</td>
+</tr>
+<tr>
+<td><code>onetrace reproduce &lt;run&gt;</code></td>
+<td>If I re-run the recorded stages from their recorded inputs, do I get the same outputs?</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="what-onetrace-does-not-do-read-this-before-relying-on-it">What onetrace does <strong>not</strong> do (read this before relying on it)</h3>
+<ul>
+<li><strong>It does not say your output is true or correct.</strong> It records what happened and lets others check that record.</li>
+<li><strong>Records are hash-chained; signing (section 17) and anchoring (section 15) are optional.</strong> The chain proves the record hasn't been altered <em>relative to its own chain head</em>. Without a signature, the chain alone does <strong>not</strong> show who wrote it. If you need to prove authorship or when the record existed, keep the chain head somewhere independent, such as a ticket, an email or a database you don't control. To show the record existed by a given time, anchor its chain head after the run closes (section 15).</li>
+<li><strong><code>onetrace-verify</code> checks your output files under <code>artifacts/</code> too, when it can recognise their layout.</strong> If the run was written by this SDK (0.1.x), the verifier finds <code>artifacts/&lt;stage&gt;/&lt;output&gt;</code> for each receipt's own outputs and reports a <code>FAIL</code> naming any that's missing or changed. If there's no <code>artifacts/</code> folder, or its layout isn't one the verifier recognises, it reports one <code>NOT-RUN</code> row and checks no files. <strong>The summary line can still say <code>PASS</code> in that case</strong>, because <code>PASS</code> is about the record. If you need the files checked, run <code>onetrace-verify --require-artifacts</code>, which turns that <code>NOT-RUN</code> into a <code>FAIL</code> (section 8.3).</li>
+<li><strong>The verifier reports &quot;originality: not-run&quot; on every receipt.</strong> That's expected: a receipt can't show when it was written, so on its own the record establishes consistency, not originality. An anchor (section 15) gets a row of its own beside it, which shows the record existed by the time its source attests; not when the run happened.</li>
+<li>The format is <strong>version 0</strong>. It may still change before version 1.</li>
+</ul>
+<hr />
+<h2 id="2-install">2. Install</h2>
+<p>Requirements: <strong>Python 3.10 or newer</strong>. Use a virtual environment.</p>
+<div class="code"><pre><code class="language-bash">python -m venv .venv
+# Windows PowerShell:  .\.venv\Scripts\Activate.ps1
+# macOS / Linux:       source .venv/bin/activate
+pip install onetrace
+</code></pre></div>
+<p>This installs two packages:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Import / command</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>onetrace</code></td>
+<td><code>import onetrace</code>, command <code>onetrace</code></td>
+<td>The SDK: recording, plus the <code>diff</code> / <code>localize</code> / <code>reproduce</code> commands</td>
+</tr>
+<tr>
+<td><code>onetrace-verify</code></td>
+<td>command <code>onetrace-verify</code></td>
+<td>The reference verifier. It uses only the standard library, needs no network, and is installed automatically.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Check the install:</p>
+<div class="code"><pre><code class="language-bash">python -c &quot;import onetrace; print(onetrace.__version__)&quot;   # 0.1.2
+</code></pre></div>
+<p>To pin exactly what was published, take each file's sha256 from the <strong>Download files</strong> page of the project on PyPI and put it in a requirements file:</p>
+<div class="code"><pre><code>onetrace==0.1.2         --hash=sha256:&lt;from the PyPI page&gt;
+onetrace-verify==0.1.2  --hash=sha256:&lt;from the PyPI page&gt;
+</code></pre></div>
+<p>Then install with <code>pip install --require-hashes -r requirements.txt</code>. The hashes can't be printed here, because this manual ships inside one of the files they describe.</p>
+<p>Optional extras pin the framework versions the examples were built against:</p>
+<ul>
+<li><code>pip install &quot;onetrace[langchain]&quot;</code></li>
+<li><code>pip install &quot;onetrace[llamaindex]&quot;</code></li>
+<li><code>pip install &quot;onetrace[langflow]&quot;</code></li>
+</ul>
+<p>They only install those frameworks. The integration pattern itself is plain Python (section 9).</p>
+<hr />
+<h2 id="3-five-minute-quickstart">3. Five-minute quickstart</h2>
+<p>Save as <code>demo.py</code>:</p>
+<div class="code"><pre><code class="language-python">import json, sys
+from pathlib import Path
+from onetrace.emit import Instrument, Recorder
+
+QUESTION = &quot;What does the warranty cover?&quot;
+CORPUS = [
+    {&quot;id&quot;: &quot;p1&quot;, &quot;text&quot;: &quot;The warranty covers manufacturing defects for twelve months.&quot;},
+    {&quot;id&quot;: &quot;p2&quot;, &quot;text&quot;: &quot;Shipping delays are handled by the logistics partner.&quot;},
+]
+
+def main(out_dir, run_id):
+    out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
+    corpus_path = out / &quot;corpus.json&quot;
+    corpus_path.write_text(json.dumps(CORPUS), encoding=&quot;utf-8&quot;)
+
+    rec = Recorder(out_dir, run_id=run_id,
+                   declared_stages=[&quot;retrieve&quot;, &quot;answer&quot;],
+                   manifest=Path(__file__),          # this file&#x27;s bytes identify the code
+                   policy=&quot;fail-closed&quot;,
+                   anchor_reason=&quot;not anchored&quot;)
+
+    cfg = {&quot;tokenizer&quot;: &quot;lower-split&quot;, &quot;top_k&quot;: 1}   # an int is fine; see section 5.3
+
+    @rec.stage(&quot;retrieve&quot;, Instrument(&quot;word-overlap&quot;, &quot;retriever&quot;, &quot;1.0.0&quot;, cfg))
+    def retrieve(ctx):
+        corpus = json.loads(ctx.read_external(corpus_path, &quot;application/json&quot;,
+                                              name=&quot;corpus&quot;, trust_class=&quot;operator-authored&quot;))
+        q = set(QUESTION.lower().split())
+        best = max(corpus, key=lambda p: len(q &amp; set(p[&quot;text&quot;].lower().split())))
+        for k, v in cfg.items():
+            ctx.constant(k, v)
+        ctx.assertion(&quot;candidate_count&quot;, len(corpus))
+        return ctx.write_json(&quot;retrieved.json&quot;, best)
+
+    @rec.stage(&quot;answer&quot;, Instrument(&quot;extractive&quot;, &quot;answerer&quot;, &quot;1.0.0&quot;, {&quot;method&quot;: &quot;extractive&quot;}))
+    def answer(ctx, retrieved_artifact):
+        hit = ctx.read_json(retrieved_artifact)
+        ctx.constant(&quot;method&quot;, &quot;extractive&quot;)
+        ctx.assertion(&quot;source&quot;, hit[&quot;id&quot;])
+        return ctx.write_json(&quot;answer.json&quot;, {&quot;answer&quot;: hit[&quot;text&quot;], &quot;cited&quot;: hit[&quot;id&quot;]})
+
+    answer(retrieve())
+    rec.close()
+
+if __name__ == &quot;__main__&quot;:
+    main(sys.argv[1], sys.argv[2])
+</code></pre></div>
+<p>Run it twice, verify one run, and compare the two:</p>
+<div class="code"><pre><code class="language-bash">python demo.py run_a run-a
+python demo.py run_b run-b
+onetrace-verify run_a          # ... &quot;56 pass, 0 fail, 2 not-run  -&gt;  PASS&quot;
+onetrace diff run_a run_b      # &quot;diff: identical&quot;, exit 0
+</code></pre></div>
+<hr />
+<h2 id="4-core-concepts">4. Core concepts</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Run</strong></td>
+<td>One execution of your pipeline, written to one folder. A run folder is <strong>write-once</strong>: onetrace refuses to write into a folder that already holds a run.</td>
+</tr>
+<tr>
+<td><strong>Stage</strong></td>
+<td>One named step. You declare the stage names, in order, when the run starts, and the stages must emit in that order.</td>
+</tr>
+<tr>
+<td><strong>Receipt</strong></td>
+<td>The JSON record of one stage: <code>receipts/NN-&lt;stage&gt;.json</code>.</td>
+</tr>
+<tr>
+<td><strong>Manifest</strong></td>
+<td><code>MANIFEST.json</code>: the ordered chain of receipt digests and the <strong>chain head</strong>. It is rewritten after every receipt, and is the run's &quot;last word&quot;.</td>
+</tr>
+<tr>
+<td><strong>Instrument</strong></td>
+<td>The tool a stage used: id, kind, a pinned version, and its configuration. The configuration is digested, so a config change is always visible.</td>
+</tr>
+<tr>
+<td><strong>Artifact</strong></td>
+<td>A file a stage wrote through onetrace. It's stored under <code>artifacts/NN-&lt;stage&gt;/</code> and its digest goes in the receipt; <code>onetrace-verify</code> checks it there (section 8).</td>
+</tr>
+<tr>
+<td><strong>Constant / assertion</strong></td>
+<td>Constants are the settings the stage ran under. Assertions are facts the stage states about its work (a count, a chosen id). Each takes a string, or a Python int recorded as its own decimal string (section 5.6).</td>
+</tr>
+<tr>
+<td><strong>Trust class</strong></td>
+<td>Where data came from: <code>operator-authored</code>, <code>model-generated</code> or <code>externally-sourced</code>. <code>secret</code> is refused, so secrets never enter a record.</td>
+</tr>
+<tr>
+<td><strong>Policy</strong></td>
+<td><code>fail-closed</code> or <code>fail-open</code>: what happens when a receipt can't be written or verification fails (section 5.8).</td>
+</tr>
+<tr>
+<td><strong>Coverage</strong></td>
+<td>Which declared stages have emitted. <code>complete</code> only when every declared stage has emitted and no boundary or gap stands.</td>
+</tr>
+<tr>
+<td><strong>Boundary / gap</strong></td>
+<td>An honest statement that the record doesn't see past a point (a boundary), or that a receipt is missing (a gap). Either makes coverage <code>incomplete</code>.</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="5-integrating-onetrace-into-your-code-step-by-step">5. Integrating onetrace into your code, step by step</h2>
+<h3 id="51-create-one-recorder-per-run">5.1 Create one <code>Recorder</code> per run</h3>
+<div class="code"><pre><code class="language-python">from pathlib import Path
+from onetrace.emit import Recorder
+
+rec = Recorder(
+    &quot;runs/run-0001&quot;,              # out_dir: a NEW folder for this run
+    declared_stages=[&quot;load&quot;, &quot;chunk&quot;, &quot;embed&quot;, &quot;retrieve&quot;, &quot;answer&quot;],
+    manifest=Path(__file__),           # the file whose bytes identify your pipeline code
+    policy=&quot;fail-closed&quot;,              # or &quot;fail-open&quot;
+    anchor_reason=&quot;not anchored&quot;,      # optional: why the receipts are unanchored (section 15 anchors a closed run)
+    run_id=None,                       # optional; generated if omitted
+)
+</code></pre></div>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>out_dir</code></td>
+<td>yes</td>
+<td>Created if missing. It must not already contain a run. One process per folder: a lock file enforces this.</td>
+</tr>
+<tr>
+<td><code>declared_stages</code></td>
+<td>yes</td>
+<td>A non-empty list of distinct names, in execution order.</td>
+</tr>
+<tr>
+<td><code>manifest</code></td>
+<td>yes</td>
+<td>A path to a file, usually your pipeline's main module. Its sha256 is recorded as every instrument's <code>manifest_digest</code>. <code>reproduce</code> uses it to confirm it's re-running the same code.</td>
+</tr>
+<tr>
+<td><code>policy</code></td>
+<td>yes</td>
+<td><code>&quot;fail-closed&quot;</code> or <code>&quot;fail-open&quot;</code>. Anything else is refused.</td>
+</tr>
+<tr>
+<td><code>run_id</code></td>
+<td>no</td>
+<td>Your id. If omitted, one is generated: a UTC timestamp plus 8 random hex characters, which sorts chronologically.</td>
+</tr>
+<tr>
+<td><code>anchor_reason</code></td>
+<td>no</td>
+<td>A free-text note, recorded with <code>anchor.state = &quot;unanchored&quot;</code>.</td>
+</tr>
+<tr>
+<td><code>instruments</code></td>
+<td>no</td>
+<td>Declare instruments up front, keyed by stage name (5.3).</td>
+</tr>
+<tr>
+<td><code>declared_edges</code> / <code>topology</code></td>
+<td>no</td>
+<td>For branching pipelines (section 6).</td>
+</tr>
+<tr>
+<td><code>boundaries</code></td>
+<td>no</td>
+<td>Boundaries known at start (5.9).</td>
+</tr>
+<tr>
+<td><code>verify_pin</code></td>
+<td>no</td>
+<td>Run the verifier automatically on <code>close()</code> (5.10).</td>
+</tr>
+<tr>
+<td><code>max_run_bytes</code></td>
+<td>no</td>
+<td>A hard size limit for the run (5.11).</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="52-wrap-each-step-as-a-stage">5.2 Wrap each step as a stage</h3>
+<p>Use the decorator. onetrace passes a <strong>context</strong> (<code>ctx</code>) as the first argument. Your other arguments pass through unchanged, and your return value comes back to the caller.</p>
+<div class="code"><pre><code class="language-python">from onetrace.emit import Instrument
+
+@rec.stage(&quot;chunk&quot;, Instrument(&quot;recursive-splitter&quot;, &quot;chunker&quot;, &quot;2.3.1&quot;,
+                               {&quot;chunk_size&quot;: 900, &quot;overlap&quot;: 0}))
+def chunk(ctx, doc_artifact):
+    text = ctx.read(doc_artifact).decode(&quot;utf-8&quot;)
+    ctx.constant(&quot;chunk_size&quot;, 900)
+    ctx.constant(&quot;overlap&quot;, 0)
+    chunks = split(text, 900)
+    ctx.assertion(&quot;chunk_count&quot;, len(chunks))
+    return ctx.write_json(&quot;chunks.json&quot;, chunks)
+
+chunks_artifact = chunk(doc_artifact)
+</code></pre></div>
+<p><strong>Stages must run in the declared order.</strong> Calling <code>answer</code> before <code>retrieve</code> raises <code>EmissionRefused: stage 'answer' is not the next declared stage (expected retrieve)</code>.</p>
+<p>The same stage can be written without a decorator: <code>rec.run_stage(&quot;chunk&quot;, instrument, fn, *args)</code>.</p>
+<h3 id="53-describe-the-instrument-honestly">5.3 Describe the instrument honestly</h3>
+<div class="code"><pre><code class="language-python">Instrument(id, kind, version, config, rederivable=&quot;true&quot;, rederivable_note=None)
+</code></pre></div>
+<ul>
+<li><code>id</code>: your name for the tool, for example <code>&quot;gpt-4o-mini&quot;</code> or <code>&quot;recursive-splitter&quot;</code>.</li>
+<li><code>kind</code>: its role, for example <code>&quot;retriever&quot;</code>, <code>&quot;llm&quot;</code> or <code>&quot;chunker&quot;</code>.</li>
+<li><code>version</code>: <strong>must pin an exact build.</strong> <code>&quot;&quot;</code>, <code>latest</code>, <code>current</code>, <code>head</code>, <code>main</code> and <code>master</code> are refused. Use the library version (<code>importlib.metadata.version(&quot;langchain-core&quot;)</code>) or a model snapshot id.</li>
+<li><code>config</code>: a dict of the settings that affect the output. A <strong>string</strong> is always fine. A Python <strong><code>int</code></strong> (never <code>bool</code>) is accepted too, and recorded as its own decimal string — <code>3</code> and <code>&quot;3&quot;</code> produce the same <code>config_digest</code>, so you don't have to remember to stringify every number by hand. A <strong>float is refused</strong>, with a message explaining why: its digest is not stable across languages (<code>0.2</code> prints differently across implementations; <code>&quot;0.2&quot;</code> doesn't). Nested dicts and lists follow the same rule at every level.</li>
+<li><code>rederivable=&quot;false&quot;</code>: set this when re-running can't reproduce the output, for example a sampled LLM call. Explain why in <code>rederivable_note</code>.</li>
+</ul>
+<p>If you don't want to repeat instruments at every call site, declare them once:</p>
+<div class="code"><pre><code class="language-python">rec = Recorder(..., instruments={&quot;chunk&quot;: Instrument(...), &quot;answer&quot;: Instrument(...)})
+
+@rec.stage(&quot;chunk&quot;)          # no instrument here; it comes from the declaration
+def chunk(ctx, ...): ...
+</code></pre></div>
+<p>A run that declares instruments refuses a stage that brings its own, or one that has none declared.</p>
+<h3 id="54-inputs-everything-a-stage-reads-goes-through-ctx">5.4 Inputs: everything a stage reads goes through <code>ctx</code></h3>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>Use it for</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ctx.read_external(path, media_type, name=None, trust_class=&quot;externally-sourced&quot;)</code></td>
+<td>a file from outside the run (a document, a config, a prompt file)</td>
+<td><code>bytes</code></td>
+</tr>
+<tr>
+<td><code>ctx.read_memory(data, media_type, name, trust_class=&quot;externally-sourced&quot;)</code></td>
+<td>an input already in memory, with no path on disk (a request body, a user query). <code>name</code> is required — there's no path to default it from. Digested, never stored, exactly like <code>read_external</code>.</td>
+<td><code>bytes</code> (the same <code>data</code>)</td>
+</tr>
+<tr>
+<td><code>ctx.reference(path, media_type, name=None, trust_class=&quot;externally-sourced&quot;, digest=None)</code></td>
+<td>a <strong>large</strong> file you don't need in memory. It's streamed and digested in bounded memory. If you pass <code>digest=</code>, a mismatch is refused.</td>
+<td>an <code>Artifact</code></td>
+</tr>
+<tr>
+<td><code>ctx.read(artifact)</code></td>
+<td>an artifact written by an earlier stage</td>
+<td><code>bytes</code> (a digest mismatch is refused)</td>
+</tr>
+<tr>
+<td><code>ctx.read_json(artifact)</code></td>
+<td>the same, parsed as JSON</td>
+<td>the object</td>
+</tr>
+<tr>
+<td><code>ctx.read_receipt(node)</code></td>
+<td>depend on an earlier stage's <strong>receipt</strong>; this is what records an edge in a branching pipeline</td>
+<td>the receipt</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>trust_class=&quot;secret&quot;</code> is <strong>refused</strong> on every input path, so a stage can't put a secret's digest into a record. Don't route API keys or credentials through <code>ctx</code>.</p>
+<p>Reads that bypass <code>ctx</code>, such as a direct <code>open()</code> or an HTTP call, aren't recorded. That's allowed, but the receipt won't mention them. Put anything that affects the output through <code>ctx</code>.</p>
+<h3 id="55-outputs">5.5 Outputs</h3>
+<div class="code"><pre><code class="language-python">art = ctx.write(&quot;report.pdf&quot;, pdf_bytes, &quot;application/pdf&quot;, trust_class=&quot;operator-authored&quot;)
+art = ctx.write_json(&quot;answer.json&quot;, obj, trust_class=&quot;model-generated&quot;)
+</code></pre></div>
+<ul>
+<li>Files are stored under <code>artifacts/NN-&lt;stage&gt;/&lt;name&gt;</code> and digested over the stored bytes. <code>onetrace-verify</code> checks each one against its receipt (section 8).</li>
+<li><code>write_json</code> writes canonical JSON, so <strong>strings only, no JSON numbers</strong> — this is unaffected by section 5.3's int-acceptance, which is metadata (config/constants/assertions), not your own stored data. Silently rewriting a caller's data is worse than refusing it, so a number here is still refused outright; put numbers in as strings: <code>&quot;0.87&quot;</code>.</li>
+<li><code>write_json</code> needs a JSON <strong>object</strong> at the top level. Wrap a list: <code>ctx.write_json(&quot;docs.json&quot;, {&quot;docs&quot;: docs})</code>.</li>
+<li>Use <code>trust_class=&quot;model-generated&quot;</code> for anything an LLM produced. Readers rely on it.</li>
+<li><strong>State the class on every write.</strong> A <code>ctx.write</code> or <code>write_json</code> with no <code>trust_class</code> records
+<code>operator-authored</code> and lists nothing as undeclared, whatever the content is. A decorated
+stage's unstated output is recorded as <code>externally-sourced</code> and listed (16.2); a hand-written
+write is not, in this version. <code>externally-sourced</code> is the class for content that arrived from
+outside: documents, passages, a prompt that quotes them.</li>
+<li>The name is one file name, stored in the stage's own folder: no <code>/</code> or <code>\</code>, not <code>.</code> or <code>..</code>,
+no drive, and nothing Windows would store under another name (a reserved device name such as
+<code>CON</code>, <code>&lt; &gt; : &quot; | ? *</code>, a control character, a trailing space or dot, over 255 bytes). Any
+other name is refused before anything is written.</li>
+<li>Pass the returned <code>Artifact</code> to the next stage and read it there with <code>ctx.read</code> or <code>ctx.read_json</code>. That's how the chain records where each stage's inputs came from.</li>
+<li>Once the stage has ended, <code>artifact.path</code> is the file's location relative to the run folder, for example <code>artifacts/01-retrieve/retrieved.json</code>.</li>
+</ul>
+<h3 id="56-constants-and-assertions">5.6 Constants and assertions</h3>
+<div class="code"><pre><code class="language-python">ctx.constant(&quot;top_k&quot;, 4)                   # a setting the stage ran under
+ctx.assertion(&quot;hits&quot;, 4)                   # a fact the stage states about its work
+</code></pre></div>
+<ul>
+<li>Each takes a <strong>string</strong>, or a Python <strong><code>int</code></strong> (never <code>bool</code>) recorded as its own decimal string — the same rule as <code>Instrument.config</code> (section 5.3). A float is refused for the same reason: its digest isn't stable across languages.</li>
+<li><strong>A stage that makes assertions must declare at least one constant.</strong> Otherwise you'll get <code>EmissionRefused: ... assertions [...] declare no constant</code>. The rule exists so that no stated fact can depend on an unstated setting.</li>
+</ul>
+<h3 id="57-how-a-stage-ends">5.7 How a stage ends</h3>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Your function…</th>
+<th>Receipt <code>outcome</code></th>
+<th>What your caller sees</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>returns normally</td>
+<td><code>{&quot;class&quot;: &quot;ok&quot;}</code></td>
+<td>the return value</td>
+</tr>
+<tr>
+<td>raises <code>Refusal(reason, detail)</code></td>
+<td><code>{&quot;class&quot;: &quot;refused&quot;, &quot;reason&quot;: ..., &quot;detail&quot;: ...}</code></td>
+<td><code>None</code>; the run continues</td>
+</tr>
+<tr>
+<td>raises any other exception</td>
+<td><code>{&quot;class&quot;: &quot;error&quot;, &quot;status&quot;: &lt;type&gt;, &quot;body&quot;: &lt;message&gt;, &quot;origin&quot;: &lt;instrument id&gt;}</code></td>
+<td>the exception, re-raised after the receipt is written</td>
+</tr>
+</tbody>
+</table></div>
+<p>Use <code>Refusal</code> when your stage deliberately declines, for example a policy check fails or the input is empty:</p>
+<div class="code"><pre><code class="language-python">from onetrace.emit import Refusal
+
+@rec.stage(&quot;answer&quot;, instr)
+def answer(ctx, hits_artifact):
+    hits = ctx.read_json(hits_artifact)
+    if not hits:
+        raise Refusal(&quot;no supporting passages&quot;, &quot;retriever returned 0 hits&quot;)
+    ...
+</code></pre></div>
+<h3 id="58-fail-closed-or-fail-open">5.8 <code>fail-closed</code> or <code>fail-open</code></h3>
+<p>This governs what happens if a <strong>receipt can't be written</strong>, or, with <code>verify_pin</code>, if <strong>verification fails</strong>:</p>
+<ul>
+<li><strong><code>fail-closed</code>:</strong> the stage's result is discarded and <code>EmissionRefused</code> is raised. A failed verification withdraws the manifest. Use this where a result without a record must not be used, as in regulated, audited or customer-facing flows.</li>
+<li><strong><code>fail-open</code>:</strong> the result stands. The missing receipt is recorded as a <strong>gap</strong>, and coverage becomes <code>incomplete</code>. Use this where availability matters more and a visible hole in the record is acceptable.</li>
+</ul>
+<p>Either way, the record never pretends: a missing receipt is written down as missing.</p>
+<h3 id="59-boundaries-and-gaps">5.9 Boundaries and gaps</h3>
+<p>A <strong>boundary</strong> says the record can't see past a point, for example a stage that calls a third-party system you can't instrument:</p>
+<div class="code"><pre><code class="language-python">rec = Recorder(..., boundaries=[{&quot;name&quot;: &quot;answer&quot;, &quot;kind&quot;: &quot;external service&quot;,
+                                 &quot;note&quot;: &quot;vendor API; its implementation is not visible&quot;}])
+# or during the run:
+rec.boundary(&quot;answer&quot;, &quot;external service&quot;, &quot;vendor API; its implementation is not visible&quot;)
+</code></pre></div>
+<p>A <strong>gap</strong> records a receipt you know you failed to write:</p>
+<div class="code"><pre><code class="language-python">rec.gap(&quot;embed&quot;, &quot;embedding worker crashed before emitting&quot;)
+</code></pre></div>
+<p>Both must name a <strong>declared</strong> stage, and both make coverage <code>incomplete</code>. They exist so that a record can be honest about what it doesn't show.</p>
+<h3 id="510-closing-the-run-and-verifying-automatically">5.10 Closing the run, and verifying automatically</h3>
+<p><strong>Always call <code>rec.close()</code></strong> at the end, in a <code>finally:</code> block if stages may raise. It writes the final manifest, including any gaps or boundaries declared after the last receipt, and runs the verify hook if you configured one:</p>
+<div class="code"><pre><code class="language-python">from onetrace.verify_pin import VerifyPin
+
+rec = Recorder(..., policy=&quot;fail-closed&quot;, verify_pin=VerifyPin())
+try:
+    ...stages...
+finally:
+    rec.close()     # writes MANIFEST.json, then runs onetrace-verify and writes VERIFIER_CALL.json
+</code></pre></div>
+<ul>
+<li>The verifier's result goes <strong>beside</strong> the record in <code>VERIFIER_CALL.json</code> (<code>result</code>, <code>exit</code>, <code>rows</code>, and the sha256 of the verifier files that ran). It is never written into the record itself.</li>
+<li><code>VERIFIER_CALL.json</code> uses two spellings of the third outcome, on purpose. Its own <code>result</code> uses the SDK's words and exit codes: <code>PASS</code> 0, <code>FAIL</code> 1, <code>NOT RUN</code> 4. Its <code>rows</code> are <code>onetrace-verify</code>'s own, which spell it <code>NOT-RUN</code>. They mean the same thing; each spelling is its own tool's contract. An <code>onetrace-verify</code> exit 2 (<code>NOT VERIFIED</code>, or refused, section 10.4) is recorded there as <code>NOT RUN</code>, exit 4.</li>
+<li><code>VerifyPin(expect_sums=&quot;&lt;sha256&gt;&quot;)</code> pins the exact verifier build. A different verifier is not run, and the mismatch is reported.</li>
+<li><code>VerifyPin(per_receipt=True)</code> also verifies after every receipt.</li>
+<li>Under <code>fail-closed</code>, a verification failure raises and the run is not declared complete.</li>
+</ul>
+<h3 id="511-limits-concurrency-and-async">5.11 Limits, concurrency and async</h3>
+<ul>
+<li><strong>Size bound:</strong> <code>Recorder(..., max_run_bytes=500_000_000)</code>. A write that would exceed it raises <code>StoreExhausted</code>. That derives from <code>BaseException</code>, like <code>KeyboardInterrupt</code>, so an ordinary <code>except Exception</code> doesn't swallow it. A receipt naming the limit is written for the stage in progress when the bound leaves room for it. <code>max_run_bytes</code> itself is refused at construction if it is below the smallest a real receipt for your own declared stages could ever be — measured fresh from your run's own configuration each time, not a fixed number — so a bound too small to hold even that receipt is never accepted in the first place, rather than left to fail later with no receipt and no gap to explain why. A write whose own output already reached disk before the bound stopped it is cleaned up: the bound is a controlled refusal, not a crash, so no orphaned <code>*.tmp</code> file is left under <code>artifacts/</code>.</li>
+<li><strong>One process per run folder.</strong> The <code>.lock</code> file enforces it. Threads and asyncio tasks inside that process are fine, because emission is serialised inside the recorder.</li>
+<li><strong>Async stages:</strong></li>
+</ul>
+<div class="code"><pre><code class="language-python">async with rec.stage(&quot;answer&quot;, instr) as ctx:
+    hits = ctx.read_json(hits_artifact)
+    ctx.constant(&quot;model&quot;, &quot;m-1&quot;)
+    result = await call_model(hits)
+    ctx.write_json(&quot;answer.json&quot;, result, trust_class=&quot;model-generated&quot;)
+</code></pre></div>
+<hr />
+<h2 id="6-branching-pipelines-dags">6. Branching pipelines (DAGs)</h2>
+<p>If your pipeline fans out and back in, declare the approved edges between stage names, and run each instance with <code>run_node</code>:</p>
+<div class="code"><pre><code class="language-python">rec = Recorder(&quot;runs/dag-1&quot;, declared_stages=[&quot;load&quot;, &quot;normalise&quot;, &quot;merge&quot;],
+               manifest=Path(__file__), policy=&quot;fail-closed&quot;,
+               declared_edges=[{&quot;from&quot;: &quot;load&quot;, &quot;to&quot;: &quot;normalise&quot;},
+                               {&quot;from&quot;: &quot;normalise&quot;, &quot;to&quot;: &quot;merge&quot;}])
+
+def normalise(ctx, key):
+    ctx.read_receipt(&quot;load&quot;)                      # records the edge load -&gt; normalise#&lt;key&gt;
+    return ctx.write_json(f&quot;{key}.json&quot;, {&quot;k&quot;: key})
+
+def merge(ctx):
+    ctx.read_receipt(&quot;normalise#a&quot;)               # instances are named stage#instance
+    ctx.read_receipt(&quot;normalise#b&quot;)
+    return ctx.write_json(&quot;merged.json&quot;, {&quot;ok&quot;: &quot;yes&quot;})
+
+rec.run_node(&quot;load&quot;, None, instr_load, load)
+rec.run_node(&quot;normalise&quot;, &quot;a&quot;, instr_norm, normalise, &quot;a&quot;)
+rec.run_node(&quot;normalise&quot;, &quot;b&quot;, instr_norm, normalise, &quot;b&quot;)
+rec.run_node(&quot;merge&quot;, None, instr_merge, merge)
+rec.close()
+</code></pre></div>
+<ul>
+<li>Edges are <strong>observed</strong> from <code>read_receipt</code> calls and written into the manifest. Each one is checked against <code>declared_edges</code> as it happens.</li>
+<li>A bare stage name that matches several instances is refused as ambiguous. Name the instance.</li>
+<li>On a DAG, <code>onetrace localize &lt;run&gt;</code> reports the <strong>set</strong> of earliest unclean nodes, sorted, never a single &quot;first&quot; node.</li>
+<li>Linear and DAG runs are <strong>not comparable</strong> with each other: <code>diff</code> reports <code>not comparable</code>, with exit code 2.</li>
+<li><strong>Concurrent stages</strong> (two nodes racing for the same emission lock) are supported; onetrace-verify's own artifact check (section 8) accounts for the race correctly as of 0.1.1 (section 14).</li>
+</ul>
+<hr />
+<h2 id="7-what-a-run-folder-contains">7. What a run folder contains</h2>
+<div class="code"><pre><code>runs/run-a/
+├── .lock                       one-process guard (leave it)
+├── MANIFEST.json               the chain: receipt digests in order, and chain_head
+├── receipts/
+│   ├── 01-retrieve.json        one canonical JSON receipt per stage
+│   └── 02-answer.json
+├── artifacts/
+│   ├── 01-retrieve/retrieved.json
+│   └── 02-answer/answer.json
+└── VERIFIER_CALL.json          only if verify_pin was set
+</code></pre></div>
+<p>The files you pass to <code>read_external</code> stay where they are. The quickstart writes <code>corpus.json</code> into the run folder only for convenience.</p>
+<p><strong>What a run folder stores.</strong> Outputs are kept: a run folder holds each stage's outputs, which can include documents, prompts and answers. Inputs are fingerprinted, not stored: a receipt records an input's digest, length and trust class, never its bytes. So treat run folders like logs that may contain sensitive data.</p>
+<p>A receipt, abridged:</p>
+<div class="code"><pre><code class="language-json">{&quot;format&quot;: &quot;stage-receipt/0.2&quot;,
+ &quot;stage&quot;: {&quot;index&quot;: &quot;2&quot;, &quot;name&quot;: &quot;answer&quot;},
+ &quot;instrument&quot;: {&quot;id&quot;: &quot;extractive&quot;, &quot;kind&quot;: &quot;answerer&quot;, &quot;version&quot;: &quot;1.0.0&quot;,
+                &quot;config_digest&quot;: &quot;sha256:…&quot;, &quot;manifest_digest&quot;: &quot;sha256:…&quot;, &quot;rederivable&quot;: &quot;true&quot;},
+ &quot;inputs&quot;:  [{&quot;name&quot;: &quot;retrieved.json&quot;, &quot;digest&quot;: &quot;sha256:…&quot;, &quot;trust_class&quot;: &quot;operator-authored&quot;, …}],
+ &quot;outputs&quot;: [{&quot;name&quot;: &quot;answer.json&quot;, &quot;digest&quot;: &quot;sha256:…&quot;, &quot;bytes&quot;: &quot;86&quot;, …}],
+ &quot;assertions&quot;: {&quot;source&quot;: &quot;p1&quot;, &quot;constants&quot;: {&quot;method&quot;: &quot;extractive&quot;}},
+ &quot;outcome&quot;: {&quot;class&quot;: &quot;ok&quot;},
+ &quot;coverage&quot;: {&quot;completeness&quot;: &quot;complete&quot;, &quot;declared_stages&quot;: […], &quot;emitting_stages&quot;: […], &quot;boundaries&quot;: []},
+ &quot;emission&quot;: {&quot;policy&quot;: &quot;fail-closed&quot;, &quot;gaps&quot;: []},
+ &quot;anchor&quot;: {&quot;state&quot;: &quot;unanchored&quot;, &quot;reason&quot;: &quot;not anchored&quot;},
+ &quot;time&quot;: {&quot;started&quot;: &quot;…Z&quot;, &quot;ended&quot;: &quot;…Z&quot;},
+ &quot;prev&quot;: &quot;sha256:&lt;previous receipt&gt;&quot;, …}
+</code></pre></div>
+<hr />
+<h2 id="8-verifying-a-run">8. Verifying a run</h2>
+<h3 id="81-onetrace-verify">8.1 <code>onetrace-verify</code></h3>
+<div class="code"><pre><code class="language-bash">onetrace-verify runs/run-a            # a run folder, or a path to MANIFEST.json
+onetrace-verify --help                # usage
+onetrace-verify --version             # 0.1.2
+onetrace-verify --require-artifacts runs/run-a   # also FAIL if the output files can&#x27;t be checked
+onetrace-verify --json runs/run-a     # machine-readable rows and a summary, for a CI gate
+onetrace-verify --headers headers.json runs/run-a               # check OpenTimestamps anchors (15.5)
+onetrace-verify --tsa-cert tsa.pem --tsa-root root.pem runs/run-a   # check RFC 3161 anchors (15.4)
+</code></pre></div>
+<p><code>--json</code> replaces the row-by-row text with one JSON document: <code>{&quot;rows&quot;: [{&quot;result&quot;, &quot;name&quot;, &quot;detail&quot;}, ...], &quot;summary&quot;: {&quot;pass&quot;, &quot;fail&quot;, &quot;not_run&quot;, &quot;result&quot;, &quot;exit&quot;}}</code>, using the same words
+the text rows use. The exit code is the same either way: <code>--json</code> changes only how the result
+is printed, not what is checked.</p>
+<p>It prints one row per check: each receipt's own format, canonical bytes, required members, digests matching the manifest, <code>prev</code> links, stage order, coverage, the chain head, and — when it can recognise the run's own <code>artifacts/&lt;stage&gt;/&lt;output&gt;</code> layout — every output file against the digest its receipt recorded (section 8.3). It ends with a summary:</p>
+<div class="code"><pre><code>56 pass, 0 fail, 2 not-run  -&gt;  PASS
+</code></pre></div>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Exit</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>PASS: the record is consistent and unbroken</td>
+</tr>
+<tr>
+<td>1</td>
+<td>FAIL: at least one check failed, and the <code>[FAIL]</code> rows say which</td>
+</tr>
+<tr>
+<td>2</td>
+<td>NOT VERIFIED: a receipt's own format is one this verifier doesn't implement, and nothing failed (section 10.4). Also exit 2: refused, when the manifest can't be read or its chain format is unknown (refused by name, never guessed), or no manifest found.</td>
+</tr>
+</tbody>
+</table></div>
+<p>In human mode it also writes to stderr, before the rows: one summary line drawn only from the rows it computed, which reads <code>record intact: 2 stages, 2 output files checked</code>, <code>record NOT intact: &lt;the first failing row&gt;</code> (with the number of failing rows when there are several), or <code>record not verified: &lt;reason&gt;</code>. After it comes one line for each <code>FAIL</code> row, and none for a <code>NOT-RUN</code> or <code>PASS</code> row: <code>fix (&lt;row&gt;): &lt;what to do&gt;; see https://oneproof.dev/onetrace/errors.md#&lt;family&gt;</code>, where the family is the errors page's section for that kind of check: <code>verify-receipt</code>, <code>verify-chain</code>, <code>verify-artifacts</code>, <code>verify-anchor</code>, <code>verify-signature</code> or <code>verify-plan</code>. These lines change nothing else: the rows and the summary on stdout, the exit code, and <code>--json</code> (which writes nothing to stderr) are as above. <code>ONETRACE_QUIET=1</code> silences them (section 16.18).</p>
+<p><code>not-run</code> rows for a receipt's <code>originality</code> are normal (section 1). A run with anchors also gets one row per anchor in <code>anchors/</code> (15.3): a <code>FAIL</code> fails the run like any other, and a <code>NOT-RUN</code> (&quot;needs block headers&quot;, say) leaves the result as it would be without it, which a line after the summary says. A run with an anchor row also ends with one more line, what an anchor shows and doesn't: &quot;anchors show this record existed by the time the source attests; not when the run happened, that its outputs were correct, or who wrote it.&quot; Neither line is printed with <code>--json</code>; the first line's count is there, as <code>summary.records_not_run</code>. (<code>onetrace-verify</code> spells the outcome <code>NOT-RUN</code>; the SDK's own verifier, <code>python -m onetrace.sdk_verify</code>, and <code>VERIFIER_CALL.json</code>'s own <code>result</code> spell it <code>NOT RUN</code>, section 5.10.) A <code>not-run</code> row can also name <code>run: artifacts</code>, when there's no <code>artifacts/</code> directory at all, or when its layout isn't one this verifier recognises (section 8.3). A <code>not-run</code> row never turns the summary into <code>FAIL</code>, so read the rows, not just the last line, or use <code>--require-artifacts</code>. <code>python -m onetrace.sdk_verify</code> checks the output files the same way, and gives the same <code>run: artifacts</code> row (<code>NOT RUN</code>) when there are none to check; it has no <code>--require-artifacts</code>. A <code>receipt format</code> <code>not-run</code> row is different: that receipt's content was not checked, and it turns the summary into <code>NOT VERIFIED</code>, exit 2.</p>
+<p>A missing, unreadable or malformed file the manifest names — a removed receipt, a truncated write, a directory where a file should be — gives a <code>[FAIL]</code> row naming it, never a Python traceback (fixed in 0.1.1; section 14).</p>
+<h3 id="82-what-tampering-looks-like">8.2 What tampering looks like</h3>
+<p>Edit a receipt and the verifier fails it, and the chain head:</p>
+<div class="code"><pre><code>[FAIL   ] receipts/02-answer.json: digest matches the manifest
+[FAIL   ] manifest: chain head matches the last receipt
+54 pass, 2 fail, 2 not-run  -&gt;  FAIL
+</code></pre></div>
+<h3 id="83-output-files-are-checked-automatically">8.3 Output files are checked automatically</h3>
+<p>As of 0.1.1, <code>onetrace-verify</code> reads <code>artifacts/</code> itself — you no longer need a separate script. For every receipt's own recorded outputs, it looks for <code>artifacts/&lt;receipt stem&gt;/&lt;output name&gt;</code> (the layout this SDK's own <code>ctx.write</code>/<code>write_json</code> produce):</p>
+<ul>
+<li><strong>A run with a recognised <code>artifacts/</code> layout:</strong> every recorded output must be present with a matching digest, or it's a <code>[FAIL]</code> row naming the file. A receipt whose own format this verifier doesn't implement is skipped: its outputs are content it can't read.</li>
+<li><strong>A run with no <code>artifacts/</code> at all, or one whose layout this verifier doesn't recognise</strong> (an older run, or one built by hand rather than through this SDK): one <code>NOT-RUN</code> row, <code>run: artifacts</code>, naming which case it is. No file is checked. The summary can still read <code>PASS</code>, because the record itself checks out.</li>
+<li><strong>With <code>--require-artifacts</code></strong>, that <code>NOT-RUN</code> row becomes a <code>FAIL</code> and the exit code is 1. Use it whenever the files matter, for example when someone hands you a run folder, and in CI. Otherwise, deleting the whole <code>artifacts/</code> folder would leave the summary at <code>PASS</code>.</li>
+</ul>
+<div class="code"><pre><code class="language-bash">onetrace-verify runs/run-a
+</code></pre></div>
+<div class="code"><pre><code>...
+[FAIL   ] receipts/02-answer.json: output artifact &#x27;answer.json&#x27; -- missing from artifacts/
+...
+55 pass, 1 fail, 2 not-run  -&gt;  FAIL
+</code></pre></div>
+<p>Editing a file under <code>artifacts/</code> (or deleting one) now fails the verifier directly — it no longer takes a receipt edit to notice.</p>
+<hr />
+<h2 id="9-framework-integrations-langchain-llamaindex-langflow">9. Framework integrations (LangChain, LlamaIndex, Langflow)</h2>
+<p>There is no magic callback. Integration means <strong>wrapping each logical step of your chain as a stage</strong>, so that everything it reads and writes goes through <code>ctx</code>. The published source distribution includes complete, runnable examples under <code>examples/</code>: <code>langchain_adapter</code>, <code>llamaindex_adapter</code>, <code>langflow_adapter</code>, and <code>plain_python_control</code>, a framework-free baseline.</p>
+<p>The pattern, using LangChain:</p>
+<div class="code"><pre><code class="language-python">import importlib.metadata as md
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from onetrace.emit import Instrument
+
+LC = md.version(&quot;langchain-core&quot;)          # pin the real installed version
+
+@rec.stage(&quot;split&quot;, Instrument(&quot;RecursiveCharacterTextSplitter&quot;, &quot;splitter&quot;,
+                               md.version(&quot;langchain-text-splitters&quot;),
+                               {&quot;chunk_size&quot;: 900, &quot;chunk_overlap&quot;: 0}))
+def split(ctx, cleaned_artifact):
+    text = ctx.read(cleaned_artifact).decode(&quot;utf-8&quot;)
+    ctx.constant(&quot;chunk_size&quot;, 900); ctx.constant(&quot;chunk_overlap&quot;, 0)
+    chunks = RecursiveCharacterTextSplitter(chunk_size=900, chunk_overlap=0).split_text(text)
+    ctx.assertion(&quot;chunk_count&quot;, len(chunks))
+    return ctx.write_json(&quot;chunks.json&quot;, chunks)
+
+@rec.stage(&quot;answer&quot;, Instrument(&quot;my-llm&quot;, &quot;llm&quot;, &quot;model-snapshot-01&quot;,
+                                {&quot;temperature&quot;: 0}, rederivable=&quot;false&quot;,
+                                rederivable_note=&quot;hosted model; sampling not reproducible&quot;))
+def answer(ctx, prompt_artifact):
+    prompt = ctx.read(prompt_artifact).decode(&quot;utf-8&quot;)
+    ctx.constant(&quot;temperature&quot;, 0)
+    reply = llm.invoke(prompt)
+    ctx.assertion(&quot;reply_chars&quot;, len(reply))
+    return ctx.write(&quot;answer.txt&quot;, reply.encode(&quot;utf-8&quot;), &quot;text/plain&quot;, trust_class=&quot;model-generated&quot;)
+</code></pre></div>
+<p>Guidelines:</p>
+<ul>
+<li><strong>One stage per step you'd want to point at</strong> when something goes wrong: load, convert, clean, split, embed, index, retrieve, build the prompt, answer.</li>
+<li><strong>Version and configuration come from the real objects,</strong> read at run time, never typed in by hand.</li>
+<li><strong>Mark every LLM output <code>model-generated</code>,</strong> and every hosted-model stage <code>rederivable=&quot;false&quot;</code>.</li>
+<li><strong>Vector stores and embeddings are usually in memory.</strong> Write what matters as artifacts (ids, scores, the prompt) so that the next stage reads it through <code>ctx</code>.</li>
+</ul>
+<hr />
+<h2 id="10-comparing-runs">10. Comparing runs</h2>
+<h3 id="101-diff-a-stage-by-stage-ladder">10.1 <code>diff</code>: a stage-by-stage ladder</h3>
+<div class="code"><pre><code class="language-bash">onetrace diff runs/monday runs/tuesday --out reports/diff
+</code></pre></div>
+<div class="code"><pre><code>stage         baseline            candidate           verdict
+retrieve      51bd312473c4        51bd312473c4        same
+answer        35a281ec6835        9f02c1d7a4be        FIRST DIFFERENCE
+</code></pre></div>
+<p>Each stage gets exactly one of five verdicts, always about the stage's <strong>output</strong>:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Verdict</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>same</code></td>
+<td>the output digests match</td>
+</tr>
+<tr>
+<td><code>FIRST DIFFERENCE</code></td>
+<td>the first stage, in order, whose output differs</td>
+</tr>
+<tr>
+<td><code>downstream</code></td>
+<td>it differs after the first difference, so the divergence propagated</td>
+</tr>
+<tr>
+<td><code>reconverged</code></td>
+<td>it matches again after diverging</td>
+</tr>
+<tr>
+<td><code>COULD NOT CHECK</code></td>
+<td>it can't be evaluated (unknown format, a boundary, an unreadable file). <strong>This is not a pass.</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>A change in an instrument's version or config never changes a verdict by itself. It's shown as an annotation, so a <code>same</code> never hides that <em>how</em> the output was produced changed.</p>
+<h4 id="the-text-that-changed-diff---text">The text that changed: <code>diff --text</code></h4>
+<div class="code"><pre><code class="language-bash">onetrace diff runs/monday runs/tuesday --text [--stage NAME]... [--all] [--context N] [--max-lines N] [--no-color]
+</code></pre></div>
+<p>Both runs are verified first. A run that doesn't verify is refused, and no text from either run is shown. A node <em>differs</em> when anything compared differs between the runs: its outputs, its inputs, or any setting, the corpus link included. Which nodes are shown:</p>
+<ul>
+<li><strong>By default:</strong> every <code>FIRST DIFFERENCE</code> node, then every node downstream of it, in order. A downstream node whose outputs are the same is shown as one line, <code>&lt;node&gt;: outputs unchanged (reconverged)</code>, with its settings line if a setting changed, its corpus link line if the link changed, and no text.</li>
+<li><strong><code>--all</code>:</strong> also the nodes that differ but aren't downstream of a first difference, for example a stage whose settings changed while its output didn't. Each gets its settings line and no text.</li>
+<li><strong><code>--stage NAME</code>:</strong> only the named nodes. A name that matches no node is reported.</li>
+</ul>
+<p><strong>Chunk text is opt-in.</strong> A splitting stage that returns <code>ot.chunks(pairs)</code> records a chunk index: each chunk's id, document, length and digest, and no text. With <code>ot.chunks(pairs, keep_text=True)</code> (or the LangChain adapter's <code>--keep-text</code>), each chunk also keeps its text, and <code>--text</code> shows a changed chunk's text diff. The text is shown only after checking that the digest of its bytes equals the chunk's digest; otherwise it says <code>text does not match its digest; not shown</code>. Run folders store each stage's outputs, so treat them like logs that may contain sensitive data. <code>keep_text</code> adds the chunk text to them.</p>
+<p><code>--text</code> never changes a verdict or the exit code. <code>--json</code> prints the same comparison as one JSON document, <code>onetrace-textdiff/0.3</code>, whose fields and escaping are defined in <a href="textdiff-format.html">the textdiff format</a>.</p>
+<h4 id="following-a-changed-corpus-link">Following a changed corpus link</h4>
+<p>When the first difference is at a node whose corpus link changed, <code>--text</code> follows the link one hop into the two linked ingest runs, under its own heading, <code>traced into the linked ingest runs: &lt;run id&gt; -&gt; &lt;run id&gt;</code>:</p>
+<ul>
+<li><strong>They are found by chain head,</strong> never by name or path, one level down in <code>--runs-root DIR</code> (default: the folder holding the baseline).</li>
+<li><strong>Both are verified first.</strong> One that doesn't verify is named, and nothing from it is shown.</li>
+<li><strong>They are compared with the same rules,</strong> starting with a sentence such as <code>started at: load — 1 of 214 documents changed (help-centre/warranty.md); settings unchanged</code>.</li>
+<li><strong>One hop only.</strong> If the ingest runs' own corpus link changed, that is named and not followed.</li>
+<li><strong>When the trace can't be made,</strong> it says why (not found, did not verify, a side with no link) as <code>COULD NOT CHECK</code> for the trace alone.</li>
+</ul>
+<p><code>--no-follow</code> turns the trace off.</p>
+<p>The linked ingest runs' verifier calls are written beside the report, as the two runs' are, under <code>corpus/baseline/&lt;path&gt;/</code> and <code>corpus/candidate/&lt;path&gt;/</code>, where <code>&lt;path&gt;</code> is the run's folder relative to <code>--runs-root</code>. For an ingest run that doesn't verify, each call gives only its command, its exit code and the reason line, and none of the verifier's output. A run that isn't found has no calls.</p>
+<p>Without <code>--text</code>, <code>diff --follow-corpus</code> makes the same trace and prints the ingest runs' own ladder of stages and digests after the report. It never shows stored ingest text: that needs <code>--text</code>, and the two flags aren't given together. The JSON report carries it under <code>corpus_trace</code>:</p>
+<ul>
+<li><code>notes</code>: the plain lines, such as <code>trace: no corpus link recorded at &lt;node&gt;; …</code>;</li>
+<li><code>traces</code>: the entries described in <a href="textdiff-format.html#a-corpus-trace">the textdiff format</a>. A traced entry carries <code>report</code>, the ingest pair's own <code>diff</code> or <code>localize</code> report with paths relative to <code>--runs-root</code>, in place of <code>nodes</code>.</li>
+</ul>
+<p>The trace never changes a verdict or the exit code.</p>
+<h3 id="102-localize-where-it-went-wrong">10.2 <code>localize</code>: where it went wrong</h3>
+<div class="code"><pre><code class="language-bash">onetrace localize runs/tuesday                        # one run: first unclean stage
+onetrace localize runs/monday runs/tuesday --out r    # two runs: first difference and its cause
+</code></pre></div>
+<p>On one run, an unclean stage is a refusal, an error, or a failed check.</p>
+<p>On two runs, the cause names what changed at the first difference:</p>
+<ul>
+<li>the instrument;</li>
+<li>its config and constants;</li>
+<li>the <strong>corpus link</strong> a query run records with <code>ot.corpus_from</code>, by digest: <code>corpus link changed: &lt;digest&gt; -&gt; &lt;digest&gt;</code>.</li>
+</ul>
+<p><code>diff</code> annotates a changed corpus link on every node that carries one, the way it annotates a changed setting.</p>
+<p><code>localize A B --follow-corpus</code> follows a changed corpus link one hop, as <code>diff</code> does, and reports where the two linked ingest runs first differ and why, after its own report. It never shows stored ingest text (see <a href="#following-a-changed-corpus-link">following a changed corpus link</a>).</p>
+<p>The corpus link is compared on run records only. A query run's retrieval stage is a run record, so the per-document receipts of the two-root form are not compared for a corpus link.</p>
+<h3 id="103-reproduce-re-run-and-compare">10.3 <code>reproduce</code>: re-run and compare</h3>
+<p><code>reproduce</code> re-executes recorded stages and compares their outputs with the record. It needs a <strong>runner file</strong> that says how to run your code:</p>
+<div class="code"><pre><code class="language-json">{&quot;format&quot;: &quot;onetrace-runner/0.1&quot;,
+ &quot;code&quot;: &quot;pipeline.py&quot;,
+ &quot;argv&quot;: [&quot;{python}&quot;, &quot;-B&quot;, &quot;{code}&quot;, &quot;{out}&quot;],
+ &quot;cwd&quot;: &quot;{code_dir}&quot;,
+ &quot;timeout_seconds&quot;: &quot;600&quot;}
+</code></pre></div>
+<div class="code"><pre><code class="language-bash">onetrace reproduce runs/monday --runner runner.json --out reports/repro          # whole run
+</code></pre></div>
+<ul>
+<li>
+<p><code>{python}</code> is the interpreter that is running <code>onetrace</code>. Run <code>reproduce</code> from the virtual environment that has your pipeline's dependencies installed.</p>
+</li>
+<li>
+<p><code>{out}</code> is a fresh folder that <code>reproduce</code> chooses. Any further arguments your code needs, such as a run id, go in <code>argv</code> as plain strings.</p>
+</li>
+<li>
+<p><strong>Re-running a single stage is not available in 0.1.x.</strong> <code>onetrace reproduce &lt;run&gt; &lt;stage&gt;</code> is accepted, but it always reports that stage as <code>COULD NOT CHECK</code> (exit 4), naming the reason. Reproduce the whole run instead.</p>
+</li>
+<li>
+<p>The code's sha256 must equal the recorded <code>manifest_digest</code>, and the instrument identity must match exactly. Otherwise the result is <code>COULD NOT CHECK</code>, never &quot;close enough&quot;.</p>
+</li>
+<li>
+<p>Each stage is reported as <code>REPRODUCED</code>, <code>DIVERGED</code> or <code>COULD NOT CHECK</code>.</p>
+</li>
+<li>
+<p>Stages marked <code>rederivable=&quot;false&quot;</code> are expected not to reproduce.</p>
+</li>
+</ul>
+<h3 id="104-exit-codes-and-reports">10.4 Exit codes and reports</h3>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Command</th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>diff</code>, two-run <code>localize</code></td>
+<td>identical</td>
+<td>diverged</td>
+<td>not comparable</td>
+<td>refused</td>
+<td>could not check</td>
+</tr>
+<tr>
+<td>one-run <code>localize</code></td>
+<td>clean</td>
+<td>located</td>
+<td>n/a</td>
+<td>refused</td>
+<td>could not check</td>
+</tr>
+<tr>
+<td><code>reproduce</code></td>
+<td>all REPRODUCED</td>
+<td>any DIVERGED</td>
+<td>n/a</td>
+<td>refused</td>
+<td>any COULD NOT CHECK (none diverged)</td>
+</tr>
+<tr>
+<td><code>onetrace-verify</code></td>
+<td><code>PASS</code></td>
+<td><code>FAIL</code></td>
+<td><code>NOT VERIFIED</code>, or refused (below)</td>
+<td>n/a</td>
+<td>n/a</td>
+</tr>
+</tbody>
+</table></div>
+<p>For <code>onetrace-verify</code>, exit 2 is never a pass and never a fail. It has three causes:</p>
+<ul>
+<li>a receipt whose own format this verifier does not implement, with no check failing anywhere. The summary line reads <code>NOT VERIFIED (receipt format not implemented: N receipt(s))</code>.</li>
+<li>a manifest whose own chain format it does not implement, or that it cannot read. This is reported as a <code>[REFUSED]</code> line before any row.</li>
+<li>a usage error, such as a missing path.</li>
+</ul>
+<p>A <code>FAIL</code> anywhere always outranks <code>NOT VERIFIED</code>, giving exit 1. With <code>--json</code>, the exit code is the same, and <code>summary.result</code> reads <code>NOT VERIFIED</code> or <code>REFUSED</code> for the first two causes.</p>
+<p>Every command writes a JSON report and a text report into <code>--out</code> (default <code>onetrace-report/</code>), plus the verifier's rows for each input run. Use <code>--quiet</code> to skip printing.</p>
+<hr />
+<h3 id="105-seeing-what-changed">10.5 Seeing what changed</h3>
+<p>The repository's warranty example is a help-centre corpus in two versions, where one sentence in <code>warranty.md</code> says &quot;twelve months&quot; in v1 and &quot;six months&quot; in v2. Each version is ingested (<code>load</code>, <code>split</code> with <code>ot.chunks(..., keep_text=True)</code>, <code>index</code>), and a query pipeline (<code>retrieve</code>, <code>prompt</code>, <code>answer</code>) runs over each, linked to its own ingest run with <code>ot.corpus_from</code>. The four runs are in <code>tests/fixtures/warranty/</code>. From that folder:</p>
+<div class="code"><pre><code class="language-bash">onetrace diff runs/query-v1 runs/query-v2 --text --no-color
+</code></pre></div>
+<p>prints this before the ladder report (this is the test suite's committed transcript, byte for byte):</p>
+<div class="code"><pre><code class="language-text">first difference: retrieve — output text changed; settings unchanged; corpus link changed; input help_centre changed
+
+== retrieve (FIRST DIFFERENCE)
+settings: none changed
+corpus link changed: 67ffdb182dfb (ingest-v1) -&gt; 9f88f639a4a5 (ingest-v2)
+input help_centre (operator-authored) changed: cec075f03ffe -&gt; 1e4f8fbeaa98; content not stored
+--- return.json
+hits: 0 entered, 0 left, 0 moved; 1 changed; 1 unchanged
+~ hit help-centre/warranty.md#0001 #1 changed: b500694d27e1 -&gt; 5ceb7e1a7fba
+  - The warranty covers twelve months from the date of purchase.
+  + The warranty covers six months from the date of purchase.
+  ~ The warranty covers [-twelve-]{+six+} months from the date of purchase.
+    It covers manufacturing faults, not accidental damage.
+
+== prompt (downstream)
+settings: none changed
+--- return.json
+- &quot;Answer from these passages only.\n- The warranty covers twelve months from the date of purchase.\nIt covers manufacturing faults, not accidental damage.\n- You can return an unused item within 30 days of delivery.\nRefunds go back to the original payment method within 5 working days.\nQuestion: How long does the warranty cover?\n&quot;
++ &quot;Answer from these passages only.\n- The warranty covers six months from the date of purchase.\nIt covers manufacturing faults, not accidental damage.\n- You can return an unused item within 30 days of delivery.\nRefunds go back to the original payment method within 5 working days.\nQuestion: How long does the warranty cover?\n&quot;
+~ &quot;Answer from these passages only.\n- The warranty covers [-twelve-]{+six+} months from the date of purchase.\nIt covers manufacturing faults, not accidental damage.\n- You can return an unused item within 30 days of delivery.\nRefunds go back to the original payment method within 5 working days.\nQuestion: How long does the warranty cover?\n&quot;
+
+== answer (downstream)
+settings: none changed
+--- return.json
+- &quot;The warranty covers twelve months.\n&quot;
++ &quot;The warranty covers six months.\n&quot;
+~ &quot;The warranty covers [-twelve-]{+six+} months.\n&quot;
+
+traced into the linked ingest runs: ingest-v1 -&gt; ingest-v2
+started at: load — 1 of 3 documents changed (help-centre/warranty.md); settings unchanged
+
+== load (FIRST DIFFERENCE)
+settings: none changed
+input help_centre (operator-authored) changed: 5ae58f3b8452 -&gt; bf96196b62ce; content not stored
+--- return.json
+    },
+    {
+      &quot;id&quot;: &quot;help-centre/warranty.md&quot;,
+-     &quot;text&quot;: &quot;# Warranty\n\nThe warranty covers twelve months from the date of purchase.\nIt covers manufacturing faults, not accidental damage.\n&quot;
++     &quot;text&quot;: &quot;# Warranty\n\nThe warranty covers six months from the date of purchase.\nIt covers manufacturing faults, not accidental damage.\n&quot;
+~     &quot;text&quot;: &quot;# Warranty\n\nThe warranty covers [-twelve-]{+six+} months from the date of purchase.\nIt covers manufacturing faults, not accidental damage.\n&quot;
+    }
+  ]
+
+== split (downstream)
+settings: none changed
+--- return.json
+chunks: 1 changed, 0 added, 0 removed; 5 unchanged
+~ chunk help-centre/warranty.md#0001 changed:
+  - The warranty covers twelve months from the date of purchase.
+  + The warranty covers six months from the date of purchase.
+  ~ The warranty covers [-twelve-]{+six+} months from the date of purchase.
+    It covers manufacturing faults, not accidental damage.
+
+== index (downstream)
+settings: none changed
+--- return.json
+        &quot;not&quot;,
+        &quot;of&quot;,
+        &quot;purchase&quot;,
++       &quot;six&quot;,
+        &quot;the&quot;,
+-       &quot;twelve&quot;,
+        &quot;warranty&quot;
+      ]
+    }
+</code></pre></div>
+<p>Reading it from the top:</p>
+<ul>
+<li><strong>The first line is a sentence:</strong> where the runs first differ, whether its output text changed, whether any setting did, and which inputs did.</li>
+<li><strong><code>retrieve</code> is the first difference.</strong> No setting changed, but its corpus link did, on a line of its own: the query runs read different ingest runs, named by run id once the trace reached them. Its input <code>help_centre</code> changed too. An input's name is its parameter's name, so it is spelled as Python spells it; <code>help-centre/warranty.md</code> is a document's path, which keeps its own spelling. Inputs are fingerprinted, so only their digests are shown.</li>
+<li><strong>The changed words are marked</strong> <code>[-removed-]{+added+}</code> on a <code>~</code> line under each changed line pair, here <code>twelve</code> to <code>six</code>. A chunk index and a hits list are compared entry by entry, by id.</li>
+<li><strong><code>prompt</code> and <code>answer</code> change as a result:</strong> they are downstream of <code>retrieve</code>, and their settings did not change.</li>
+<li><strong>The trace follows the changed corpus link one hop</strong> into the two ingest runs, verified first, and compares them the same way. It starts at <code>load</code>, where one of three documents changed, and shows the sentence changing in <code>warranty.md</code> and then in its chunk.</li>
+</ul>
+<p>The same comparison is available as one JSON document with <code>--json</code>. Its fields are described in <a href="textdiff-format.html">the textdiff format</a>, and its JSON Schema is <code>docs/textdiff-format.schema.json</code>.</p>
+<p>What this does not claim:</p>
+<ul>
+<li><em>The text diff shows what recorded outputs contained. It does not say why they changed, or that either version was correct.</em></li>
+<li><em>Inputs are fingerprinted, so their content is not shown.</em></li>
+</ul>
+<h2 id="11-using-onetrace-in-ci">11. Using onetrace in CI</h2>
+<div class="code"><pre><code class="language-yaml"># example: fail the build if the pipeline&#x27;s record is broken or its output drifted
+- run: python pipeline.py runs/ci run-ci-${{ github.run_id }}
+- run: onetrace-verify --require-artifacts runs/ci
+- run: onetrace diff baselines/golden runs/ci --out reports/diff   # exit 1 means the output changed
+</code></pre></div>
+<p>Keep a known-good run as <code>baselines/golden</code>. When a change is intended, regenerate the baseline in the same pull request, so the diff is reviewed rather than hidden. <code>onetrace-verify --require-artifacts</code> checks your output files too, and fails if they can't be checked (section 8.3), so no separate script is needed.</p>
+<hr />
+<h2 id="12-common-errors-and-what-they-mean">12. Common errors and what they mean</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Message (abridged)</th>
+<th>Cause</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>emission policy must be declared as one of ('fail-closed', 'fail-open')</code></td>
+<td>missing or misspelled <code>policy</code></td>
+<td>pass one of the two</td>
+</tr>
+<tr>
+<td><code>... already holds a run; a record is never overwritten</code></td>
+<td>the output folder holds a finished run (<code>close()</code> releases <code>.lock</code>, so reopening it reads as this, not as a lock conflict)</td>
+<td>use a new folder per run</td>
+</tr>
+<tr>
+<td><code>another process already holds this run folder</code></td>
+<td>a second process genuinely still emitting into that folder, or a stale <code>.lock</code> left by a process that crashed before calling <code>close()</code></td>
+<td>one process per folder, and a fresh folder per run</td>
+</tr>
+<tr>
+<td><code>stage 'X' is not the next declared stage (expected Y)</code></td>
+<td>stages ran out of declared order</td>
+<td>call them in the declared order, or fix <code>declared_stages</code></td>
+</tr>
+<tr>
+<td><code>version 'latest' does not pin a build</code></td>
+<td>an unpinned instrument version</td>
+<td>use the exact library version or model snapshot</td>
+</tr>
+<tr>
+<td><code>... is a bool, not an accepted metadata value</code></td>
+<td><code>True</code>/<code>False</code> passed to a config, constant or assertion</td>
+<td>use a string (<code>&quot;true&quot;</code>) or an int, not a bool</td>
+</tr>
+<tr>
+<td><code>a float (...) is refused -- its digest is not stable across languages</code></td>
+<td>a float in a config, constant or assertion</td>
+<td>convert it to a string, or (for a whole-number value) an int</td>
+</tr>
+<tr>
+<td><code>JSON number at $.… : use a decimal string</code> (<code>write_json</code> only)</td>
+<td>a number in a <code>write_json</code> payload</td>
+<td>convert it to a string: <code>str(x)</code></td>
+</tr>
+<tr>
+<td><code>write_json needs a JSON object at the top level</code></td>
+<td>a list or a string passed to <code>write_json</code></td>
+<td>wrap it in an object</td>
+</tr>
+<tr>
+<td><code>assertions [...] declare no constant</code></td>
+<td>assertions with no <code>ctx.constant</code> in the stage</td>
+<td>declare the constants the stage ran under</td>
+</tr>
+<tr>
+<td><code>trust class 'x' is not one of (...)</code></td>
+<td>a wrong trust class</td>
+<td>use <code>operator-authored</code>, <code>model-generated</code> or <code>externally-sourced</code></td>
+</tr>
+<tr>
+<td>input refused as <code>secret</code></td>
+<td><code>trust_class=&quot;secret&quot;</code></td>
+<td>keep secrets out of the record entirely</td>
+</tr>
+<tr>
+<td><code>StoreExhausted</code></td>
+<td><code>max_run_bytes</code> reached</td>
+<td>raise the bound, or write less</td>
+</tr>
+<tr>
+<td><code>max_run_bytes=... is below ..., the smallest a real receipt for this run's own declared stages could ever be</code></td>
+<td>the bound was set below what even one error receipt needs, measured from your own run at construction</td>
+<td>raise the bound to at least the number named</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="13-api-summary">13. API summary</h2>
+<div class="code"><pre><code class="language-python">import onetrace
+onetrace.__version__                         # &quot;0.1.2&quot;
+onetrace.digest(path_or_bytes) -&gt; &quot;sha256:&lt;hex&gt;&quot;
+
+from onetrace.emit import (Recorder, Instrument, Refusal,
+                           EmissionRefused, StoreExhausted, current_run, current_stage)
+from onetrace.verify_pin import VerifyPin
+
+Recorder(out_dir, declared_stages, manifest, policy, anchor_reason=None, run_id=None,
+         topology=False, declared_edges=None, boundaries=None, instruments=None,
+         verify_pin=None, max_run_bytes=None)
+  .stage(name, instrument=None, instance=None)        # decorator, or `async with`
+  .run_stage(name, instrument, fn, *args, **kw)
+  .run_node(name, instance, instrument, fn, *args, **kw)
+  .boundary(name, kind, note=None)
+  .gap(stage, reason, kind=&quot;unwritten receipt&quot;)
+  .close()
+  .run_id                                             # the id in use
+
+Instrument(id, kind, version, config, rederivable=&quot;true&quot;, rederivable_note=None)
+
+ctx (StageContext):
+  .read_external(path, media_type, name=None, trust_class=&quot;externally-sourced&quot;) -&gt; bytes
+  .read_memory(data, media_type, name, trust_class=&quot;externally-sourced&quot;) -&gt; bytes
+  .reference(path, media_type, name=None, trust_class=&quot;externally-sourced&quot;, digest=None) -&gt; Artifact
+  .read(artifact) -&gt; bytes          .read_json(artifact) -&gt; object
+  .read_receipt(node) -&gt; dict
+  .write(name, data, media_type, trust_class=&quot;operator-authored&quot;) -&gt; Artifact
+  .write_json(name, obj, trust_class=&quot;operator-authored&quot;) -&gt; Artifact
+  .constant(key, value)             .assertion(key, value)   # value: str, or int (never bool/float)
+  .corpus_manifest(digest, member=None, preimage=None, proof=None)
+
+Refusal(reason, detail=None)        # raise inside a stage to decline
+
+VerifyPin(verifier=None, expect_sums=None, per_receipt=False)
+</code></pre></div>
+<p>Commands: <code>onetrace-verify [--require-artifacts] [--json] [--headers FILE] [--tsa-cert FILE --tsa-root FILE] &lt;run&gt;</code>, <code>onetrace anchor &lt;run&gt; --source rfc3161|opentimestamps</code> (section 15), <code>onetrace diff A B</code>, <code>onetrace localize A [B]</code>, <code>onetrace reproduce &lt;run&gt; [stage] --runner R</code>. The common options are <code>--out</code>, <code>--quiet</code>, <code>--stages</code> and <code>--verifier</code>. <code>onetrace-verify -h</code>/<code>--help</code>/<code>--version</code> print usage and the version and exit 0.</p>
+<hr />
+<h2 id="14-known-limitations">14. Known limitations</h2>
+<ul>
+<li>Records are <strong>hash-chained</strong>; signing (section 17) and anchoring (section 15) are optional. Without them, the chain alone does not show who wrote a record. To show a record existed by a given time, anchor its chain head (section 15); otherwise keep the chain head somewhere independent.</li>
+<li>Framework &quot;adapters&quot; are worked examples in the source distribution, not importable modules.</li>
+<li>The format is version 0 and may change before version 1. Every record carries its format version. The manifest's own chain format is checked, and an unknown one is refused by name, never guessed. <strong>A receipt's own format was not checked in 0.1.1</strong> (0.1.0 behaved the same): only its presence was checked, not its value. <strong>From 0.1.2 it is checked.</strong> A missing format, one that is not a string, or one that is not a <code>stage-receipt/&lt;major&gt;.&lt;minor&gt;</code> label is a <code>FAIL</code>. A version this verifier doesn't implement (a major other than 0, or a minor that isn't ASCII decimal digits) gets one <code>NOT-RUN</code> row naming it: that receipt's digest against the manifest and its chain link are still checked, but none of its content is (canonical form, fields, originality, output files). The summary then reads <code>NOT VERIFIED (receipt format not implemented: N receipt(s))</code> and the exit code is 2, unless a check failed anywhere, which gives <code>FAIL</code> and exit 1 (section 10.4).</li>
+<li><code>onetrace-verify</code>'s artifact check only applies when it can recognise a run's own <code>artifacts/&lt;stage&gt;/&lt;output&gt;</code> layout. A run built by hand, or with a different layout, reads <code>NOT-RUN</code> for its files (section 8.3). Receipts don't record where an output file is stored, so the check depends on this SDK's folder convention; a later format version will record the path.</li>
+<li><code>reproduce</code> re-runs whole runs only (section 10.3).</li>
+<li>Licence: Apache-2.0.</li>
+</ul>
+<h3 id="fixed-since-010--if-you-have-run-folders-from-010">Fixed since 0.1.0 — if you have run folders from 0.1.0</h3>
+<ul>
+<li><strong><code>onetrace-verify</code> did not check <code>artifacts/</code> files at all</strong> in 0.1.0; as of 0.1.1 it does (section 8.3). This makes the verifier <strong>stricter</strong>, not looser: a run whose output files were edited or deleted after the fact, which passed under 0.1.0, now correctly fails.</li>
+<li><strong>A concurrent pipeline's output files could land under the wrong numbered folder</strong> in 0.1.0: <code>ctx.write</code>'s target directory was chosen from a stage's provisional position, before the real one was decided under the lock, and the two could disagree once two stages genuinely raced. The receipts themselves were never affected — only where the output <em>files</em> ended up on disk. <strong>If you have run folders emitted concurrently by 0.1.0</strong>, re-verifying them under 0.1.1 may now show <code>[FAIL]</code> rows naming misplaced output files that 0.1.0's own verifier could not see. This is 0.1.1 correctly reporting a real, pre-existing mismatch, not a new defect in the run itself.</li>
+<li><strong><code>onetrace-verify -h</code>/<code>--help</code> were previously treated as a path</strong>, and a run with a missing or malformed receipt file made it stop with a Python traceback instead of a clean <code>[FAIL]</code> row. Both are fixed in 0.1.1: usage/version print and exit 0; any file problem the manifest names gives a <code>[FAIL]</code> row (or, for the manifest itself, <code>[REFUSED]</code>), never a traceback.</li>
+<li><strong><code>reproduce</code> could not run your code from a virtual environment on Linux or macOS.</strong> <code>{python}</code> resolved the venv's interpreter link to the system Python, which doesn't have your packages, so every stage read <code>COULD NOT CHECK</code>. Fixed in 0.1.1: <code>{python}</code> is the interpreter running <code>onetrace</code>, exactly as invoked.</li>
+<li><strong>A config, constant or assertion value had to be a string</strong>, including numbers (<code>&quot;3&quot;</code>, not <code>3</code>) — a JSON number anywhere in a receipt was refused outright. As of 0.1.1, a Python <code>int</code> (never <code>bool</code>) is accepted directly and recorded as its own decimal string (section 5.3). <code>write_json</code> payloads are unaffected: a number there is still refused, now with a clearer message naming the output.</li>
+</ul>
+<h2 id="15-anchoring-a-run">15. Anchoring a run</h2>
+<p><code>onetrace.anchor.add_anchor(run_dir, record)</code> stores each anchor as its own file, <code>anchors/&lt;n&gt;.json</code>, beside the run's receipts. The writer holds <code>anchors/</code> open while it links the record in and reads it back, and it reports a record stored only when it has confirmed that the record is there, in this run's folder, with the bytes it wrote. If it can't confirm that, it says so (&quot;stored as N.json; could not confirm it landed in this run&quot;), and you should check the folder before relying on it. It never reports a record stored that it hasn't confirmed.</p>
+<h3 id="151-run-folders-on-a-network-share">15.1 Run folders on a network share</h3>
+<ul>
+<li><strong>An SMB share of an NTFS volume (Windows):</strong> anchors are stored and confirmed. This was measured through the loopback admin share (<code>\\localhost\C$</code>). Windows can't open a file by its id over SMB, so the writer opens the stored name relative to the directory it holds. Over SMB the server resolves that &quot;relative&quot; open by path; what keeps it safe is that the writer then checks the file it opened is the file it wrote, by its file id.</li>
+<li><strong>The limit over a share.</strong> Over a network share, someone who can write to the run folder on the server during the write can make the record land in another run. The writer then reports that nothing is claimed, and the stray record reads FAIL there. On a local disk this can't happen. To anchor a run folder that others can write to, anchor a local copy of it.</li>
+<li><strong>A ReFS volume, local or shared:</strong> not measured. A record there may not be confirmed: the writer refuses to confirm a file whose id is wider than 64 bits, which ReFS can use.</li>
+<li><strong>A share without hard links</strong> (for example WSL's <code>\\wsl.localhost\...</code> share): the record is refused before anything is claimed, because the writer needs a hard link so that no reader ever sees a partial record.</li>
+<li><strong>Other SMB servers</strong> (for example Samba) haven't been measured. If the writer can't confirm a record there, it says &quot;not confirmed&quot;, never &quot;stored&quot;.</li>
+</ul>
+<h3 id="152-someone-else-writing-in-the-run-folder-at-the-same-time">15.2 Someone else writing in the run folder at the same time</h3>
+<p>The writer links the file it wrote itself, not whatever is at the temporary file's name. On Windows the link is made from the file's own handle, and while the writer holds it, the temporary file can't be renamed away. On Linux the link is made through <code>/proc/self/fd</code>.</p>
+<p>On Windows, someone can make the stored record a reparse point after it is written, which keeps the file's id. The verifier then reads the record as FAIL. If the reparse point is set before the writer reads the record back, the writer says &quot;stored as N.json; could not confirm…&quot;, naming the reparse point: it doesn't report that record stored. If it is set after the read-back, the writer reports the record stored, and only the verifier's FAIL shows it.</p>
+<p>On a system without <code>/proc/self/fd</code> (macOS, for example), the temporary file is linked by its name. Someone with write access to the run folder during the write can then put a copy in its place. The writer detects this and refuses with &quot;nothing is claimed&quot;, but the copy stays in <code>anchors/</code>. This behaviour was measured on Linux with the <code>/proc</code> route turned off; macOS itself hasn't been measured. <strong>Anchor a run folder that nobody else is writing to.</strong></p>
+<h3 id="153-what-the-verifier-reports-for-an-anchor">15.3 What the verifier reports for an anchor</h3>
+<p>Each file in <code>anchors/</code> gets one row, beside the receipts' own rows. It reads PASS, FAIL or NOT-RUN, with its reason:</p>
+<ul>
+<li><strong>PASS:</strong> the proof is valid, it commits to this run's chain head, and it comes from the source you pinned.</li>
+<li><strong>FAIL:</strong> something is shown to be wrong. The verifier's result is then FAIL.</li>
+<li><strong>NOT-RUN:</strong> a check that can't be computed here. It is never a pass, and it leaves the verifier's result as it would be without the anchor. The reasons are:
+<ul>
+<li>&quot;needs block headers&quot;: an OpenTimestamps proof, with no header file for its block;</li>
+<li>&quot;pending: not yet in a block&quot;: an OpenTimestamps proof the calendar hasn't put in a block yet;</li>
+<li>an operation or attestation this verifier can't compute, named;</li>
+<li>a <code>method</code> this verifier doesn't implement, named;</li>
+<li>without <code>onetrace-verify[crypto]</code>, the install line.</li>
+</ul>
+</li>
+</ul>
+<p><strong>The order of the checks is fixed.</strong> The record's structure, its size and nesting caps, and its binding to this run's chain head always come first, with or without the extra and whatever the method. A failure there is FAIL. So a malformed record, or one for another run, is never shown as NOT-RUN.</p>
+<p><strong>The record's format is <code>stage-receipt-anchor/0.1</code>.</strong> A record written as <code>onetrace-anchor/0.1</code>, the name before 0.2.0, is FAIL, and the row's <code>fix:</code> names the new one.</p>
+<p><strong><code>asserted_time</code></strong> is the time the proof attests:</p>
+<ul>
+<li>it is <code>null</code> while the proof attests no time yet (a pending OpenTimestamps proof), and only then;</li>
+<li><code>null</code> beside a proof that attests a time is FAIL, and so is a time beside a proof that attests none;</li>
+<li>any RFC 3339 time with <code>Z</code> or a UTC offset is accepted, and times are compared as instants: <code>2024-09-22T12:13:20+02:00</code> and <code>2024-09-22T10:13:20Z</code> are the same time.</li>
+</ul>
+<p><strong>onetrace's own record shape.</strong> The approved −01 text leaves these open; this is what onetrace writes and accepts:</p>
+<ul>
+<li><strong><code>source</code></strong> is <code>{&quot;tsa_certificate_sha256&quot;: &quot;&lt;64 lowercase hex&gt;&quot;}</code> for <code>rfc3161</code>, and <code>{&quot;calendars&quot;: [&quot;https://…&quot;, …]}</code> (a non-empty list) for <code>opentimestamps</code>. For a method it doesn't implement, the verifier doesn't read <code>source</code>.</li>
+<li><strong>Strictness:</strong>
+<ul>
+<li>a member the record format doesn't define is FAIL;</li>
+<li>a file in <code>anchors/</code> that isn't named <code>&lt;n&gt;.json</code> (n from 1, no leading zero, lower case) is FAIL;</li>
+<li>an <code>anchors/</code> that is a link (a symlink or a junction) is FAIL, and nothing in it is read.</li>
+</ul>
+</li>
+</ul>
+<h3 id="154-anchoring-with-rfc-3161-a-time-stamp-authority">15.4 Anchoring with RFC 3161 (a time-stamp authority)</h3>
+<p>An RFC 3161 time-stamp service (TSA) is the method to use where no outside calendar can be reached: its answer is checked against the service's certificate with no network call. With no outside access, point <code>--tsa-url</code> at a time-stamp service you run yourself and pin its certificate; onetrace has none built in. It needs the <code>[crypto]</code> extra (15.6).</p>
+<div class="code"><pre><code>onetrace anchor runs/&lt;run_id&gt; --source rfc3161 --tsa-url https://tsa.example/tsr \
+    --tsa-cert tsa.pem --tsa-root root.pem
+</code></pre></div>
+<ul>
+<li>The request is a time-stamp query over the chain head: SHA-256 over its 32 raw bytes, with a nonce. This is the only onetrace command that contacts a network, and only when you run it.</li>
+<li>Before anything is stored, the TSA's answer is checked the way the verifier will check it, against the certificate and root you pinned. An answer that isn't granted, carries another nonce, is for another chain head, or doesn't verify is refused, with nothing stored and a <code>fix:</code> line.</li>
+<li>The record keeps the TSA's answer byte for byte, names the pinned certificate by its sha256, and carries the token's own time as <code>asserted_time</code>.</li>
+<li>Exit status: 0 stored, 1 refused (nothing stored), 2 a usage error (nothing asked of any source), 3 stored but not confirmed (15.1, 15.2). For <code>--upgrade</code>, 0 also when every upgrade is already stored and nothing is still pending (it names the record that holds it, and stores nothing).</li>
+</ul>
+<p>To check the anchor, pin the same certificate and root:</p>
+<div class="code"><pre><code>onetrace-verify runs/&lt;run_id&gt; --tsa-cert tsa.pem --tsa-root root.pem
+</code></pre></div>
+<p>Without them, the row reads NOT-RUN: &quot;needs the TSA certificate and root you trust&quot;. Some TSAs built on OpenSSL send their certificates in an order the parser refuses. The verifier puts only that set in order (it is not covered by the TSA's signature), and the row says so: &quot;certificate set re-ordered, unsigned; signature unaffected&quot;.</p>
+<h3 id="155-anchoring-with-opentimestamps-public-calendars">15.5 Anchoring with OpenTimestamps (public calendars)</h3>
+<p>OpenTimestamps is public and free. A proof is first pending, then, after some hours, completed in a Bitcoin block. It needs no extra to write.</p>
+<div class="code"><pre><code>onetrace anchor runs/&lt;run_id&gt; --source opentimestamps \
+    --calendar https://a.pool.opentimestamps.org --calendar https://b.pool.opentimestamps.org
+</code></pre></div>
+<ul>
+<li>
+<p>A random nonce is added to the chain head before it is hashed and sent, so a calendar never sees the chain head itself. No calendar is built in.</p>
+</li>
+<li>
+<p>The pending record reads NOT-RUN, &quot;pending: not yet in a block&quot;.</p>
+</li>
+<li>
+<p>Later, complete it:</p>
+<div class="code"><pre><code>onetrace anchor runs/&lt;run_id&gt; --source opentimestamps --upgrade --headers headers.json
+</code></pre></div>
+<p>The completed proof is stored as a new record; the pending one is kept, since a record is never rewritten. Its <code>asserted_time</code> is the block's time, from your header file. You learn which block to fetch only once a calendar has completed the proof: if that block isn't in your header file yet, <code>--upgrade</code> stores nothing and names its height. Add that block's header and run it again. Every upgrade is checked before any is stored, so a refusal stores nothing. An upgrade already stored is named and not stored again; that exits 0 only when no proof is still pending.</p>
+</li>
+<li>
+<p>A header file is a JSON object mapping each block height (decimal) to its 80-byte header as 160 lowercase hex characters. It is your trust (see <code>non-claims.md</code>).</p>
+</li>
+<li>
+<p>To check a completed anchor:</p>
+<div class="code"><pre><code>onetrace-verify runs/&lt;run_id&gt; --headers headers.json
+</code></pre></div>
+<p>Without a header file, the row reads NOT-RUN, &quot;needs block headers&quot;. The block's time is Bitcoin's own and can be up to two hours off: Bitcoin's own consensus rule allows a block's timestamp that much leeway. So an <code>asserted_time</code> within two hours of it agrees.</p>
+</li>
+</ul>
+<p><code>onetrace diff</code> and <code>onetrace localize</code> show each run's anchors as an annotation (<code>anchoring [side]: …</code>). An anchor never changes a stage's verdict or the exit status.</p>
+<h3 id="156-the-crypto-extra-pinned">15.6 The <code>[crypto]</code> extra, pinned</h3>
+<p>Anchor checks, and RFC 3161 anchoring, need one extra: <code>pip install &quot;onetrace-verify[crypto]&quot;</code> (or <code>onetrace[crypto]</code>). Its dependencies are pinned exactly, and <code>requirements-crypto.txt</code> beside each <code>pyproject.toml</code> lists every file of each by its sha256. For a hash-checked install:</p>
+<div class="code"><pre><code>pip install --require-hashes -r requirements-crypto.txt
+pip install --no-deps onetrace-verify
+</code></pre></div>
+<p>Without the extra, each anchor still has its structure, size limits and chain-head binding checked; a failure there is FAIL, and only then does it read NOT-RUN, &quot;install onetrace-verify[crypto] to check anchors&quot;.</p>
+<h2 id="16-decorators">16. Decorators</h2>
+<p><code>@ot.run</code> and <code>@ot.stage</code> record a pipeline from two decorators, over the same Recorder described
+above. This section grows with them; what is documented here is what is built.</p>
+<h3 id="161-what-a-decorated-stage-stores">16.1 What a decorated stage stores</h3>
+<p>Each call of a decorated stage is one node. Its arguments are recorded as inputs, named by
+parameter. Its return value is stored as the node's output artifact, so a later comparison can
+show what changed in it, not only that it changed:</p>
+<ul>
+<li><strong><code>bytes</code></strong> (or <code>bytearray</code>) are stored exactly as returned, as <code>return.bin</code>, media type
+<code>application/octet-stream</code>.</li>
+<li><strong>Any other value</strong> is stored as <code>return.json</code>, media type <code>application/json</code>, in the decorated
+values' encoding: RFC 8785 JSON, with numbers allowed (floats in their shortest round-trip form,
+integers up to 2^53 - 1), keys in a fixed order and no whitespace. This is not <code>ctx.write_json</code>'s
+form, which refuses numbers: the two encodings are kept apart on purpose.</li>
+<li><strong>A value neither covers</strong> (an object with no registered encoder) stops the stage with
+<code>UnencodableValue</code>, naming the stage, the parameter and the type. It is never stored as
+<code>repr()</code>.</li>
+</ul>
+<p>An argument that is an earlier stage's return value, passed on unchanged, is recorded as an edge
+from that stage (<code>receipt:&lt;stage&gt;</code>), not as a second copy of the value.</p>
+<h3 id="162-fields-you-didnt-state">16.2 Fields you didn't state</h3>
+<p>Three fields say what a value means, and the decorators never guess them:</p>
+<ul>
+<li><strong><code>trust=</code></strong>, the trust class of the values a stage records (its arguments and its <code>files=</code>).
+A stage's own <code>trust=</code> applies; otherwise its run's <code>trust=</code>. With neither, the values are
+recorded as <code>externally-sourced</code>, the most cautious class, and the stage lists <code>&quot;trust&quot;</code> in
+<code>assertions.undeclared</code>. A stage whose only inputs are earlier stages' return values records no
+value under a trust class, so it lists nothing for it. The run's own arguments (the <code>intake</code>
+stage) follow the run's <code>trust=</code> the same way.</li>
+<li><strong><code>rederivable=</code></strong>, whether the stage's output can be made again from its inputs. Stated on the
+stage (with an optional <code>note=</code> saying why) or on <code>ot.pkg</code>, it is recorded as stated. Stated on
+neither, the instrument records <code>rederivable: &quot;false&quot;</code> with <code>rederivable_note: &quot;not stated by a person&quot;</code>, and the stage lists <code>&quot;rederivable&quot;</code> in <code>assertions.undeclared</code>. A <code>note=</code> on a stage
+without <code>rederivable=</code> is refused when the stage is decorated.</li>
+<li><strong><code>output_trust=</code></strong>, the trust class of what the stage returns: <code>operator-authored</code> for content
+your code constructed (counts, digests, an index of ids), <code>externally-sourced</code> for content that
+arrived from outside (documents, passages, a prompt that quotes them), <code>model-generated</code> for a
+model's output. It is separate from <code>trust=</code>: a retriever reads your query and returns someone
+else's documents. Unstated, the return value is recorded as <code>externally-sourced</code>, and the stage
+lists <code>&quot;output_trust&quot;</code> in <code>assertions.undeclared</code>. Any other value is refused when the stage is
+decorated. The examples state it on every stage; none of them calls a model, so none shows
+<code>model-generated</code>.</li>
+</ul>
+<p>The list is written by onetrace, not by your code, so it needs no constant beside it. A stage that
+declared no constants of its own carries no <code>constants</code> at all:</p>
+<div class="code"><pre><code class="language-json">&quot;assertions&quot;: {&quot;undeclared&quot;: [&quot;output_trust&quot;, &quot;rederivable&quot;, &quot;trust&quot;]}
+</code></pre></div>
+<p>A run with undeclared fields is valid and verifies. Nothing is inferred: a field listed in
+<code>undeclared</code> was not stated by a person, and its recorded value is the cautious default. Add the
+meaning when you know it, and the list shrinks.</p>
+<h3 id="163-which-stages-a-run-expects">16.3 Which stages a run expects</h3>
+<p>A decorated run declares its stages up front, as every run does: <code>&quot;intake&quot;</code> first when the run
+function has parameters, then every <code>@ot.stage</code> defined in the run function's module, in the order
+they are defined. Pass <code>@ot.run(stages=[...])</code> to declare them yourself, for example when the stages
+live in several modules.</p>
+<p>A stage called during the run that isn't declared is refused at the call. The message names both
+fixes: add it to <code>@ot.run(stages=[...])</code>, or define the stage in the run's module. Because the
+run's arguments are recorded as the <code>intake</code> stage, a stage named <code>&quot;intake&quot;</code> in the same module as
+a run with parameters is refused when it is decorated.</p>
+<h3 id="164-async-def">16.4 <code>async def</code></h3>
+<p>Both decorators take <code>async def</code> functions, and the decorated function is still a coroutine
+function. An async run keeps its record open across every <code>await</code>, including in the tasks it
+starts with <code>asyncio.gather</code> or <code>asyncio.create_task</code>: they copy the run with the rest of their
+context. Sync and async stages mix freely in one run. The same pipeline written sync and async
+records the same nodes, inputs, outputs and edges; only the times, and the order in which
+concurrent stages finish, can differ.</p>
+<h3 id="165-a-stage-called-more-than-once">16.5 A stage called more than once</h3>
+<p>By default a stage runs once in a run, and its node is the stage's bare name (<code>retrieve</code>), as in a
+hand-written run. A second call of such a stage is refused with <code>AmbiguousInstance</code>, and the message
+names both ways to allow it:</p>
+<ul>
+<li><strong>Declare the stage repeating:</strong> <code>@ot.stage(&quot;refine&quot;, ..., repeats=True)</code>. Every call is
+numbered from the first, <code>refine#1</code>, <code>refine#2</code>, and so on, even when it runs only once. Loops
+and retries are declared this way.</li>
+<li><strong>Name each call:</strong> <code>refine.instance(&quot;en&quot;)(...)</code> records that call as <code>refine#en</code>. A name given
+this way always wins, in either kind of stage.</li>
+</ul>
+<p>A name used twice in one run is refused. So is mixing named and unnamed calls of a stage that runs
+once. Calls of one stage that overlap in time (in <code>asyncio.gather</code>, or in threads) must each be
+named with <code>.instance()</code>: numbering them in the order they arrive would not be stable from one run
+to the next, so an unnamed overlapping call is refused, even for a repeating stage.</p>
+<p><code>@ot.run(rederivable=..., note=...)</code> describe the <code>intake</code> stage's instrument, and nothing else.
+Left out, the intake records the cautious <code>&quot;false&quot;</code> and lists <code>&quot;rederivable&quot;</code> in
+<code>assertions.undeclared</code>. A run function without parameters has no intake, so passing them there is
+refused.</p>
+<h3 id="166-files-a-stage-reads-files">16.6 Files a stage reads: <code>files=</code></h3>
+<p><code>@ot.stage(..., files=[&quot;data/corpus.json&quot;])</code> digests each named file when the stage starts, before
+the function is called, and records it as an input named by its basename (<code>corpus.json</code>), with the
+stage's trust class. A relative path is read from the working directory at the call.</p>
+<p><strong>This records the file's content when the stage began; it does not prove the function read it.</strong>
+If the function changes the file, the record still holds the content it had at the start. Reads
+that aren't named in <code>files=</code> are not seen.</p>
+<p>A missing file is the stage's failure: its receipt records the error, the function isn't called,
+and the <code>FileNotFoundError</code> reaches you unchanged. Two files with one basename, or a file whose
+basename is also a parameter's name, are refused when the stage is decorated, since the two inputs
+couldn't be told apart. With <code>trust=&quot;secret&quot;</code>, nothing is digested and the stage is refused.</p>
+<h3 id="167-when-a-stage-fails">16.7 When a stage fails</h3>
+<p>A decorated stage that raises gets a receipt recording the failure exactly as the Recorder API
+records it: class <code>error</code>, the exception's type as the status, its text as the body, and the
+instrument as the origin. The same exception object then reaches your code, unchanged. A stage
+that raises <code>Refusal</code> records <code>refused</code> with its reason and detail, and the call returns <code>None</code>. A
+return value that can't be encoded fails the stage the same way, with <code>UnencodableValue</code>.</p>
+<p>The run is still closed and verifies. Each attempt of a retried stage is its own receipt, and all
+are kept: declare the stage <code>repeats=True</code>, and the failed attempt and the retry are recorded as
+<code>#1</code> and <code>#2</code>.</p>
+<h3 id="168-switching-recording-off-onetrace_disable1">16.8 Switching recording off: <code>ONETRACE_DISABLE=1</code></h3>
+<p>With <code>ONETRACE_DISABLE=1</code> in the environment, <code>@ot.run</code> and <code>@ot.stage</code> pass every call straight
+through: the functions return what they always return, no run folder is created and no file is
+written, and none of the refusals that only a recording run makes apply (a second call of a stage,
+an undeclared stage, overlapping unnamed calls). <code>.instance(name)(...)</code> is a plain call. Nothing
+optional is imported because of it.</p>
+<p>The variable is read at each call, and only the value <code>1</code> switches recording off; unset, empty or
+<code>0</code>, runs record as usual. Mistakes found when a function is decorated (a lambda as a stage, a run
+with no source file and no <code>manifest=</code>) are still reported, since they don't depend on recording.</p>
+<h3 id="169-values-of-your-own-types-encoders">16.9 Values of your own types: encoders</h3>
+<p>Arguments and return values of the types in 16.1 (strings, numbers, booleans, <code>None</code>, lists and
+dicts of these) are recorded as they are. Two more kinds are recorded without any setup:</p>
+<ul>
+<li>a <strong>dataclass</strong>, as the dict of its fields (a dataclass inside it the same way);</li>
+<li>a <strong>pydantic model</strong>, as <code>model_dump(mode=&quot;json&quot;)</code>. onetrace never imports pydantic itself.</li>
+</ul>
+<p>For any other type, register an encoder, a function that turns the value into one of the above:</p>
+<div class="code"><pre><code class="language-python">ot.encoder(Money, lambda m: {&quot;currency&quot;: m.currency, &quot;cents&quot;: str(m.cents)})
+</code></pre></div>
+<p>An encoder covers subclasses of its type too, unless they have their own, and a registered encoder
+wins over the built-in ones. If the encoder raises, or hands back a value of the same type, the
+stage stops with <code>UnencodableValue</code>, naming the stage, the parameter and the type. A value with no
+encoder stops the stage the same way: it is never recorded as <code>repr()</code>.</p>
+<p><code>bytes</code> passed as an argument are recorded exactly as they are, media type
+<code>application/octet-stream</code>, the same way a stage's <code>bytes</code> return value is stored as <code>return.bin</code>.
+Bytes inside a list or dict have no JSON form, so they stop the stage; pass them as their own
+argument, or register an encoder for the type that holds them.</p>
+<h3 id="1610-choosing-the-run-id-onetrace_run_id">16.10 Choosing the run id: <code>ONETRACE_RUN_ID</code></h3>
+<p>A decorated run takes its id from <code>ONETRACE_RUN_ID</code> when that is set and not empty, and records
+<code>run_id_source: &quot;caller&quot;</code>; this is how a CI job runs a pipeline and then finds <code>runs/&lt;id&gt;</code>.
+Otherwise the id is generated, as before. Either way, a <code>:</code> in the id is written as <code>-</code> in the
+folder name only.</p>
+<p>The id must be usable as one folder name on Windows and POSIX alike (after <code>:</code> becomes <code>-</code>): no
+<code>/</code> or <code>\</code>, none of <code>&lt; &gt; &quot; | ? *</code>, no control character or line break (16.12), no trailing space
+or dot, not <code>.</code> or <code>..</code>, and not a name Windows reserves (<code>CON</code>, <code>NUL</code>, <code>COM1</code>, ...). Anything else
+is refused at the call, naming the variable, and nothing is written.</p>
+<p>A run folder that already holds anything is refused at the call, before it is touched: a record is
+never merged into or overwritten. That includes a second decorated run in the same process with the
+variable still set. Unset the variable or set a new id, or remove the old run. Under
+<code>ONETRACE_DISABLE=1</code> nothing is written, whatever the variable says.</p>
+<h3 id="1611-stages-in-other-threads">16.11 Stages in other threads</h3>
+<p>A decorated run is found through the calling context, and a thread pool's threads start with an
+empty one. So <code>pool.submit(stage, x)</code> or <code>pool.map(stage, xs)</code> inside a run would find no run and,
+as a plain function, record nothing. That is refused instead: a decorated stage called in a thread
+with no run, while a decorated run is active anywhere in the process, raises <code>EmissionRefused</code>
+naming the stage. Carry the run into the thread:</p>
+<div class="code"><pre><code class="language-python">pool.submit(contextvars.copy_context().run, retrieve.instance(&quot;en&quot;), query)
+</code></pre></div>
+<p><code>asyncio.to_thread</code> copies the context itself, so it needs nothing. If a call in another thread
+really belongs to no run, call the undecorated function, <code>retrieve.__wrapped__(query)</code>. With no
+decorated run active anywhere in the process, a stage in any thread is a plain function, as
+outside a run.</p>
+<h3 id="1612-names-that-become-folders">16.12 Names that become folders</h3>
+<p>A stage's name and instance name the folder its outputs are staged in, and a decorated run's id
+names its run folder. Each must be usable as one folder name on Windows and on POSIX alike,
+whichever system records the run, because a run recorded on one is verified and reproduced on the
+other. A name that can't be is refused before anything is written, with a <code>fix:</code> line naming it:
+a stage name when the stage is decorated or the run is opened, an instance when <code>.instance(name)</code>
+is called or the node starts. Refused: an empty name, <code>.</code> and <code>..</code>, <code>/</code> or <code>\</code>, any of
+<code>&lt; &gt; : &quot; | ? *</code>, a trailing space or dot, a name Windows reserves (<code>CON</code>,
+<code>PRN</code>, <code>AUX</code>, <code>NUL</code>, <code>COM1</code>-<code>COM9</code>, <code>LPT1</code>-<code>LPT9</code>, with or without an extension), and more than
+255 bytes. A stage name, an instance and a run id are also refused if they contain a control
+character or a line break of any kind (Unicode categories Cc, Cf, Zl and Zp, among them a
+right-to-left override or a zero-width space) or a lone surrogate: every name has to print as
+itself, in the verifiers' output and the reports. Windows also limits a whole path to 260 characters unless long paths are enabled, which
+a name check can't see: keep run folders and names short there.</p>
+<h3 id="1613-linking-a-query-run-to-its-ingest-run">16.13 Linking a query run to its ingest run</h3>
+<p>Ingest (load, split, embed, index) usually runs once, and query runs read what it built. Say which
+recorded ingest run a query run read, on the stages that read it:</p>
+<div class="code"><pre><code class="language-python">@ot.run(corpus=ot.corpus_from(&quot;runs/2026-10-01T09-00-00Z-ingest&quot;, stages=[&quot;retrieve&quot;],
+                              index_stage=&quot;split&quot;))
+def query(question): ...
+</code></pre></div>
+<ul>
+<li>The first argument is the ingest run's folder, or its chain head (<code>sha256:</code> and 64 lower-case
+hex), looked up one level down in the folder that holds your query runs.</li>
+<li><code>stages</code> is required and names stages of this run. A name the run doesn't have, or <code>&quot;intake&quot;</code>, is
+refused: when the run is decorated if it states <code>stages=[...]</code>, otherwise when it starts, before
+anything is written.</li>
+<li>When the run starts, the ingest run is verified, as <code>onetrace diff</code> verifies a run. If it doesn't
+verify, or the chain head isn't found, the query run is refused before anything is written: it
+never links to a record that hasn't been checked.</li>
+<li><code>index_stage</code>, when you give it, names the ingest stage whose output is the chunk index. That
+stage must exist and have one, or the run is refused naming which is missing.
+It is recorded on the linked stages as the constant <code>corpus_index_stage</code>, only when given, so a
+change of index stage between two runs shows as a changed setting.</li>
+<li>The link, the ingest run's chain head, is recorded as <code>assertions.corpus_manifest</code> on exactly the
+named stages, on every call, and on no other. It needs no constant; a stage whose only assertion
+is the link has no <code>constants</code> in its record. A <code>corpus_manifest</code> your own code writes with
+<code>ctx.corpus_manifest</code> still needs one, and its digest must be in the record's form.</li>
+</ul>
+<p><strong>The link shows which recorded corpus the query run declared it used; it does not prove the
+retriever read only that corpus.</strong></p>
+<p><code>onetrace localize QUERY_A QUERY_B --doc &lt;document&gt; --runs-root runs/</code> follows the link one hop
+when a query run has no chunk index of its own. It finds the ingest run by its chain head one level
+down in <code>runs/</code>, verifies it, and takes the chunk index from the ingest stage named as the index.
+The hits still come from the query run's own retrieval output, and the view says which run each
+part came from. If the ingest run isn't found or doesn't verify, or no index stage is named, the
+view reads COULD NOT CHECK and says which.</p>
+<h3 id="1614-settings-known-only-at-run-time-otconstant-and-otassertion">16.14 Settings known only at run time: <code>ot.constant</code> and <code>ot.assertion</code></h3>
+<p>A setting read from a file or an argument can't go in <code>ot.pkg(config=...)</code> when the stage is
+decorated. Record it from inside the stage instead:</p>
+<div class="code"><pre><code class="language-python">@ot.stage(&quot;split&quot;, instrument=ot.pkg(&quot;splitter&quot;, &quot;llama-index-core&quot;, kind=&quot;transformer&quot;))
+def split(docs, settings):
+    ot.constant(&quot;chunk_size&quot;, settings.chunk_size)
+    chunks = ...
+    ot.assertion(&quot;chunk_count&quot;, len(chunks))
+    return chunks
+</code></pre></div>
+<p>They write the running stage's constants and assertions, numbers and booleans spelled as in
+<code>Instrument.config</code> (<code>512</code> as <code>&quot;512&quot;</code>, <code>False</code> as <code>&quot;false&quot;</code>). An assertion still needs a constant
+beside it. Outside a run, and with <code>ONETRACE_DISABLE=1</code>, they do nothing. Inside a run but outside
+any stage there is nothing to record them on, and they are refused.</p>
+<h3 id="1615-numpy-arrays-langchain-documents-llamaindex-nodes-and-index-objects">16.15 numpy arrays, LangChain documents, LlamaIndex nodes, and index objects</h3>
+<ul>
+<li><strong>A numpy array</strong> passed to or returned by a stage is recorded as bytes, not as metadata: NumPy's
+own <code>.npy</code> form, which carries the dtype, the shape and the order, written from a C-ordered copy,
+media type <code>application/x-npy</code>. A returned array is stored as <code>return.npy</code>. An array of Python
+objects has no byte form and stops the stage; so does an array inside a list or dict (pass or
+return it on its own). A numpy number inside a value (<code>np.int64</code>, <code>np.float64</code>, <code>np.bool_</code>) is
+recorded as the Python number it holds.</li>
+<li><strong>LangChain's <code>Document</code> and LlamaIndex's nodes</strong> are pydantic models, so they are recorded as
+their JSON dump, with no setup.</li>
+<li><strong>Index objects</strong> (a FAISS index, a vector-store client) have no encoder, and passing one stops
+the stage. Pass the path of the persisted index instead, and name it in <code>files=</code>.</li>
+</ul>
+<p>None of these packages is imported by onetrace itself; an encoder is looked up only for a value
+whose package you have already imported.</p>
+<h3 id="1616-numbers-and-booleans-rule-m-for-settings-rule-v1-for-values">16.16 Numbers and booleans: rule M for settings, rule V1 for values</h3>
+<p>A decorated pipeline records numbers and booleans in two places, each with its own rule.</p>
+<p><strong>Rule M: settings and assertions</strong> (<code>ot.constant</code>, <code>ot.assertion</code>, and an instrument's <code>config</code>
+when a stage records it: <code>ot.pkg(config={&quot;top_k&quot;: 4})</code> and <code>config={&quot;top_k&quot;: &quot;4&quot;}</code> record the same
+digest).
+A record's constants and assertions are strings, so a value is written as its string:</p>
+<ul>
+<li>a <code>bool</code> as <code>&quot;true&quot;</code> or <code>&quot;false&quot;</code>;</li>
+<li>an <code>int</code> as its decimal string (<code>3</code> as <code>&quot;3&quot;</code>);</li>
+<li>a <code>float</code> in RFC 8785's number form, the shortest decimal that reads back as the same double:
+<code>0.1 + 0.2</code> as <code>&quot;0.30000000000000004&quot;</code>, <code>1e21</code> as <code>&quot;1e+21&quot;</code>, <code>-0.0</code> as <code>&quot;0&quot;</code>. Exponent form is
+used outside 10^-6 &lt;= |x| &lt; 10^21;</li>
+<li>NaN and Infinity have no such form, and are refused, naming the key.</li>
+</ul>
+<p>No type is recorded beside the value: <code>0.7</code> and <code>&quot;0.7&quot;</code> give the same digest, as <code>3</code> and <code>&quot;3&quot;</code> do.
+If the difference matters to you, say it in the key or the value.</p>
+<p><strong>Rule V1: arguments and return values</strong> recorded as artifact bytes (16.1). These are stored as
+RFC 8785 JSON, media type <code>application/json</code>:</p>
+<ul>
+<li>numbers are allowed: floats in rule M's form, integers within +-(2^53 - 1); a larger integer
+stops the stage with <code>UnencodableValue</code>, whose fix is to record it as a string;</li>
+<li>booleans are JSON <code>true</code> and <code>false</code>;</li>
+<li>keys are sorted and there is no whitespace.</li>
+</ul>
+<p><strong>The two encodings, named apart:</strong></p>
+<ul>
+<li><strong><code>ctx.write_json</code>: the SDK's canonical form, no numbers.</strong> The Recorder API's own form is
+unchanged: it refuses a number, so a value you write yourself is always a string you chose.</li>
+<li><strong>Decorated values: RFC 8785, numbers allowed.</strong> Only what the decorators store for you
+(arguments and return values) uses it.</li>
+</ul>
+<p>Neither changes the record's format: a receipt records an output's name, digest and media type,
+not how its bytes were encoded.</p>
+<h3 id="1617-otruns-defaults">16.17 <code>@ot.run</code>'s defaults</h3>
+<p>Everything <code>@ot.run</code> doesn't take from its arguments, it takes from these defaults:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>policy</code></td>
+<td><code>&quot;fail-closed&quot;</code> (5.8)</td>
+</tr>
+<tr>
+<td><code>manifest</code></td>
+<td>the source file of the module that defines the run function. With no source file (a REPL, a notebook cell) <code>@ot.run</code> is refused when it decorates, with <code>fix: pass manifest=&lt;path to your pipeline file&gt;</code></td>
+</tr>
+<tr>
+<td>topology</td>
+<td>always on for a decorated run: its manifest carries <code>edges</code>, since a decorated pipeline may fan out, fan in or overlap, which a run in declared order can't record</td>
+</tr>
+<tr>
+<td><code>stages</code></td>
+<td>optional. Left out: <code>&quot;intake&quot;</code> (when the run function has parameters), then every <code>@ot.stage</code> name defined in the run function's module, in definition order, each once (16.3)</td>
+</tr>
+<tr>
+<td>the intake stage</td>
+<td><code>&quot;intake&quot;</code>, only when the run function has parameters: each argument is recorded as an input named by its parameter, in rule V1's encoding (16.16), with the run's <code>trust=</code> (16.2). A stage of your own named <code>&quot;intake&quot;</code> in that module is refused</td>
+</tr>
+<tr>
+<td>the return value</td>
+<td>not recorded on its own: what a run returns is a stage's return value, recorded by that stage (16.1)</td>
+</tr>
+<tr>
+<td><code>run_id</code></td>
+<td>generated, recorded with <code>run_id_source: &quot;generated&quot;</code>; <code>ONETRACE_RUN_ID</code> gives your own (16.10)</td>
+</tr>
+<tr>
+<td><code>run_dir</code></td>
+<td><code>&quot;runs/{run_id}&quot;</code>, with a <code>:</code> in the id written as <code>-</code> in the folder name only; the recorded <code>run_id</code> keeps its <code>:</code></td>
+</tr>
+<tr>
+<td><code>sign_with</code></td>
+<td>none: the run isn't signed. A key file's path, or <code>onetrace.env(&quot;NAME&quot;)</code>, signs the run at close (17.2)</td>
+</tr>
+<tr>
+<td>everything else</td>
+<td>the <code>Recorder</code>'s own defaults (5.1)</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="1618-what-a-run-says-when-it-closes-onetrace_quiet1">16.18 What a run says when it closes: <code>ONETRACE_QUIET=1</code></h3>
+<p>When a decorated run closes, <code>@ot.run</code> writes two lines to stderr: the folder the run was written to,
+and the <code>onetrace-verify</code> command that verifies it.</p>
+<div class="code"><pre><code>onetrace: run written to runs/demo
+next: onetrace-verify --require-artifacts runs/demo
+</code></pre></div>
+<p>They are written once per run, after the run's record is complete, also when a stage raised and the
+run ends in an error. A folder holding a space, or a character a shell would read, is shown in double
+quotes, so the command can be pasted as it is; the folder is shown with <code>/</code> on every system, which PowerShell,
+cmd.exe and sh all accept. stdout is never written to.</p>
+<p>Only a decorated run (<code>@ot.run</code>) says this. A <code>Recorder</code> you open and close yourself (section 5)
+writes nothing to stderr when it closes.</p>
+<p><code>ONETRACE_QUIET=1</code> in the environment suppresses the two lines; only the value <code>1</code> does. With
+<code>ONETRACE_DISABLE=1</code> (16.8) no run is opened, so nothing is written.</p>
+<p>The same setting also silences <code>onetrace-verify</code>'s summary line and its <code>fix</code> lines, which it writes to stderr (section 8.1). Its rows and verdict on stdout, its exit code and <code>--json</code> don't change.</p>
+<h2 id="17-signing-a-run">17. Signing a run</h2>
+<p>A signature is an Ed25519 signature over a finished run's chain head, by a key you hold. It is stored as its own file, <code>signatures/&lt;n&gt;.json</code>, beside the run's receipts. Like an anchor, it is never part of the chain: signing changes no byte that was there before, so the chain head stays byte-identical, and a run may carry several signatures (a recorder and a reviewer, say). Signing and anchoring work together in either order.</p>
+<p><strong>A signature does not show:</strong></p>
+<ul>
+<li>that the key wasn't stolen or misused;</li>
+<li>that the run's output is correct;</li>
+<li>when the record was signed (that is an anchor's job);</li>
+<li>who the person behind the key is. The verifier knows keys, not people; your trust list is how you connect a key to a name.</li>
+</ul>
+<p>What it does show: the holder of that private key signed this exact record.</p>
+<h3 id="171-making-a-key">17.1 Making a key</h3>
+<div class="code"><pre><code>mkdir -p ~/keys
+onetrace keygen --out ~/keys/recorder.key
+</code></pre></div>
+<p><code>onetrace keygen</code> writes a new private key as PEM, with owner-only permissions (0600) on Linux and macOS, and prints the public key, its <code>key_id</code> (the <code>sha256:</code> fingerprint of the public key's 32 raw bytes) and where the private key was written; it never prints the private key. It never overwrites a file, and it refuses a path inside a run folder. It doesn't create folders, so make the key's folder first, as above: a path whose folder is missing is refused, and nothing is written. On Windows it can't set owner-only permissions itself: the file inherits its folder's access list, and <code>keygen</code> says so. Keep the key in a folder only you can read.</p>
+<p><code>--test-only</code> adds a first line saying the key was made for tests. A test key is made for one test and never reused.</p>
+<h3 id="172-signing">17.2 Signing</h3>
+<ul>
+<li><strong>At close:</strong> <code>Recorder(..., sign_with=&quot;~/keys/recorder.key&quot;)</code>, or <code>sign_with=onetrace.env(&quot;ONETRACE_SIGNING_KEY&quot;)</code> for a key held in an environment variable as PEM text. <code>@ot.run(sign_with=...)</code> passes it to its recorder. A key path may start with <code>~</code>. The key is checked before the run writes anything; the run is signed after its manifest is written and verified, once.
+<ul>
+<li>A run that recorded nothing writes no manifest, so there is nothing to sign: <code>close()</code> returns as it would without <code>sign_with</code>.</li>
+<li>If signing fails at close (the key file was removed since the run started, say), <code>close()</code> raises <code>SignRefused</code>: the manifest stands, the run is unsigned, and the run folder is released. Sign it afterwards with <code>onetrace sign</code>. If the signature was stored but couldn't be confirmed, <code>close()</code> raises <code>SignNotConfirmed</code>, and a second <code>close()</code> doesn't sign again. Under <code>@ot.run</code> either exception comes out of the decorated call.</li>
+<li>A signature says who signed the record, not that it verified: under <code>fail-open</code>, a run the verifier refused is still signed. Check it with <code>onetrace-verify</code>.</li>
+</ul>
+</li>
+<li><strong>Afterwards:</strong> <code>onetrace sign RUN --key PATH</code> or <code>onetrace sign RUN --key-env NAME</code>, with an optional <code>--signer &quot;label&quot;</code>. It exits 0 when the signature is stored and confirmed, 1 when it is refused (nothing stored), and 3 when it was stored but could not be confirmed as landed in this run.</li>
+</ul>
+<p><strong>Key custody.</strong> The key is never written into a run folder, never logged and never printed. A key file inside the run folder is refused before it is read, whether it is really there, reached through a link inside the folder, or a hard link to it anywhere under the folder (the refusal names that file, never the key). A key path must be a regular file of at most 64 KiB. In CI, keep the key in the CI secret store and pass it as an environment variable with <code>--key-env</code> or <code>onetrace.env(...)</code>.</p>
+<p><code>--signer</code> (or <code>signer=</code>) is a label the signer claims, such as &quot;nightly CI&quot;. It is stored as a claim and only ever reported as claimed: the name the verifier shows as the signer comes from your trust list, never from the record.</p>
+<p>Signatures are stored the way anchors are (section 15): names are allocated without overwriting, the record is linked in from beside <code>signatures/</code>, and it is reported stored only when it is confirmed in this run's folder. <strong>Sign a run folder that nobody else is writing to.</strong></p>
+<h3 id="173-checking-signatures-onetrace-verify-run---trust-file">17.3 Checking signatures: <code>onetrace-verify RUN --trust FILE</code></h3>
+<p>The trust file lists the keys you trust, each with your label for it:</p>
+<div class="code"><pre><code class="language-json">{&quot;format&quot;: &quot;onetrace-trust/0.1&quot;, &quot;keys&quot;: [{&quot;key_id&quot;: &quot;sha256:&lt;64 hex&gt;&quot;, &quot;label&quot;: &quot;ci-key&quot;}]}
+</code></pre></div>
+<p>Each file in <code>signatures/</code> gets one row, after the anchors' rows:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Signature</th>
+<th>Row</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Valid, and the key is on your trust list</td>
+<td><strong>PASS</strong>: &quot;signed by ci-key (sha256:…)&quot;</td>
+</tr>
+<tr>
+<td>Valid, but the key is not on your trust list (or no <code>--trust</code> was given)</td>
+<td><strong>SIGNED-UNTRUSTED</strong>: &quot;signed by an untrusted key sha256:… -- signer not on the reader's trust list&quot;. Never a pass.</td>
+</tr>
+<tr>
+<td>An <code>alg</code> this verifier doesn't implement</td>
+<td><strong>NOT-RUN</strong>, naming the algorithm</td>
+</tr>
+<tr>
+<td>Without <code>onetrace-verify[crypto]</code></td>
+<td><strong>NOT-RUN</strong>: &quot;install onetrace-verify[crypto] to check signatures&quot;</td>
+</tr>
+<tr>
+<td>Invalid, or for another run's chain head, or malformed</td>
+<td><strong>FAIL</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>A FAIL makes the verifier's result FAIL (exit 1). SIGNED-UNTRUSTED and NOT-RUN leave the result as it would be without the signature. After the summary, each count has its own line. An untrusted signature reads &quot;records beside the chain: 1 signed by an untrusted key -- signed, and the signature is valid, but by a key not in your trust file: it shows the record is unchanged since signing, not who signed it. It leaves the result as it would be without it.&quot; <code>--json</code> gives the counts as <code>summary.records_signed_untrusted</code> and <code>summary.records_not_run</code>, each with its note. For a signed run, the text output also prints what a signature does not show, and <code>--json</code> carries the same four statements as <code>&quot;non_claims&quot;</code>. A run with no signature reads exactly as before. The command a run prints when it closes (<code>next: onetrace-verify --require-artifacts …</code>, section 16.18) has no <code>--trust</code>, since a run can't know its reader's trust file: add <code>--trust FILE</code> to see a trusted signature as PASS.</p>
+<p><strong>The order of the checks is fixed.</strong> The file's size and nesting caps, the record's structure and its binding to this run's chain head come first, with or without the extra and whatever the algorithm; a failure there is FAIL. Only then may a row read NOT-RUN. A malformed record, or one for another run, is never shown as NOT-RUN.</p>
+<p><strong>The record:</strong> <code>format</code>, <code>&quot;stage-receipt-signature/0.1&quot;</code>; <code>chain_head</code>; <code>alg</code>, <code>&quot;ed25519&quot;</code>; <code>public_key</code>, 64 lowercase hex; <code>key_id</code>, which must be the public key's fingerprint; <code>signature</code>, base64 of the 64-byte signature over <code>stage-receipt-signature/0.1:</code> followed by the chain head; and optionally <code>signer</code>, the claimed label. A record written as <code>onetrace-signature/0.1</code>, the name before 0.2.0, is FAIL: a development build before 0.2.0 wrote it, and it can't be made valid. The fix is to move it out of <code>signatures/</code> and sign the run again with <code>onetrace sign</code>, which writes the new one.</p>
+<p><strong>onetrace's own strictness.</strong> The approved −01 text leaves these open:</p>
+<ul>
+<li>a member the record format doesn't define is FAIL, and the row names it;</li>
+<li>a file in <code>signatures/</code> that isn't named <code>&lt;n&gt;.json</code> is FAIL;</li>
+<li>a <code>signatures/</code> that is a link is FAIL, and nothing in it is read.</li>
+</ul>
+<p><code>diff</code> and <code>localize</code> never change a verdict for a signature. A signed run's report carries its rows under <code>&quot;signing&quot;</code>, as the verifier reads them with no trust list, so a valid signature shows as SIGNED-UNTRUSTED there.</p>
+</main>
+<footer class="site">
+<p>Source: <a href="manual.md"><code>manual.md</code></a> · onetrace 0.2.0 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
+</footer>
+<script src="assets/copy.js" defer></script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 # The record format, in plain words
 
 Full, normative detail is the Internet-Draft:
-[`draft/draft-saha-stage-receipts-00.txt`](../draft/draft-saha-stage-receipts-00.txt). This page
+`draft/draft-saha-stage-receipts-00.txt`. This page
 is an orientation, not a substitute for it.
 
 ## A receipt

@@ -1,0 +1,81 @@
+/* onetrace docs: one stylesheet, light and dark from the system setting, no external fonts. */
+:root {
+  --bg: #ffffff; --fg: #1d2127; --muted: #5a6270; --line: #c9ced6; --panel: #f4f6f8;
+  --code-bg: #f1f3f5; --link: #0b57d0; --link-visited: #6a2fb3; --accent: #0b57d0;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171b; --fg: #e3e6ea; --muted: #a2a9b4; --line: #3a414b; --panel: #1d2127;
+    --code-bg: #1d2127; --link: #8ab4f8; --link-visited: #c4a3f5; --accent: #8ab4f8;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-wrap: break-word;
+}
+a { color: var(--link); }
+a:visited { color: var(--link-visited); }
+a:focus-visible, summary:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.skip { position: absolute; left: -9999px; }
+.skip:focus { left: 1rem; top: 0.5rem; background: var(--bg); padding: 0.25rem 0.5rem; z-index: 10; }
+header.site { border-bottom: 1px solid var(--line); padding: 0.75rem 1rem; }
+header.site .brand { font-weight: 700; font-size: 1.15rem; text-decoration: none; color: var(--fg); }
+header.site .version { color: var(--muted); margin-left: 0.4rem; }
+nav.pages { border-bottom: 1px solid var(--line); padding: 0.25rem 1rem; font-size: 0.95rem; }
+nav.pages summary { cursor: pointer; padding: 0.35rem 0; font-weight: 600; }
+nav.pages ul { list-style: none; margin: 0; padding: 0; }
+nav.pages > details > ul { display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; padding-bottom: 0.5rem; }
+nav.pages li ul { display: flex; flex-wrap: wrap; gap: 0 0.9rem; }
+nav.pages .group { color: var(--muted); font-size: 0.85rem; display: block; }
+nav.pages a[aria-current="page"] { font-weight: 700; color: var(--fg); text-decoration: none; }
+main { max-width: 52rem; margin: 0 auto; padding: 1rem 1rem 3rem; }
+main h1, main h2, main h3, main h4 { line-height: 1.25; scroll-margin-top: 1rem; }
+main h1 { font-size: 1.9rem; margin-top: 0.5rem; }
+main h2 { font-size: 1.4rem; margin-top: 2.2rem; border-bottom: 1px solid var(--line); padding-bottom: 0.2rem; }
+main h3 { font-size: 1.15rem; margin-top: 1.6rem; }
+code, pre { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace; font-size: 0.9em; }
+:not(pre) > code { background: var(--code-bg); padding: 0.1em 0.3em; border-radius: 4px; overflow-wrap: anywhere; }
+.code { position: relative; margin: 1rem 0; }
+/* the top strip of each code block is kept for the copy button, so it never covers the code */
+.code pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px; padding: 2.4rem 1rem 0.75rem; overflow-x: auto; margin: 0; line-height: 1.45; }
+.code button.copy {
+  position: absolute; top: 0.4rem; right: 0.4rem; font: inherit; font-size: 0.8rem;
+  background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; padding: 0.15rem 0.5rem; cursor: pointer;
+}
+.table { overflow-x: auto; margin: 1rem 0; }
+table { border-collapse: collapse; min-width: 100%; font-size: 0.95rem; }
+th, td { border: 1px solid var(--line); padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
+th { background: var(--panel); }
+caption { text-align: left; color: var(--muted); padding-bottom: 0.3rem; }
+blockquote { margin: 1rem 0; padding: 0.1rem 1rem; border-left: 4px solid var(--line); color: var(--muted); }
+hr { border: 0; border-top: 1px solid var(--line); }
+img { max-width: 100%; }
+.lead { font-size: 1.1rem; }
+footer.site { border-top: 1px solid var(--line); padding: 1rem; color: var(--muted); font-size: 0.9rem; text-align: center; }
+/* the overview's diagrams: SVG text at 14px (13px small) at their full width */
+/* each diagram sits in a figure that scrolls sideways on a narrow screen, so its labels keep their size
+   (at least 720px wide: a 13px label then renders at 12.3px or more) and the page itself never scrolls */
+.diagram-figure { overflow-x: auto; margin: 1rem 0 0.5rem; padding: 0; }
+svg.diagram { display: block; width: 100%; min-width: 720px; max-width: 760px; height: auto; margin: 0; }
+svg.diagram .dg-box { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
+svg.diagram .dg-strong { stroke: var(--accent); stroke-width: 2; }
+svg.diagram .dg-beside { stroke-dasharray: 6 4; }
+svg.diagram .dg-frame { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 2 4; }
+svg.diagram .dg-line { stroke: var(--fg); stroke-width: 1.5; }
+svg.diagram .dg-dashed { stroke-dasharray: 5 4; }
+svg.diagram .dg-head { fill: var(--fg); }
+svg.diagram text { fill: var(--fg); font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+svg.diagram .dg-text { font-size: 14px; }
+svg.diagram .dg-small { font-size: 13px; }
+svg.diagram .dg-label { font-size: 14px; font-weight: 700; }
+svg.diagram .dg-mono { font-family: ui-monospace, Menlo, Consolas, "Liberation Mono", monospace; }
+.diagram-text { margin-top: 0.5rem; }
+@media (max-width: 40rem) {
+  body { font-size: 15px; }
+  main h1 { font-size: 1.6rem; }
+  nav.pages > details > ul { display: block; }
+}

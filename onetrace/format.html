@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>The record format, in plain words · onetrace</title>
+<link rel="stylesheet" href="assets/onetrace.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="site">
+<a class="brand" href="index.html">onetrace</a> <span class="version">0.2.0</span>
+</header>
+<nav class="pages" aria-label="Documentation pages">
+<details open>
+<summary>Pages</summary>
+<ul>
+<li><a href="index.html">Overview</a></li>
+<li><span class="group">Start</span><ul><li><a href="quickstart.html">Quickstart</a></li><li><a href="README.html">Documentation index</a></li></ul></li><li><span class="group">For coding agents</span><ul><li><a href="agents/instrument.html">Agent recipe</a></li><li><a href="agents/AGENTS-section.html">AGENTS.md section</a></li></ul></li><li><span class="group">Reference</span><ul><li><a href="manual.html">Manual</a></li><li><a href="errors.html">Errors and fixes</a></li><li><a href="verbs.html">The three verbs</a></li><li><a href="verdicts.html">The five verdicts</a></li><li><a href="format.html" aria-current="page">The record format</a></li><li><a href="textdiff-format.html">Text-diff format</a></li><li><a href="non-claims.html">What onetrace does not claim</a></li></ul></li><li><span class="group">Adapters</span><ul><li><a href="adapters/plain-python.html">Plain Python</a></li><li><a href="adapters/langchain.html">LangChain</a></li><li><a href="adapters/llamaindex.html">LlamaIndex</a></li><li><a href="adapters/langflow.html">Langflow</a></li></ul></li>
+</ul>
+</details>
+</nav>
+<main id="content">
+<h1 id="the-record-format-in-plain-words">The record format, in plain words</h1>
+<p>Full, normative detail is the Internet-Draft:
+<code>draft/draft-saha-stage-receipts-00.txt</code>. This page
+is an orientation, not a substitute for it.</p>
+<h2 id="a-receipt">A receipt</h2>
+<p>One JSON file per stage a pipeline ran. Every receipt carries thirteen required members:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Member</th>
+<th>What it says</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>format</code></td>
+<td><code>stage-receipt/&lt;major&gt;.&lt;minor&gt;</code> — which edition of this format the receipt is written in.</td>
+</tr>
+<tr>
+<td><code>run_id</code></td>
+<td>Which run this receipt belongs to.</td>
+</tr>
+<tr>
+<td><code>stage</code></td>
+<td>The stage's own name (<code>retrieve</code>, <code>split</code>, whatever the pipeline calls it).</td>
+</tr>
+<tr>
+<td><code>prev</code></td>
+<td>The digest of the previous receipt in the chain, or <code>null</code> for the first.</td>
+</tr>
+<tr>
+<td><code>time</code></td>
+<td><code>started</code>/<code>ended</code> timestamps, each carrying an explicit zone.</td>
+</tr>
+<tr>
+<td><code>coverage</code></td>
+<td>Whether this receipt's own view of the run is <code>complete</code> or <code>incomplete</code>, and which stages it declares versus which it saw emit.</td>
+</tr>
+<tr>
+<td><code>emission</code></td>
+<td>Bookkeeping about how the receipt itself was produced.</td>
+</tr>
+<tr>
+<td><code>anchor</code></td>
+<td>Whether the run is <code>anchored</code> (published somewhere that fixes its position in time) or <code>unanchored</code>.</td>
+</tr>
+<tr>
+<td><code>instrument</code></td>
+<td>What ran this stage: a name, a version, and a digest that pins its exact configuration.</td>
+</tr>
+<tr>
+<td><code>inputs</code> / <code>outputs</code></td>
+<td>Every artifact the stage read or wrote, each with a digest, a byte count, and a declared trust class.</td>
+</tr>
+<tr>
+<td><code>assertions</code></td>
+<td>Named constants the stage is asserting hold, plus values measured against them.</td>
+</tr>
+<tr>
+<td><code>outcome</code></td>
+<td>One of <code>ok</code>, <code>refused</code>, or <code>error</code> — never left implicit.</td>
+</tr>
+</tbody>
+</table></div>
+<p>A receipt is <strong>canonical JSON</strong>: UTF-8, no BOM, keys sorted, no incidental whitespace, no JSON
+numbers (a value that looks numeric is still a decimal string — <code>&quot;500.00&quot;</code> and <code>&quot;500&quot;</code> are
+different strings on purpose). The verifier checks a receipt's own bytes against its own
+canonical serialization; a receipt that doesn't match its own canonical form is refused before
+anything else about it is even read.</p>
+<h2 id="trust-classes">Trust classes</h2>
+<p>Every input and output declares one of three trust classes: <code>operator-authored</code>,
+<code>model-generated</code>, or <code>externally-sourced</code>. This is a claim about <em>provenance</em>, not a claim of
+correctness — a <code>model-generated</code> output is not thereby untrustworthy, and an
+<code>operator-authored</code> one is not thereby correct. It's what lets a reader ask &quot;was this bit fed by
+something the pipeline generated on its own, or did it come from outside?&quot; without reading the
+bytes.</p>
+<h2 id="a-chain">A chain</h2>
+<p>Receipts link by digest: each receipt's <code>prev</code> names the digest of the one before it, and the
+manifest's own <code>chain_head</code> names the digest of the last one. A chain with a stage's receipt
+missing, reordered, or altered breaks a link somewhere, and the verifier reports exactly where.</p>
+<h2 id="a-manifest">A manifest</h2>
+<p>One <code>MANIFEST.json</code> per run, naming the chain (each entry's file and digest, in order), the
+overall <code>chain_head</code>, and the run's own <code>format</code> — the manifest's format string is
+<code>stage-receipt-chain/&lt;major&gt;.&lt;minor&gt;</code>, a separate version line from a receipt's own <code>format</code>. A
+manifest declaring a format the verifier doesn't implement is refused outright, by name, rather
+than silently accepted.</p>
+<h2 id="two-roots-for-a-per-document-stage">Two roots, for a per-document stage</h2>
+<p>A stage that processes many documents in a batch (a <code>split</code> stage producing per-document chunks,
+say) carries two separate digests instead of one output digest: <code>receipts_root</code> (over the
+receipts' own bytes — includes timestamps, so it's never equal across two runs even of identical
+work) and <code>outputs_root</code> (over document-id/output-digest pairs only — equal exactly when the
+stage did the same thing to the same inputs). <strong>Compare <code>outputs_root</code>. Never compare
+<code>receipts_root</code></strong> for sameness — it will never agree, by design, and comparing it anyway is the
+single most common way to misread this format.</p>
+<h2 id="a-dag-not-just-a-chain">A DAG, not just a chain</h2>
+<p>A stage can declare <code>receipt:&lt;node-id&gt;</code> inputs naming exactly which earlier receipts it read,
+turning what would otherwise be assumed as a linear sequence into an explicit graph: fan-out,
+fan-in, and loops are all expressible. <code>receipt:</code> inputs are structure, not data to be
+digest-compared. A node present in one run and absent in another is a difference in the shape
+of the run, not something the verifier tries to explain away.</p>
+</main>
+<footer class="site">
+<p>Source: <a href="format.md"><code>format.md</code></a> · onetrace 0.2.0 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
+</footer>
+<script src="assets/copy.js" defer></script>
+</body>
+</html>

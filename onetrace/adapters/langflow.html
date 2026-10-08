@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Langflow · onetrace</title>
+<link rel="stylesheet" href="../assets/onetrace.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="site">
+<a class="brand" href="../index.html">onetrace</a> <span class="version">0.2.0</span>
+</header>
+<nav class="pages" aria-label="Documentation pages">
+<details open>
+<summary>Pages</summary>
+<ul>
+<li><a href="../index.html">Overview</a></li>
+<li><span class="group">Start</span><ul><li><a href="../quickstart.html">Quickstart</a></li><li><a href="../README.html">Documentation index</a></li></ul></li><li><span class="group">For coding agents</span><ul><li><a href="../agents/instrument.html">Agent recipe</a></li><li><a href="../agents/AGENTS-section.html">AGENTS.md section</a></li></ul></li><li><span class="group">Reference</span><ul><li><a href="../manual.html">Manual</a></li><li><a href="../errors.html">Errors and fixes</a></li><li><a href="../verbs.html">The three verbs</a></li><li><a href="../verdicts.html">The five verdicts</a></li><li><a href="../format.html">The record format</a></li><li><a href="../textdiff-format.html">Text-diff format</a></li><li><a href="../non-claims.html">What onetrace does not claim</a></li></ul></li><li><span class="group">Adapters</span><ul><li><a href="plain-python.html">Plain Python</a></li><li><a href="langchain.html">LangChain</a></li><li><a href="llamaindex.html">LlamaIndex</a></li><li><a href="langflow.html" aria-current="page">Langflow</a></li></ul></li>
+</ul>
+</details>
+</nav>
+<main id="content">
+<h1 id="langflow">Langflow</h1>
+<p><code>examples/langflow_adapter/pipeline.py</code> — the same nine stages as the
+<a href="plain-python.html">plain-Python reference</a>, wired onto Langflow's own runtime wherever it has one:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Langflow construct</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>document in</code> / <code>cleaned</code></td>
+<td>Plain Python — no construct exists in Langflow (or the other two frameworks) for either.</td>
+</tr>
+<tr>
+<td><code>converted</code> / <code>split</code></td>
+<td>Run inside Langflow's real graph execution engine (<code>lfx.graph</code> + <code>lfx.cli.common.execute_graph_with_capture</code> — the same machinery <code>lfx run</code> itself uses, in-process rather than shelled out), via flows built with <code>lfx.graph.flow_builder</code>, Langflow's own pure-Python flow constructor.</td>
+</tr>
+<tr>
+<td><code>indexed</code> / <code>retrieved</code></td>
+<td><strong>Substituted</strong>, not native — Langflow's <code>KnowledgeComponent</code> requires Langflow's own API/database service layer to create a knowledge base, and no headless path (CLI or the real server's own build API) exposes that in the version this adapter pins. The substitution is named as one in the run, never presented as if it were native.</td>
+</tr>
+<tr>
+<td><code>answer</code></td>
+<td>A substituted, deterministic extraction step behind a Langflow extension point — no real model, no network.</td>
+</tr>
+</tbody>
+</table></div>
+<p>This is the one adapter of the three where a stage genuinely can't be run natively at all given
+the tooling available, rather than merely lacking a first-class construct for it (<code>document in</code>
+and <code>cleaned</code> are the &quot;no construct exists&quot; case in all three; <code>indexed</code>/<code>retrieved</code> here is
+&quot;a construct exists, but it needs infrastructure this adapter doesn't stand up&quot;). Both are
+substitutions, and both are named as such — the standing rule is: use the framework's own
+runtime wherever it has one, substitute only where none exists at all, and never let a
+substitution pass as native.</p>
+<h2 id="running-it">Running it</h2>
+<p>Needs the exact pins in <code>examples/langflow_adapter/requirements.txt</code> (see
+<code>examples/PIN_DISCIPLINE.md</code> for running more than one adapter's requirements in the same
+environment).</p>
+<div class="code"><pre><code>pip install -r examples/langflow_adapter/requirements.txt
+python examples/langflow_adapter/pipeline.py OUT_DIR RUN_ID
+</code></pre></div>
+<p>Its runs always store each chunk's text in their outputs (<code>chunks.json</code>, and again in <code>vectors.json</code>), along with the documents' converted and cleaned text, so treat its run folders like logs that may contain sensitive data.</p>
+</main>
+<footer class="site">
+<p>Source: <a href="langflow.md"><code>langflow.md</code></a> · onetrace 0.2.0 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
+</footer>
+<script src="../assets/copy.js" defer></script>
+</body>
+</html>

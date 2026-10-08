@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>onetrace</title>
+<link rel="stylesheet" href="assets/onetrace.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="site">
+<a class="brand" href="index.html">onetrace</a> <span class="version">0.2.0</span>
+</header>
+<nav class="pages" aria-label="Documentation pages">
+<details open>
+<summary>Pages</summary>
+<ul>
+<li><a href="index.html" aria-current="page">Overview</a></li>
+<li><span class="group">Start</span><ul><li><a href="quickstart.html">Quickstart</a></li><li><a href="README.html">Documentation index</a></li></ul></li><li><span class="group">For coding agents</span><ul><li><a href="agents/instrument.html">Agent recipe</a></li><li><a href="agents/AGENTS-section.html">AGENTS.md section</a></li></ul></li><li><span class="group">Reference</span><ul><li><a href="manual.html">Manual</a></li><li><a href="errors.html">Errors and fixes</a></li><li><a href="verbs.html">The three verbs</a></li><li><a href="verdicts.html">The five verdicts</a></li><li><a href="format.html">The record format</a></li><li><a href="textdiff-format.html">Text-diff format</a></li><li><a href="non-claims.html">What onetrace does not claim</a></li></ul></li><li><span class="group">Adapters</span><ul><li><a href="adapters/plain-python.html">Plain Python</a></li><li><a href="adapters/langchain.html">LangChain</a></li><li><a href="adapters/llamaindex.html">LlamaIndex</a></li><li><a href="adapters/langflow.html">Langflow</a></li></ul></li>
+</ul>
+</details>
+</nav>
+<main id="content">
+<h1>onetrace</h1>
+
+<p class="lead">onetrace makes a pipeline write a record as it runs: one receipt per stage, and a manifest that chains the receipts together. Anyone can then check the record, and compare two runs, with tools that don't trust your code.</p>
+
+<p>This is onetrace 0.2.0 and onetrace-verify 0.2.0. <a href="quickstart.html">Start with the quickstart</a>.</p>
+
+<h2 id="what-onetrace-is">What onetrace is</h2>
+
+<figure class="diagram-figure" tabindex="0" role="group" aria-label="What onetrace is (scrolls sideways on a narrow screen)">
+<svg class="diagram" role="img" aria-labelledby="dg1-title dg1-desc" viewBox="0 0 760 430" xmlns="http://www.w3.org/2000/svg">
+<title id="dg1-title">What onetrace is</title>
+<desc id="dg1-desc">Each stage of your pipeline writes one receipt. The receipts are hash-chained in the run folder by MANIFEST.json, ending in the chain head; artifacts/ holds each stage's outputs. onetrace-verify reads the run folder and prints one row per check, each PASS, FAIL or NOT-RUN, then the result: exit 0 for PASS, 1 for FAIL, 2 for NOT VERIFIED or refused. Anchors and signatures sit beside the chain, never part of it.</desc>
+<defs><marker id="dg1-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="dg-head"/></marker></defs>
+<text x="20" y="28" class="dg-label">your pipeline</text>
+<rect x="20" y="40" width="130" height="40" rx="6" class="dg-box"/><text x="85" y="65" class="dg-text" text-anchor="middle">stage 1</text>
+<rect x="170" y="40" width="130" height="40" rx="6" class="dg-box"/><text x="235" y="65" class="dg-text" text-anchor="middle">stage 2</text>
+<rect x="320" y="40" width="130" height="40" rx="6" class="dg-box"/><text x="385" y="65" class="dg-text" text-anchor="middle">stage 3</text>
+<line x1="150" y1="60" x2="168" y2="60" class="dg-line" marker-end="url(#dg1-arrow)"/>
+<line x1="300" y1="60" x2="318" y2="60" class="dg-line" marker-end="url(#dg1-arrow)"/>
+<line x1="85" y1="80" x2="85" y2="143" class="dg-line" marker-end="url(#dg1-arrow)"/>
+<line x1="235" y1="80" x2="235" y2="143" class="dg-line" marker-end="url(#dg1-arrow)"/>
+<line x1="385" y1="80" x2="385" y2="143" class="dg-line" marker-end="url(#dg1-arrow)"/>
+<text x="92" y="112" class="dg-small">writes</text>
+<rect x="10" y="100" width="460" height="186" rx="10" class="dg-frame"/>
+<text x="300" y="120" class="dg-label">run folder</text>
+<rect x="20" y="145" width="130" height="36" rx="6" class="dg-box"/><text x="85" y="168" class="dg-text" text-anchor="middle">receipt 1</text>
+<rect x="170" y="145" width="130" height="36" rx="6" class="dg-box"/><text x="235" y="168" class="dg-text" text-anchor="middle">receipt 2</text>
+<rect x="320" y="145" width="130" height="36" rx="6" class="dg-box"/><text x="385" y="168" class="dg-text" text-anchor="middle">receipt 3</text>
+<line x1="150" y1="163" x2="168" y2="163" class="dg-line" marker-end="url(#dg1-arrow)"/>
+<line x1="300" y1="163" x2="318" y2="163" class="dg-line" marker-end="url(#dg1-arrow)"/>
+<rect x="20" y="190" width="430" height="44" rx="6" class="dg-box"/><text x="235" y="208" class="dg-text dg-mono" text-anchor="middle">MANIFEST.json</text><text x="235" y="227" class="dg-small" text-anchor="middle">the receipts in order, ending in the chain head</text>
+<rect x="20" y="242" width="430" height="32" rx="6" class="dg-box"/><text x="235" y="263" class="dg-text" text-anchor="middle">artifacts/: each stage's outputs</text>
+<line x1="470" y1="200" x2="508" y2="200" class="dg-line" marker-end="url(#dg1-arrow)"/>
+<rect x="510" y="170" width="235" height="60" rx="6" class="dg-box dg-strong"/><text x="627" y="195" class="dg-text dg-mono" text-anchor="middle">onetrace-verify</text><text x="627" y="217" class="dg-small" text-anchor="middle">reads the run folder</text>
+<line x1="627" y1="230" x2="627" y2="248" class="dg-line" marker-end="url(#dg1-arrow)"/>
+<rect x="510" y="250" width="235" height="60" rx="6" class="dg-box"/><text x="627" y="275" class="dg-text" text-anchor="middle">one row per check:</text><text x="627" y="297" class="dg-text dg-mono" text-anchor="middle">PASS · FAIL · NOT-RUN</text>
+<line x1="627" y1="310" x2="627" y2="328" class="dg-line" marker-end="url(#dg1-arrow)"/>
+<rect x="510" y="330" width="235" height="82" rx="6" class="dg-box"/><text x="627" y="354" class="dg-text" text-anchor="middle">the result</text><text x="627" y="376" class="dg-small" text-anchor="middle">exit 0: PASS · exit 1: FAIL</text><text x="627" y="398" class="dg-small" text-anchor="middle">exit 2: NOT VERIFIED or refused</text>
+<rect x="10" y="300" width="225" height="62" rx="6" class="dg-box dg-beside"/><text x="122" y="324" class="dg-text dg-mono" text-anchor="middle">anchors/</text><text x="122" y="346" class="dg-small" text-anchor="middle">timestamp over the chain head</text>
+<rect x="245" y="300" width="225" height="62" rx="6" class="dg-box dg-beside"/><text x="357" y="324" class="dg-text dg-mono" text-anchor="middle">signatures/</text><text x="357" y="346" class="dg-small" text-anchor="middle">Ed25519 over the chain head</text>
+<text x="240" y="388" class="dg-small" text-anchor="middle">optional: beside the chain, never part of it</text>
+</svg>
+</figure>
+<ul class="diagram-text">
+<li><strong>One receipt per stage.</strong> Each receipt says what the stage read and what it wrote, by sha256 digest; which tool did the work and how it was configured; and how the stage ended.</li>
+<li><strong>A manifest chains the receipts</strong> in order, ending in a chain head. Change, remove or reorder any receipt and the chain no longer matches.</li>
+<li><strong>A run folder</strong> holds <code>MANIFEST.json</code>, <code>receipts/</code> and <code>artifacts/</code>: each stage's outputs, which can include documents, prompts and answers. Treat run folders like logs that may contain sensitive data.</li>
+<li><strong><code>onetrace-verify</code></strong> reads the run folder and prints one row per check, each <code>PASS</code>, <code>FAIL</code> or <code>NOT-RUN</code>, then the result. Exit code 0 is PASS: the record is consistent and unbroken. Exit code 1 is FAIL, and the <code>[FAIL]</code> rows say which check failed. Exit code 2 is NOT VERIFIED or refused: a receipt's format this verifier doesn't implement, with nothing failed, or a manifest it can't read.</li>
+<li><strong>Beside the chain, never part of it:</strong> an anchor in <code>anchors/</code>, a timestamp proof over the chain head from a party outside the recorder, and a signature in <code>signatures/</code>, an Ed25519 signature over the chain head by a key you hold. Signing changes no byte that was there before.</li>
+</ul>
+
+<h2 id="install-and-run">Install and run</h2>
+
+<figure class="diagram-figure" tabindex="0" role="group" aria-label="Install and run, in four steps (scrolls sideways on a narrow screen)">
+<svg class="diagram" role="img" aria-labelledby="dg2-title dg2-desc" viewBox="0 0 760 150" xmlns="http://www.w3.org/2000/svg">
+<title id="dg2-title">Install and run, in four steps</title>
+<desc id="dg2-desc">Step 1, install: pip install onetrace. Step 2, decorate: @ot.run and @ot.stage. Step 3, run it: a run folder is written under runs/. Step 4, verify: onetrace-verify with the run folder.</desc>
+<defs><marker id="dg2-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="dg-head"/></marker></defs>
+<rect x="10" y="20" width="170" height="104" rx="8" class="dg-box"/><text x="95" y="48" class="dg-label" text-anchor="middle">1 · Install</text><text x="95" y="82" class="dg-text dg-mono" text-anchor="middle">pip install</text><text x="95" y="104" class="dg-text dg-mono" text-anchor="middle">onetrace</text>
+<rect x="200" y="20" width="170" height="104" rx="8" class="dg-box"/><text x="285" y="48" class="dg-label" text-anchor="middle">2 · Decorate</text><text x="285" y="82" class="dg-text dg-mono" text-anchor="middle">@ot.run</text><text x="285" y="104" class="dg-text dg-mono" text-anchor="middle">@ot.stage</text>
+<rect x="390" y="20" width="170" height="104" rx="8" class="dg-box"/><text x="475" y="48" class="dg-label" text-anchor="middle">3 · Run it</text><text x="475" y="82" class="dg-text" text-anchor="middle">a run folder</text><text x="475" y="104" class="dg-text" text-anchor="middle">under <tspan class="dg-mono">runs/</tspan></text>
+<rect x="580" y="20" width="170" height="104" rx="8" class="dg-box dg-strong"/><text x="665" y="48" class="dg-label" text-anchor="middle">4 · Verify</text><text x="665" y="82" class="dg-text dg-mono" text-anchor="middle">onetrace-verify</text><text x="665" y="104" class="dg-text dg-mono" text-anchor="middle">&lt;run folder&gt;</text>
+<line x1="180" y1="72" x2="198" y2="72" class="dg-line" marker-end="url(#dg2-arrow)"/>
+<line x1="370" y1="72" x2="388" y2="72" class="dg-line" marker-end="url(#dg2-arrow)"/>
+<line x1="560" y1="72" x2="578" y2="72" class="dg-line" marker-end="url(#dg2-arrow)"/>
+</svg>
+</figure>
+<ol class="diagram-text">
+<li><a href="quickstart.html#quickstart">Install:</a> <code>pip install onetrace</code>. <code>onetrace-verify</code>, the reference verifier, comes with it.</li>
+<li><a href="quickstart.html#step-1-one-stage">Add two decorators:</a> <code>@ot.run</code> on the function that does the whole job once, and <code>@ot.stage</code> on each step. Change nothing else.</li>
+<li><a href="quickstart.html#step-1-one-stage">Run it:</a> the run writes a folder under <code>runs/</code>, named by its run id.</li>
+<li><a href="quickstart.html#step-2-the-other-stage-in-another-module">Verify it:</a> <code>onetrace-verify --require-artifacts runs/&lt;run id&gt;</code>. When a run closes, onetrace prints that command for it.</li>
+</ol>
+
+<h2 id="comparing-two-runs">Comparing two runs</h2>
+
+<figure class="diagram-figure" tabindex="0" role="group" aria-label="Comparing two runs (scrolls sideways on a narrow screen)">
+<svg class="diagram" role="img" aria-labelledby="dg3-title dg3-desc" viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg">
+<title id="dg3-title">Comparing two runs</title>
+<desc id="dg3-desc">onetrace diff A B calls the reference verifier on both runs first, then gives every stage one verdict: same, FIRST DIFFERENCE, downstream, reconverged or COULD NOT CHECK, and one overall result with its exit code: identical 0, diverged 1, not comparable 2, refused 3, could not check 4. localize names the first difference and its cause; diff --text shows the text that changed.</desc>
+<defs><marker id="dg3-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="dg-head"/></marker></defs>
+<rect x="10" y="20" width="110" height="40" rx="6" class="dg-box"/><text x="65" y="45" class="dg-text" text-anchor="middle">run A</text>
+<rect x="10" y="80" width="110" height="40" rx="6" class="dg-box"/><text x="65" y="105" class="dg-text" text-anchor="middle">run B</text>
+<line x1="120" y1="40" x2="168" y2="62" class="dg-line" marker-end="url(#dg3-arrow)"/>
+<line x1="120" y1="100" x2="168" y2="80" class="dg-line" marker-end="url(#dg3-arrow)"/>
+<rect x="170" y="30" width="230" height="80" rx="6" class="dg-box dg-strong"/><text x="285" y="60" class="dg-text dg-mono" text-anchor="middle">onetrace diff A B</text><text x="285" y="86" class="dg-small" text-anchor="middle">calls the verifier on both first</text>
+<line x1="400" y1="60" x2="428" y2="60" class="dg-line" marker-end="url(#dg3-arrow)"/>
+<rect x="430" y="10" width="320" height="110" rx="6" class="dg-box"/><text x="590" y="36" class="dg-text" text-anchor="middle">each stage: one verdict</text><text x="590" y="62" class="dg-small dg-mono" text-anchor="middle">same · FIRST DIFFERENCE</text><text x="590" y="84" class="dg-small dg-mono" text-anchor="middle">downstream · reconverged</text><text x="590" y="106" class="dg-small dg-mono" text-anchor="middle">COULD NOT CHECK</text>
+<line x1="590" y1="120" x2="590" y2="148" class="dg-line" marker-end="url(#dg3-arrow)"/>
+<rect x="430" y="150" width="320" height="76" rx="6" class="dg-box"/><text x="590" y="176" class="dg-text" text-anchor="middle">one result, its exit code</text><text x="590" y="198" class="dg-small" text-anchor="middle">identical 0 · diverged 1 · not comparable 2</text><text x="590" y="218" class="dg-small" text-anchor="middle">refused 3 · could not check 4</text>
+<line x1="285" y1="110" x2="285" y2="148" class="dg-line dg-dashed" marker-end="url(#dg3-arrow)"/>
+<text x="292" y="134" class="dg-small">further</text>
+<rect x="10" y="150" width="400" height="40" rx="6" class="dg-box dg-beside"/><text x="210" y="175" class="dg-small" text-anchor="middle"><tspan class="dg-mono">localize</tspan>: the first difference, and its cause</text>
+<rect x="10" y="200" width="400" height="40" rx="6" class="dg-box dg-beside"/><text x="210" y="225" class="dg-small" text-anchor="middle"><tspan class="dg-mono">diff --text</tspan>: the text that changed in its outputs</text>
+</svg>
+</figure>
+<ul class="diagram-text">
+<li><strong><code>onetrace diff A B</code></strong> calls the reference verifier first. A run the verifier refuses is refused by the verb too.</li>
+<li>Then every stage gets exactly one of five verdicts: <code>same</code>, <code>FIRST DIFFERENCE</code>, <code>downstream</code>, <code>reconverged</code> or <code>COULD NOT CHECK</code>. A verdict is always about a stage's output.</li>
+<li><strong><code>onetrace localize</code></strong> finds the first unclean stage in one run, or the first difference between two runs, and its cause.</li>
+<li><strong><code>onetrace diff A B --text</code></strong> shows the first stage that differs and the text that changed in its outputs, checked against the receipts first.</li>
+</ul>
+
+<div class="table"><table>
+<caption>The overall result of <code>diff</code>, and its exit code</caption>
+<thead><tr><th scope="col">Result</th><th scope="col">Exit code</th></tr></thead>
+<tbody>
+<tr><td><code>identical</code></td><td>0</td></tr>
+<tr><td><code>diverged</code></td><td>1</td></tr>
+<tr><td><code>not comparable</code></td><td>2</td></tr>
+<tr><td><code>refused</code></td><td>3</td></tr>
+<tr><td><code>could not check</code></td><td>4</td></tr>
+</tbody>
+</table></div>
+
+<p><a href="verdicts.html">What each verdict and result means</a>.</p>
+
+<h2 id="what-it-does-not-show">What it does not show</h2>
+
+<ul>
+<li>onetrace does not check whether a pipeline's output is true. It checks what was recorded, and whether an independent verifier can confirm that record is internally consistent and its chain unbroken.</li>
+<li><code>same</code> does not mean "nothing changed". It means a stage's output digest matched.</li>
+<li>A signature does not show that the key wasn't stolen or misused, or who the person behind the key is.</li>
+</ul>
+
+<p><a href="non-claims.html">Everything onetrace does not claim</a>.</p>
+
+<h2 id="where-next">Where next</h2>
+
+<ul>
+<li><a href="quickstart.html">Quickstart</a>: add onetrace to a small pipeline in two steps, one stage first, then the rest; then switch it off, and take it out.</li>
+<li><a href="manual.html">Developer manual</a>: from knowing nothing about onetrace to recording, verifying and comparing your own pipeline's runs.</li>
+<li><a href="errors.html">Error messages and their fixes</a>: every refusal, why it happens, the one-line fix.</li>
+<li><a href="agents/instrument.html">Agent recipe</a>: instrument an existing pipeline.</li>
+<li>On PyPI: <a href="https://pypi.org/project/onetrace/">the onetrace package</a> and <a href="https://pypi.org/project/onetrace-verify/">the onetrace-verify package</a>.</li>
+<li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a>.</li>
+</ul>
+</main>
+<footer class="site">
+<p>Built from the pages it links to · onetrace 0.2.0 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
+</footer>
+<script src="assets/copy.js" defer></script>
+</body>
+</html>
