@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oneproof.dev/onetrace/schemas/onetrace-textdiff-0.3.schema.json",
+  "title": "onetrace-textdiff/0.3",
+  "description": "The document `onetrace diff A B --text --json` prints. Fields and escaping are defined in textdiff-format.md. Canonical JSON carries no numbers, so every count, index, position, line number and offset is a decimal string.",
+  "type": "object",
+  "required": ["format", "text_form", "envelope", "exit", "shown"],
+  "properties": {
+    "format": {"const": "onetrace-textdiff/0.3"},
+    "text_form": {"const": "escaped"},
+    "envelope": {"enum": ["identical", "diverged", "not comparable", "refused", "could not check"]},
+    "exit": {"$ref": "#/$defs/decimal"},
+    "shown": {"type": "boolean"},
+    "reason": {"type": "string"},
+    "first_line": {"type": "string"},
+    "unknown_stages": {"type": "array", "items": {"type": "string"}},
+    "nodes": {"type": "array", "items": {"$ref": "#/$defs/node"}},
+    "corpus_traces": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/trace"}}
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {"if": {"properties": {"shown": {"const": true}}},
+     "then": {"properties": {"envelope": {"enum": ["identical", "diverged"]}}}},
+    {"if": {"properties": {"envelope": {"const": "identical"}}}, "then": {"properties": {"exit": {"const": "0"}}}},
+    {"if": {"properties": {"envelope": {"const": "diverged"}}}, "then": {"properties": {"exit": {"const": "1"}}}},
+    {"if": {"properties": {"envelope": {"const": "not comparable"}}}, "then": {"properties": {"exit": {"const": "2"}}}},
+    {"if": {"properties": {"envelope": {"const": "refused"}}}, "then": {"properties": {"exit": {"const": "3"}}}},
+    {"if": {"properties": {"envelope": {"const": "could not check"}}}, "then": {"properties": {"exit": {"const": "4"}}}}
+  ],
+  "if": {"properties": {"shown": {"const": false}}},
+  "then": {
+    "required": ["reason"],
+    "not": {"anyOf": [{"required": ["first_line"]}, {"required": ["unknown_stages"]}, {"required": ["nodes"]},
+                      {"required": ["corpus_traces"]}]}
+  },
+  "else": {
+    "required": ["first_line", "unknown_stages", "nodes"],
+    "not": {"required": ["reason"]}
+  },
+  "$defs": {
+    "decimal": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$"},
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "verdict": {"enum": ["same", "FIRST DIFFERENCE", "downstream", "reconverged", "COULD NOT CHECK"]},
+    "node": {
+      "type": "object",
+      "required": ["node", "verdict", "settings", "inputs", "outputs"],
+      "properties": {
+        "node": {"type": "string"},
+        "verdict": {"$ref": "#/$defs/verdict"},
+        "settings": {"type": "array", "items": {"type": "string"}},
+        "inputs": {"type": "array", "items": {"type": "string"}},
+        "presence": {"type": "string"},
+        "causes": {"type": "array", "items": {"$ref": "#/$defs/cause"}},
+        "outputs": {"type": "array", "items": {"$ref": "#/$defs/output"}}
+      },
+      "additionalProperties": false,
+      "if": {"required": ["causes"]},
+      "then": {"properties": {"verdict": {"const": "FIRST DIFFERENCE"}}}
+    },
+    "cause": {
+      "type": "object",
+      "required": ["kind", "name", "baseline", "candidate", "status"],
+      "properties": {
+        "kind": {"enum": ["input", "tool", "setting", "corpus link"]},
+        "name": {"type": ["string", "null"]},
+        "baseline": {"$ref": "#/$defs/causeValue"},
+        "candidate": {"$ref": "#/$defs/causeValue"},
+        "status": {"enum": ["same", "changed"]}
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {"if": {"properties": {"kind": {"const": "input"}}},
+         "then": {"properties": {"baseline": {"$ref": "#/$defs/inputValue"}, "candidate": {"$ref": "#/$defs/inputValue"}}}},
+        {"if": {"properties": {"kind": {"const": "corpus link"}}},
+         "then": {"properties": {"name": {"const": "assertions.corpus_manifest"}}}}
+      ]
+    },
+    "causeValue": {"type": ["string", "boolean", "null", "object", "array"]},
+    "inputValue": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "object", "required": ["digest", "trust_class"],
+         "properties": {"digest": {}, "trust_class": {}}, "additionalProperties": false}
+      ]
+    },
+    "output": {
+      "type": "object",
+      "required": ["name", "media_type", "verified", "kind", "notes", "hunks"],
+      "properties": {
+        "name": {"type": ["string", "null"]},
+        "media_type": {"type": "string"},
+        "verified": {"type": "boolean"},
+        "kind": {"enum": ["text", "chunk index", "hits", "binary", "not diffed", "not shown"]},
+        "notes": {"type": "array", "items": {"type": "string"}},
+        "reason": {"type": "string"},
+        "presence": {"enum": ["only in the baseline", "only in the candidate"]},
+        "truncated": {
+          "type": "object", "required": ["more_lines"],
+          "properties": {"more_lines": {"$ref": "#/$defs/decimal"}}, "additionalProperties": false
+        },
+        "hunks": {"type": "array", "items": {"$ref": "#/$defs/hunk"}},
+        "entries": {"type": "array", "items": {"$ref": "#/$defs/entry"}}
+      },
+      "additionalProperties": false,
+      "if": {"properties": {"verified": {"const": false}}},
+      "then": {"required": ["reason"], "properties": {"kind": {"const": "not shown"}, "hunks": {"maxItems": 0}}},
+      "else": {"not": {"required": ["reason"]}}
+    },
+    "entry": {
+      "description": "A chunk or hit a notes line names, as the record holds it (not escaped, unlike notes): its id, or for a chunk with no id of its own its document and 1-based position there; the change; and the index of its line in notes.",
+      "type": "object", "required": ["change", "note"],
+      "properties": {
+        "id": {"type": "string"},
+        "doc": {"type": "string"},
+        "position": {"$ref": "#/$defs/decimal"},
+        "change": {"enum": ["changed", "added", "removed", "entered", "left", "moved"]},
+        "note": {"$ref": "#/$defs/decimal"}
+      },
+      "additionalProperties": false,
+      "oneOf": [{"required": ["id"], "not": {"anyOf": [{"required": ["doc"]}, {"required": ["position"]}]}},
+                {"required": ["doc", "position"], "not": {"required": ["id"]}}]
+    },
+    "hunk": {
+      "type": "object",
+      "required": ["baseline", "candidate", "lines"],
+      "properties": {
+        "baseline": {"$ref": "#/$defs/range"},
+        "candidate": {"$ref": "#/$defs/range"},
+        "lines": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/line"}},
+        "note": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "range": {
+      "type": "object", "required": ["start", "lines"],
+      "properties": {"start": {"$ref": "#/$defs/decimal"}, "lines": {"$ref": "#/$defs/decimal"}},
+      "additionalProperties": false
+    },
+    "line": {
+      "type": "object",
+      "required": ["op", "baseline", "candidate", "text", "spans"],
+      "properties": {
+        "op": {"enum": [" ", "-", "+"]},
+        "baseline": {"oneOf": [{"$ref": "#/$defs/decimal"}, {"type": "null"}]},
+        "candidate": {"oneOf": [{"$ref": "#/$defs/decimal"}, {"type": "null"}]},
+        "text": {"type": "string"},
+        "spans": {
+          "type": "array",
+          "items": {"type": "array", "prefixItems": [{"$ref": "#/$defs/decimal"}, {"$ref": "#/$defs/decimal"}],
+                    "minItems": 2, "maxItems": 2}
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {"if": {"properties": {"op": {"const": " "}}},
+         "then": {"properties": {"baseline": {"$ref": "#/$defs/decimal"}, "candidate": {"$ref": "#/$defs/decimal"},
+                                 "spans": {"maxItems": 0}}}},
+        {"if": {"properties": {"op": {"const": "-"}}},
+         "then": {"properties": {"baseline": {"$ref": "#/$defs/decimal"}, "candidate": {"type": "null"}}}},
+        {"if": {"properties": {"op": {"const": "+"}}},
+         "then": {"properties": {"baseline": {"type": "null"}, "candidate": {"$ref": "#/$defs/decimal"}}}}
+      ]
+    },
+    "side": {
+      "type": "object",
+      "required": ["chain_head"],
+      "properties": {
+        "chain_head": {"oneOf": [{"$ref": "#/$defs/digest"}, {"type": "null"}]},
+        "run_id": {"type": ["string", "null"]},
+        "path": {"type": ["string", "null"], "pattern": "^[^\\\\:]*$"},
+        "verified": {"type": ["boolean", "null"]}
+      },
+      "additionalProperties": false,
+      "if": {"required": ["verified"], "properties": {"verified": {"const": false}}},
+      "then": {"properties": {"run_id": {"type": "null"}}}
+    },
+    "fullSide": {"required": ["chain_head", "run_id", "path", "verified"]},
+    "trace": {
+      "type": "object",
+      "required": ["node", "status", "baseline", "candidate", "also_at"],
+      "properties": {
+        "node": {"type": "string"},
+        "status": {"enum": ["traced", "could not check", "not followed"]},
+        "also_at": {"type": "array", "items": {"type": "string"}},
+        "baseline": {"$ref": "#/$defs/side"},
+        "candidate": {"$ref": "#/$defs/side"},
+        "reason": {"type": "string"},
+        "heading": {"type": "string"},
+        "first_line": {"type": "string"},
+        "documents": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "object", "required": ["changed", "total", "names"],
+             "properties": {"changed": {"$ref": "#/$defs/decimal"}, "total": {"$ref": "#/$defs/decimal"},
+                            "names": {"type": "array", "items": {"type": "string"}}},
+             "additionalProperties": false}
+          ]
+        },
+        "second_hop": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "object", "required": ["node", "baseline", "candidate"],
+             "properties": {"node": {"type": "string"}, "baseline": {"type": ["string", "null"]},
+                            "candidate": {"type": ["string", "null"]}},
+             "additionalProperties": false}
+          ]
+        },
+        "envelope": {"enum": ["identical", "diverged"]},
+        "nodes": {"type": "array", "items": {"$ref": "#/$defs/node"}}
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {"if": {"properties": {"status": {"const": "traced"}}},
+         "then": {"required": ["heading", "first_line", "documents", "second_hop", "envelope", "nodes"],
+                  "not": {"required": ["reason"]},
+                  "properties": {"baseline": {"$ref": "#/$defs/fullSide", "properties": {"verified": {"const": true}}},
+                                 "candidate": {"$ref": "#/$defs/fullSide", "properties": {"verified": {"const": true}}}}}},
+        {"if": {"properties": {"status": {"const": "could not check"}}},
+         "then": {"required": ["reason"],
+                  "not": {"anyOf": [{"required": ["heading"]}, {"required": ["nodes"]}, {"required": ["documents"]}]},
+                  "properties": {"baseline": {"$ref": "#/$defs/fullSide"}, "candidate": {"$ref": "#/$defs/fullSide"}}}},
+        {"if": {"properties": {"status": {"const": "not followed"}}},
+         "then": {"not": {"anyOf": [{"required": ["reason"]}, {"required": ["heading"]}, {"required": ["nodes"]}]},
+                  "properties": {"baseline": {"maxProperties": 1}, "candidate": {"maxProperties": 1}}}}
+      ]
+    }
+  }
+}
