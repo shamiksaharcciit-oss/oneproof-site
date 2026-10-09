@@ -37,7 +37,7 @@
 <div class="code"><pre><code>[project test command]
 onetrace-verify --require-artifacts runs/&lt;latest run&gt;
 </code></pre></div>
-If CI runs <code>onetrace-ci gate</code> and it reports <strong>review</strong>, the summary names the first stage that changed; explain in the pull request whether that change was intended. Don't regenerate the baseline to make the gate pass unless a person asked.</li>
+If CI compares the run with a baseline (<code>onetrace diff baselines/golden runs/&lt;run&gt;</code>) and it reports a difference, the report names the first stage that changed; explain in the pull request whether that change was intended. Don't regenerate the baseline to make CI pass unless a person asked.</li>
 <li><strong>To switch recording off locally:</strong> <code>ONETRACE_DISABLE=1</code>. Don't remove decorators to silence an error; fix the cause or ask.</li>
 </ul>
 </main>

@@ -272,7 +272,7 @@ Exit code 0 means the record is intact. The verifier's first line, on stderr, sa
 </ol>
 <h2 id="6-optional-only-if-the-human-asks">6. Optional, only if the human asks</h2>
 <ul>
-<li>CI gate: <code>pip install onetrace-ci</code>, then <code>onetrace-ci init-ci</code> (writes one workflow file and a minimal plan with a question for the human), then <code>onetrace-ci baseline propose --from runs/&lt;run_id&gt; --out baselines/golden</code>.</li>
+<li>A CI check: follow the manual's section 11, which verifies the run with <code>onetrace-verify</code> and compares it with a known-good run with <code>onetrace diff</code>.</li>
 <li>Signing: <strong>not yours to turn on.</strong> If the human wants runs signed, they make the key (<code>onetrace keygen</code>), keep it, and add <code>sign_with=</code> themselves; the manual's section 17 explains it. <strong>Never create, print, copy or commit a private key yourself.</strong></li>
 <li>Add the onetrace section to the repository's <code>AGENTS.md</code> (see the AGENTS.md section page), so later edits keep the instrumentation consistent.</li>
 </ul>
@@ -367,7 +367,7 @@ Exit code 0 means the record is intact. The verifier's first line, on stderr, sa
 <li>Never create a <code>Recorder</code> at module level, and never decorate library code.</li>
 <li>Never turn on signing: no <code>sign_with=</code> on <code>@ot.run</code> or <code>Recorder</code>, and no <code>onetrace keygen</code> or <code>onetrace sign</code>. Signing is the human's choice, with the human's key.</li>
 <li>Never add network calls, anchoring, or telemetry.</li>
-<li>Never edit CI workflow files unless the human asked, and then only through <code>onetrace-ci init-ci</code>.</li>
+<li>Never edit CI workflow files unless the human asked.</li>
 <li>Never claim the record shows the output is correct. It shows what each decorated stage received and produced, and that the record hasn't been altered since.</li>
 </ul>
 </main>

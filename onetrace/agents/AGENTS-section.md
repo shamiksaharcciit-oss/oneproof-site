@@ -17,5 +17,5 @@ This repository records each pipeline run with onetrace: one verifiable receipt 
   [project test command]
   onetrace-verify --require-artifacts runs/<latest run>
   ```
-  If CI runs `onetrace-ci gate` and it reports **review**, the summary names the first stage that changed; explain in the pull request whether that change was intended. Don't regenerate the baseline to make the gate pass unless a person asked.
+  If CI compares the run with a baseline (`onetrace diff baselines/golden runs/<run>`) and it reports a difference, the report names the first stage that changed; explain in the pull request whether that change was intended. Don't regenerate the baseline to make CI pass unless a person asked.
 - **To switch recording off locally:** `ONETRACE_DISABLE=1`. Don't remove decorators to silence an error; fix the cause or ask.

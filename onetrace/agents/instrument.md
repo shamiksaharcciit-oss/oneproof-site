@@ -195,7 +195,7 @@ These fields say what a stage *means*, and only a person may set them:
 
 ## 6. Optional, only if the human asks
 
-- CI gate: `pip install onetrace-ci`, then `onetrace-ci init-ci` (writes one workflow file and a minimal plan with a question for the human), then `onetrace-ci baseline propose --from runs/<run_id> --out baselines/golden`.
+- A CI check: follow the manual's section 11, which verifies the run with `onetrace-verify` and compares it with a known-good run with `onetrace diff`.
 - Signing: **not yours to turn on.** If the human wants runs signed, they make the key (`onetrace keygen`), keep it, and add `sign_with=` themselves; the manual's section 17 explains it. **Never create, print, copy or commit a private key yourself.**
 - Add the onetrace section to the repository's `AGENTS.md` (see the AGENTS.md section page), so later edits keep the instrumentation consistent.
 
@@ -235,5 +235,5 @@ End with a short report:
 - Never create a `Recorder` at module level, and never decorate library code.
 - Never turn on signing: no `sign_with=` on `@ot.run` or `Recorder`, and no `onetrace keygen` or `onetrace sign`. Signing is the human's choice, with the human's key.
 - Never add network calls, anchoring, or telemetry.
-- Never edit CI workflow files unless the human asked, and then only through `onetrace-ci init-ci`.
+- Never edit CI workflow files unless the human asked.
 - Never claim the record shows the output is correct. It shows what each decorated stage received and produced, and that the record hasn't been altered since.

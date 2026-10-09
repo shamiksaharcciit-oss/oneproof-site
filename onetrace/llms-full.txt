@@ -1,10 +1,10 @@
 # onetrace
 
-> onetrace records one hash-chained receipt per stage of a Python pipeline (an AI/RAG/agent pipeline, or any other), so that anyone can verify the record without a network call and compare two runs stage by stage. `diff` and `localize` name the first stage that changed and the setting or tool version behind it. onetrace-ci turns that into a pull-request gate: pass, review, or fail.
+> onetrace records one hash-chained receipt per stage of a Python pipeline (an AI/RAG/agent pipeline, or any other), so that anyone can verify the record without a network call and compare two runs stage by stage. `diff` and `localize` name the first stage that changed and the setting or tool version behind it.
 
 Key facts for a coding agent:
 
-- Python 3.10+. Install: `pip install onetrace` (SDK and verifier). This needs onetrace 0.2.0 or later: check with `python -c "import onetrace, onetrace_verify; print(onetrace.__version__, onetrace.__file__)"`, and if it prints an older version or a path outside the project's environment, use a fresh virtual environment. CI gate: `pip install onetrace-ci`. Signature and anchor checks: `pip install "onetrace-verify[crypto]"`.
+- Python 3.10+. Install: `pip install onetrace` (SDK and verifier). This needs onetrace 0.2.0 or later: check with `python -c "import onetrace, onetrace_verify; print(onetrace.__version__, onetrace.__file__)"`, and if it prints an older version or a path outside the project's environment, use a fresh virtual environment. Signature and anchor checks: `pip install "onetrace-verify[crypto]"`.
 - Instrument existing code with two decorators: `@ot.run` on the function that is one run, and `@ot.stage(name, ...)` on each step. Nothing else in the code changes. Called outside a run, a decorated stage is a plain function, so tests keep working.
 - What a run folder holds: each stage's outputs (which can include documents, prompts and answers), and fingerprints (SHA-256 digests) of its inputs. Treat run folders like logs that may contain sensitive data. onetrace sends no telemetry and makes no network call during a run.
 - See what changed: `onetrace diff runs/A runs/B --text` shows the first stage that differs and the text that changed in its outputs, checked against the receipts first.
@@ -243,7 +243,7 @@ These fields say what a stage *means*, and only a person may set them:
 
 ## 6. Optional, only if the human asks
 
-- CI gate: `pip install onetrace-ci`, then `onetrace-ci init-ci` (writes one workflow file and a minimal plan with a question for the human), then `onetrace-ci baseline propose --from runs/<run_id> --out baselines/golden`.
+- A CI check: follow the manual's section 11, which verifies the run with `onetrace-verify` and compares it with a known-good run with `onetrace diff`.
 - Signing: **not yours to turn on.** If the human wants runs signed, they make the key (`onetrace keygen`), keep it, and add `sign_with=` themselves; the manual's section 17 explains it. **Never create, print, copy or commit a private key yourself.**
 - Add the onetrace section to the repository's `AGENTS.md` (see the AGENTS.md section page), so later edits keep the instrumentation consistent.
 
@@ -283,7 +283,7 @@ End with a short report:
 - Never create a `Recorder` at module level, and never decorate library code.
 - Never turn on signing: no `sign_with=` on `@ot.run` or `Recorder`, and no `onetrace keygen` or `onetrace sign`. Signing is the human's choice, with the human's key.
 - Never add network calls, anchoring, or telemetry.
-- Never edit CI workflow files unless the human asked, and then only through `onetrace-ci init-ci`.
+- Never edit CI workflow files unless the human asked.
 - Never claim the record shows the output is correct. It shows what each decorated stage received and produced, and that the record hasn't been altered since.
 
 <!-- https://oneproof.dev/onetrace/agents/AGENTS-section.md -->
@@ -307,7 +307,7 @@ This repository records each pipeline run with onetrace: one verifiable receipt 
   [project test command]
   onetrace-verify --require-artifacts runs/<latest run>
   ```
-  If CI runs `onetrace-ci gate` and it reports **review**, the summary names the first stage that changed; explain in the pull request whether that change was intended. Don't regenerate the baseline to make the gate pass unless a person asked.
+  If CI compares the run with a baseline (`onetrace diff baselines/golden runs/<run>`) and it reports a difference, the report names the first stage that changed; explain in the pull request whether that change was intended. Don't regenerate the baseline to make CI pass unless a person asked.
 - **To switch recording off locally:** `ONETRACE_DISABLE=1`. Don't remove decorators to silence an error; fix the cause or ask.
 
 <!-- https://oneproof.dev/onetrace/quickstart.md -->

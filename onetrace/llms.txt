@@ -1,10 +1,10 @@
 # onetrace
 
-> onetrace records one hash-chained receipt per stage of a Python pipeline (an AI/RAG/agent pipeline, or any other), so that anyone can verify the record without a network call and compare two runs stage by stage. `diff` and `localize` name the first stage that changed and the setting or tool version behind it. onetrace-ci turns that into a pull-request gate: pass, review, or fail.
+> onetrace records one hash-chained receipt per stage of a Python pipeline (an AI/RAG/agent pipeline, or any other), so that anyone can verify the record without a network call and compare two runs stage by stage. `diff` and `localize` name the first stage that changed and the setting or tool version behind it.
 
 Key facts for a coding agent:
 
-- Python 3.10+. Install: `pip install onetrace` (SDK and verifier). This needs onetrace 0.2.0 or later: check with `python -c "import onetrace, onetrace_verify; print(onetrace.__version__, onetrace.__file__)"`, and if it prints an older version or a path outside the project's environment, use a fresh virtual environment. CI gate: `pip install onetrace-ci`. Signature and anchor checks: `pip install "onetrace-verify[crypto]"`.
+- Python 3.10+. Install: `pip install onetrace` (SDK and verifier). This needs onetrace 0.2.0 or later: check with `python -c "import onetrace, onetrace_verify; print(onetrace.__version__, onetrace.__file__)"`, and if it prints an older version or a path outside the project's environment, use a fresh virtual environment. Signature and anchor checks: `pip install "onetrace-verify[crypto]"`.
 - Instrument existing code with two decorators: `@ot.run` on the function that is one run, and `@ot.stage(name, ...)` on each step. Nothing else in the code changes. Called outside a run, a decorated stage is a plain function, so tests keep working.
 - What a run folder holds: each stage's outputs (which can include documents, prompts and answers), and fingerprints (SHA-256 digests) of its inputs. Treat run folders like logs that may contain sensitive data. onetrace sends no telemetry and makes no network call during a run.
 - See what changed: `onetrace diff runs/A runs/B --text` shows the first stage that differs and the text that changed in its outputs, checked against the receipts first.
