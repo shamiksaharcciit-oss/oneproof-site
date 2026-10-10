@@ -50,6 +50,7 @@
       <a href="#verify">Verify</a>
       <a href="#compare">Compare runs</a>
       <a href="#console">The console</a>
+      <a href="#agent">With your coding agent</a>
       <a href="#frameworks">Frameworks and agents</a>
     </div>
   </div>
@@ -182,6 +183,43 @@ onetrace-console runs/ --open</pre>
       </div>
       <div class="shot"><img src="/assets/img/console-run.png" width="1280" height="800" loading="lazy" alt="A run page in the onetrace console, showing the checked banner and the evidence for each question."></div>
     </div>
+  </div>
+</section>
+
+<section id="agent" class="section-soft" aria-labelledby="agent-title">
+  <div class="wrap">
+    <p class="kicker">With your coding agent</p>
+    <h2 id="agent-title">Let your coding agent add onetrace for you.</h2>
+    <p class="sub">The <a href="/onetrace/agents/instrument.html">agent recipe</a> is written for the agent, not for you. You hand it over; the agent follows it, asks you what only you can answer, and reports back with test, verify and diff results.</p>
+    <div class="grid-3" style="margin-top:28px">
+      <div class="card"><h3>1. Open your project in the agent</h3><p>Claude Code, Cursor, GitHub Copilot, Windsurf, Cline, Codex or any agent that can edit your repository.</p></div>
+      <div class="card"><h3>2. Paste this prompt</h3><p>Or install the kit's file for your tool, below, and run it as a command.</p></div>
+      <div class="card"><h3>3. Answer its questions</h3><p>What one run is, how to treat an external index, the trust fields it leaves unset on purpose, and signing. Then read its report.</p></div>
+    </div>
+<pre style="margin-top:24px">Instrument this repository's Python pipeline with onetrace.
+Read the recipe in full first: https://oneproof.dev/onetrace/agents/instrument.md
+(the raw file, not a summary). Follow sections 0 to 7 in order. Add recording only:
+results must stay exactly the same. Stop and ask me wherever the recipe says to ask.
+Never put a secret in a decorator or config. Finish with the report from section 7.</pre>
+    <div class="table-wrap" style="margin-top:24px">
+      <table>
+        <thead><tr><th scope="col">Tool</th><th scope="col">Kit file to copy into your project</th><th scope="col">Then</th></tr></thead>
+        <tbody>
+          <tr><td>Claude Code</td><td><code>.claude/commands/onetrace-instrument.md</code></td><td>Type <code>/onetrace-instrument</code></td></tr>
+          <tr><td>Cursor</td><td><code>.cursor/rules/onetrace-instrument.mdc</code></td><td>In Agent chat: follow <code>@onetrace-instrument</code></td></tr>
+          <tr><td>GitHub Copilot (VS Code, agent mode)</td><td><code>.github/prompts/onetrace-instrument.prompt.md</code></td><td>Type <code>/onetrace-instrument</code></td></tr>
+          <tr><td>Windsurf</td><td><code>.windsurf/rules/onetrace-instrument.md</code></td><td>In Cascade: <code>@onetrace-instrument</code></td></tr>
+          <tr><td>Cline</td><td><code>.clinerules/onetrace-instrument.md</code></td><td>Ask it to instrument the repository with onetrace</td></tr>
+          <tr><td>Codex and other agents that read <code>AGENTS.md</code></td><td><code>AGENTS.md</code> (merge the section into yours)</td><td>Ask it to instrument the repository with onetrace</td></tr>
+          <tr><td>Any other agent</td><td><code>PROMPT.txt</code></td><td>Paste it as your message</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="cta-row" style="margin-top:24px">
+      <a class="btn btn-primary" href="/assets/kit/onetrace-agent-kit.zip" download>Download the agent kit (.zip)</a>
+      <a class="btn btn-line" href="/onetrace/agents/instrument.html">Read the recipe</a>
+    </div>
+    <p style="color:var(--ink-2);margin-top:16px">If your agent can't fetch web pages, save <a href="/onetrace/agents/instrument.md">instrument.md</a> in your project as <code>docs/onetrace/instrument.md</code>; every kit file tells the agent to look there. Keep the <code>AGENTS.md</code> or <code>CLAUDE.md</code> section afterwards: it keeps later agent edits consistent with the instrumentation.</p>
   </div>
 </section>
 
