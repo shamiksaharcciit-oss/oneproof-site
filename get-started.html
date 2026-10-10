@@ -218,7 +218,8 @@ onetrace diff runs/before runs/after</pre>
           <tr><td><code>python</code> or <code>py</code> is "not found"</td><td>Install Python from python.org (on Windows, tick "Add python.exe to PATH"), then open a new terminal.</td></tr>
           <tr><td><code>onetrace</code> or <code>onetrace-console</code> is "not recognized"</td><td>The virtual environment isn't active. <code>cd</code> into your folder and run the activate line from step 2.</td></tr>
           <tr><td>A message that the run folder is already used</td><td>Each run name works once. Use a new name, or delete the old folder under <code>runs</code>.</td></tr>
-          <tr><td>The console says its port is in use</td><td>Add <code>--port 8090</code>, or any free number, to the command.</td></tr>
+          <tr><td>The console says it "cannot listen on 127.0.0.1:8080"</td><td>Another console is probably still running. Stop it with Ctrl+C in its window, or add <code>--port 8091</code> (any free number) to the command.</td></tr>
+          <tr><td><code>onetrace-console --version</code> says 0.0.0, or it lists commands such as <code>admin create</code></td><td>An older install answered first. Make a fresh folder and virtual environment as in steps 2 and 3, and install there. <code>where.exe onetrace-console</code> (Windows) or <code>which onetrace-console</code> shows which one answers.</td></tr>
           <tr><td>You want to run your program without recording</td><td>Set <code>ONETRACE_DISABLE=1</code> (PowerShell: <code>$env:ONETRACE_DISABLE = "1"</code>). Nothing is written.</td></tr>
         </tbody>
       </table>

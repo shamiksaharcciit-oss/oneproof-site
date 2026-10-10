@@ -191,16 +191,18 @@ onetrace-console runs/ --open</pre>
     <p class="kicker">With your coding agent</p>
     <h2 id="agent-title">Let your coding agent add onetrace for you.</h2>
     <p class="sub">The <a href="/onetrace/agents/instrument.html">agent recipe</a> is written for the agent, not for you. You hand it over; the agent follows it, asks you what only you can answer, and reports back with test, verify and diff results.</p>
-    <div class="grid-3" style="margin-top:28px">
+    <div class="grid-2" style="margin-top:28px">
       <div class="card"><h3>1. Open your project in the agent</h3><p>Claude Code, Cursor, GitHub Copilot, Windsurf, Cline, Codex or any agent that can edit your repository.</p></div>
       <div class="card"><h3>2. Paste this prompt</h3><p>Or install the kit's file for your tool, below, and run it as a command.</p></div>
       <div class="card"><h3>3. Answer its questions</h3><p>What one run is, how to treat an external index, the trust fields it leaves unset on purpose, and signing. Then read its report.</p></div>
+      <div class="card"><h3>4. Open your runs in the console</h3><p>Every run your program makes from now on lands in a <code>runs</code> folder. See them in your browser with the commands below.</p></div>
     </div>
 <pre style="margin-top:24px">Instrument this repository's Python pipeline with onetrace.
 Read the recipe in full first: https://oneproof.dev/onetrace/agents/instrument.md
 (the raw file, not a summary). Follow sections 0 to 7 in order. Add recording only:
 results must stay exactly the same. Stop and ask me wherever the recipe says to ask.
-Never put a secret in a decorator or config. Finish with the report from section 7.</pre>
+Never put a secret in a decorator or config. Finish with the report from section 7,
+and tell me the exact commands to run my program and open its runs in onetrace-console.</pre>
     <div class="table-wrap" style="margin-top:24px">
       <table>
         <thead><tr><th scope="col">Tool</th><th scope="col">Kit file to copy into your project</th><th scope="col">Then</th></tr></thead>
@@ -220,6 +222,17 @@ Never put a secret in a decorator or config. Finish with the report from section
       <a class="btn btn-line" href="/onetrace/agents/instrument.html">Read the recipe</a>
     </div>
     <p style="color:var(--ink-2);margin-top:16px">If your agent can't fetch web pages, save <a href="/onetrace/agents/instrument.md">instrument.md</a> in your project as <code>docs/onetrace/instrument.md</code>; every kit file tells the agent to look there. Keep the <code>AGENTS.md</code> or <code>CLAUDE.md</code> section afterwards: it keeps later agent edits consistent with the instrumentation.</p>
+    <h3 style="margin-top:40px">See your own runs in the console</h3>
+    <p style="color:var(--ink-2)">Once onetrace is in your code, each run of your program writes a folder under <code>runs</code>, in the folder you start it from. In the same environment you run your program in:</p>
+<pre>pip install onetrace-console
+onetrace-console --version          # must say 0.1.0 or later
+onetrace-console runs --open</pre>
+    <ul style="color:var(--ink-2);line-height:1.7;margin:12px 0 0 20px;padding:0">
+      <li><code>runs</code> is the folder that holds your run folders; a full path works too, for example <code>onetrace-console "C:\Users\you\my-app\runs" --open</code>. Every run folder in it is loaded and listed on the Overview; one still being recorded is skipped, with the reason.</li>
+      <li>To compare two runs, add their folder names: <code>--compare &lt;first&gt; &lt;second&gt;</code>. Tip: name runs as you record them, with <code>ONETRACE_RUN_ID=before</code> (PowerShell: <code>$env:ONETRACE_RUN_ID = "before"</code>), so you can write <code>--compare before after</code>.</li>
+      <li>The console reads the folder when it starts. After new runs, stop it with Ctrl+C and run the command again.</li>
+      <li>Port 8080 already in use? Add <code>--port 8091</code>. If <code>--version</code> shows 0.0.0, or the console prints commands such as <code>admin create</code>, an older install answered first: make a fresh virtual environment and install there, as in <a href="/get-started.html#setup">Get started</a>.</li>
+    </ul>
   </div>
 </section>
 
