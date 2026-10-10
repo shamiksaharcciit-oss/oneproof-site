@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How onetrace works — receipts, the chain, the verifier and the verdicts</title>
+<meta name="description" content="The mechanism underneath onetrace: canonical JSON receipts per stage, a hash chain ending in a chain head, an independent verifier, five comparison verdicts, and a published format.">
+<link rel="canonical" href="https://oneproof.dev/how-it-works.html">
+<meta property="og:title" content="How onetrace works">
+<meta property="og:description" content="Receipts, the hash chain, the independent verifier and the five verdicts, with their limits stated.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneproof.dev/how-it-works.html">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html">Developers</a>
+      <a href="/how-it-works.html" aria-current="page">How it works</a>
+      <a href="/onetrace/">Docs</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<div class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow"><b>For researchers and reviewers</b> layer 3 of 3</span>
+    <h1>The mechanism: small records, one chain, an independent check.</h1>
+    <p class="lede">Everything the product pages say rests on this page. The record is a published format, the verifier trusts none of the code that wrote the record, and each verdict has a narrow, stated meaning.</p>
+    <div class="crumbs">
+      <a href="#receipt">The receipt</a>
+      <a href="#chain">The chain</a>
+      <a href="#verifier">The verifier</a>
+      <a href="#verdicts">The verdicts</a>
+      <a href="#ladder">The evidence ladder</a>
+      <a href="#limits">The limits</a>
+    </div>
+  </div>
+</div>
+
+<section id="receipt" aria-labelledby="receipt-title">
+  <div class="wrap">
+    <p class="kicker">1 · The receipt</p>
+    <h2 id="receipt-title">Each stage writes one receipt, in canonical JSON.</h2>
+    <p class="sub">A stage is one logical step of a run. Its receipt (<code>stage-receipt/0.2</code>) is canonical JSON: UTF-8 with no byte-order mark, sorted keys, no incidental whitespace, and no JSON numbers, so numeric-looking values are decimal strings. The same content always yields the same bytes, and so the same digest.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Member</th><th scope="col">What it records</th></tr></thead>
+        <tbody>
+          <tr><td><code>format</code>, <code>run_id</code>, <code>stage</code></td><td>The format version, the run, and which stage this is.</td></tr>
+          <tr><td><code>prev</code></td><td>The digest of the previous receipt, or <code>null</code> for the first. This is the link in the chain.</td></tr>
+          <tr><td><code>inputs</code>, <code>outputs</code></td><td>Each artifact read or written, by digest and byte count, with a trust class: <code>operator-authored</code>, <code>model-generated</code> or <code>externally-sourced</code>.</td></tr>
+          <tr><td><code>instrument</code></td><td>The tool that did the work: name, version and a digest of its configuration.</td></tr>
+          <tr><td><code>assertions</code></td><td>Named constants and measured values the stage states.</td></tr>
+          <tr><td><code>outcome</code></td><td><code>ok</code>, <code>refused</code> or <code>error</code>.</td></tr>
+          <tr><td><code>time</code></td><td><code>started</code> and <code>ended</code>, each with an explicit zone.</td></tr>
+          <tr><td><code>coverage</code>, <code>emission</code>, <code>anchor</code></td><td>Declared versus observed stages; how the receipt was produced; whether the run is anchored.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:20px;color:var(--ink-2)">A run folder holds <code>MANIFEST.json</code>, a <code>receipts/</code> folder and an <code>artifacts/</code> folder with the bytes the digests name. Artifacts can include documents, prompts and answers, so treat run folders like logs that may hold sensitive data.</p>
+  </div>
+</section>
+
+<section id="chain" class="section-soft" aria-labelledby="chain-title">
+  <div class="wrap">
+    <p class="kicker">2 · The chain</p>
+    <h2 id="chain-title">Receipts are hash-chained into a manifest.</h2>
+    <p class="sub">Each receipt names the digest of the one before it. <code>MANIFEST.json</code> (format <code>stage-receipt-chain</code>) lists every receipt's file and digest in order and ends in a <code>chain_head</code>: the digest of the last receipt. Change, remove or reorder a receipt and the links no longer match.</p>
+    <div class="chain" role="img" aria-label="Three receipts linked in order, each pointing to the previous one, ending in the chain head held by the manifest.">
+      <div class="rcpt"><b>01 retrieve</b><span>prev: null</span><span>out: sha256:3f9…</span></div>
+      <div class="arrow"></div>
+      <div class="rcpt"><b>02 rerank</b><span>prev: sha256:a41…</span><span>out: sha256:7c0…</span></div>
+      <div class="arrow"></div>
+      <div class="rcpt"><b>03 answer</b><span>prev: sha256:e8d…</span><span>out: sha256:b25…</span></div>
+      <div class="arrow"></div>
+      <div class="rcpt head"><b>MANIFEST.json</b><span>chain_head:</span><span>sha256:0d6…</span></div>
+    </div>
+    <p style="margin-top:24px;color:var(--ink-2)">Digests above are illustrative. Pipelines that branch are recorded as a graph: a stage's inputs can name the earlier receipts it read. Per-document stages carry two roots: <code>receipts_root</code> over the receipt bytes, and <code>outputs_root</code> over document id and output digest pairs, which is what comparison uses.</p>
+    <div class="grid-2" style="margin-top:28px">
+      <div class="card"><h3>Signatures, beside the chain</h3><p>An Ed25519 signature over the chain head, by a key you hold. It sits in <code>signatures/</code> and changes no existing byte. It shows that the key's holder signed; it doesn't say who the holder is.</p></div>
+      <div class="card"><h3>Anchors, beside the chain</h3><p>A timestamp proof over the chain head from an outside party, in <code>anchors/</code>. It shows the record existed by a time, under that party's trust assumptions, not when the run happened.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="verifier" aria-labelledby="verifier-title">
+  <div class="wrap">
+    <p class="kicker">3 · The verifier</p>
+    <h2 id="verifier-title">A separate program decides, from bytes alone.</h2>
+    <p class="sub"><code>onetrace-verify</code> is the reference verifier. It uses only the Python standard library, makes no network call, and doesn't trust the SDK that produced the record: a record from any other emitter is checked the same way.</p>
+    <div class="grid-3">
+      <div class="card"><h3>Canonical form first</h3><p>Each receipt's bytes must equal its own canonical serialisation. A receipt that doesn't is refused before anything else is read.</p></div>
+      <div class="card"><h3>Every link, and the head</h3><p>Each <code>prev</code> and the <code>chain_head</code> must match. A break is reported at its exact place.</p></div>
+      <div class="card"><h3>Every output file</h3><p>With <code>--require-artifacts</code>, each artifact must exist and match its digest. A missing or edited file fails, by name.</p></div>
+    </div>
+    <p style="margin-top:24px;color:var(--ink-2)">Each check prints <code>PASS</code>, <code>FAIL</code> or <code>NOT-RUN</code>. A format version the verifier doesn't implement is refused by name, never guessed at, and reported as not verified (exit 2) rather than as a pass or a fail.</p>
+  </div>
+</section>
+
+<section id="verdicts" class="section-soft" aria-labelledby="verdicts-title">
+  <div class="wrap">
+    <p class="kicker">4 · The verdicts</p>
+    <h2 id="verdicts-title">Comparison: one verdict per stage, about its output.</h2>
+    <p class="sub"><code>diff</code> refuses to compare a run the verifier refuses. It then compares each stage's output digest in chain order (for a per-document stage, its <code>outputs_root</code>) and gives exactly one verdict.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Verdict</th><th scope="col">Rule</th></tr></thead>
+        <tbody>
+          <tr><td><code>same</code></td><td>The output digest matches on both sides.</td></tr>
+          <tr><td><code>FIRST DIFFERENCE</code></td><td>The first stage, in chain order, whose output digest differs. At most one per comparison.</td></tr>
+          <tr><td><code>downstream</code></td><td>After the first difference, and still different.</td></tr>
+          <tr><td><code>reconverged</code></td><td>After the first difference, but matching again: different computations, same output. Reported, not hidden.</td></tr>
+          <tr><td><code>COULD NOT CHECK</code></td><td>The stage can't be evaluated, for example an unimplemented format version or an unreadable file. Never treated as a pass.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid-2" style="margin-top:28px">
+      <div class="card"><h3>Annotations never change a verdict</h3><p>A changed instrument name, version, configuration digest or asserted constant is reported as an annotation. So a stage can be <code>same</code> and still show that how its output was produced changed.</p></div>
+      <div class="card"><h3>Localise and read the text</h3><p><code>localize</code> names the first point of divergence and its cause, or in one run the first stage that didn't end cleanly. <code>diff --text</code> shows what the recorded outputs contained, checked against the receipts first, in a published text-diff format.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="ladder" aria-labelledby="ladder-title">
+  <div class="wrap">
+    <div class="tour-row">
+      <div>
+        <p class="kicker">5 · The evidence ladder</p>
+        <h2 id="ladder-title">In the console, each question is its own rung.</h2>
+        <p style="color:var(--ink-2)">The console never collapses a run into one score. Each rung is a separate question with its own evidence, and each answer says what was and wasn't checked. None of them says the output was correct.</p>
+      </div>
+      <div class="ladder">
+        <div class="rung"><h3>Records agree</h3><p>The verifier's checks held, with the output files required.</p></div>
+        <div class="rung"><h3>Signed by a known recorder</h3><p>A signature over the chain head by a key on your trust list.</p></div>
+        <div class="rung"><h3>Nothing declared is missing</h3><p>Every declared stage left a receipt.</p></div>
+        <div class="rung"><h3>Re-runnable stages reproduced</h3><p>Stages re-run from recorded inputs gave the recorded outputs.</p></div>
+        <div class="rung"><h3>Committed by a known time</h3><p>An anchor fixes when the record existed.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="limits" class="honest" aria-labelledby="limits-title">
+  <div class="wrap">
+    <p class="kicker" style="color:var(--amber)">6 · The limits</p>
+    <h2 id="limits-title">What the mechanism does not establish.</h2>
+    <p class="sub">Stated in full in <a href="/onetrace/non-claims.html" style="color:#fff">what onetrace does not claim</a>. The ones a reviewer most needs:</p>
+    <div class="grid-3">
+      <div class="card"><h3>Not a truth oracle</h3><p>A faithfully recorded wrong answer verifies. Trust classes say where bytes came from, not whether they're right.</p></div>
+      <div class="card"><h3>Not proof against a writer</h3><p>Someone who can rewrite storage and recompute every digest isn't stopped by verification alone. Hold the chain head somewhere independent, or anchor it.</p></div>
+      <div class="card"><h3>Not bit-exact everywhere</h3><p>Reproduction isn't claimed across machines for numeric stages, and unseeded model calls are reported as could not check, with their originals kept.</p></div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="spec-title">
+  <div class="wrap">
+    <p class="kicker">Read the source material</p>
+    <h2 id="spec-title">The format is published, and still version 0.</h2>
+    <p class="sub">The record format is written up as an Internet-Draft so that something other than the program that wrote a record can read it. It may change before version 1; every record carries its version, and a verifier refuses versions it doesn't implement.</p>
+    <div class="grid-3">
+      <a class="path" href="https://datatracker.ietf.org/doc/draft-saha-stage-receipts/"><span class="who-for">Internet-Draft</span><h3>Stage receipts</h3><p>The normative format, chain and verification rules.</p><span class="go">Datatracker →</span></a>
+      <a class="path" href="/onetrace/format.html"><span class="who-for">Reference</span><h3>The record format</h3><p>Every member, the two roots and the graph form.</p><span class="go">Read →</span></a>
+      <a class="path" href="/onetrace/textdiff-format.html"><span class="who-for">Reference</span><h3>Text-diff format</h3><p>What <code>diff --text</code> writes, with its schema.</p><span class="go">Read →</span></a>
+      <a class="path" href="/onetrace/verdicts.html"><span class="who-for">Reference</span><h3>The five verdicts</h3><p>The exact comparison rules.</p><span class="go">Read →</span></a>
+      <a class="path" href="/onetrace/manual.html"><span class="who-for">Reference</span><h3>The manual</h3><p>From basics to signing, anchoring and comparison.</p><span class="go">Read →</span></a>
+      <a class="path" href="/onetrace/non-claims.html"><span class="who-for">Reference</span><h3>Non-claims</h3><p>Every limit, stated before you find it.</p><span class="go">Read →</span></a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Packages</h4>
+        <ul>
+          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/answer-lineage.html">A forensic report</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
+  </div>
+</footer>
+</body>
+</html>

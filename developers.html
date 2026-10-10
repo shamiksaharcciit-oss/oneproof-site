@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>onetrace for developers — add it, run it, compare runs</title>
+<meta name="description" content="Install onetrace, add two decorators, run your pipeline, verify the record, compare two runs and open the console on your own runs.">
+<link rel="canonical" href="https://oneproof.dev/developers.html">
+<meta property="og:title" content="onetrace for developers">
+<meta property="og:description" content="Two decorators on the code you already have. Verify, compare and browse your runs.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneproof.dev/developers.html">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html" aria-current="page">Developers</a>
+      <a href="/how-it-works.html">How it works</a>
+      <a href="/onetrace/">Docs</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<div class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow"><b>For developers</b> layer 2 of 3</span>
+    <h1>Two decorators. Then every run leaves a record.</h1>
+    <p class="lede">onetrace wraps the code you already have. Each step writes a receipt as it runs; you verify the record, compare two runs, and browse them in the console. No platform, no account, and nothing sent anywhere.</p>
+    <div class="crumbs">
+      <a href="#install">Install and run</a>
+      <a href="#verify">Verify</a>
+      <a href="#compare">Compare runs</a>
+      <a href="#console">The console</a>
+      <a href="#frameworks">Frameworks and agents</a>
+    </div>
+  </div>
+</div>
+
+<section id="install" aria-labelledby="install-title">
+  <div class="wrap">
+    <p class="kicker">Install and run</p>
+    <h2 id="install-title">From zero to a verified run.</h2>
+    <p class="sub">This follows the <a href="/onetrace/quickstart.html">quickstart</a>: a two-step pipeline, a retriever and an answer.</p>
+    <div class="steps">
+      <div class="stepx">
+        <div>
+          <h3>Install</h3>
+          <p>The verifier, <code>onetrace-verify</code>, comes with it.</p>
+<pre>pip install onetrace</pre>
+        </div>
+      </div>
+      <div class="stepx">
+        <div>
+          <h3>Decorate your steps</h3>
+          <p><code>@ot.stage</code> on each step, naming the tool that does the work. <code>@ot.run</code> on the function that does the whole job once. Change nothing else.</p>
+<pre><span class="k">import</span> onetrace <span class="k">as</span> ot
+
+<span class="k">@ot.stage</span>(<span class="s">"retrieve"</span>, instrument=ot.pkg(<span class="s">"word-overlap"</span>, <span class="s">"onetrace"</span>,
+                                         kind=<span class="s">"retriever"</span>, config={<span class="s">"top_k"</span>: 2}))
+<span class="k">def</span> retrieve(question):
+    ...
+
+<span class="k">@ot.stage</span>(<span class="s">"answer"</span>, instrument=ot.pkg(<span class="s">"first-passage"</span>, <span class="s">"onetrace"</span>, kind=<span class="s">"model-call"</span>))
+<span class="k">def</span> answer(question, passages):
+    ...
+
+<span class="k">@ot.run</span>(stages=[<span class="s">"retrieve"</span>, <span class="s">"answer"</span>])
+<span class="k">def</span> main():
+    ...</pre>
+        </div>
+      </div>
+      <div class="stepx">
+        <div>
+          <h3>Run it as usual</h3>
+          <p>The run writes a folder under <code>runs/</code>, named by its run id, and prints the command that checks it. <code>onetrace doctor</code> checks your setup.</p>
+<pre>python app.py
+onetrace doctor</pre>
+        </div>
+      </div>
+      <div class="stepx">
+        <div>
+          <h3>Switch it off, or take it out</h3>
+          <p><code>ONETRACE_DISABLE=1</code> makes both decorators pass straight through and nothing is written. To remove it, delete the import and the decorator lines; your code runs as before.</p>
+<pre>ONETRACE_DISABLE=1 python app.py</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="verify" class="section-soft" aria-labelledby="verify-title">
+  <div class="wrap">
+    <p class="kicker">Verify</p>
+    <h2 id="verify-title">Check a run without trusting the code that wrote it.</h2>
+    <p class="sub"><code>onetrace-verify</code> uses only the Python standard library and needs no network. It prints one row per check, <code>PASS</code>, <code>FAIL</code> or <code>NOT-RUN</code>, then a result. With <code>--require-artifacts</code> it also checks every output file.</p>
+<pre>onetrace-verify --require-artifacts runs/&lt;run id&gt;</pre>
+    <div class="table-wrap" style="margin-top:24px">
+      <table>
+        <thead><tr><th scope="col">Exit code</th><th scope="col">Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>0</code></td><td>PASS: every check that ran held.</td></tr>
+          <tr><td><code>1</code></td><td>FAIL: something in the record doesn't match, and the row says where.</td></tr>
+          <tr><td><code>2</code></td><td>NOT VERIFIED or refused: for example a format version the verifier doesn't implement, or an unreadable manifest. Nothing is reported as passing.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:20px;color:var(--ink-2)">Runs can also be signed with an Ed25519 key you hold, or anchored with an outside timestamp. Both sit beside the record and change none of its bytes. See the <a href="/onetrace/manual.html">manual</a>.</p>
+  </div>
+</section>
+
+<section id="compare" aria-labelledby="compare-title">
+  <div class="wrap">
+    <p class="kicker">Compare runs</p>
+    <h2 id="compare-title">Ask "what changed?" and get one verdict per step.</h2>
+    <p class="sub"><code>diff</code> verifies both runs first, then walks them step by step. <code>localize</code> names the first point of divergence and its cause. <code>--text</code> shows the output text that changed.</p>
+<pre>onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt;
+onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt; --text
+onetrace localize runs/&lt;run A&gt; runs/&lt;run B&gt;</pre>
+    <div class="grid-2" style="margin-top:28px">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Step verdict</th><th scope="col">Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>same</code></td><td>The step's output digest matches.</td></tr>
+            <tr><td><code>FIRST DIFFERENCE</code></td><td>The first step, in order, whose output differs.</td></tr>
+            <tr><td><code>downstream</code></td><td>Still different after the first difference.</td></tr>
+            <tr><td><code>reconverged</code></td><td>Different work upstream, same output here.</td></tr>
+            <tr><td><code>COULD NOT CHECK</code></td><td>Can't be evaluated. Never read as a pass.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col"><code>diff</code> result</th><th scope="col">Exit code</th></tr></thead>
+          <tbody>
+            <tr><td>identical</td><td><code>0</code></td></tr>
+            <tr><td>diverged</td><td><code>1</code></td></tr>
+            <tr><td>not comparable</td><td><code>2</code></td></tr>
+            <tr><td>refused</td><td><code>3</code></td></tr>
+            <tr><td>could not check</td><td><code>4</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p style="margin-top:20px;color:var(--ink-2)">The exit codes make it easy to gate a CI job on a comparison against a known-good baseline run.</p>
+  </div>
+</section>
+
+<section id="console" class="section-soft" aria-labelledby="console-title">
+  <div class="wrap">
+    <div class="tour-row">
+      <div class="tour-text">
+        <p class="kicker">The console</p>
+        <h2 id="console-title">Browse your runs in a browser.</h2>
+        <p style="color:var(--ink-2)">The onetrace console reads your run folders and draws the pages you saw on the demo: an overview, one page per run, and comparisons with the first difference marked. It runs on your machine.</p>
+<pre>pip install onetrace-console
+onetrace-console demo</pre>
+        <p style="color:var(--ink-2);margin-top:16px">It needs Python 3.12 or later. <code>demo</code> copies two sample runs into <code>onetrace-console-demo/</code>, compares them, and prints the pages' addresses. Then point it at your own runs:</p>
+<pre>onetrace-console runs/
+onetrace-console runs/ --compare &lt;run A&gt; &lt;run B&gt;
+onetrace-console runs/ --open</pre>
+        <p style="color:var(--ink-2);margin-top:16px">Every folder holding a <code>MANIFEST.json</code> is loaded; one still being recorded is skipped, with the reason. <code>--compare</code> takes two folder names, the first as the baseline. It listens on <code>127.0.0.1</code> only, port 8080 unless you pass <code>--port</code>, and makes no network calls. The <a href="https://pypi.org/project/onetrace-console/">console's README</a> has every option, and how to run it for a team.</p>
+      </div>
+      <div class="shot"><img src="/assets/img/console-run.png" width="1280" height="800" loading="lazy" alt="A run page in the onetrace console, showing the checked banner and the evidence for each question."></div>
+    </div>
+  </div>
+</section>
+
+<section id="frameworks" aria-labelledby="fw-title">
+  <div class="wrap">
+    <p class="kicker">Frameworks and agents</p>
+    <h2 id="fw-title">Works with what you already use.</h2>
+    <div class="grid-3" style="margin-top:28px">
+      <a class="path" href="/onetrace/adapters/plain-python.html"><span class="who-for">Adapter</span><h3>Plain Python</h3><p>The framework-free baseline.</p><span class="go">Read →</span></a>
+      <a class="path" href="/onetrace/adapters/langchain.html"><span class="who-for">Adapter</span><h3>LangChain</h3><p>Wrap each chain step as a stage.</p><span class="go">Read →</span></a>
+      <a class="path" href="/onetrace/adapters/llamaindex.html"><span class="who-for">Adapter</span><h3>LlamaIndex</h3><p>Retrieval and synthesis as stages.</p><span class="go">Read →</span></a>
+      <a class="path" href="/onetrace/adapters/langflow.html"><span class="who-for">Adapter</span><h3>Langflow</h3><p>Record a flow's components.</p><span class="go">Read →</span></a>
+      <a class="path" href="/onetrace/agents/instrument.html"><span class="who-for">For coding agents</span><h3>Agent recipe</h3><p>Let your coding agent instrument an existing pipeline.</p><span class="go">Read →</span></a>
+      <a class="path" href="/onetrace/errors.html"><span class="who-for">Reference</span><h3>Errors and fixes</h3><p>Every refusal, its cause and a one-line fix.</p><span class="go">Read →</span></a>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0" aria-labelledby="next-title">
+  <div class="wrap">
+    <div class="band">
+      <div>
+        <h2 id="next-title">Want to know exactly what's in a receipt?</h2>
+        <p>The next layer down: the record format, the hash chain, how the verifier decides, and what each verdict does and doesn't mean.</p>
+      </div>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="/how-it-works.html">How it works</a>
+        <a class="btn btn-ghost" href="/onetrace/manual.html">Full manual</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Packages</h4>
+        <ul>
+          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/answer-lineage.html">A forensic report</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
+  </div>
+</footer>
+</body>
+</html>
