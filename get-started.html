@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get started with onetrace</title>
+<meta name="description" content="A step-by-step start for anyone: install onetrace, record a small example twice, compare the runs and open them in the console, then do the same on your own code.">
+<link rel="canonical" href="https://oneproof.dev/get-started.html">
+<meta property="og:title" content="Get started with onetrace">
+<meta property="og:description" content="Two decorators on the code you already have. Verify, compare and browse your runs.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneproof.dev/get-started.html">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<style>.os{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:12px}.os>div{min-width:0}.os .lbl{font-size:13px;font-weight:600;color:var(--ink-2);margin:0 0 6px}.os pre{margin:0}@media(max-width:760px){.os{grid-template-columns:1fr}}.gs-note{background:#fff;border:1px solid #dde2ea;border-radius:10px;padding:14px 18px;margin-top:14px;color:var(--ink-2)}.gs-note b{color:var(--ink)}.stepx p{max-width:70ch}</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html">Developers</a>
+      <a href="/how-it-works.html">How it works</a>
+      <a href="/onetrace/">Docs</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<div class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow"><b>Get started</b> about 15 minutes</span>
+    <h1>From nothing installed to your runs in the console.</h1>
+    <p class="lede">Follow these steps in order. You'll install onetrace, record a tiny example twice, see which step changed, and open both runs in the console on your own machine. Then you'll do the same on your own code.</p>
+    <div class="crumbs">
+      <a href="#setup">1–3 Set up</a>
+      <a href="#example">4–6 A first example</a>
+      <a href="#console">7 The console</a>
+      <a href="#own">Your own code</a>
+      <a href="#help">If something goes wrong</a>
+    </div>
+  </div>
+</div>
+
+<section aria-labelledby="words-title" style="padding-bottom:0">
+  <div class="wrap">
+    <h2 id="words-title">Three words first</h2>
+    <div class="grid-3" style="margin-top:20px">
+      <div class="card"><h3>Run</h3><p>One complete pass of your program, for example answering one question.</p></div>
+      <div class="card"><h3>Stage</h3><p>One step inside a run, for example "find the right document" or "write the answer".</p></div>
+      <div class="card"><h3>Record</h3><p>What onetrace writes for each run: a folder with a small file per stage, saying what went in and what came out.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="setup" aria-labelledby="setup-title">
+  <div class="wrap">
+    <p class="kicker">Set up</p>
+    <h2 id="setup-title">Get Python ready and install onetrace.</h2>
+    <p class="sub">You type the commands below into a terminal. On Windows that's <b>PowerShell</b> (search for it in the Start menu). On macOS it's <b>Terminal</b>. Type each line and press Enter.</p>
+    <div class="steps">
+      <div class="stepx"><div>
+        <h3>Check that you have Python 3.12 or newer</h3>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>py --version</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>python3 --version</pre></div></div>
+        <p>If it prints <code>Python 3.12</code> or a higher number, carry on. If it prints an older version or "not found", install Python from <a href="https://www.python.org/downloads/">python.org/downloads</a>. On Windows, tick <b>"Add python.exe to PATH"</b> in the installer. Then close the terminal, open a new one and check again.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>Make a folder, with a private Python space in it</h3>
+        <p>The "virtual environment" (<code>.venv</code>) keeps what you install here separate from the rest of your computer.</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>mkdir onetrace-start
+cd onetrace-start
+py -3.12 -m venv .venv
+.venv\Scripts\Activate.ps1</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>mkdir onetrace-start
+cd onetrace-start
+python3 -m venv .venv
+source .venv/bin/activate</pre></div></div>
+        <p>Your prompt now starts with <code>(.venv)</code>, and every later command runs inside it. If you close the terminal, come back with <code>cd onetrace-start</code> and the last line again.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>Install onetrace and the console</h3>
+<pre>pip install onetrace onetrace-console</pre>
+        <p>This installs <code>onetrace</code> (records your runs), <code>onetrace-verify</code> (checks a record) and <code>onetrace-console</code> (shows runs in your browser). Nothing is sent anywhere; the console only listens on your own machine.</p>
+        <p>Want to see where you're heading first? <code>onetrace-console demo --open</code> opens the demo in your browser. Press <b>Ctrl+C</b> in the terminal to stop it.</p>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<section id="example" class="section-soft" aria-labelledby="ex-title">
+  <div class="wrap">
+    <p class="kicker">A first example</p>
+    <h2 id="ex-title">Record a tiny program twice, and find what changed.</h2>
+    <p class="sub">The example answers a question from three short documents. It has two stages: <b>retrieve</b> finds the best document, and <b>answer</b> writes the answer. It needs no AI service and no key.</p>
+    <div class="steps" style="counter-reset:s 3">
+      <div class="stepx"><div>
+        <h3>Create the file <code>app.py</code></h3>
+        <p>In your <code>onetrace-start</code> folder, create a file named <code>app.py</code> with any text editor (Notepad, VS Code, or TextEdit in plain-text mode) and paste this in. The lines with <code>ot</code> are the only onetrace parts.</p>
+<pre>import sys
+import onetrace as ot
+
+DOCUMENTS = [
+    &quot;Customers can request a refund within 30 days of purchase.&quot;,
+    &quot;Shipping is free on orders over 50 euros.&quot;,
+    &quot;Support is open Monday to Friday, 9:00 to 17:00.&quot;,
+]
+
+TOP_K = 1  # how many documents to retrieve
+
+
+@ot.stage(&quot;retrieve&quot;, instrument=ot.pkg(&quot;word-overlap&quot;, &quot;onetrace&quot;,
+                                         kind=&quot;retriever&quot;, config={&quot;top_k&quot;: TOP_K}))
+def retrieve(question):
+    words = set(question.lower().split())
+    ranked = sorted(DOCUMENTS, key=lambda d: -len(words &amp; set(d.lower().split())))
+    return ranked[:TOP_K]
+
+
+@ot.stage(&quot;answer&quot;, instrument=ot.pkg(&quot;first-passage&quot;, &quot;onetrace&quot;, kind=&quot;model-call&quot;))
+def answer(question, passages):
+    return &quot;Answer: &quot; + passages[0]
+
+
+@ot.run(stages=[&quot;retrieve&quot;, &quot;answer&quot;])
+def main(question):
+    passages = retrieve(question)
+    print(answer(question, passages))
+
+
+if __name__ == &quot;__main__&quot;:
+    main(&quot; &quot;.join(sys.argv[1:]) or &quot;How long do I have to request a refund?&quot;)
+</pre>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>Run it, change one word, run it again</h3>
+        <p>The first run is named <code>before</code>:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = &quot;before&quot;
+python app.py</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=before python app.py</pre></div></div>
+        <p>It prints the answer and the line <code>onetrace: run written to runs/before</code>. Now open <code>app.py</code>, change <code>30 days</code> to <code>14 days</code>, save, and run it again as <code>after</code>:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = &quot;after&quot;
+python app.py
+Remove-Item Env:ONETRACE_RUN_ID</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=after python app.py</pre></div></div>
+        <p>Your folder now has <code>runs/before</code> and <code>runs/after</code>. Each name works once; to record again, pick a new name or delete the old folder.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>Check a record, and compare the two</h3>
+<pre>onetrace-verify --require-artifacts runs/after
+onetrace diff runs/before runs/after</pre>
+        <p>The check ends with <code>PASS</code>: the record is complete, and nothing in it was changed afterwards. The comparison lists each stage. <code>intake</code> (the question going in) is <code>same</code>. <code>retrieve</code> is the <code>FIRST DIFFERENCE</code>, because the document it found now says 14 days. <code>answer</code> is <code>downstream</code>: it changed because the step before it did.</p>
+        <p class="gs-note"><b>Lines marked NOT-RUN are normal.</b> They name checks this record doesn't use, such as signatures. They aren't errors.</p>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<section id="console" aria-labelledby="con-title">
+  <div class="wrap">
+    <p class="kicker">The console</p>
+    <h2 id="con-title">See both runs, and their comparison, in your browser.</h2>
+    <div class="steps" style="counter-reset:s 6">
+      <div class="stepx"><div>
+        <h3>Open the console on your <code>runs</code> folder</h3>
+<pre>onetrace-console runs --compare before after --open</pre>
+        <p>Your browser opens on the Overview with your two runs. <b>Comparisons</b> shows <code>retrieve</code> as the first difference, and the text that changed. Click a run to see its stages and what was checked.</p>
+        <p>The console keeps its own copy of the runs in a <code>store</code> folder beside <code>runs</code>. It listens on <code>127.0.0.1</code> only, so only you can open it. Press <b>Ctrl+C</b> in the terminal to stop it. Run the same command whenever you've recorded new runs; leave out <code>--compare before after</code> to just list them.</p>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<section id="own" class="section-soft" aria-labelledby="own-title">
+  <div class="wrap">
+    <p class="kicker">Your own code</p>
+    <h2 id="own-title">Do the same on your own program.</h2>
+    <p class="sub">Two ways. Either works; the first is easier if you use an AI coding tool.</p>
+    <div class="grid-2" style="margin-top:8px">
+      <div class="card">
+        <h3>A. Let your coding agent do it</h3>
+        <p>Open your project in Claude Code, Cursor, GitHub Copilot, Windsurf, Cline or Codex, and give it the prompt from the <a href="/developers.html#agent">agent kit</a>. It adds onetrace, checks that nothing else changed, and asks you the few questions only you can answer.</p>
+        <p><a class="btn btn-primary" href="/assets/kit/onetrace-agent-kit.zip" download>Download the agent kit</a></p>
+      </div>
+      <div class="card">
+        <h3>B. Add it yourself</h3>
+        <p>Install onetrace in your project's own environment, then make the same three kinds of edit as in <code>app.py</code>:</p>
+        <ol style="margin:0 0 12px 20px;padding:0;color:var(--ink-2);line-height:1.7">
+          <li><code>import onetrace as ot</code> at the top.</li>
+          <li><code>@ot.stage("name", instrument=ot.pkg(...))</code> above each step's function.</li>
+          <li><code>@ot.run(stages=["name", ...])</code> above the function that does the whole job once, listing your stages in order.</li>
+        </ol>
+        <p>Change nothing else. Then run, check, compare and open the console exactly as above. The <a href="/onetrace/quickstart.html">quickstart</a> and the <a href="/onetrace/manual.html">manual</a> cover the details.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="help" aria-labelledby="help-title">
+  <div class="wrap">
+    <p class="kicker">If something goes wrong</p>
+    <h2 id="help-title">The usual snags, and the fix.</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">You see</th><th scope="col">Do this</th></tr></thead>
+        <tbody>
+          <tr><td>"running scripts is disabled on this system" (Windows, at <code>Activate.ps1</code>)</td><td>Run <code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code>, answer Y, then run the activate line again.</td></tr>
+          <tr><td><code>python</code> or <code>py</code> is "not found"</td><td>Install Python from python.org (on Windows, tick "Add python.exe to PATH"), then open a new terminal.</td></tr>
+          <tr><td><code>onetrace</code> or <code>onetrace-console</code> is "not recognized"</td><td>The virtual environment isn't active. <code>cd</code> into your folder and run the activate line from step 2.</td></tr>
+          <tr><td>A message that the run folder is already used</td><td>Each run name works once. Use a new name, or delete the old folder under <code>runs</code>.</td></tr>
+          <tr><td>The console says its port is in use</td><td>Add <code>--port 8090</code>, or any free number, to the command.</td></tr>
+          <tr><td>You want to run your program without recording</td><td>Set <code>ONETRACE_DISABLE=1</code> (PowerShell: <code>$env:ONETRACE_DISABLE = "1"</code>). Nothing is written.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color:var(--ink-2);margin-top:16px">Still stuck? Every error onetrace prints has a one-line fix and a link; they're all on <a href="/onetrace/errors.html">Errors and fixes</a>. Questions and bugs go to <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">onetrace-issues</a>.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Packages</h4>
+        <ul>
+          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/answer-lineage.html">A forensic report</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
+  </div>
+</footer>
+</body>
+</html>
