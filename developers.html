@@ -51,7 +51,7 @@
       <a href="#compare">Compare runs</a>
       <a href="#console">The console</a>
       <a href="#agent">With your coding agent</a>
-      <a href="#frameworks">Frameworks and agents</a>
+      <a href="#frameworks">Guides for your setup</a>
     </div>
   </div>
 </div>
@@ -225,15 +225,16 @@ Never put a secret in a decorator or config. Finish with the report from section
 
 <section id="frameworks" aria-labelledby="fw-title">
   <div class="wrap">
-    <p class="kicker">Frameworks and agents</p>
-    <h2 id="fw-title">Works with what you already use.</h2>
+    <p class="kicker">Guides for your setup</p>
+    <h2 id="fw-title">Pick the page that matches your project.</h2>
+    <p class="sub">You don't need any of these to start: <a href="/get-started.html">Get started</a> is enough. Open one when it matches your situation. The four "worked examples" are the same small question-answering pipeline, built four ways, each recorded with onetrace, so you can see where the decorators go in code like yours.</p>
     <div class="grid-3" style="margin-top:28px">
-      <a class="path" href="/onetrace/adapters/plain-python.html"><span class="who-for">Adapter</span><h3>Plain Python</h3><p>The framework-free baseline.</p><span class="go">Read →</span></a>
-      <a class="path" href="/onetrace/adapters/langchain.html"><span class="who-for">Adapter</span><h3>LangChain</h3><p>Wrap each chain step as a stage.</p><span class="go">Read →</span></a>
-      <a class="path" href="/onetrace/adapters/llamaindex.html"><span class="who-for">Adapter</span><h3>LlamaIndex</h3><p>Retrieval and synthesis as stages.</p><span class="go">Read →</span></a>
-      <a class="path" href="/onetrace/adapters/langflow.html"><span class="who-for">Adapter</span><h3>Langflow</h3><p>Record a flow's components.</p><span class="go">Read →</span></a>
-      <a class="path" href="/onetrace/agents/instrument.html"><span class="who-for">For coding agents</span><h3>Agent recipe</h3><p>Let your coding agent instrument an existing pipeline.</p><span class="go">Read →</span></a>
-      <a class="path" href="/onetrace/errors.html"><span class="who-for">Reference</span><h3>Errors and fixes</h3><p>Every refusal, its cause and a one-line fix.</p><span class="go">Read →</span></a>
+      <a class="path" href="/onetrace/adapters/plain-python.html"><span class="who-for">Worked example</span><h3>Plain Python</h3><p>The pipeline written with no framework at all: read documents, split them, find the relevant parts, write an answer. <b>Read this if</b> your code is ordinary Python functions. It is also the reference the other three are compared with.</p><span class="go">Read →</span></a>
+      <a class="path" href="/onetrace/adapters/langchain.html"><span class="who-for">Worked example</span><h3>LangChain</h3><p>The same pipeline built with LangChain's loaders, splitters and chains, with each step recorded as a stage. <b>Read this if</b> your project uses LangChain.</p><span class="go">Read →</span></a>
+      <a class="path" href="/onetrace/adapters/llamaindex.html"><span class="who-for">Worked example</span><h3>LlamaIndex</h3><p>The same pipeline built with LlamaIndex's readers, index and retriever. It shows which steps LlamaIndex covers and which stay plain Python. <b>Read this if</b> your project uses LlamaIndex.</p><span class="go">Read →</span></a>
+      <a class="path" href="/onetrace/adapters/langflow.html"><span class="who-for">Worked example</span><h3>Langflow</h3><p>The same pipeline with its steps run as Langflow components, and the record saying which steps Langflow ran. <b>Read this if</b> you build flows in Langflow.</p><span class="go">Read →</span></a>
+      <a class="path" href="/onetrace/agents/instrument.html"><span class="who-for">For your coding agent</span><h3>Agent recipe</h3><p>Step-by-step instructions written for an AI coding tool, not for you to follow. Your agent reads it and adds onetrace to your code. <b>Use it</b> through the agent kit, higher up this page.</p><span class="go">Read →</span></a>
+      <a class="path" href="/onetrace/errors.html"><span class="who-for">When something stops</span><h3>Errors and fixes</h3><p>Every message onetrace can stop with, what caused it, and a one-line fix. <b>Open it when</b> a run or a check prints an error you don't understand.</p><span class="go">Read →</span></a>
     </div>
   </div>
 </section>
