@@ -1,0 +1,82 @@
+/* onetrace docs: the layout and reading styles, on top of /assets/site.css (same tokens). */
+.docs{display:grid;grid-template-columns:232px minmax(0,1fr) 200px;gap:44px;max-width:1320px;margin:0 auto;padding:36px 24px 72px}
+.docs-side{position:sticky;top:84px;align-self:start;max-height:calc(100vh - 100px);overflow:auto;font-size:14.5px;padding-right:6px}
+.docs-side details>summary{display:none}
+.docs-side .grp{margin:0 0 18px}
+.docs-side .grp-t{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.docs-side .grp-t i{font-style:normal;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--navy);color:#fff;font-size:11px;letter-spacing:0}
+.docs-side ul{list-style:none;margin:0;padding:0}
+.docs-side li a{display:block;padding:5px 10px;border-radius:7px;color:var(--ink-2);text-decoration:none;line-height:1.4}
+.docs-side li a:hover{background:var(--soft);color:var(--ink)}
+.docs-side li a[aria-current=page]{background:var(--amber-soft);color:var(--amber-ink);font-weight:600;box-shadow:inset 3px 0 0 var(--amber)}
+.docs-side li a .ext{color:var(--muted);font-size:12px}
+.docs-toc{position:sticky;top:84px;align-self:start;max-height:calc(100vh - 100px);overflow:auto;font-size:13.5px;border-left:1px solid var(--line);padding-left:16px}
+.docs-toc b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.docs-toc a{display:block;color:var(--muted);text-decoration:none;padding:3px 0;line-height:1.35}
+.docs-toc a:hover{color:var(--ink)}
+.crumb{font-size:14px;color:var(--muted);margin:0 0 10px}
+.crumb a{color:var(--muted)}
+/* reading */
+.prose{min-width:0;max-width:780px}
+.prose>h1:first-of-type{font-size:40px;line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.prose h2{font-size:26px;line-height:1.25;letter-spacing:-.01em;margin:48px 0 12px;padding-top:24px;border-top:1px solid var(--line);scroll-margin-top:84px}
+.prose h3{font-size:19px;margin:30px 0 8px;scroll-margin-top:84px}
+.prose h4{font-size:16px;margin:22px 0 6px}
+.prose p,.prose li{color:var(--ink-2)}
+.prose a{text-underline-offset:2px}
+.prose code{font-size:.88em;background:var(--soft);border:1px solid var(--line);border-radius:5px;padding:.08em .35em}
+.prose pre{background:var(--navy);color:#dbe4f0;border-radius:10px;padding:16px 18px;overflow:auto;font-size:14px;line-height:1.55;margin:14px 0 18px}
+.prose pre code{background:none;border:0;padding:0;color:inherit;font-size:inherit}
+.prose .code{position:relative}
+.prose .copy{position:absolute;top:8px;right:8px;font:600 12px var(--sans);color:#dbe4f0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:6px;padding:4px 9px;cursor:pointer}
+.prose .copy:hover{background:rgba(255,255,255,.16)}
+.prose table{border-collapse:collapse;width:100%;font-size:15px;margin:14px 0 20px;display:block;overflow-x:auto}
+.prose th,.prose td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;vertical-align:top}
+.prose th{font-size:13px;color:var(--muted);font-weight:600;border-bottom:2px solid var(--line)}
+.prose blockquote{margin:16px 0;padding:12px 16px;border-left:4px solid var(--amber);background:var(--amber-soft);border-radius:0 8px 8px 0;color:var(--amber-ink)}
+.prose blockquote p{color:inherit;margin:4px 0}
+.prose hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+.prose svg{max-width:100%;height:auto}
+.prose img{border-radius:10px;border:1px solid var(--line)}
+.pager{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:56px}
+.pager a{display:block;border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-decoration:none;color:var(--ink)}
+.pager a:hover{border-color:var(--navy-3);background:var(--soft)}
+.pager span{display:block;font-size:13px;color:var(--muted)}
+.pager .next{text-align:right;grid-column:2}
+.docs-meta{margin-top:20px;font-size:13.5px;color:var(--muted)}
+/* docs home */
+.dhero{background:var(--navy);color:var(--on-navy)}
+.dhero .wrap{padding:56px 24px 48px}
+.dhero h1{color:#fff;font-size:44px;line-height:1.1;letter-spacing:-.02em;margin:10px 0 12px}
+.dhero p{max-width:66ch;color:var(--on-navy);font-size:18px;margin:0 0 22px}
+.dhero .install{display:inline-flex;gap:12px;align-items:center;background:var(--navy-2);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;font-family:var(--mono);font-size:15px;color:#fff}
+.dhero .install span{color:var(--on-navy-2)}
+.paths6{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:8px 0 8px}
+.pcard{border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;background:#fff;display:flex;flex-direction:column;gap:8px}
+.pcard .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--navy);color:#fff;font-weight:600;font-size:14px}
+.pcard h3{margin:2px 0 0;font-size:18px}
+.pcard p{margin:0;color:var(--muted);font-size:15px}
+.pcard ul{list-style:none;margin:4px 0 0;padding:0}
+.pcard li{border-top:1px solid var(--line)}
+.pcard li a{display:flex;justify-content:space-between;gap:10px;padding:8px 2px;text-decoration:none;color:var(--ink);font-size:15px}
+.pcard li a:hover{color:var(--navy-3)}
+.pcard li a::after{content:"→";color:var(--muted)}
+.pcard.start{background:var(--amber-soft);border-color:#f0d9a6}
+@media (max-width:1100px){.docs{grid-template-columns:220px minmax(0,1fr)}.docs-toc{display:none}.paths6{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){
+ .docs{grid-template-columns:1fr;gap:16px;padding-top:16px}
+ .docs-side{position:static;max-height:none;overflow:visible}
+ .docs-side details{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+ .docs-side details>summary{display:block;font-weight:600;cursor:pointer}
+ .docs-side details:not([open]) .grp{display:none}
+ .prose>h1:first-of-type{font-size:30px}.dhero h1{font-size:32px}
+ .paths6{grid-template-columns:1fr}.pager{grid-template-columns:1fr}.pager .next{grid-column:1}
+}
+/* overrides of site.css for docs pages */
+.prose h2,.prose h3,.prose p{max-width:none}
+.prose p,.prose li{font-size:17px}
+.prose .lede{font-size:19px}
+section.dhero{padding:0}
+.prose{overflow-wrap:break-word}
+.prose pre{max-width:100%;white-space:pre}
+.prose li code,.prose p code{overflow-wrap:anywhere}

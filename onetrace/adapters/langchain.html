@@ -1,27 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light dark">
-<title>LangChain · onetrace</title>
-<link rel="stylesheet" href="../assets/onetrace.css">
+<title>LangChain · onetrace docs</title>
+<meta name="description" content="onetrace documentation: LangChain">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/onetrace/assets/docs.css">
 </head>
 <body>
 <a class="skip" href="#content">Skip to the content</a>
-<header class="site">
-<a class="brand" href="../index.html">onetrace</a> <span class="version">0.2.1</span>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html">Developers</a>
+      <a href="/how-it-works.html">How it works</a>
+      <a href="/onetrace/" aria-current="page">Docs</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
 </header>
-<nav class="pages" aria-label="Documentation pages">
-<details open>
-<summary>Pages</summary>
-<ul>
-<li><a href="../index.html">Overview</a></li>
-<li><span class="group">Start</span><ul><li><a href="../quickstart.html">Quickstart</a></li><li><a href="../README.html">Documentation index</a></li></ul></li><li><span class="group">For coding agents</span><ul><li><a href="../agents/instrument.html">Agent recipe</a></li><li><a href="../agents/AGENTS-section.html">AGENTS.md section</a></li></ul></li><li><span class="group">Reference</span><ul><li><a href="../manual.html">Manual</a></li><li><a href="../errors.html">Errors and fixes</a></li><li><a href="../verbs.html">The three verbs</a></li><li><a href="../verdicts.html">The five verdicts</a></li><li><a href="../format.html">The record format</a></li><li><a href="../textdiff-format.html">Text-diff format</a></li><li><a href="../non-claims.html">What onetrace does not claim</a></li></ul></li><li><span class="group">Adapters</span><ul><li><a href="plain-python.html">Plain Python</a></li><li><a href="langchain.html" aria-current="page">LangChain</a></li><li><a href="llamaindex.html">LlamaIndex</a></li><li><a href="langflow.html">Langflow</a></li></ul></li>
-</ul>
-</details>
-</nav>
-<main id="content">
+<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html" aria-current="page">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Add it to your code</p>
 <h1 id="langchain">LangChain</h1>
 <p><code>examples/langchain_adapter/pipeline.py</code> — the same nine stages as the
 <a href="plain-python.html">plain-Python reference</a>, wired onto real LangChain constructs wherever one
@@ -99,10 +107,49 @@ python examples/langchain_adapter/pipeline.py OUT_DIR RUN_ID
 <li><strong>On:</strong> each entry also holds <code>text</code>, the exact chunk string its digest is taken over, and the <code>split</code> stage records the constant <code>keep_text: true</code>. <code>onetrace diff --text</code> then shows a changed chunk's text, but only after checking that the digest of the text's bytes equals the chunk's recorded digest. Otherwise it says <code>text does not match its digest; not shown</code>.</li>
 </ul>
 <p>What a run folder stores either way: each stage's outputs, which include documents' converted and cleaned text, prompts and answers. Inputs are only fingerprinted. Treat run folders like logs that may contain sensitive data. <code>keep_text</code> adds the chunk text to that.</p>
-</main>
-<footer class="site">
-<p>Source: <a href="langchain.md"><code>langchain.md</code></a> · onetrace 0.2.1 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
+<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/adapters/plain-python.html"><span>← Previous</span>Plain Python</a><a class="next" href="/onetrace/adapters/llamaindex.html"><span>Next →</span>LlamaIndex</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#get-this-code">Get this code</a><a href="#running-it">Running it</a><a href="#keeping-chunk-text-keep_text">Keeping chunk text: keep_text</a></aside></div>
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Packages</h4>
+        <ul>
+          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/answer-lineage.html">A forensic report</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
+  </div>
 </footer>
-<script src="../assets/copy.js" defer></script>
+<script src="/onetrace/assets/copy.js" defer></script>
+<script>if(window.matchMedia&&matchMedia("(max-width:760px)").matches){var d=document.querySelector(".docs-side details");if(d)d.removeAttribute("open")}</script>
 </body>
 </html>
