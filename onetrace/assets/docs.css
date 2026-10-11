@@ -80,3 +80,24 @@ section.dhero{padding:0}
 .prose{overflow-wrap:break-word}
 .prose pre{max-width:100%;white-space:pre}
 .prose li code,.prose p code{overflow-wrap:anywhere}
+/* the overview's diagrams (their classes come from docs' generator) */
+.prose .diagram-figure{overflow-x:auto;margin:16px 0 8px;padding:0}
+.prose svg.diagram{display:block;width:100%;min-width:720px;max-width:760px;height:auto;margin:0}
+.prose svg.diagram .dg-box{fill:var(--soft);stroke:var(--line);stroke-width:1.5}
+.prose svg.diagram .dg-strong{stroke:var(--navy-3);stroke-width:2}
+.prose svg.diagram .dg-beside{stroke-dasharray:6 4}
+.prose svg.diagram .dg-frame{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:2 4}
+.prose svg.diagram .dg-line{stroke:var(--ink);stroke-width:1.5}
+.prose svg.diagram .dg-dashed{stroke-dasharray:5 4}
+.prose svg.diagram .dg-head{fill:var(--ink)}
+.prose svg.diagram text{fill:var(--ink);font-family:var(--sans)}
+.prose svg.diagram .dg-text{font-size:14px}
+.prose svg.diagram .dg-small{font-size:13px}
+.prose svg.diagram .dg-label{font-size:14px;font-weight:700}
+.prose svg.diagram .dg-mono{font-family:var(--mono)}
+.prose .diagram-text{margin-top:8px}
+.prose .table{overflow-x:auto;margin:14px 0 20px}
+.prose .table table{display:table;margin:0}
+.prose .code pre{padding-top:38px}
+.prose .lead{font-size:19px}
+.docs>*{min-width:0}
