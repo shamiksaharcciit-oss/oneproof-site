@@ -4,7 +4,7 @@
 
 Key facts for a coding agent:
 
-- Python 3.10+. Install: `pip install onetrace` (SDK and verifier). This needs onetrace 0.2.0 or later: check with `python -c "import onetrace, onetrace_verify; print(onetrace.__version__, onetrace.__file__)"`, and if it prints an older version or a path outside the project's environment, use a fresh virtual environment. Signature and anchor checks: `pip install "onetrace-verify[crypto]"`.
+- Python 3.10+. The console (`onetrace-console`) needs Python 3.12+, so start with 3.12 to use both. Install: `pip install onetrace` (SDK and verifier). This needs onetrace 0.2.0 or later: check with `python -c "import onetrace, onetrace_verify; print(onetrace.__version__, onetrace.__file__)"`, and if it prints an older version or a path outside the project's environment, use a fresh virtual environment. Signature and anchor checks: `pip install "onetrace-verify[crypto]"`.
 - Instrument existing code with two decorators: `@ot.run` on the function that is one run, and `@ot.stage(name, ...)` on each step. Nothing else in the code changes. Called outside a run, a decorated stage is a plain function, so tests keep working.
 - What a run folder holds: each stage's outputs (which can include documents, prompts and answers), and fingerprints (SHA-256 digests) of its inputs. Treat run folders like logs that may contain sensitive data. onetrace sends no telemetry and makes no network call during a run.
 - See what changed: `onetrace diff runs/A runs/B --text` shows the first stage that differs and the text that changed in its outputs, checked against the receipts first.
@@ -45,6 +45,8 @@ Key facts for a coding agent:
 - [Framework adapters](https://oneproof.dev/onetrace/README.md#adapters): plain Python, LangChain, LlamaIndex, Langflow
 
 <!-- https://oneproof.dev/onetrace/agents/instrument.md -->
+
+> *For people: this page is written for your coding agent, not for you to follow. Hand it over with the prompt or the agent kit at <https://oneproof.dev/developers.html#agent>, or start at <https://oneproof.dev/get-started.html>.*
 
 # Recipe for coding agents: instrument an existing Python pipeline with onetrace
 
@@ -316,7 +318,7 @@ This repository records each pipeline run with onetrace: one verifiable receipt 
 
 Add onetrace to a small pipeline in two steps: one stage first, then the rest. Then switch it off, and take it out. After the install, nothing here makes a network call; there's no model and no key, and it takes a few seconds.
 
-Use a fresh virtual environment with Python 3.10 or later. Each command runs from the folder you save the files in.
+Use a fresh virtual environment with Python 3.10 or later. The console (`onetrace-console`) needs Python 3.12 or later, so start with 3.12 to use both. Each command runs from the folder you save the files in.
 
 <!-- quickstart: run -->
 ```
@@ -414,7 +416,7 @@ onetrace doctor
 <!-- quickstart: output -->
 ```
 ...
-7 checks; all passed
+6 checks; all passed
 ```
 
 **What this one-stage run records.** Two receipts, not one:
@@ -488,7 +490,7 @@ onetrace doctor
 <!-- quickstart: output -->
 ```
 ...
-7 checks; all passed
+6 checks; all passed
 ```
 
 Now `retrieve` has a receipt of its own. Its setting (`top_k`) is part of its instrument's recorded config, so a change to it shows as a changed config. `answer` records the passages as `retrieve`'s output: an edge from one stage to the next.
@@ -594,7 +596,7 @@ Anyone can then check the record, and compare two runs, with tools that don't tr
 
 ## 2. Install
 
-Requirements: **Python 3.10 or newer**. Use a virtual environment.
+Requirements: **Python 3.10 or newer**. The console (`onetrace-console`) needs Python 3.12 or newer, so start with 3.12 to use both. Use a virtual environment.
 
 ```bash
 python -m venv .venv

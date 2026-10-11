@@ -10,7 +10,7 @@
 <body>
 <a class="skip" href="#content">Skip to the content</a>
 <header class="site">
-<a class="brand" href="../index.html">onetrace</a> <span class="version">0.2.0</span>
+<a class="brand" href="../index.html">onetrace</a> <span class="version">0.2.1</span>
 </header>
 <nav class="pages" aria-label="Documentation pages">
 <details open>
@@ -58,17 +58,34 @@ and <code>cleaned</code> are the &quot;no construct exists&quot; case in all thr
 substitutions, and both are named as such — the standing rule is: use the framework's own
 runtime wherever it has one, substitute only where none exists at all, and never let a
 substitution pass as native.</p>
+<h2 id="get-this-code">Get this code</h2>
+<p>The example's files are not part of the installed <code>onetrace</code> package. They come in its source
+package on PyPI, a <code>.tar.gz</code> file you download and unpack. In a terminal, in an empty folder, with
+your virtual environment active, run:</p>
+<!-- quickstart: run -->
+<div class="code"><pre><code>pip download onetrace==0.2.1 --no-binary :all: --no-deps
+tar -xzf onetrace-0.2.1.tar.gz
+cd onetrace-0.2.1
+</code></pre></div>
+<p>The first line downloads the source package without installing it, the second unpacks it into a
+folder named <code>onetrace-0.2.1</code>, and the third moves into that folder. Run the commands below from
+there. <code>tar</code> comes with current Windows, macOS and Linux; on Windows, use PowerShell.</p>
 <h2 id="running-it">Running it</h2>
 <p>Needs the exact pins in <code>examples/langflow_adapter/requirements.txt</code> (see
 <code>examples/PIN_DISCIPLINE.md</code> for running more than one adapter's requirements in the same
 environment).</p>
+<!-- quickstart: run -->
 <div class="code"><pre><code>pip install -r examples/langflow_adapter/requirements.txt
 python examples/langflow_adapter/pipeline.py OUT_DIR RUN_ID
 </code></pre></div>
+<p><code>OUT_DIR</code> is a new folder for the run's record, for example <code>runs/first</code>: a folder that already holds a run is refused. <code>RUN_ID</code> is a name you choose for the run, for example <code>first</code>.</p>
+<p>Its embedder, Langflow's own test embedder, gives random numbers by design. So two runs of this
+example differ from the <code>embedded</code> stage onward, and <code>onetrace diff</code> shows that stage as the first
+difference. That is expected, and not a fault.</p>
 <p>Its runs always store each chunk's text in their outputs (<code>chunks.json</code>, and again in <code>vectors.json</code>), along with the documents' converted and cleaned text, so treat its run folders like logs that may contain sensitive data.</p>
 </main>
 <footer class="site">
-<p>Source: <a href="langflow.md"><code>langflow.md</code></a> · onetrace 0.2.0 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
+<p>Source: <a href="langflow.md"><code>langflow.md</code></a> · onetrace 0.2.1 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
 </footer>
 <script src="../assets/copy.js" defer></script>
 </body>

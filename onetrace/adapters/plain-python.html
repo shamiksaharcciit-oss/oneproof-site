@@ -10,7 +10,7 @@
 <body>
 <a class="skip" href="#content">Skip to the content</a>
 <header class="site">
-<a class="brand" href="../index.html">onetrace</a> <span class="version">0.2.0</span>
+<a class="brand" href="../index.html">onetrace</a> <span class="version">0.2.1</span>
 </header>
 <nav class="pages" aria-label="Documentation pages">
 <details open>
@@ -39,9 +39,28 @@ differ across numpy/BLAS builds even for identical code and inputs (this project
 suite measures how much, and under which configurations).</p>
 <p>Instrumented via <code>onetrace.emit.Recorder</code> exactly as the framework adapters are — the point of
 this pipeline is that a framework is never required to produce a valid stage-receipt chain.</p>
+<h2 id="get-this-code">Get this code</h2>
+<p>The example's files are not part of the installed <code>onetrace</code> package. They come in its source
+package on PyPI, a <code>.tar.gz</code> file you download and unpack. In a terminal, in an empty folder, with
+your virtual environment active, run:</p>
+<!-- quickstart: run -->
+<div class="code"><pre><code>pip download onetrace==0.2.1 --no-binary :all: --no-deps
+tar -xzf onetrace-0.2.1.tar.gz
+cd onetrace-0.2.1
+</code></pre></div>
+<p>The first line downloads the source package without installing it, the second unpacks it into a
+folder named <code>onetrace-0.2.1</code>, and the third moves into that folder. Run the commands below from
+there. <code>tar</code> comes with current Windows, macOS and Linux; on Windows, use PowerShell.</p>
+<h2 id="running-it">Running it</h2>
+<p>It needs one package, <code>pypdf</code>, at the version its requirements file pins:</p>
+<!-- quickstart: run -->
+<div class="code"><pre><code>pip install -r examples/plain_python_control/requirements.txt
+python examples/plain_python_control/pipeline.py OUT_DIR RUN_ID
+</code></pre></div>
+<p><code>OUT_DIR</code> is a new folder for the run's record, for example <code>runs/first</code>: a folder that already holds a run is refused. <code>RUN_ID</code> is a name you choose for the run, for example <code>first</code>.</p>
 </main>
 <footer class="site">
-<p>Source: <a href="plain-python.md"><code>plain-python.md</code></a> · onetrace 0.2.0 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
+<p>Source: <a href="plain-python.md"><code>plain-python.md</code></a> · onetrace 0.2.1 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
 </footer>
 <script src="../assets/copy.js" defer></script>
 </body>

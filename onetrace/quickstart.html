@@ -10,7 +10,7 @@
 <body>
 <a class="skip" href="#content">Skip to the content</a>
 <header class="site">
-<a class="brand" href="index.html">onetrace</a> <span class="version">0.2.0</span>
+<a class="brand" href="index.html">onetrace</a> <span class="version">0.2.1</span>
 </header>
 <nav class="pages" aria-label="Documentation pages">
 <details open>
@@ -24,7 +24,7 @@
 <main id="content">
 <h1 id="quickstart">Quickstart</h1>
 <p>Add onetrace to a small pipeline in two steps: one stage first, then the rest. Then switch it off, and take it out. After the install, nothing here makes a network call; there's no model and no key, and it takes a few seconds.</p>
-<p>Use a fresh virtual environment with Python 3.10 or later. Each command runs from the folder you save the files in.</p>
+<p>Use a fresh virtual environment with Python 3.10 or later. The console (<code>onetrace-console</code>) needs Python 3.12 or later, so start with 3.12 to use both. Each command runs from the folder you save the files in.</p>
 <!-- quickstart: run -->
 <div class="code"><pre><code>pip install onetrace
 </code></pre></div>
@@ -96,7 +96,7 @@ if __name__ == &quot;__main__&quot;:
 </code></pre></div>
 <!-- quickstart: output -->
 <div class="code"><pre><code>...
-7 checks; all passed
+6 checks; all passed
 </code></pre></div>
 <p><strong>What this one-stage run records.</strong> Two receipts, not one:</p>
 <ul>
@@ -155,7 +155,7 @@ if __name__ == &quot;__main__&quot;:
 </code></pre></div>
 <!-- quickstart: output -->
 <div class="code"><pre><code>...
-7 checks; all passed
+6 checks; all passed
 </code></pre></div>
 <p>Now <code>retrieve</code> has a receipt of its own. Its setting (<code>top_k</code>) is part of its instrument's recorded config, so a change to it shows as a changed config. <code>answer</code> records the passages as <code>retrieve</code>'s output: an edge from one stage to the next.</p>
 <p>When a run closes, onetrace prints two lines to stderr: the folder it wrote, and the command that verifies it (<a href="manual.html#1618-what-a-run-says-when-it-closes-onetrace_quiet1">what a run says when it closes</a>). <code>ONETRACE_QUIET=1</code> turns them off.</p>
@@ -195,7 +195,7 @@ record intact: 3 stages, 2 output files checked
 <p>Delete <code>import onetrace as ot</code> from both files, and the three decorator lines. What's left is the code under &quot;Your pipeline&quot;, and it runs as it did before. Your run folders stay under <code>runs/</code> until you delete them.</p>
 </main>
 <footer class="site">
-<p>Source: <a href="quickstart.md"><code>quickstart.md</code></a> · onetrace 0.2.0 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
+<p>Source: <a href="quickstart.md"><code>quickstart.md</code></a> · onetrace 0.2.1 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
 </footer>
 <script src="assets/copy.js" defer></script>
 </body>

@@ -10,7 +10,7 @@
 <body>
 <a class="skip" href="#content">Skip to the content</a>
 <header class="site">
-<a class="brand" href="../index.html">onetrace</a> <span class="version">0.2.0</span>
+<a class="brand" href="../index.html">onetrace</a> <span class="version">0.2.1</span>
 </header>
 <nav class="pages" aria-label="Documentation pages">
 <details open>
@@ -22,6 +22,9 @@
 </details>
 </nav>
 <main id="content">
+<blockquote>
+<p><em>For people: this page is written for your coding agent, not for you to follow. Hand it over with the prompt or the agent kit at <a href="https://oneproof.dev/developers.html#agent">https://oneproof.dev/developers.html#agent</a>, or start at <a href="https://oneproof.dev/get-started.html">https://oneproof.dev/get-started.html</a>.</em></p>
+</blockquote>
 <h1 id="recipe-for-coding-agents-instrument-an-existing-python-pipeline-with-onetrace">Recipe for coding agents: instrument an existing Python pipeline with onetrace</h1>
 <p>You are adding onetrace to a codebase you did not write. Your job is to add <strong>recording</strong>, not to change <strong>behaviour</strong>. When you finish, the pipeline must produce exactly the same results as before, and every run must leave a record that <code>onetrace-verify</code> accepts.</p>
 <p>Read all of this before editing. The rules in &quot;Never&quot; are hard rules. Fetch this file itself, as raw text, from https://oneproof.dev/onetrace/agents/instrument.md, and work from it, not from a summary of it.</p>
@@ -372,7 +375,7 @@ Exit code 0 means the record is intact. The verifier's first line, on stderr, sa
 </ul>
 </main>
 <footer class="site">
-<p>Source: <a href="instrument.md"><code>instrument.md</code></a> · onetrace 0.2.0 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
+<p>Source: <a href="instrument.md"><code>instrument.md</code></a> · onetrace 0.2.1 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
 </footer>
 <script src="../assets/copy.js" defer></script>
 </body>

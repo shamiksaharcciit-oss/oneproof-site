@@ -2,7 +2,7 @@
 
 Add onetrace to a small pipeline in two steps: one stage first, then the rest. Then switch it off, and take it out. After the install, nothing here makes a network call; there's no model and no key, and it takes a few seconds.
 
-Use a fresh virtual environment with Python 3.10 or later. Each command runs from the folder you save the files in.
+Use a fresh virtual environment with Python 3.10 or later. The console (`onetrace-console`) needs Python 3.12 or later, so start with 3.12 to use both. Each command runs from the folder you save the files in.
 
 <!-- quickstart: run -->
 ```
@@ -100,7 +100,7 @@ onetrace doctor
 <!-- quickstart: output -->
 ```
 ...
-7 checks; all passed
+6 checks; all passed
 ```
 
 **What this one-stage run records.** Two receipts, not one:
@@ -174,7 +174,7 @@ onetrace doctor
 <!-- quickstart: output -->
 ```
 ...
-7 checks; all passed
+6 checks; all passed
 ```
 
 Now `retrieve` has a receipt of its own. Its setting (`top_k`) is part of its instrument's recorded config, so a change to it shows as a changed config. `answer` records the passages as `retrieve`'s output: an edge from one stage to the next.

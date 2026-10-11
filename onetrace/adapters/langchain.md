@@ -18,22 +18,45 @@ Where no LangChain construct exists at all (`document in`, `cleaned`), plain Pyt
 instead and named as a substitution in the run, never silently folded into "this is what
 LangChain does."
 
+## Get this code
+
+The example's files are not part of the installed `onetrace` package. They come in its source
+package on PyPI, a `.tar.gz` file you download and unpack. In a terminal, in an empty folder, with
+your virtual environment active, run:
+
+<!-- quickstart: run -->
+```
+pip download onetrace==0.2.1 --no-binary :all: --no-deps
+tar -xzf onetrace-0.2.1.tar.gz
+cd onetrace-0.2.1
+```
+
+The first line downloads the source package without installing it, the second unpacks it into a
+folder named `onetrace-0.2.1`, and the third moves into that folder. Run the commands below from
+there. `tar` comes with current Windows, macOS and Linux; on Windows, use PowerShell.
+
 ## Running it
 
 Needs the exact pins in `examples/langchain_adapter/requirements.txt` (LangChain and LlamaIndex
 pin conflicting `numpy` versions — install one adapter's requirements at a time, or use a
 dedicated virtual environment per adapter; see `examples/PIN_DISCIPLINE.md`).
 
+<!-- quickstart: run -->
 ```
 pip install -r examples/langchain_adapter/requirements.txt
 python examples/langchain_adapter/pipeline.py OUT_DIR RUN_ID
 ```
 
+`OUT_DIR` is a new folder for the run's record, for example `runs/first`: a folder that already holds a run is refused. `RUN_ID` is a name you choose for the run, for example `first`.
+
 ## Keeping chunk text: `keep_text`
 
+<!-- quickstart: run -->
 ```
-python examples/langchain_adapter/pipeline.py OUT_DIR RUN_ID --keep-text
+python examples/langchain_adapter/pipeline.py TEXT_OUT_DIR RUN_ID --keep-text
 ```
+
+`TEXT_OUT_DIR` is another new folder: each run needs a folder of its own.
 
 or `main(out_dir, run_id, keep_text=True)` from Python. It is off by default.
 

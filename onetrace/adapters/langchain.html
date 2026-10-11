@@ -10,7 +10,7 @@
 <body>
 <a class="skip" href="#content">Skip to the content</a>
 <header class="site">
-<a class="brand" href="../index.html">onetrace</a> <span class="version">0.2.0</span>
+<a class="brand" href="../index.html">onetrace</a> <span class="version">0.2.1</span>
 </header>
 <nav class="pages" aria-label="Documentation pages">
 <details open>
@@ -67,16 +67,32 @@ exists for the job:</p>
 <p>Where no LangChain construct exists at all (<code>document in</code>, <code>cleaned</code>), plain Python is used
 instead and named as a substitution in the run, never silently folded into &quot;this is what
 LangChain does.&quot;</p>
+<h2 id="get-this-code">Get this code</h2>
+<p>The example's files are not part of the installed <code>onetrace</code> package. They come in its source
+package on PyPI, a <code>.tar.gz</code> file you download and unpack. In a terminal, in an empty folder, with
+your virtual environment active, run:</p>
+<!-- quickstart: run -->
+<div class="code"><pre><code>pip download onetrace==0.2.1 --no-binary :all: --no-deps
+tar -xzf onetrace-0.2.1.tar.gz
+cd onetrace-0.2.1
+</code></pre></div>
+<p>The first line downloads the source package without installing it, the second unpacks it into a
+folder named <code>onetrace-0.2.1</code>, and the third moves into that folder. Run the commands below from
+there. <code>tar</code> comes with current Windows, macOS and Linux; on Windows, use PowerShell.</p>
 <h2 id="running-it">Running it</h2>
 <p>Needs the exact pins in <code>examples/langchain_adapter/requirements.txt</code> (LangChain and LlamaIndex
 pin conflicting <code>numpy</code> versions — install one adapter's requirements at a time, or use a
 dedicated virtual environment per adapter; see <code>examples/PIN_DISCIPLINE.md</code>).</p>
+<!-- quickstart: run -->
 <div class="code"><pre><code>pip install -r examples/langchain_adapter/requirements.txt
 python examples/langchain_adapter/pipeline.py OUT_DIR RUN_ID
 </code></pre></div>
+<p><code>OUT_DIR</code> is a new folder for the run's record, for example <code>runs/first</code>: a folder that already holds a run is refused. <code>RUN_ID</code> is a name you choose for the run, for example <code>first</code>.</p>
 <h2 id="keeping-chunk-text-keep_text">Keeping chunk text: <code>keep_text</code></h2>
-<div class="code"><pre><code>python examples/langchain_adapter/pipeline.py OUT_DIR RUN_ID --keep-text
+<!-- quickstart: run -->
+<div class="code"><pre><code>python examples/langchain_adapter/pipeline.py TEXT_OUT_DIR RUN_ID --keep-text
 </code></pre></div>
+<p><code>TEXT_OUT_DIR</code> is another new folder: each run needs a folder of its own.</p>
 <p>or <code>main(out_dir, run_id, keep_text=True)</code> from Python. It is off by default.</p>
 <ul>
 <li><strong>Off (the default):</strong> the <code>split</code> stage's chunk index (<code>chunks.manifest.json</code>) holds each chunk's id, document, length and digest, and <strong>no chunk text</strong>.</li>
@@ -85,7 +101,7 @@ python examples/langchain_adapter/pipeline.py OUT_DIR RUN_ID
 <p>What a run folder stores either way: each stage's outputs, which include documents' converted and cleaned text, prompts and answers. Inputs are only fingerprinted. Treat run folders like logs that may contain sensitive data. <code>keep_text</code> adds the chunk text to that.</p>
 </main>
 <footer class="site">
-<p>Source: <a href="langchain.md"><code>langchain.md</code></a> · onetrace 0.2.0 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
+<p>Source: <a href="langchain.md"><code>langchain.md</code></a> · onetrace 0.2.1 · <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></p>
 </footer>
 <script src="../assets/copy.js" defer></script>
 </body>

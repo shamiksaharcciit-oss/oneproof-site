@@ -1,3 +1,5 @@
+> *For people: this page is written for your coding agent, not for you to follow. Hand it over with the prompt or the agent kit at <https://oneproof.dev/developers.html#agent>, or start at <https://oneproof.dev/get-started.html>.*
+
 # Recipe for coding agents: instrument an existing Python pipeline with onetrace
 
 You are adding onetrace to a codebase you did not write. Your job is to add **recording**, not to change **behaviour**. When you finish, the pipeline must produce exactly the same results as before, and every run must leave a record that `onetrace-verify` accepts.
