@@ -18,6 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/site.css">
 <script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<style>.frame-dark{background:#0b1626}.frame-dark img{display:block}</style>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -52,12 +53,11 @@
     <p class="cta-note">Free and open source (Apache-2.0) · runs on your machine · <code>pip install onetrace</code></p>
 
     <div class="hero-shot">
-      <div class="frame">
-        <div class="frame-bar" aria-hidden="true"><i></i><i></i><i></i><span>demo.oneproof.dev</span></div>
-        <img src="/assets/img/console-comparison.png" width="1280" height="800" alt="The onetrace console comparing two runs: a graph of the pipeline's steps where request, context and tests are marked Same, model is marked First difference, and proposal is marked Changed after it.">
+      <div class="frame frame-dark">
+        <img src="/assets/img/illus-compare.webp" width="1280" height="800" alt="Two demo runs compared: load_docs is marked Same, split is marked First difference because its chunk_size changed from 1024 to 512, and embed, retrieve and answer are marked Changed after it. Below, the settings that changed and the command to repeat the comparison.">
       </div>
-      <div class="callout c1" aria-hidden="true"><b>First difference</b>The model step's settings changed between runs.</div>
-      <div class="callout c2" aria-hidden="true"><b>Same</b>Retrieval and tests produced identical output.</div>
+      <div class="callout c1" aria-hidden="true"><b>First difference</b>split's chunk_size changed from 1024 to 512.</div>
+      <div class="callout c2" aria-hidden="true"><b>Same</b>load_docs produced identical output in both runs.</div>
     </div>
   </div>
 </section>
@@ -168,7 +168,7 @@
   <div class="wrap">
     <p class="kicker">Product tour</p>
     <h2 id="tour-title">The console, on real demo runs.</h2>
-    <p class="sub">These screens come straight from the live demo. Open it and click around; nothing can be changed there.</p>
+    <p class="sub">Illustrated with the live demo's real runs and values. Open the demo to click through the real screens; nothing can be changed there.</p>
     <div class="tour">
       <div class="tour-row">
         <div class="tour-text">
@@ -176,7 +176,7 @@
           <h3>Every run, and what the evidence says about it</h3>
           <p>Counts you can click through to the exact runs behind them. Which runs verified, which changed against their baseline, and which need attention first.</p>
         </div>
-        <div class="shot"><img src="/assets/img/console-overview.png" width="1280" height="800" loading="lazy" alt="The console Overview: cards for runs stored, records that agree, runs changed against their baseline, and incidents, above a panel listing what the evidence establishes."></div>
+        <div class="shot"><img src="/assets/img/illus-overview.webp" width="1280" height="800" loading="lazy" alt="The demo's Overview: 30 runs in 4 pipelines, 27 of 30 records verified and 2 contradicting their record, 4 changed against their baseline, 2 incidents; the runs that need attention first, and what the evidence establishes across all 30 runs."></div>
       </div>
       <div class="tour-row flip">
         <div class="tour-text">
@@ -184,7 +184,7 @@
           <h3>A run, step by step, with its checks</h3>
           <p>A clear verdict at the top, then one question at a time: do the records agree, was it signed, is any step missing. Each answer says exactly what was and wasn't checked.</p>
         </div>
-        <div class="shot"><img src="/assets/img/console-run.png" width="1280" height="800" loading="lazy" alt="A run page in the console: a green banner saying the trail was checked and each check held, followed by the evidence for each question."></div>
+        <div class="shot"><img src="/assets/img/illus-run.webp" width="1280" height="800" loading="lazy" alt="One demo run: records agree (145 checks, all hold), signed by the demo's key, nothing declared missing, not anchored; each of its five stages matches its receipt."></div>
       </div>
       <div class="tour-row">
         <div class="tour-text">
@@ -193,7 +193,7 @@
           <p>The graph marks the first step that differs and everything downstream of it. Below, the actual output text that changed, side by side.</p>
           <p style="margin-top:18px"><a class="btn btn-dark" href="https://demo.oneproof.dev">Open the live demo</a></p>
         </div>
-        <div class="shot"><img src="/assets/img/console-comparison.png" width="1280" height="800" loading="lazy" alt="A comparison in the console with the model step marked as the first difference, and a table of every step's result."></div>
+        <div class="shot"><img src="/assets/img/illus-textdiff.webp" width="1280" height="800" loading="lazy" alt="The text that changed in split's output between the two demo runs: with chunk_size 512, the returns-window passage is cut into two chunks."></div>
       </div>
     </div>
   </div>

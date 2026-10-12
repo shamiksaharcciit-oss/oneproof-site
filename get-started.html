@@ -50,6 +50,7 @@
       <a href="#setup">1–3 Set up</a>
       <a href="#example">4–6 A first example</a>
       <a href="#console">7 The console</a>
+      <a href="#trust">8–9 Sign and timestamp</a>
       <a href="#own">Your own code</a>
       <a href="#help">If something goes wrong</a>
     </div>
@@ -93,7 +94,7 @@ source .venv/bin/activate</pre></div></div>
       <div class="stepx"><div>
         <h3>Install onetrace and the console</h3>
 <pre>pip install onetrace onetrace-console</pre>
-        <p>This installs <code>onetrace</code> (records your runs), <code>onetrace-verify</code> (checks a record) and <code>onetrace-console</code> (shows runs in your browser). Nothing is sent anywhere; the console only listens on your own machine.</p>
+        <p>This installs <code>onetrace</code> (records your runs), <code>onetrace-verify</code> (checks a record) and <code>onetrace-console</code> (shows runs in your browser). Nothing is sent anywhere (the optional timestamp in step 9 is the one exception); the console only listens on your own machine.</p>
         <p>Want to see where you're heading first? <code>onetrace-console demo --open</code> opens the demo in your browser. Press <b>Ctrl+C</b> in the terminal to stop it.</p>
       </div></div>
     </div>
@@ -181,7 +182,53 @@ onetrace diff runs/before runs/after</pre>
   </div>
 </section>
 
-<section id="own" class="section-soft" aria-labelledby="own-title">
+<section id="trust" class="section-soft" aria-labelledby="trust-title">
+  <div class="wrap">
+    <p class="kicker">Optional: sign and timestamp</p>
+    <h2 id="trust-title">Show who recorded a run, and when.</h2>
+    <p class="sub">The check in step 6 shows a record wasn't changed after it was written. Two extras answer two more questions. A <b>signature</b> shows the record came from a key you hold. A <b>timestamp</b> from an outside service shows the record existed at a given time. You can do one, both, or neither.</p>
+    <div class="steps" style="counter-reset:s 7">
+      <div class="stepx"><div>
+        <h3>Sign a run with your own key</h3>
+        <p>Do this in your <code>onetrace-start</code> folder, with the virtual environment active, as before. Make a key once, in a folder of its own outside your project, then sign the run:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>New-Item -ItemType Directory -Force $HOME\onetrace-keys | Out-Null
+onetrace keygen --out $HOME\onetrace-keys\recorder.key
+onetrace sign runs/after --key $HOME\onetrace-keys\recorder.key</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>mkdir -p ~/onetrace-keys
+onetrace keygen --out ~/onetrace-keys/recorder.key
+onetrace sign runs/after --key ~/onetrace-keys/recorder.key</pre></div></div>
+        <p><code>keygen</code> prints a <code>key_id</code> that starts with <code>sha256:</code>. Copy it. It's safe to share, because it only names your key. The key file itself is the secret: never put it in a run folder, in your project, or in git. On Windows, <code>keygen</code> notes that the key file takes its folder's permissions. A folder in your user profile, like this one, is private to you by default.</p>
+        <p>Next, make a <b>trust list</b>: the keys you accept, each with a name. In your <code>onetrace-start</code> folder, create a file named <code>trust.json</code> with this in it, and paste your own <code>key_id</code> in place of the placeholder:</p>
+<pre>{&quot;format&quot;: &quot;onetrace-trust/0.1&quot;,
+ &quot;keys&quot;: [{&quot;key_id&quot;: &quot;sha256:PASTE-YOUR-KEY-ID-HERE&quot;, &quot;label&quot;: &quot;my laptop&quot;}]}</pre>
+        <p>Check the run against it, and open the console with it:</p>
+<pre>onetrace-verify --require-artifacts --trust trust.json runs/after
+onetrace-console runs --trust trust.json --open</pre>
+        <p>The check's signature line reads <code>PASS</code>, "signed by my laptop". In the console, the <code>after</code> run reads <b>Signed by a known recorder: Yes</b>. Without <code>--trust</code>, the same signature shows as <code>SIGNED-UNTRUSTED</code> ("key not trusted"). The signature is valid, but you haven't said whose key it is.</p>
+        <p class="gs-note"><b>What a signature doesn't show:</b> that the answer is right, when the run happened, or who the person behind the key is. Your trust list makes that last link.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>Timestamp a run (this step goes online)</h3>
+        <p>A timestamp authority signs the run's fingerprint together with the time. This is the only onetrace command that uses the network, and it sends only the fingerprint (a hash), never your data. The example uses FreeTSA, a free public service. At work, use the timestamp service your organisation trusts.</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>Invoke-WebRequest https://freetsa.org/files/tsa.crt -OutFile tsa.crt
+Invoke-WebRequest https://freetsa.org/files/cacert.pem -OutFile tsa-root.pem
+onetrace anchor runs/after --source rfc3161 `
+  --tsa-url https://freetsa.org/tsr `
+  --tsa-cert tsa.crt --tsa-root tsa-root.pem</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>curl -o tsa.crt https://freetsa.org/files/tsa.crt
+curl -o tsa-root.pem https://freetsa.org/files/cacert.pem
+onetrace anchor runs/after --source rfc3161 \
+  --tsa-url https://freetsa.org/tsr \
+  --tsa-cert tsa.crt --tsa-root tsa-root.pem</pre></div></div>
+        <p>Then check the run and open the console with the same two certificate files:</p>
+<pre>onetrace-verify --require-artifacts --trust trust.json --tsa-cert tsa.crt --tsa-root tsa-root.pem runs/after
+
+onetrace-console runs --trust trust.json --tsa-cert tsa.crt --tsa-root tsa-root.pem --open</pre>
+        <p>The check gains a <code>PASS</code> line for <code>anchors/1.json</code>, with the attested time. The per-stage lines that say "declared unanchored" stay as they are: they describe the record as it was first written, and the anchor line is the one that counts. In the console, the run no longer says <b>Not anchored</b>. Without the two certificate files, the console says it <b>couldn't check</b> the timestamp, and names the option to add.</p>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<section id="own" aria-labelledby="own-title">
   <div class="wrap">
     <p class="kicker">Your own code</p>
     <h2 id="own-title">Do the same on your own program.</h2>
@@ -206,7 +253,7 @@ onetrace diff runs/before runs/after</pre>
   </div>
 </section>
 
-<section id="help" aria-labelledby="help-title">
+<section id="help" class="section-soft" aria-labelledby="help-title">
   <div class="wrap">
     <p class="kicker">If something goes wrong</p>
     <h2 id="help-title">The usual snags, and the fix.</h2>
@@ -220,6 +267,7 @@ onetrace diff runs/before runs/after</pre>
           <tr><td>A message that the run folder is already used</td><td>Each run name works once. Use a new name, or delete the old folder under <code>runs</code>.</td></tr>
           <tr><td>The console says it "cannot listen on 127.0.0.1:8080"</td><td>Another console is probably still running. Stop it with Ctrl+C in its window, or add <code>--port 8091</code> (any free number) to the command.</td></tr>
           <tr><td><code>onetrace-console --version</code> says 0.0.0, or it lists commands such as <code>admin create</code></td><td>An older install answered first. Make a fresh folder and virtual environment as in steps 2 and 3, and install there. <code>where.exe onetrace-console</code> (Windows) or <code>which onetrace-console</code> shows which one answers.</td></tr>
+          <tr><td>The signature line says <code>SIGNED-UNTRUSTED</code>, or the console says "key not trusted"</td><td>The key isn't on your trust list. Check that <code>trust.json</code> holds the exact <code>key_id</code> that <code>keygen</code> printed, and add <code>--trust trust.json</code> to the command.</td></tr>
           <tr><td>You want to run your program without recording</td><td>Set <code>ONETRACE_DISABLE=1</code> (PowerShell: <code>$env:ONETRACE_DISABLE = "1"</code>). Nothing is written.</td></tr>
         </tbody>
       </table>
