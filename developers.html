@@ -178,6 +178,7 @@ and tell me the exact commands to run my program and open its runs in onetrace-c
 <pre>pip install onetrace-console
 onetrace-console --version          # must say 0.1.1 or later
 onetrace-console runs --open</pre>
+    <div class="shot" style="margin-top:20px;max-width:980px"><img src="/assets/img/illus-local.webp" width="1280" height="800" loading="lazy" alt="After setup: a terminal runs the program twice, then onetrace-console runs --open; the browser shows the console's Overview at 127.0.0.1:8080, watching the runs folder, with 4 runs of one pipeline, all verified, and one marked First difference at classify."></div>
     <ul style="color:var(--ink-2);line-height:1.7;margin:12px 0 0 20px;padding:0">
       <li><code>runs</code> is the folder that holds your run folders; a full path works too, for example <code>onetrace-console "C:\Users\you\my-app\runs" --open</code>. Every run folder in it is loaded and listed on the Overview.</li>
       <li>To compare two runs, add their folder names: <code>--compare &lt;first&gt; &lt;second&gt;</code>. Tip: name runs as you record them, with <code>ONETRACE_RUN_ID=before</code> (PowerShell: <code>$env:ONETRACE_RUN_ID = "before"</code>), so you can write <code>--compare before after</code>.</li>
