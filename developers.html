@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>onetrace for developers — add it, run it, compare runs</title>
-<meta name="description" content="Install onetrace, add two decorators, run your pipeline, verify the record, compare two runs and open the console on your own runs.">
+<title>onetrace for developers — find where two runs split</title>
+<meta name="description" content="When two runs of your AI pipeline give different answers, onetrace shows the first step where they split, the settings that changed there, and the exact text that changed, in your browser.">
 <link rel="canonical" href="https://oneproof.dev/developers.html">
 <meta property="og:title" content="onetrace for developers">
-<meta property="og:description" content="Two decorators on the code you already have. Verify, compare and browse your runs.">
+<meta property="og:description" content="Find the step where two runs split, in your browser. Two decorators on the code you already have.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://oneproof.dev/developers.html">
 <meta property="og:image" content="https://oneproof.dev/og.png">
@@ -43,23 +43,52 @@
 <div class="page-hero">
   <div class="wrap">
     <span class="eyebrow"><b>For developers</b> layer 2 of 3</span>
-    <h1>Two decorators. Then every run leaves a record.</h1>
-    <p class="lede">onetrace wraps the code you already have. Each step writes a receipt as it runs; you verify the record, compare two runs, and browse them in the console. No platform, no account, and nothing sent anywhere.</p>
+    <h1>Two runs, two different answers. See the step where they split.</h1>
+    <p class="lede">Record your pipeline's steps with two decorators. When an answer changes, open both runs in your browser: the first step that differs, the settings that changed there, and the exact text that changed. Then put the same check in CI. No platform, no account, and nothing sent anywhere.</p>
     <div class="crumbs">
-      <a href="#install">Install and run</a>
-      <a href="#verify">Verify</a>
-      <a href="#compare">Compare runs</a>
-      <a href="#console">The console</a>
+      <a href="#debug">Debug two runs</a>
+      <a href="#install">Record your runs</a>
       <a href="#agent">With your coding agent</a>
+      <a href="#verify">Command line and CI</a>
       <a href="#frameworks">Guides for your setup</a>
     </div>
   </div>
 </div>
 
-<section id="install" aria-labelledby="install-title">
+<section id="debug" aria-labelledby="debug-title">
   <div class="wrap">
-    <p class="kicker">Install and run</p>
-    <h2 id="install-title">From zero to a verified run.</h2>
+    <div class="tour-row">
+      <div class="tour-text">
+        <p class="kicker">Debug two runs</p>
+        <h2 id="debug-title">Open both runs. The page points at the split.</h2>
+        <ul style="color:var(--ink-2);line-height:1.7;margin:0 0 20px 20px;padding:0">
+          <li><b>The first difference:</b> the first step, in order, whose output differs. Everything after it is marked as changed after it.</li>
+          <li><b>What changed there:</b> the settings each step recorded, by name, with both values.</li>
+          <li><b>The text that changed,</b> line by line. Each side is checked against its receipt before it is shown.</li>
+          <li><b>Past a model that varies:</b> when a hosted model's output differs and nothing recorded about it changed, the page also names the first later step with a recorded change.</li>
+        </ul>
+<pre>pip install onetrace-console
+onetrace-console runs --open
+onetrace-console runs --compare A B</pre>
+        <p style="color:var(--ink-2);margin-top:16px">Try it first on the <a href="https://demo.oneproof.dev">live demo</a>, or locally with <code>onetrace-console demo --open</code>. The page shows where two runs differ and what was recorded there. It does not say why.</p>
+      </div>
+      <div class="shot"><img src="/assets/img/illus-compare.webp" width="1280" height="800" loading="lazy" alt="Two demo runs compared: load_docs is marked Same, split is marked First difference, with its chunk_size changed from 1024 to 512, and the steps after it are marked Changed after it."></div>
+    </div>
+    <div class="tour-row flip" style="margin-top:56px">
+      <div class="tour-text">
+        <h3 style="margin-top:0">Down to the exact text.</h3>
+        <p style="color:var(--ink-2)">At the first difference, the text diff shows what the step wrote in each run, line by line and word by word. Open it on a page of its own when it's long.</p>
+        <p style="color:var(--ink-2)">The console runs on your machine, listens on <code>127.0.0.1</code> only, and makes no network calls. It watches your runs folder, so a new run appears on its own a few seconds after it has finished writing. Every page also gives the command that repeats its check, for the terminal or for CI.</p>
+      </div>
+      <div class="shot"><img src="/assets/img/illus-textdiff.webp" width="1280" height="800" loading="lazy" alt="The text that changed in split's output between the two demo runs: with chunk_size 512, the returns-window passage is cut into two chunks."></div>
+    </div>
+  </div>
+</section>
+
+<section id="install" class="section-soft" aria-labelledby="install-title">
+  <div class="wrap">
+    <p class="kicker">Record your runs</p>
+    <h2 id="install-title">Two decorators on the code you already have.</h2>
     <p class="sub">This follows the <a href="/onetrace/quickstart.html">quickstart</a>: a two-step pipeline, a retriever and an answer. New to Python, or to onetrace? <a href="/get-started.html">Get started</a> walks through every step, from installing Python to your runs in the console.</p>
     <div class="steps">
       <div class="stepx">
@@ -72,7 +101,7 @@
       <div class="stepx">
         <div>
           <h3>Decorate your steps</h3>
-          <p><code>@ot.stage</code> on each step, naming the tool that does the work. <code>@ot.run</code> on the function that does the whole job once. Change nothing else.</p>
+          <p><code>@ot.stage</code> on each step, naming the tool that does the work. <code>@ot.run</code> on the function that does the whole job once. Change nothing else. Or let <a href="#agent">your coding agent</a> add them.</p>
 <pre><span class="k">import</span> onetrace <span class="k">as</span> ot
 
 <span class="k">@ot.stage</span>(<span class="s">"retrieve"</span>, instrument=ot.pkg(<span class="s">"word-overlap"</span>, <span class="s">"onetrace"</span>,
@@ -108,85 +137,7 @@ onetrace doctor</pre>
   </div>
 </section>
 
-<section id="verify" class="section-soft" aria-labelledby="verify-title">
-  <div class="wrap">
-    <p class="kicker">Verify</p>
-    <h2 id="verify-title">Check a run without trusting the code that wrote it.</h2>
-    <p class="sub"><code>onetrace-verify</code> uses only the Python standard library and needs no network. It prints one row per check, <code>PASS</code>, <code>FAIL</code> or <code>NOT-RUN</code>, then a result. With <code>--require-artifacts</code> it also checks every output file.</p>
-<pre>onetrace-verify --require-artifacts runs/&lt;run id&gt;</pre>
-    <div class="table-wrap" style="margin-top:24px">
-      <table>
-        <thead><tr><th scope="col">Exit code</th><th scope="col">Meaning</th></tr></thead>
-        <tbody>
-          <tr><td><code>0</code></td><td>PASS: every check that ran held.</td></tr>
-          <tr><td><code>1</code></td><td>FAIL: something in the record doesn't match, and the row says where.</td></tr>
-          <tr><td><code>2</code></td><td>NOT VERIFIED or refused: for example a format version the verifier doesn't implement, or an unreadable manifest. Nothing is reported as passing.</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p style="margin-top:20px;color:var(--ink-2)">Runs can also be signed with an Ed25519 key you hold, or anchored with an outside timestamp. Both sit beside the record and change none of its bytes. See the <a href="/onetrace/manual.html">manual</a>.</p>
-  </div>
-</section>
-
-<section id="compare" aria-labelledby="compare-title">
-  <div class="wrap">
-    <p class="kicker">Compare runs</p>
-    <h2 id="compare-title">Ask "what changed?" and get one verdict per step.</h2>
-    <p class="sub"><code>diff</code> verifies both runs first, then walks them step by step. <code>localize</code> names the first point of divergence and its cause. <code>--text</code> shows the output text that changed.</p>
-<pre>onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt;
-onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt; --text
-onetrace localize runs/&lt;run A&gt; runs/&lt;run B&gt;</pre>
-    <div class="grid-2" style="margin-top:28px">
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th scope="col">Step verdict</th><th scope="col">Meaning</th></tr></thead>
-          <tbody>
-            <tr><td><code>same</code></td><td>The step's output digest matches.</td></tr>
-            <tr><td><code>FIRST DIFFERENCE</code></td><td>The first step, in order, whose output differs.</td></tr>
-            <tr><td><code>downstream</code></td><td>Still different after the first difference.</td></tr>
-            <tr><td><code>reconverged</code></td><td>Different work upstream, same output here.</td></tr>
-            <tr><td><code>COULD NOT CHECK</code></td><td>Can't be evaluated. Never read as a pass.</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th scope="col"><code>diff</code> result</th><th scope="col">Exit code</th></tr></thead>
-          <tbody>
-            <tr><td>identical</td><td><code>0</code></td></tr>
-            <tr><td>diverged</td><td><code>1</code></td></tr>
-            <tr><td>not comparable</td><td><code>2</code></td></tr>
-            <tr><td>refused</td><td><code>3</code></td></tr>
-            <tr><td>could not check</td><td><code>4</code></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <p style="margin-top:20px;color:var(--ink-2)">The exit codes make it easy to gate a CI job on a comparison against a known-good baseline run.</p>
-  </div>
-</section>
-
-<section id="console" class="section-soft" aria-labelledby="console-title">
-  <div class="wrap">
-    <div class="tour-row">
-      <div class="tour-text">
-        <p class="kicker">The console</p>
-        <h2 id="console-title">Browse your runs in a browser.</h2>
-        <p style="color:var(--ink-2)">The onetrace console reads your run folders and draws the pages you saw on the demo: an overview, one page per run, and comparisons with the first difference marked. It runs on your machine.</p>
-<pre>pip install onetrace-console
-onetrace-console demo</pre>
-        <p style="color:var(--ink-2);margin-top:16px">It needs Python 3.12 or later. <code>demo</code> records the demo's 30 runs, from four small example pipelines, into <code>onetrace-console-demo/</code>, stores five comparisons, and prints the pages' addresses. The same runs are on the <a href="https://demo.oneproof.dev">hosted demo</a>. Then point it at your own runs:</p>
-<pre>onetrace-console runs/
-onetrace-console runs/ --compare &lt;run A&gt; &lt;run B&gt;
-onetrace-console runs/ --open</pre>
-        <p style="color:var(--ink-2);margin-top:16px">Every folder holding a <code>MANIFEST.json</code> is loaded, and the console keeps watching: a new run appears on its own a few seconds after it has finished writing. <code>--compare</code> takes two folder names, the first as the baseline. It listens on <code>127.0.0.1</code> only, port 8080 unless you pass <code>--port</code>, and makes no network calls. The <a href="https://pypi.org/project/onetrace-console/">console's README</a> has every option, and how to run it for a team.</p>
-      </div>
-      <div class="shot"><img src="/assets/img/console-run.png" width="1280" height="800" loading="lazy" alt="A run page in the onetrace console, showing the checked banner and the evidence for each question."></div>
-    </div>
-  </div>
-</section>
-
-<section id="agent" class="section-soft" aria-labelledby="agent-title">
+<section id="agent" aria-labelledby="agent-title">
   <div class="wrap">
     <p class="kicker">With your coding agent</p>
     <h2 id="agent-title">Let your coding agent add onetrace for you.</h2>
@@ -233,6 +184,63 @@ onetrace-console runs --open</pre>
       <li>Leave it running: the console watches the folder, and each new run appears on the Overview a few seconds after your program has finished writing it. A run still being written waits until it's complete. No restart needed.</li>
       <li>Port 8080 already in use? Add <code>--port 8091</code>. If <code>--version</code> shows 0.0.0, or the console prints commands such as <code>admin create</code>, an older install answered first: make a fresh virtual environment and install there, as in <a href="/get-started.html#setup">Get started</a>.</li>
     </ul>
+  </div>
+</section>
+
+<section id="verify" class="section-soft" aria-labelledby="verify-title">
+  <div class="wrap">
+    <p class="kicker">Command line and CI</p>
+    <h2 id="verify-title">Check a run without trusting the code that wrote it.</h2>
+    <p class="sub"><code>onetrace-verify</code> uses only the Python standard library and needs no network. It prints one row per check, <code>PASS</code>, <code>FAIL</code> or <code>NOT-RUN</code>, then a result. With <code>--require-artifacts</code> it also checks every output file.</p>
+<pre>onetrace-verify --require-artifacts runs/&lt;run id&gt;</pre>
+    <div class="table-wrap" style="margin-top:24px">
+      <table>
+        <thead><tr><th scope="col">Exit code</th><th scope="col">Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>0</code></td><td>PASS: every check that ran held.</td></tr>
+          <tr><td><code>1</code></td><td>FAIL: something in the record doesn't match, and the row says where.</td></tr>
+          <tr><td><code>2</code></td><td>NOT VERIFIED or refused: for example a format version the verifier doesn't implement, or an unreadable manifest. Nothing is reported as passing.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:20px;color:var(--ink-2)">Runs can also be signed with an Ed25519 key you hold, or anchored with an outside timestamp. Both sit beside the record and change none of its bytes. See the <a href="/onetrace/manual.html">manual</a>.</p>
+  </div>
+</section>
+
+<section id="compare" class="section-soft" aria-labelledby="compare-title" style="padding-top:0">
+  <div class="wrap">
+        <h2 id="compare-title">The same comparison in the terminal: one verdict per step.</h2>
+    <p class="sub"><code>diff</code> verifies both runs first, then walks them step by step. <code>localize</code> names the first point of divergence and what was recorded there. <code>--text</code> shows the output text that changed.</p>
+<pre>onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt;
+onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt; --text
+onetrace localize runs/&lt;run A&gt; runs/&lt;run B&gt;</pre>
+    <div class="grid-2" style="margin-top:28px">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Step verdict</th><th scope="col">Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>same</code></td><td>The step's output digest matches.</td></tr>
+            <tr><td><code>FIRST DIFFERENCE</code></td><td>The first step, in order, whose output differs.</td></tr>
+            <tr><td><code>downstream</code></td><td>Still different after the first difference.</td></tr>
+            <tr><td><code>reconverged</code></td><td>Different work upstream, same output here.</td></tr>
+            <tr><td><code>COULD NOT CHECK</code></td><td>Can't be evaluated. Never read as a pass.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col"><code>diff</code> result</th><th scope="col">Exit code</th></tr></thead>
+          <tbody>
+            <tr><td>identical</td><td><code>0</code></td></tr>
+            <tr><td>diverged</td><td><code>1</code></td></tr>
+            <tr><td>not comparable</td><td><code>2</code></td></tr>
+            <tr><td>refused</td><td><code>3</code></td></tr>
+            <tr><td>could not check</td><td><code>4</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p style="margin-top:20px;color:var(--ink-2)">The exit codes make it easy to gate a CI job on a comparison against a known-good baseline run.</p>
   </div>
 </section>
 
