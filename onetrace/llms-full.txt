@@ -9,14 +9,14 @@ Key facts for a coding agent:
 - What a run folder holds: each stage's outputs (which can include documents, prompts and answers), and fingerprints (SHA-256 digests) of its inputs. Treat run folders like logs that may contain sensitive data. onetrace sends no telemetry and makes no network call during a run.
 - See what changed: `onetrace diff runs/A runs/B --text` shows the first stage that differs and the text that changed in its outputs, checked against the receipts first.
 - Verify a run: `onetrace-verify --require-artifacts runs/<run_id>` (exit 0 = record intact). Compare two runs: `onetrace diff runs/A runs/B`.
-- Meaning is the human's: the trust class of what a stage reads and of what it returns, and whether the stage can be re-run, are never guessed. If omitted, the most cautious value is recorded (`externally-sourced`; not re-derivable) and the field is listed as `undeclared` on that stage. An agent must leave them omitted and ask the human, not fill them in.
+- Meaning is the human's: the trust class of what a stage reads and of what it returns, and whether the stage can be re-run, are never guessed. If omitted, the most cautious value is recorded (`externally-sourced`; not re-derivable) and the field is listed as `undeclared` on that stage. An agent must leave them omitted and ask the human, not fill them in. The same holds for `keep_inputs=`, which stores an input's text in plain form in the run folder.
 - Settings that explain a change (chunk size, top-k, the model and the settings the code sends with it) go in `ot.pkg(..., config={...})` or `ot.constant(key, value)`. Without them, `localize` can say a stage's output changed but not why. `config` is recorded as one digest, so a comparison says the config changed, not which key: put a literal from the code in `config=`, and a value from a flag, an argument or a variable in `ot.constant`, so a comparison names it.
 - `ot.pkg(id, package, ...)` reads `package`'s version from its installed metadata. For your own code, that is your project's distribution, installed (`pip install -e .`; a project of scripts needs a minimal `pyproject.toml` first).
 - A run declares the stages its own module defines when it is imported. List every stage in `@ot.run(stages=[...])` when one is defined in another module or decorated inside a function while the run is running.
 - A step that is a method on an object (a retriever index), or that receives an SDK client holding a key, gets a thin wrapper: a small inner function that takes only plain values, uses the object or client from the enclosing scope, and is the decorated stage. The key never passes through a decorated function.
 - A folder of documents: `files=` refuses two files with the same name in different subfolders. Record one SHA-256 over the folder's sorted relative paths and bytes with `ot.constant` instead.
 - RAG pipelines: an ingest run and a query run each get `@ot.run`. Link the query run to what it reads (`ot.corpus_from(...)`, or the external index's name and version recorded with `ot.constant`), or a comparison can't say that the index changed. With the link, `onetrace diff A B --follow-corpus` follows a changed link one hop into the two ingest runs and names where they first differ. A stage that groups steps (embed + search) records every hidden step's settings.
-- DAGs are supported: pass one stage's return value to another and the edge is recorded; fan-out and fan-in work. A stage runs once per run unless declared `repeats=True` (a loop or a retry; calls numbered #1, #2, …); overlapping calls of the same stage are each named, `stage_fn.instance("en")(...)`.
+- DAGs are supported: pass one stage's return value to another, the same object and whole, and the edge is recorded; a part or a copy of it is an ordinary input with no edge. Fan-out and fan-in work. A stage runs once per run unless declared `repeats=True` (a loop or a retry; calls numbered #1, #2, …); overlapping calls of the same stage are each named, `stage_fn.instance("en")(...)`.
 - Switch off with `ONETRACE_DISABLE=1`; removing the decorators restores the original code exactly.
 - What a verified record does not show: that the output was correct; why a model wrote what it wrote; anything about code that was not decorated.
 
@@ -25,6 +25,7 @@ Key facts for a coding agent:
 - [Agent recipe: instrument an existing pipeline](https://oneproof.dev/onetrace/agents/instrument.md): step-by-step instructions for a coding agent, with the rules it must not break (fetch the file itself, not a summary)
 - [AGENTS.md section to paste into your repo](https://oneproof.dev/onetrace/agents/AGENTS-section.md): keeps future agent edits consistent with the instrumentation
 - [Quickstart](https://oneproof.dev/onetrace/quickstart.md): install, two decorators, run, verify
+- [Tool-using agent](https://oneproof.dev/onetrace/tool-using-agent.md): an agent loop recorded step by step, with a stand-in model: how the steps link, the trust class of each value, and comparing runs with a hosted model
 - [Decorators](https://oneproof.dev/onetrace/manual.md#16-decorators): what a decorated stage stores, the fields you didn't state, repeated and concurrent calls, `files=`, switching off, encoders, the corpus link
 - [Numbers and booleans](https://oneproof.dev/onetrace/manual.md#1616-numbers-and-booleans-rule-m-for-settings-rule-v1-for-values): how settings (rule M) and decorated values (rule V1) are encoded
 - [`@ot.run`'s defaults](https://oneproof.dev/onetrace/manual.md#1617-otruns-defaults): the policy, manifest, declared stages, intake stage and run folder a decorated run uses when you don't say
@@ -204,6 +205,9 @@ def generate(question: str, docs: list[str]) -> str:
   ```
   The object itself isn't recorded. Record what identifies it: the ingest run that built the index (`ot.corpus_from`, §1), or its name and version with `ot.constant`.
 - **Values between stages** must be plain data: strings, bytes, ints, lists and dicts of these, pydantic models, dataclasses, numpy arrays. If a stage returns an object onetrace can't encode (an index object, a database client), don't change the function. Tell the human, and suggest either returning the saved index path or registering an encoder with `ot.encoder`.
+- **Pass a stage's output on whole.** Two stages link only when the second is given the very object the first returned. Given a part of it (`reply["id"]`, a slice, a copy), the second stage records an ordinary input and no link. Don't restructure the code to change this; tell the human which stages aren't linked.
+- **`ot.constant` after the model call is fine.** A setting known only from the reply (the model version it answered with) is recorded like any other: a stage's constants are written when it returns.
+- **An agent loop** (the model asks for a tool, the tool runs, the model is called again): the model call and each tool are stages, each with `repeats=True`. The guide at https://oneproof.dev/onetrace/tool-using-agent.md shows the shape.
 - **A stage called more than once in a run:** by default a stage runs once per run, and a second call is refused. For sequential repeats (a loop, a retry), declare the stage `repeats=True`: each call is numbered #1, #2, …. For calls that overlap (`asyncio.gather`, a thread pool), name each call with a stable name per branch instead, for example `retrieve.instance("en")(question)` and `retrieve.instance("fr")(question)`.
 
 - **What a stage depends on, but its code doesn't show:** for example, a prompt template in another module, or a settings file. Record its version or content hash with `ot.constant`, so a change to it is named as the reason.
@@ -216,7 +220,10 @@ These fields say what a stage *means*, and only a person may set them:
 
 - `trust=`: where the values a stage reads come from (`operator-authored`, `externally-sourced`, …);
 - `output_trust=`: the same, for what the stage returns. The trust class covers outputs too: a decorated stage's output with no stated class is recorded with the most cautious one and listed as undeclared, like an input's;
-- `rederivable=` and `note=`: whether running the stage again gives the same output (a hosted model usually doesn't).
+- `rederivable=` and `note=`: whether running the stage again gives the same output (a hosted model usually doesn't);
+- `keep_inputs=`: whether a stage keeps an input's text in plain form beside its digest, in the run folder (manual, section 16.19).
+
+In a tool-using agent, ask about each tool's output: a lookup in a system the human runs is usually `operator-authored`, a web page or another party's API `externally-sourced`, and what a model wrote `model-generated`. The human decides each one.
 
 **Do not set these.** Leave them out. onetrace then records the most cautious value (`externally-sourced`; not re-derivable) and lists the field as `undeclared` on that stage, so everyone can see nobody stated it. At the end, list them as questions for the human (step 7), with what you observed, for example: *"`generate` calls a hosted model: is it re-derivable? (usually no)"*.
 
@@ -228,7 +235,7 @@ These fields say what a stage *means*, and only a person may set them:
    ```
    ONETRACE_RUN_ID=stub-query-1 OPENAI_BASE_URL=http://127.0.0.1:8000/v1 python -m app "a question"
    ```
-   `OPENAI_BASE_URL` is the `openai` package's variable; other client libraries name their own. Each run needs a new id: a run folder that already holds anything is refused.
+   `OPENAI_BASE_URL` is the `openai` package's variable; other client libraries name their own. Each run needs a new id: a run folder that already holds anything is refused, and `a:b` and `a-b` name the same folder.
 3. Run **every run function in full** (for a RAG pipeline, the whole ingest run *and* the whole query run, all stages), the way the project normally runs it or through the test that exercises it. A folder appears under `runs/` for each, and when each run closes it prints that folder and the command that verifies it, on stderr. A shortened demo run that skips stages doesn't count.
 4. Verify it:
    <!-- not executed: <run_id> stands for the folder your run wrote -->
@@ -237,7 +244,8 @@ These fields say what a stage *means*, and only a person may set them:
    ```
    Exit code 0 means the record is intact. The verifier's first line, on stderr, says so (`record intact: …`), or names the first failing row (`record NOT intact: …`), and under it a `fix (…)` line for each failing row says what to change and which section of the errors page explains it. Don't set `ONETRACE_QUIET=1` while you check: it silences those lines. Anything else: read that row and its `fix (…)` line; the errors page explains each one. `onetrace doctor` checks the setup and says whether the most recent run verifies, not why a row failed. Fix the instrumentation, not the pipeline.
 5. **Run it a second time with nothing changed, and compare:** `onetrace diff runs/<first> runs/<second>`. Every stage should read `same`, except stages that call a hosted model, or read a service that changes by itself.
-   - If any other stage differs, **stop and find out why before anything else.** The usual causes are ids generated fresh each run (uuid), timestamps written into outputs, absolute paths, and unordered sets or dict iteration.
+   - If any other stage differs, **stop and find out why before anything else.** Look first for ids generated fresh each run (uuid), timestamps written into outputs, absolute paths, and unordered sets or dict iteration.
+   - A stage that calls a hosted model reading differently is expected. Don't stub it to make the comparison read `same` (step 2). The console's Compare page then also names the first later stage with a recorded change.
    - Report it to the human with the stage and the field.
    - Until it's fixed, every comparison will blame that stage first and hide the real change.
 6. Only then make one deliberate change (for example chunk size) and compare again. The first difference must be the stage you changed. `onetrace diff` and `onetrace localize` name a setting recorded with `ot.constant` by its key ("constant chunk_size differs"); for a setting in `config=` they say the stage's config changed, not which key. To have the key named, record the setting with `ot.constant`.
@@ -300,7 +308,8 @@ This repository records each pipeline run with onetrace: one verifiable receipt 
 - **When you change a decorated stage:** keep the decorator. If you change a setting recorded in `config=` or `ot.constant(...)` (chunk size, top-k, the model and the settings the code sends with it), update the recorded value in the same edit. A literal in the code goes in `config=`; a value from a flag, an argument or a variable goes in `ot.constant`, so a comparison names it by its key. A setting that changes without being recorded makes a later comparison say *that* the stage changed, but not *why*.
 - **When you change how an index is built, or which collection or index a query reads:** update the recorded link or constants (`ot.corpus_from(...)`, or the collection name and ingest version recorded with `ot.constant`) in the same edit.
 - **When you add a step that matters to the result:** add `@ot.stage` following the recipe at https://oneproof.dev/onetrace/agents/instrument.md. Only functions defined in this repository; never library functions; a decorated stage must not call another decorated stage. A stage defined in another module, or decorated inside a function while the run is running, is listed in `@ot.run(stages=[...])`.
-- **Do not set** `trust=`, `output_trust=`, `rederivable=` or `note=`. A person decides those. Leave them out and mention them in your summary as questions.
+- **When you pass one stage's output to another:** pass the whole object it returned. A part or a copy of it is recorded as an ordinary input, with no link between the stages.
+- **Do not set** `trust=`, `output_trust=`, `rederivable=`, `note=` or `keep_inputs=`. A person decides those. Leave them out and mention them in your summary as questions.
 - **Never** put secrets, tokens or keys into decorator arguments, `config`, `ot.constant`, or a decorated function's arguments: a step that receives a client holding a key gets a thin wrapper, as the recipe shows. Don't add or change `sign_with=`, and never create or commit signing keys: signing is a person's choice, with their own key.
 - **Do not edit or delete** anything under `runs/` or `baselines/`. A baseline changes only in a pull request a person approves.
 - **After changing pipeline code, check:**
@@ -553,11 +562,139 @@ The warranty covers manufacturing defects for twelve months.
 
 Delete `import onetrace as ot` from both files, and the three decorator lines. What's left is the code under "Your pipeline", and it runs as it did before. Your run folders stay under `runs/` until you delete them.
 
+<!-- https://oneproof.dev/onetrace/tool-using-agent.md -->
+
+# Recording a tool-using agent
+
+An agent that calls a model, lets the model ask for a tool, runs the tool and calls the model again
+is a pipeline whose steps repeat. onetrace records it the same way as any other: `@ot.run` on the
+function that does the whole job once, and `@ot.stage` on each step. This page shows the shape with
+a stand-in model and an invented order table, so it runs with no network calls and no real data,
+then says what to decide for a real one.
+
+## The example
+
+Save this as `agent.py`:
+
+```python
+import onetrace as ot
+
+ORDERS = {"A-100": "shipped", "A-101": "waiting for stock"}    # invented; your own system goes here
+
+
+def stand_in_model(question, tool_result):
+    """In place of a hosted model: asks for the order once, then answers from the tool's result."""
+    if tool_result is None:
+        return {"tool": "order_status", "order_id": "A-101"}
+    return {"text": f"Order A-101 is {tool_result}."}
+
+
+@ot.stage("model", instrument=ot.pkg("stand-in-model", "onetrace", kind="model-call"),
+          repeats=True, output_trust="model-generated")
+def call_model(question, tool_result=None):
+    reply = stand_in_model(question, tool_result)
+    ot.constant("model", "stand-in-model")
+    return reply
+
+
+@ot.stage("tool", instrument=ot.pkg("order-status", "onetrace", kind="tool"),
+          repeats=True, output_trust="operator-authored")
+def run_tool(request):
+    return ORDERS.get(request["order_id"], "not found")
+
+
+@ot.run(stages=["model", "tool"], trust="externally-sourced")
+def agent(question):
+    reply = call_model(question)
+    while "tool" in reply:
+        result = run_tool(reply)
+        reply = call_model(question, result)
+    return reply["text"]
+
+
+if __name__ == "__main__":
+    print(agent("Where is my order A-101?"))
+```
+
+Run it and check the record:
+
+```bash
+python agent.py
+onetrace-verify --require-artifacts runs/<run_id>
+```
+
+The run folder holds four stages: `intake` (the question), `model#1`, `tool#1` and `model#2`.
+`repeats=True` lets a stage run more than once in a run, numbering the calls.
+
+## How the steps link
+
+Stages link only when the same object is passed on whole (manual, section 16.1). Here:
+
+- `run_tool(reply)` is given the model's whole reply, so `tool#1` records an edge from `model#1`.
+  Passing `reply["order_id"]` instead would record the id as an ordinary input, with no edge.
+- `call_model(question, result)` is given the tool's whole return value, so `model#2` records an
+  edge from `tool#1`.
+
+Keep each step's output whole when you pass it on, and take the part you need inside the next step.
+
+## Trust classes
+
+Each value a stage reads, and each value it returns, has a trust class: where the data came from.
+onetrace never guesses one: an unstated class is recorded as `externally-sourced` and listed as
+undeclared on that stage. In an agent:
+
+- **What a user typed** is `externally-sourced`, never `operator-authored`. Here `@ot.run`'s
+  `trust="externally-sourced"` records the question that way.
+- **What a model wrote** is `model-generated`: `output_trust="model-generated"` on the model step.
+  That includes the model's request for a tool.
+- **What a tool returns** depends on the tool, and is a person's answer to give. A lookup in a
+  system you run, as here, is `operator-authored`; a web page, a search result or another party's
+  API is `externally-sourced`.
+
+A tool that reads a file or a fetched page records it with its own class, through the running
+stage's context:
+
+```python
+from onetrace.emit import current_stage
+
+@ot.stage("fetch", instrument=ot.pkg("fetch", "onetrace", kind="tool"), output_trust="externally-sourced")
+def fetch(path):
+    raw = current_stage().read_external(path, "text/html", name="page", trust_class="externally-sourced")
+    return raw.decode("utf-8")
+```
+
+`read_external` records the file's digest, its media type and the class you give; the file itself
+is not stored. `trust_class="secret"` is refused before anything is digested: keep keys and tokens
+out of every stage's arguments (manual, section 5.4).
+
+## Comparing runs with a hosted model
+
+A hosted model can answer differently to the same prompt, and its provider can change it without a
+new name. Expect two runs of an agent to differ first at the model step, even when nothing you
+control changed.
+
+- **Record what you know about the model** with `ot.constant()`: its name or version, and the
+  settings you send, including any you learn only from the reply. A comparison names a setting
+  only when it was recorded this way (manual, sections 10.5 and 16.14).
+- **Leave `rederivable` unstated** for a hosted model's step: it is recorded as not re-runnable,
+  which is what a hosted model is.
+- **Test the rest of the agent with a stand-in model**, as above. With the model fixed, two runs
+  differ only where your code, your tools or their data differ, and `onetrace diff` names the
+  first such step.
+- **The console's Compare page looks past a varying model step.** When the first difference is a
+  step marked not re-runnable and nothing recorded about it changed except its output, the page
+  also names the first later step with a recorded change, marked "First recorded change".
+
+## What this record does not show
+
+- That the agent's answer was correct, or why the model wrote what it wrote.
+- Anything a tool did that is not in its recorded inputs and outputs, or any step not decorated.
+
 <!-- https://oneproof.dev/onetrace/manual.md -->
 
 # onetrace: developer manual
 
-This manual takes you from knowing nothing about onetrace to recording, verifying and comparing your own pipeline's runs. Its examples were first written against the `onetrace 0.1.1` release files, installed into a fresh virtual environment; sections 15–17 were written for 0.2.0. The verifier summaries in sections 2 and 8 were re-measured with the verifier in this repository, which adds one `receipt format` row per receipt (section 14).
+This manual takes you from knowing nothing about onetrace to recording, verifying and comparing your own pipeline's runs. Jump to any section from the menu, or from **On this page**.
 
 ---
 
@@ -710,7 +847,7 @@ onetrace diff run_a run_b      # "diff: identical", exit 0
 | **Manifest** | `MANIFEST.json`: the ordered chain of receipt digests and the **chain head**. It is rewritten after every receipt, and is the run's "last word". |
 | **Instrument** | The tool a stage used: id, kind, a pinned version, and its configuration. The configuration is digested, so a config change is always visible. |
 | **Artifact** | A file a stage wrote through onetrace. It's stored under `artifacts/NN-<stage>/` and its digest goes in the receipt; `onetrace-verify` checks it there (section 8). |
-| **Constant / assertion** | Constants are the settings the stage ran under. Assertions are facts the stage states about its work (a count, a chosen id). Each takes a string, or a Python int recorded as its own decimal string (section 5.6). |
+| **Constant / assertion** | Constants are the settings the stage ran under. Assertions are facts the stage states about its work (a count, a chosen id). Each takes a string, a number or a boolean, recorded as a string (section 5.6). |
 | **Trust class** | Where data came from: `operator-authored`, `model-generated` or `externally-sourced`. `secret` is refused, so secrets never enter a record. |
 | **Policy** | `fail-closed` or `fail-open`: what happens when a receipt can't be written or verification fails (section 5.8). |
 | **Coverage** | Which declared stages have emitted. `complete` only when every declared stage has emitted and no boundary or gap stands. |
@@ -783,7 +920,7 @@ Instrument(id, kind, version, config, rederivable="true", rederivable_note=None)
 - `id`: your name for the tool, for example `"gpt-4o-mini"` or `"recursive-splitter"`.
 - `kind`: its role, for example `"retriever"`, `"llm"` or `"chunker"`.
 - `version`: **must pin an exact build.** `""`, `latest`, `current`, `head`, `main` and `master` are refused. Use the library version (`importlib.metadata.version("langchain-core")`) or a model snapshot id.
-- `config`: a dict of the settings that affect the output. A **string** is always fine. A Python **`int`** (never `bool`) is accepted too, and recorded as its own decimal string — `3` and `"3"` produce the same `config_digest`, so you don't have to remember to stringify every number by hand. A **float is refused**, with a message explaining why: its digest is not stable across languages (`0.2` prints differently across implementations; `"0.2"` doesn't). Nested dicts and lists follow the same rule at every level.
+- `config`: a dict of the settings that affect the output. A **string** is always fine. A Python **`int`** is recorded as its own decimal string, a **`bool`** as `"true"` or `"false"`, and a **`float`** in RFC 8785's number form (the shortest decimal that reads back as the same float), so `3` and `"3"`, or `0.7` and `"0.7"`, produce the same `config_digest` (rule M, section 16.16). NaN and Infinity have no such form and are refused, naming where they were given. Nested dicts and lists follow the same rule at every level.
 - `rederivable="false"`: set this when re-running can't reproduce the output, for example a sampled LLM call. Explain why in `rederivable_note`.
 
 If you don't want to repeat instruments at every call site, declare them once:
@@ -842,7 +979,7 @@ ctx.constant("top_k", 4)                   # a setting the stage ran under
 ctx.assertion("hits", 4)                   # a fact the stage states about its work
 ```
 
-- Each takes a **string**, or a Python **`int`** (never `bool`) recorded as its own decimal string — the same rule as `Instrument.config` (section 5.3). A float is refused for the same reason: its digest isn't stable across languages.
+- Each takes a **string**, a number or a boolean, recorded as a string by the same rule as `Instrument.config` (section 5.3): `512` as `"512"`, `False` as `"false"`, `0.25` as `"0.25"`. NaN and Infinity are refused.
 - **A stage that makes assertions must declare at least one constant.** Otherwise you'll get `EmissionRefused: ... assertions [...] declare no constant`. The rule exists so that no stated fact can depend on an unstated setting.
 
 ### 5.7 How a stage ends
@@ -1156,6 +1293,8 @@ Both runs are verified first. A run that doesn't verify is refused, and no text 
 
 **Chunk text is opt-in.** A splitting stage that returns `ot.chunks(pairs)` records a chunk index: each chunk's id, document, length and digest, and no text. With `ot.chunks(pairs, keep_text=True)` (or the LangChain adapter's `--keep-text`), each chunk also keeps its text, and `--text` shows a changed chunk's text diff. The text is shown only after checking that the digest of its bytes equals the chunk's digest; otherwise it says `text does not match its digest; not shown`. Run folders store each stage's outputs, so treat them like logs that may contain sensitive data. `keep_text` adds the chunk text to them.
 
+**Input text is opt-in too** (section 16.19). A stage with `keep_inputs` stores that input's text in plain form in `inputs/`. Keep inputs only when you would also keep them in a log. `trust="secret"` inputs are never kept. **Removing the text is allowed:** delete `inputs/`, or one file in it, and the run still verifies, because a receipt holds each input's digest, never its text; `--text` then reads `not kept: file missing` for that input.
+
 `--text` never changes a verdict or the exit code. `--json` prints the same comparison as one JSON document, `onetrace-textdiff/0.3`, whose fields and escaping are defined in [the textdiff format](textdiff-format.md).
 
 #### Following a changed corpus link
@@ -1326,8 +1465,10 @@ Reading it from the top:
 - **The first line is a sentence:** where the runs first differ, whether its output text changed, whether any setting did, and which inputs did.
 - **`retrieve` is the first difference.** No setting changed, but its corpus link did, on a line of its own: the query runs read different ingest runs, named by run id once the trace reached them. Its input `help_centre` changed too. An input's name is its parameter's name, so it is spelled as Python spells it; `help-centre/warranty.md` is a document's path, which keeps its own spelling. Inputs are fingerprinted, so only their digests are shown.
 - **The changed words are marked** `[-removed-]{+added+}` on a `~` line under each changed line pair, here `twelve` to `six`. A chunk index and a hits list are compared entry by entry, by id.
-- **`prompt` and `answer` change as a result:** they are downstream of `retrieve`, and their settings did not change.
+- **`prompt` and `answer` differ too:** they are downstream of `retrieve`, and their settings did not change.
 - **The trace follows the changed corpus link one hop** into the two ingest runs, verified first, and compares them the same way. It starts at `load`, where one of three documents changed, and shows the sentence changing in `warranty.md` and then in its chunk.
+
+**Which settings a comparison names.** A setting is named, with both values, only when it was recorded with `ot.constant()` (16.14): `constants.temperature: 0.2 -> 0.7`. A stage's instrument config is recorded as one digest, so when it changes the comparison says `instrument.config_digest` changed, not which key. To see a setting by name in `diff --text`, in its JSON and on the console's Compare page, record it with `ot.constant()`. A changed tool (`instrument.id`, `kind` or `version`) is counted on the `settings:` line too.
 
 The same comparison is available as one JSON document with `--json`. Its fields are described in [the textdiff format](textdiff-format.md), and its JSON Schema is `docs/textdiff-format.schema.json`.
 
@@ -1357,8 +1498,7 @@ Keep a known-good run as `baselines/golden`. When a change is intended, regenera
 | `another process already holds this run folder` | a second process genuinely still emitting into that folder, or a stale `.lock` left by a process that crashed before calling `close()` | one process per folder, and a fresh folder per run |
 | `stage 'X' is not the next declared stage (expected Y)` | stages ran out of declared order | call them in the declared order, or fix `declared_stages` |
 | `version 'latest' does not pin a build` | an unpinned instrument version | use the exact library version or model snapshot |
-| `... is a bool, not an accepted metadata value` | `True`/`False` passed to a config, constant or assertion | use a string (`"true"`) or an int, not a bool |
-| `a float (...) is refused -- its digest is not stable across languages` | a float in a config, constant or assertion | convert it to a string, or (for a whole-number value) an int |
+| `... nan is not a number that can be recorded (NaN and Infinity have no RFC 8785 form)` | NaN or Infinity in a config, constant or assertion | record what it stands for as a string (`"unbounded"`), or leave the setting out |
 | `JSON number at $.… : use a decimal string` (`write_json` only) | a number in a `write_json` payload | convert it to a string: `str(x)` |
 | `write_json needs a JSON object at the top level` | a list or a string passed to `write_json` | wrap it in an object |
 | `assertions [...] declare no constant` | assertions with no `ctx.constant` in the stage | declare the constants the stage ran under |
@@ -1401,7 +1541,7 @@ ctx (StageContext):
   .read_receipt(node) -> dict
   .write(name, data, media_type, trust_class="operator-authored") -> Artifact
   .write_json(name, obj, trust_class="operator-authored") -> Artifact
-  .constant(key, value)             .assertion(key, value)   # value: str, or int (never bool/float)
+  .constant(key, value)             .assertion(key, value)   # value: str, int, float or bool (rule M)
   .corpus_manifest(digest, member=None, preimage=None, proof=None)
 
 Refusal(reason, detail=None)        # raise inside a stage to decline
@@ -1428,7 +1568,7 @@ Commands: `onetrace-verify [--require-artifacts] [--json] [--headers FILE] [--ts
 - **A concurrent pipeline's output files could land under the wrong numbered folder** in 0.1.0: `ctx.write`'s target directory was chosen from a stage's provisional position, before the real one was decided under the lock, and the two could disagree once two stages genuinely raced. The receipts themselves were never affected — only where the output *files* ended up on disk. **If you have run folders emitted concurrently by 0.1.0**, re-verifying them under 0.1.1 may now show `[FAIL]` rows naming misplaced output files that 0.1.0's own verifier could not see. This is 0.1.1 correctly reporting a real, pre-existing mismatch, not a new defect in the run itself.
 - **`onetrace-verify -h`/`--help` were previously treated as a path**, and a run with a missing or malformed receipt file made it stop with a Python traceback instead of a clean `[FAIL]` row. Both are fixed in 0.1.1: usage/version print and exit 0; any file problem the manifest names gives a `[FAIL]` row (or, for the manifest itself, `[REFUSED]`), never a traceback.
 - **`reproduce` could not run your code from a virtual environment on Linux or macOS.** `{python}` resolved the venv's interpreter link to the system Python, which doesn't have your packages, so every stage read `COULD NOT CHECK`. Fixed in 0.1.1: `{python}` is the interpreter running `onetrace`, exactly as invoked.
-- **A config, constant or assertion value had to be a string**, including numbers (`"3"`, not `3`) — a JSON number anywhere in a receipt was refused outright. As of 0.1.1, a Python `int` (never `bool`) is accepted directly and recorded as its own decimal string (section 5.3). `write_json` payloads are unaffected: a number there is still refused, now with a clearer message naming the output.
+- **A config, constant or assertion value had to be a string**, including numbers (`"3"`, not `3`) — a JSON number anywhere in a receipt was refused outright. As of 0.1.1, a Python `int` is accepted directly and recorded as its own decimal string (section 5.3); as of 0.2.0, a `bool` and a `float` are too (rule M, section 16.16). `write_json` payloads are unaffected: a number there is still refused, now with a clearer message naming the output.
 
 ## 15. Anchoring a run
 
@@ -1564,6 +1704,19 @@ show what changed in it, not only that it changed:
 
 An argument that is an earlier stage's return value, passed on unchanged, is recorded as an edge
 from that stage (`receipt:<stage>`), not as a second copy of the value.
+
+**Stages link only when the same object is passed on whole.** The link is made by identity: the
+argument must be the very object the earlier stage returned. Anything made from it is a new object,
+recorded as an ordinary input with no edge: a slice, one value taken out of a returned dict, a
+copy or `list(x)`, an equal value built elsewhere, a string made from it, or the returned object
+placed inside a list, tuple or dict that is passed as one argument. To keep the link, pass the
+whole output on and take the part you need inside the next stage.
+
+**A gap, not yet fixed:** Python reuses some objects across a program: `None`, `True` and `False`,
+and numbers and strings written as literals in your code. A stage that returns one of these, and a
+later stage that is given the same value from anywhere else, are linked as if the second had read
+the first's output. Return a value that carries the stage's data, not a bare `None`, flag or
+constant.
 
 ### 16.2 Fields you didn't state
 
@@ -1714,14 +1867,23 @@ Otherwise the id is generated, as before. Either way, a `:` in the id is written
 folder name only.
 
 The id must be usable as one folder name on Windows and POSIX alike (after `:` becomes `-`): no
-`/` or `\`, none of `< > " | ? *`, no control character or line break (16.12), no trailing space
-or dot, not `.` or `..`, and not a name Windows reserves (`CON`, `NUL`, `COM1`, ...). Anything else
-is refused at the call, naming the variable, and nothing is written.
+`/` or `\`, none of `< > " | ? *`, no control character or line break and no lone surrogate (16.12),
+no trailing space or dot, not `.` or `..`, not a name Windows reserves (`CON`, `NUL`, `COM1`, ...),
+and at most 255 bytes in UTF-8. Anything else is refused at the call, naming the variable, and
+nothing is written.
 
 A run folder that already holds anything is refused at the call, before it is touched: a record is
 never merged into or overwritten. That includes a second decorated run in the same process with the
-variable still set. Unset the variable or set a new id, or remove the old run. Under
-`ONETRACE_DISABLE=1` nothing is written, whatever the variable says.
+variable still set. Unset the variable or set a new id, or remove the old run. An empty folder is
+used as it is. Under `ONETRACE_DISABLE=1` nothing is written, whatever the variable says.
+
+**Its limits:**
+- **One id names one run.** A process that calls a decorated run more than once needs a new id for
+  each call; with the variable unchanged, the second call is refused.
+- **`a:b` and `a-b` name the same folder.** The `:` becomes `-` in the folder name only, so the
+  second of the two is refused as a folder that already holds a run.
+- **Only `@ot.run` reads it.** A run opened with `Recorder(out_dir, ...)` is written where `out_dir`
+  says, whatever the variable holds.
 
 ### 16.11 Stages in other threads
 
@@ -1812,6 +1974,23 @@ They write the running stage's constants and assertions, numbers and booleans sp
 `Instrument.config` (`512` as `"512"`, `False` as `"false"`). An assertion still needs a constant
 beside it. Outside a run, and with `ONETRACE_DISABLE=1`, they do nothing. Inside a run but outside
 any stage there is nothing to record them on, and they are refused.
+
+**`ot.constant` can be called after a model call.** A stage's constants are written when the stage
+returns, so a call anywhere in its body counts, including after the work. Record a setting the
+moment you know it, even if only the model's reply tells you (the model version it answered with,
+say):
+
+```python
+@ot.stage("answer", instrument=llm, output_trust="model-generated")
+def answer(prompt):
+    reply = client.generate(prompt, temperature=0.2)
+    ot.constant("temperature", 0.2)
+    ot.constant("model", reply.model)          # known only from the reply
+    return reply.text
+```
+
+A second call with the same key replaces the first value: the receipt holds the last one. After the
+stage has returned, there is no stage to record on, and the call is refused as above.
 
 ### 16.15 numpy arrays, LangChain documents, LlamaIndex nodes, and index objects
 
@@ -1906,6 +2085,26 @@ writes nothing to stderr when it closes.
 
 The same setting also silences `onetrace-verify`'s summary line and its `fix` lines, which it writes to stderr (section 8.1). Its rows and verdict on stdout, its exit code and `--json` don't change.
 
+### 16.19 Keeping a stage's text inputs: `keep_inputs`
+
+A stage's inputs are recorded as digests, never as text. To read what a stage was given, keep the text of named inputs beside their digests:
+
+```python
+@ot.stage("answer", instrument=llm, keep_inputs=["question"])
+def answer(question, passages):
+    ...
+```
+
+**A stage with `keep_inputs` stores that input's text in plain form in `inputs/`. Keep inputs only when you would also keep them in a log. `trust="secret"` inputs are never kept.** It is off unless you name an input, and a person decides it, as for `trust=`.
+
+- **What is kept.** Each named input whose value is a `str`, stored in `inputs/<receipt stem>/<name>.json` as exactly the bytes its digest was computed over: the text as a JSON string. The file's SHA-256 is the input's digest, and the receipt is unchanged: the same input entry, the same digest. `inputs/` is beside `artifacts/`, never inside it. `@ot.run(keep_inputs=[...])` does the same for the run's own arguments.
+- **What is not kept, and the stage goes on:** a value that is not text, recorded as before and listed as `not text (<type>)`; an input whose stored bytes are over the cap, listed as `over <cap> bytes`; an input not passed, `no value passed`; an earlier stage's output passed on whole, which is a link to that stage, `an earlier stage's output`. A stage that doesn't finish keeps nothing: its files are removed, and its inputs are listed as `the stage did not finish (<outcome>)`.
+- **The cap is on the stored bytes,** the JSON string as written to the file, so the cap and the file's size are the same number: `keep_inputs_cap=`, 4096 by default, at most 65536. A name that is not a parameter of the function, or a cap out of range, is refused when the stage is decorated.
+- **The record says what was kept,** in two constants only onetrace writes: `onetrace.kept_inputs` lists the kept inputs, and `onetrace.inputs_not_kept` each named input that wasn't, with why. A constant of your own whose name starts with `onetrace.` is refused. Kept text counts towards `max_run_bytes`.
+- **A reader shows the text only when the record lists the input as kept and the file's SHA-256 equals its digest.** `onetrace diff --text` shows a changed kept input as `- "<baseline>"` and `+ "<candidate>"` under its line, each escaped one character for one character as the verifier escapes names. Otherwise it reads `not kept`, `not kept: file missing`, or `text does not match its digest; not shown`. A file under `inputs/` that the record does not list is never shown.
+- **Checking it.** `onetrace-verify` (0.2.0 and 0.2.1) does not read `inputs/`: its result is the same with or without the files. The SDK's own check (`python -m onetrace.sdk_verify`) adds a row per kept input, `kept input text matches its digest`: PASS, FAIL, or NOT RUN when the file was removed; and a note, `inputs/: unlisted file`, for a file no receipt lists.
+- **Removing the text** (all of `inputs/`, or one file) is allowed and leaves the run verifiable: the digests are in the receipts.
+
 ## 17. Signing a run
 
 A signature is an Ed25519 signature over a finished run's chain head, by a key you hold. It is stored as its own file, `signatures/<n>.json`, beside the run's receipts. Like an anchor, it is never part of the chain: signing changes no byte that was there before, so the chain head stays byte-identical, and a run may carry several signatures (a recorder and a reviewer, say). Signing and anchoring work together in either order.
@@ -1920,10 +2119,21 @@ What it does show: the holder of that private key signed this exact record.
 
 ### 17.1 Making a key
 
+On macOS or Linux:
+
 ```
 mkdir -p ~/keys
 onetrace keygen --out ~/keys/recorder.key
 ```
+
+On Windows, in PowerShell:
+
+```
+New-Item -ItemType Directory -Force "$HOME\keys"
+onetrace keygen --out "$HOME\keys\recorder.key"
+```
+
+On Windows, a folder in your user profile (`$HOME`, which is `C:\Users\<you>`) is private to you by default: other standard users on the machine can't read it, but administrators can. Step 8 of [Get started](https://oneproof.dev/get-started.html) makes a key and signs a run, start to finish.
 
 `onetrace keygen` writes a new private key as PEM, with owner-only permissions (0600) on Linux and macOS, and prints the public key, its `key_id` (the `sha256:` fingerprint of the public key's 32 raw bytes) and where the private key was written; it never prints the private key. It never overwrites a file, and it refuses a path inside a run folder. It doesn't create folders, so make the key's folder first, as above: a path whose folder is missing is refused, and nothing is written. On Windows it can't set owner-only permissions itself: the file inherits its folder's access list, and `keygen` says so. Keep the key in a folder only you can read.
 
@@ -2030,6 +2240,18 @@ A stage uses the name the run records its own arguments under (the intake stage)
 Something that belongs to a stage (`ot.constant`, `ot.assertion`, the stage context) was used where no stage is running.
 
 **Fix:** Call it inside the decorated stage whose output it describes.
+
+## keep-inputs
+
+`keep_inputs` names something that is not a parameter of the function, or `keep_inputs_cap` is not a whole number of bytes from 1 to 65536. Checked when the stage is decorated.
+
+**Fix:** Name the function's own parameters, spelled as in its signature, and give the cap in bytes (default 4096).
+
+## reserved-constant
+
+A constant's name starts with `onetrace.`, which only onetrace's own constants use (`onetrace.kept_inputs`, `onetrace.inputs_not_kept`).
+
+**Fix:** Rename the constant without the `onetrace.` prefix.
 
 ## stage-undeclared
 
@@ -2219,7 +2441,7 @@ A corpus manifest is malformed: its digest isn't `sha256:` and 64 lower-case hex
 
 ## anchor-run
 
-`onetrace anchor` can't read the run's chain head: the run has no MANIFEST.json (it isn't finished), or the manifest can't be read, is over its size or depth cap, or names a chain head of the wrong form.
+`onetrace anchor` can't read the run's chain head: there is no run folder at the path given (or it is a file), the run has no MANIFEST.json (it isn't finished), or the manifest can't be read, is over its size or depth cap, or names a chain head of the wrong form.
 
 **Fix:** Anchor a finished run, by its folder, and check that onetrace-verify reads the run as intact first.
 
@@ -2267,7 +2489,7 @@ The signing key can't be used: it isn't a key file's path or `onetrace.env("NAME
 
 ## signing-store
 
-The run can't be signed as asked: it isn't finished (it has no MANIFEST.json), the signer label isn't a non-empty string within its length, the record would read FAIL, or its temporary file can't be written. Nothing is stored.
+The run can't be signed as asked: there is no run folder at the path given (or it is a file), it isn't finished (it has no MANIFEST.json), the signer label isn't a non-empty string within its length, the record would read FAIL, or its temporary file can't be written. Nothing is stored.
 
 **Fix:** Sign a finished run that onetrace-verify reads as intact, with a short signer label or none, and run the command again.
 
@@ -2551,11 +2773,11 @@ of the run, not something the verifier tries to explain away.
 
 <!-- https://oneproof.dev/onetrace/README.md -->
 
-# Documentation
+# All docs pages
 
 - [The record format, in plain words](format.md)
 - [The five verdicts](verdicts.md)
-- [The three verbs](verbs.md) — `diff`, `localize`, `reproduce`
+- [Compare runs: diff, localize, reproduce](verbs.md)
 - [What onetrace does not claim](non-claims.md)
 
 ## Adapters
@@ -2567,6 +2789,10 @@ framework at all, three wired onto a real RAG/agent framework's own runtime wher
 - [LangChain](adapters/langchain.md)
 - [LlamaIndex](adapters/llamaindex.md)
 - [Langflow](adapters/langflow.md)
+
+## Guides
+
+- [Tool-using agent](tool-using-agent.md) — an agent loop recorded step by step, with a stand-in model.
 
 See the [quickstart](quickstart.md) to run a pipeline and check
 it yourself before reading further.

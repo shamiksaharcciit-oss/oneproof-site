@@ -1,4 +1,4 @@
-# The three verbs
+# Compare runs: diff, localize, reproduce
 
 Every verb calls the reference verifier first (via the installed `onetrace-verify` package,
 resolved automatically — see the [quickstart](quickstart.md)). A

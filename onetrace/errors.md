@@ -53,6 +53,18 @@ Something that belongs to a stage (`ot.constant`, `ot.assertion`, the stage cont
 
 **Fix:** Call it inside the decorated stage whose output it describes.
 
+## keep-inputs
+
+`keep_inputs` names something that is not a parameter of the function, or `keep_inputs_cap` is not a whole number of bytes from 1 to 65536. Checked when the stage is decorated.
+
+**Fix:** Name the function's own parameters, spelled as in its signature, and give the cap in bytes (default 4096).
+
+## reserved-constant
+
+A constant's name starts with `onetrace.`, which only onetrace's own constants use (`onetrace.kept_inputs`, `onetrace.inputs_not_kept`).
+
+**Fix:** Rename the constant without the `onetrace.` prefix.
+
 ## stage-undeclared
 
 A stage ran, or was named, that the run doesn't declare.
@@ -241,7 +253,7 @@ A corpus manifest is malformed: its digest isn't `sha256:` and 64 lower-case hex
 
 ## anchor-run
 
-`onetrace anchor` can't read the run's chain head: the run has no MANIFEST.json (it isn't finished), or the manifest can't be read, is over its size or depth cap, or names a chain head of the wrong form.
+`onetrace anchor` can't read the run's chain head: there is no run folder at the path given (or it is a file), the run has no MANIFEST.json (it isn't finished), or the manifest can't be read, is over its size or depth cap, or names a chain head of the wrong form.
 
 **Fix:** Anchor a finished run, by its folder, and check that onetrace-verify reads the run as intact first.
 
@@ -289,7 +301,7 @@ The signing key can't be used: it isn't a key file's path or `onetrace.env("NAME
 
 ## signing-store
 
-The run can't be signed as asked: it isn't finished (it has no MANIFEST.json), the signer label isn't a non-empty string within its length, the record would read FAIL, or its temporary file can't be written. Nothing is stored.
+The run can't be signed as asked: there is no run folder at the path given (or it is a file), it isn't finished (it has no MANIFEST.json), the signer label isn't a non-empty string within its length, the record would read FAIL, or its temporary file can't be written. Nothing is stored.
 
 **Fix:** Sign a finished run that onetrace-verify reads as intact, with a short signer label or none, and run the command again.
 

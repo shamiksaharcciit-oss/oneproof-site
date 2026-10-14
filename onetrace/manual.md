@@ -1,6 +1,6 @@
 # onetrace: developer manual
 
-This manual takes you from knowing nothing about onetrace to recording, verifying and comparing your own pipeline's runs. Its examples were first written against the `onetrace 0.1.1` release files, installed into a fresh virtual environment; sections 15–17 were written for 0.2.0. The verifier summaries in sections 2 and 8 were re-measured with the verifier in this repository, which adds one `receipt format` row per receipt (section 14).
+This manual takes you from knowing nothing about onetrace to recording, verifying and comparing your own pipeline's runs. Jump to any section from the menu, or from **On this page**.
 
 ---
 
@@ -153,7 +153,7 @@ onetrace diff run_a run_b      # "diff: identical", exit 0
 | **Manifest** | `MANIFEST.json`: the ordered chain of receipt digests and the **chain head**. It is rewritten after every receipt, and is the run's "last word". |
 | **Instrument** | The tool a stage used: id, kind, a pinned version, and its configuration. The configuration is digested, so a config change is always visible. |
 | **Artifact** | A file a stage wrote through onetrace. It's stored under `artifacts/NN-<stage>/` and its digest goes in the receipt; `onetrace-verify` checks it there (section 8). |
-| **Constant / assertion** | Constants are the settings the stage ran under. Assertions are facts the stage states about its work (a count, a chosen id). Each takes a string, or a Python int recorded as its own decimal string (section 5.6). |
+| **Constant / assertion** | Constants are the settings the stage ran under. Assertions are facts the stage states about its work (a count, a chosen id). Each takes a string, a number or a boolean, recorded as a string (section 5.6). |
 | **Trust class** | Where data came from: `operator-authored`, `model-generated` or `externally-sourced`. `secret` is refused, so secrets never enter a record. |
 | **Policy** | `fail-closed` or `fail-open`: what happens when a receipt can't be written or verification fails (section 5.8). |
 | **Coverage** | Which declared stages have emitted. `complete` only when every declared stage has emitted and no boundary or gap stands. |
@@ -226,7 +226,7 @@ Instrument(id, kind, version, config, rederivable="true", rederivable_note=None)
 - `id`: your name for the tool, for example `"gpt-4o-mini"` or `"recursive-splitter"`.
 - `kind`: its role, for example `"retriever"`, `"llm"` or `"chunker"`.
 - `version`: **must pin an exact build.** `""`, `latest`, `current`, `head`, `main` and `master` are refused. Use the library version (`importlib.metadata.version("langchain-core")`) or a model snapshot id.
-- `config`: a dict of the settings that affect the output. A **string** is always fine. A Python **`int`** (never `bool`) is accepted too, and recorded as its own decimal string — `3` and `"3"` produce the same `config_digest`, so you don't have to remember to stringify every number by hand. A **float is refused**, with a message explaining why: its digest is not stable across languages (`0.2` prints differently across implementations; `"0.2"` doesn't). Nested dicts and lists follow the same rule at every level.
+- `config`: a dict of the settings that affect the output. A **string** is always fine. A Python **`int`** is recorded as its own decimal string, a **`bool`** as `"true"` or `"false"`, and a **`float`** in RFC 8785's number form (the shortest decimal that reads back as the same float), so `3` and `"3"`, or `0.7` and `"0.7"`, produce the same `config_digest` (rule M, section 16.16). NaN and Infinity have no such form and are refused, naming where they were given. Nested dicts and lists follow the same rule at every level.
 - `rederivable="false"`: set this when re-running can't reproduce the output, for example a sampled LLM call. Explain why in `rederivable_note`.
 
 If you don't want to repeat instruments at every call site, declare them once:
@@ -285,7 +285,7 @@ ctx.constant("top_k", 4)                   # a setting the stage ran under
 ctx.assertion("hits", 4)                   # a fact the stage states about its work
 ```
 
-- Each takes a **string**, or a Python **`int`** (never `bool`) recorded as its own decimal string — the same rule as `Instrument.config` (section 5.3). A float is refused for the same reason: its digest isn't stable across languages.
+- Each takes a **string**, a number or a boolean, recorded as a string by the same rule as `Instrument.config` (section 5.3): `512` as `"512"`, `False` as `"false"`, `0.25` as `"0.25"`. NaN and Infinity are refused.
 - **A stage that makes assertions must declare at least one constant.** Otherwise you'll get `EmissionRefused: ... assertions [...] declare no constant`. The rule exists so that no stated fact can depend on an unstated setting.
 
 ### 5.7 How a stage ends
@@ -599,6 +599,8 @@ Both runs are verified first. A run that doesn't verify is refused, and no text 
 
 **Chunk text is opt-in.** A splitting stage that returns `ot.chunks(pairs)` records a chunk index: each chunk's id, document, length and digest, and no text. With `ot.chunks(pairs, keep_text=True)` (or the LangChain adapter's `--keep-text`), each chunk also keeps its text, and `--text` shows a changed chunk's text diff. The text is shown only after checking that the digest of its bytes equals the chunk's digest; otherwise it says `text does not match its digest; not shown`. Run folders store each stage's outputs, so treat them like logs that may contain sensitive data. `keep_text` adds the chunk text to them.
 
+**Input text is opt-in too** (section 16.19). A stage with `keep_inputs` stores that input's text in plain form in `inputs/`. Keep inputs only when you would also keep them in a log. `trust="secret"` inputs are never kept. **Removing the text is allowed:** delete `inputs/`, or one file in it, and the run still verifies, because a receipt holds each input's digest, never its text; `--text` then reads `not kept: file missing` for that input.
+
 `--text` never changes a verdict or the exit code. `--json` prints the same comparison as one JSON document, `onetrace-textdiff/0.3`, whose fields and escaping are defined in [the textdiff format](textdiff-format.md).
 
 #### Following a changed corpus link
@@ -769,8 +771,10 @@ Reading it from the top:
 - **The first line is a sentence:** where the runs first differ, whether its output text changed, whether any setting did, and which inputs did.
 - **`retrieve` is the first difference.** No setting changed, but its corpus link did, on a line of its own: the query runs read different ingest runs, named by run id once the trace reached them. Its input `help_centre` changed too. An input's name is its parameter's name, so it is spelled as Python spells it; `help-centre/warranty.md` is a document's path, which keeps its own spelling. Inputs are fingerprinted, so only their digests are shown.
 - **The changed words are marked** `[-removed-]{+added+}` on a `~` line under each changed line pair, here `twelve` to `six`. A chunk index and a hits list are compared entry by entry, by id.
-- **`prompt` and `answer` change as a result:** they are downstream of `retrieve`, and their settings did not change.
+- **`prompt` and `answer` differ too:** they are downstream of `retrieve`, and their settings did not change.
 - **The trace follows the changed corpus link one hop** into the two ingest runs, verified first, and compares them the same way. It starts at `load`, where one of three documents changed, and shows the sentence changing in `warranty.md` and then in its chunk.
+
+**Which settings a comparison names.** A setting is named, with both values, only when it was recorded with `ot.constant()` (16.14): `constants.temperature: 0.2 -> 0.7`. A stage's instrument config is recorded as one digest, so when it changes the comparison says `instrument.config_digest` changed, not which key. To see a setting by name in `diff --text`, in its JSON and on the console's Compare page, record it with `ot.constant()`. A changed tool (`instrument.id`, `kind` or `version`) is counted on the `settings:` line too.
 
 The same comparison is available as one JSON document with `--json`. Its fields are described in [the textdiff format](textdiff-format.md), and its JSON Schema is `docs/textdiff-format.schema.json`.
 
@@ -800,8 +804,7 @@ Keep a known-good run as `baselines/golden`. When a change is intended, regenera
 | `another process already holds this run folder` | a second process genuinely still emitting into that folder, or a stale `.lock` left by a process that crashed before calling `close()` | one process per folder, and a fresh folder per run |
 | `stage 'X' is not the next declared stage (expected Y)` | stages ran out of declared order | call them in the declared order, or fix `declared_stages` |
 | `version 'latest' does not pin a build` | an unpinned instrument version | use the exact library version or model snapshot |
-| `... is a bool, not an accepted metadata value` | `True`/`False` passed to a config, constant or assertion | use a string (`"true"`) or an int, not a bool |
-| `a float (...) is refused -- its digest is not stable across languages` | a float in a config, constant or assertion | convert it to a string, or (for a whole-number value) an int |
+| `... nan is not a number that can be recorded (NaN and Infinity have no RFC 8785 form)` | NaN or Infinity in a config, constant or assertion | record what it stands for as a string (`"unbounded"`), or leave the setting out |
 | `JSON number at $.… : use a decimal string` (`write_json` only) | a number in a `write_json` payload | convert it to a string: `str(x)` |
 | `write_json needs a JSON object at the top level` | a list or a string passed to `write_json` | wrap it in an object |
 | `assertions [...] declare no constant` | assertions with no `ctx.constant` in the stage | declare the constants the stage ran under |
@@ -844,7 +847,7 @@ ctx (StageContext):
   .read_receipt(node) -> dict
   .write(name, data, media_type, trust_class="operator-authored") -> Artifact
   .write_json(name, obj, trust_class="operator-authored") -> Artifact
-  .constant(key, value)             .assertion(key, value)   # value: str, or int (never bool/float)
+  .constant(key, value)             .assertion(key, value)   # value: str, int, float or bool (rule M)
   .corpus_manifest(digest, member=None, preimage=None, proof=None)
 
 Refusal(reason, detail=None)        # raise inside a stage to decline
@@ -871,7 +874,7 @@ Commands: `onetrace-verify [--require-artifacts] [--json] [--headers FILE] [--ts
 - **A concurrent pipeline's output files could land under the wrong numbered folder** in 0.1.0: `ctx.write`'s target directory was chosen from a stage's provisional position, before the real one was decided under the lock, and the two could disagree once two stages genuinely raced. The receipts themselves were never affected — only where the output *files* ended up on disk. **If you have run folders emitted concurrently by 0.1.0**, re-verifying them under 0.1.1 may now show `[FAIL]` rows naming misplaced output files that 0.1.0's own verifier could not see. This is 0.1.1 correctly reporting a real, pre-existing mismatch, not a new defect in the run itself.
 - **`onetrace-verify -h`/`--help` were previously treated as a path**, and a run with a missing or malformed receipt file made it stop with a Python traceback instead of a clean `[FAIL]` row. Both are fixed in 0.1.1: usage/version print and exit 0; any file problem the manifest names gives a `[FAIL]` row (or, for the manifest itself, `[REFUSED]`), never a traceback.
 - **`reproduce` could not run your code from a virtual environment on Linux or macOS.** `{python}` resolved the venv's interpreter link to the system Python, which doesn't have your packages, so every stage read `COULD NOT CHECK`. Fixed in 0.1.1: `{python}` is the interpreter running `onetrace`, exactly as invoked.
-- **A config, constant or assertion value had to be a string**, including numbers (`"3"`, not `3`) — a JSON number anywhere in a receipt was refused outright. As of 0.1.1, a Python `int` (never `bool`) is accepted directly and recorded as its own decimal string (section 5.3). `write_json` payloads are unaffected: a number there is still refused, now with a clearer message naming the output.
+- **A config, constant or assertion value had to be a string**, including numbers (`"3"`, not `3`) — a JSON number anywhere in a receipt was refused outright. As of 0.1.1, a Python `int` is accepted directly and recorded as its own decimal string (section 5.3); as of 0.2.0, a `bool` and a `float` are too (rule M, section 16.16). `write_json` payloads are unaffected: a number there is still refused, now with a clearer message naming the output.
 
 ## 15. Anchoring a run
 
@@ -1007,6 +1010,19 @@ show what changed in it, not only that it changed:
 
 An argument that is an earlier stage's return value, passed on unchanged, is recorded as an edge
 from that stage (`receipt:<stage>`), not as a second copy of the value.
+
+**Stages link only when the same object is passed on whole.** The link is made by identity: the
+argument must be the very object the earlier stage returned. Anything made from it is a new object,
+recorded as an ordinary input with no edge: a slice, one value taken out of a returned dict, a
+copy or `list(x)`, an equal value built elsewhere, a string made from it, or the returned object
+placed inside a list, tuple or dict that is passed as one argument. To keep the link, pass the
+whole output on and take the part you need inside the next stage.
+
+**A gap, not yet fixed:** Python reuses some objects across a program: `None`, `True` and `False`,
+and numbers and strings written as literals in your code. A stage that returns one of these, and a
+later stage that is given the same value from anywhere else, are linked as if the second had read
+the first's output. Return a value that carries the stage's data, not a bare `None`, flag or
+constant.
 
 ### 16.2 Fields you didn't state
 
@@ -1157,14 +1173,23 @@ Otherwise the id is generated, as before. Either way, a `:` in the id is written
 folder name only.
 
 The id must be usable as one folder name on Windows and POSIX alike (after `:` becomes `-`): no
-`/` or `\`, none of `< > " | ? *`, no control character or line break (16.12), no trailing space
-or dot, not `.` or `..`, and not a name Windows reserves (`CON`, `NUL`, `COM1`, ...). Anything else
-is refused at the call, naming the variable, and nothing is written.
+`/` or `\`, none of `< > " | ? *`, no control character or line break and no lone surrogate (16.12),
+no trailing space or dot, not `.` or `..`, not a name Windows reserves (`CON`, `NUL`, `COM1`, ...),
+and at most 255 bytes in UTF-8. Anything else is refused at the call, naming the variable, and
+nothing is written.
 
 A run folder that already holds anything is refused at the call, before it is touched: a record is
 never merged into or overwritten. That includes a second decorated run in the same process with the
-variable still set. Unset the variable or set a new id, or remove the old run. Under
-`ONETRACE_DISABLE=1` nothing is written, whatever the variable says.
+variable still set. Unset the variable or set a new id, or remove the old run. An empty folder is
+used as it is. Under `ONETRACE_DISABLE=1` nothing is written, whatever the variable says.
+
+**Its limits:**
+- **One id names one run.** A process that calls a decorated run more than once needs a new id for
+  each call; with the variable unchanged, the second call is refused.
+- **`a:b` and `a-b` name the same folder.** The `:` becomes `-` in the folder name only, so the
+  second of the two is refused as a folder that already holds a run.
+- **Only `@ot.run` reads it.** A run opened with `Recorder(out_dir, ...)` is written where `out_dir`
+  says, whatever the variable holds.
 
 ### 16.11 Stages in other threads
 
@@ -1255,6 +1280,23 @@ They write the running stage's constants and assertions, numbers and booleans sp
 `Instrument.config` (`512` as `"512"`, `False` as `"false"`). An assertion still needs a constant
 beside it. Outside a run, and with `ONETRACE_DISABLE=1`, they do nothing. Inside a run but outside
 any stage there is nothing to record them on, and they are refused.
+
+**`ot.constant` can be called after a model call.** A stage's constants are written when the stage
+returns, so a call anywhere in its body counts, including after the work. Record a setting the
+moment you know it, even if only the model's reply tells you (the model version it answered with,
+say):
+
+```python
+@ot.stage("answer", instrument=llm, output_trust="model-generated")
+def answer(prompt):
+    reply = client.generate(prompt, temperature=0.2)
+    ot.constant("temperature", 0.2)
+    ot.constant("model", reply.model)          # known only from the reply
+    return reply.text
+```
+
+A second call with the same key replaces the first value: the receipt holds the last one. After the
+stage has returned, there is no stage to record on, and the call is refused as above.
 
 ### 16.15 numpy arrays, LangChain documents, LlamaIndex nodes, and index objects
 
@@ -1349,6 +1391,26 @@ writes nothing to stderr when it closes.
 
 The same setting also silences `onetrace-verify`'s summary line and its `fix` lines, which it writes to stderr (section 8.1). Its rows and verdict on stdout, its exit code and `--json` don't change.
 
+### 16.19 Keeping a stage's text inputs: `keep_inputs`
+
+A stage's inputs are recorded as digests, never as text. To read what a stage was given, keep the text of named inputs beside their digests:
+
+```python
+@ot.stage("answer", instrument=llm, keep_inputs=["question"])
+def answer(question, passages):
+    ...
+```
+
+**A stage with `keep_inputs` stores that input's text in plain form in `inputs/`. Keep inputs only when you would also keep them in a log. `trust="secret"` inputs are never kept.** It is off unless you name an input, and a person decides it, as for `trust=`.
+
+- **What is kept.** Each named input whose value is a `str`, stored in `inputs/<receipt stem>/<name>.json` as exactly the bytes its digest was computed over: the text as a JSON string. The file's SHA-256 is the input's digest, and the receipt is unchanged: the same input entry, the same digest. `inputs/` is beside `artifacts/`, never inside it. `@ot.run(keep_inputs=[...])` does the same for the run's own arguments.
+- **What is not kept, and the stage goes on:** a value that is not text, recorded as before and listed as `not text (<type>)`; an input whose stored bytes are over the cap, listed as `over <cap> bytes`; an input not passed, `no value passed`; an earlier stage's output passed on whole, which is a link to that stage, `an earlier stage's output`. A stage that doesn't finish keeps nothing: its files are removed, and its inputs are listed as `the stage did not finish (<outcome>)`.
+- **The cap is on the stored bytes,** the JSON string as written to the file, so the cap and the file's size are the same number: `keep_inputs_cap=`, 4096 by default, at most 65536. A name that is not a parameter of the function, or a cap out of range, is refused when the stage is decorated.
+- **The record says what was kept,** in two constants only onetrace writes: `onetrace.kept_inputs` lists the kept inputs, and `onetrace.inputs_not_kept` each named input that wasn't, with why. A constant of your own whose name starts with `onetrace.` is refused. Kept text counts towards `max_run_bytes`.
+- **A reader shows the text only when the record lists the input as kept and the file's SHA-256 equals its digest.** `onetrace diff --text` shows a changed kept input as `- "<baseline>"` and `+ "<candidate>"` under its line, each escaped one character for one character as the verifier escapes names. Otherwise it reads `not kept`, `not kept: file missing`, or `text does not match its digest; not shown`. A file under `inputs/` that the record does not list is never shown.
+- **Checking it.** `onetrace-verify` (0.2.0 and 0.2.1) does not read `inputs/`: its result is the same with or without the files. The SDK's own check (`python -m onetrace.sdk_verify`) adds a row per kept input, `kept input text matches its digest`: PASS, FAIL, or NOT RUN when the file was removed; and a note, `inputs/: unlisted file`, for a file no receipt lists.
+- **Removing the text** (all of `inputs/`, or one file) is allowed and leaves the run verifiable: the digests are in the receipts.
+
 ## 17. Signing a run
 
 A signature is an Ed25519 signature over a finished run's chain head, by a key you hold. It is stored as its own file, `signatures/<n>.json`, beside the run's receipts. Like an anchor, it is never part of the chain: signing changes no byte that was there before, so the chain head stays byte-identical, and a run may carry several signatures (a recorder and a reviewer, say). Signing and anchoring work together in either order.
@@ -1363,10 +1425,21 @@ What it does show: the holder of that private key signed this exact record.
 
 ### 17.1 Making a key
 
+On macOS or Linux:
+
 ```
 mkdir -p ~/keys
 onetrace keygen --out ~/keys/recorder.key
 ```
+
+On Windows, in PowerShell:
+
+```
+New-Item -ItemType Directory -Force "$HOME\keys"
+onetrace keygen --out "$HOME\keys\recorder.key"
+```
+
+On Windows, a folder in your user profile (`$HOME`, which is `C:\Users\<you>`) is private to you by default: other standard users on the machine can't read it, but administrators can. Step 8 of [Get started](https://oneproof.dev/get-started.html) makes a key and signs a run, start to finish.
 
 `onetrace keygen` writes a new private key as PEM, with owner-only permissions (0600) on Linux and macOS, and prints the public key, its `key_id` (the `sha256:` fingerprint of the public key's 32 raw bytes) and where the private key was written; it never prints the private key. It never overwrites a file, and it refuses a path inside a run folder. It doesn't create folders, so make the key's folder first, as above: a path whose folder is missing is refused, and nothing is written. On Windows it can't set owner-only permissions itself: the file inherits its folder's access list, and `keygen` says so. Keep the key in a folder only you can read.
 

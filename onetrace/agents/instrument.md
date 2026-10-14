@@ -156,6 +156,9 @@ def generate(question: str, docs: list[str]) -> str:
   ```
   The object itself isn't recorded. Record what identifies it: the ingest run that built the index (`ot.corpus_from`, §1), or its name and version with `ot.constant`.
 - **Values between stages** must be plain data: strings, bytes, ints, lists and dicts of these, pydantic models, dataclasses, numpy arrays. If a stage returns an object onetrace can't encode (an index object, a database client), don't change the function. Tell the human, and suggest either returning the saved index path or registering an encoder with `ot.encoder`.
+- **Pass a stage's output on whole.** Two stages link only when the second is given the very object the first returned. Given a part of it (`reply["id"]`, a slice, a copy), the second stage records an ordinary input and no link. Don't restructure the code to change this; tell the human which stages aren't linked.
+- **`ot.constant` after the model call is fine.** A setting known only from the reply (the model version it answered with) is recorded like any other: a stage's constants are written when it returns.
+- **An agent loop** (the model asks for a tool, the tool runs, the model is called again): the model call and each tool are stages, each with `repeats=True`. The guide at https://oneproof.dev/onetrace/tool-using-agent.md shows the shape.
 - **A stage called more than once in a run:** by default a stage runs once per run, and a second call is refused. For sequential repeats (a loop, a retry), declare the stage `repeats=True`: each call is numbered #1, #2, …. For calls that overlap (`asyncio.gather`, a thread pool), name each call with a stable name per branch instead, for example `retrieve.instance("en")(question)` and `retrieve.instance("fr")(question)`.
 
 - **What a stage depends on, but its code doesn't show:** for example, a prompt template in another module, or a settings file. Record its version or content hash with `ot.constant`, so a change to it is named as the reason.
@@ -168,7 +171,10 @@ These fields say what a stage *means*, and only a person may set them:
 
 - `trust=`: where the values a stage reads come from (`operator-authored`, `externally-sourced`, …);
 - `output_trust=`: the same, for what the stage returns. The trust class covers outputs too: a decorated stage's output with no stated class is recorded with the most cautious one and listed as undeclared, like an input's;
-- `rederivable=` and `note=`: whether running the stage again gives the same output (a hosted model usually doesn't).
+- `rederivable=` and `note=`: whether running the stage again gives the same output (a hosted model usually doesn't);
+- `keep_inputs=`: whether a stage keeps an input's text in plain form beside its digest, in the run folder (manual, section 16.19).
+
+In a tool-using agent, ask about each tool's output: a lookup in a system the human runs is usually `operator-authored`, a web page or another party's API `externally-sourced`, and what a model wrote `model-generated`. The human decides each one.
 
 **Do not set these.** Leave them out. onetrace then records the most cautious value (`externally-sourced`; not re-derivable) and lists the field as `undeclared` on that stage, so everyone can see nobody stated it. At the end, list them as questions for the human (step 7), with what you observed, for example: *"`generate` calls a hosted model: is it re-derivable? (usually no)"*.
 
@@ -180,7 +186,7 @@ These fields say what a stage *means*, and only a person may set them:
    ```
    ONETRACE_RUN_ID=stub-query-1 OPENAI_BASE_URL=http://127.0.0.1:8000/v1 python -m app "a question"
    ```
-   `OPENAI_BASE_URL` is the `openai` package's variable; other client libraries name their own. Each run needs a new id: a run folder that already holds anything is refused.
+   `OPENAI_BASE_URL` is the `openai` package's variable; other client libraries name their own. Each run needs a new id: a run folder that already holds anything is refused, and `a:b` and `a-b` name the same folder.
 3. Run **every run function in full** (for a RAG pipeline, the whole ingest run *and* the whole query run, all stages), the way the project normally runs it or through the test that exercises it. A folder appears under `runs/` for each, and when each run closes it prints that folder and the command that verifies it, on stderr. A shortened demo run that skips stages doesn't count.
 4. Verify it:
    <!-- not executed: <run_id> stands for the folder your run wrote -->
@@ -189,7 +195,8 @@ These fields say what a stage *means*, and only a person may set them:
    ```
    Exit code 0 means the record is intact. The verifier's first line, on stderr, says so (`record intact: …`), or names the first failing row (`record NOT intact: …`), and under it a `fix (…)` line for each failing row says what to change and which section of the errors page explains it. Don't set `ONETRACE_QUIET=1` while you check: it silences those lines. Anything else: read that row and its `fix (…)` line; the errors page explains each one. `onetrace doctor` checks the setup and says whether the most recent run verifies, not why a row failed. Fix the instrumentation, not the pipeline.
 5. **Run it a second time with nothing changed, and compare:** `onetrace diff runs/<first> runs/<second>`. Every stage should read `same`, except stages that call a hosted model, or read a service that changes by itself.
-   - If any other stage differs, **stop and find out why before anything else.** The usual causes are ids generated fresh each run (uuid), timestamps written into outputs, absolute paths, and unordered sets or dict iteration.
+   - If any other stage differs, **stop and find out why before anything else.** Look first for ids generated fresh each run (uuid), timestamps written into outputs, absolute paths, and unordered sets or dict iteration.
+   - A stage that calls a hosted model reading differently is expected. Don't stub it to make the comparison read `same` (step 2). The console's Compare page then also names the first later stage with a recorded change.
    - Report it to the human with the stage and the field.
    - Until it's fixed, every comparison will blame that stage first and hide the real change.
 6. Only then make one deliberate change (for example chunk size) and compare again. The first difference must be the stage you changed. `onetrace diff` and `onetrace localize` name a setting recorded with `ot.constant` by its key ("constant chunk_size differs"); for a setting in `config=` they say the stage's config changed, not which key. To have the key named, record the setting with `ot.constant`.

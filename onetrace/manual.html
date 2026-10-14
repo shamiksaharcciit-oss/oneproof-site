@@ -29,9 +29,9 @@
     </nav>
   </div>
 </header>
-<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html" aria-current="page">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Reference</p>
+<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html" aria-current="page">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Reference</p>
 <h1 id="onetrace-developer-manual">onetrace: developer manual</h1>
-<p>This manual takes you from knowing nothing about onetrace to recording, verifying and comparing your own pipeline's runs. Jump to any section from the menu, or from <b>On this page</b>.</p>
+<p>This manual takes you from knowing nothing about onetrace to recording, verifying and comparing your own pipeline's runs. Jump to any section from the menu, or from <strong>On this page</strong>.</p>
 <hr />
 <h2 id="1-what-onetrace-is-in-one-page">1. What onetrace is, in one page</h2>
 <p>When a pipeline runs, whether it's a RAG system, a document processor or an agent, you usually end up with an output and maybe some logs. Later, when someone asks what exactly produced this answer, and whether anything changed since last week, logs are hard to trust and hard to compare.</p>
@@ -220,7 +220,7 @@ onetrace diff run_a run_b      # &quot;diff: identical&quot;, exit 0
 </tr>
 <tr>
 <td><strong>Constant / assertion</strong></td>
-<td>Constants are the settings the stage ran under. Assertions are facts the stage states about its work (a count, a chosen id). Each takes a string, or a Python int recorded as its own decimal string (section 5.6).</td>
+<td>Constants are the settings the stage ran under. Assertions are facts the stage states about its work (a count, a chosen id). Each takes a string, a number or a boolean, recorded as a string (section 5.6).</td>
 </tr>
 <tr>
 <td><strong>Trust class</strong></td>
@@ -346,7 +346,7 @@ chunks_artifact = chunk(doc_artifact)
 <li><code>id</code>: your name for the tool, for example <code>&quot;gpt-4o-mini&quot;</code> or <code>&quot;recursive-splitter&quot;</code>.</li>
 <li><code>kind</code>: its role, for example <code>&quot;retriever&quot;</code>, <code>&quot;llm&quot;</code> or <code>&quot;chunker&quot;</code>.</li>
 <li><code>version</code>: <strong>must pin an exact build.</strong> <code>&quot;&quot;</code>, <code>latest</code>, <code>current</code>, <code>head</code>, <code>main</code> and <code>master</code> are refused. Use the library version (<code>importlib.metadata.version(&quot;langchain-core&quot;)</code>) or a model snapshot id.</li>
-<li><code>config</code>: a dict of the settings that affect the output. A <strong>string</strong> is always fine. A Python <strong><code>int</code></strong> (never <code>bool</code>) is accepted too, and recorded as its own decimal string — <code>3</code> and <code>&quot;3&quot;</code> produce the same <code>config_digest</code>, so you don't have to remember to stringify every number by hand. A <strong>float is refused</strong>, with a message explaining why: its digest is not stable across languages (<code>0.2</code> prints differently across implementations; <code>&quot;0.2&quot;</code> doesn't). Nested dicts and lists follow the same rule at every level.</li>
+<li><code>config</code>: a dict of the settings that affect the output. A <strong>string</strong> is always fine. A Python <strong><code>int</code></strong> is recorded as its own decimal string, a <strong><code>bool</code></strong> as <code>&quot;true&quot;</code> or <code>&quot;false&quot;</code>, and a <strong><code>float</code></strong> in RFC 8785's number form (the shortest decimal that reads back as the same float), so <code>3</code> and <code>&quot;3&quot;</code>, or <code>0.7</code> and <code>&quot;0.7&quot;</code>, produce the same <code>config_digest</code> (rule M, section 16.16). NaN and Infinity have no such form and are refused, naming where they were given. Nested dicts and lists follow the same rule at every level.</li>
 <li><code>rederivable=&quot;false&quot;</code>: set this when re-running can't reproduce the output, for example a sampled LLM call. Explain why in <code>rederivable_note</code>.</li>
 </ul>
 <p>If you don't want to repeat instruments at every call site, declare them once:</p>
@@ -426,7 +426,7 @@ other name is refused before anything is written.</li>
 ctx.assertion(&quot;hits&quot;, 4)                   # a fact the stage states about its work
 </code></pre></div>
 <ul>
-<li>Each takes a <strong>string</strong>, or a Python <strong><code>int</code></strong> (never <code>bool</code>) recorded as its own decimal string — the same rule as <code>Instrument.config</code> (section 5.3). A float is refused for the same reason: its digest isn't stable across languages.</li>
+<li>Each takes a <strong>string</strong>, a number or a boolean, recorded as a string by the same rule as <code>Instrument.config</code> (section 5.3): <code>512</code> as <code>&quot;512&quot;</code>, <code>False</code> as <code>&quot;false&quot;</code>, <code>0.25</code> as <code>&quot;0.25&quot;</code>. NaN and Infinity are refused.</li>
 <li><strong>A stage that makes assertions must declare at least one constant.</strong> Otherwise you'll get <code>EmissionRefused: ... assertions [...] declare no constant</code>. The rule exists so that no stated fact can depend on an unstated setting.</li>
 </ul>
 <h3 id="57-how-a-stage-ends">5.7 How a stage ends</h3>
@@ -724,6 +724,7 @@ answer        35a281ec6835        9f02c1d7a4be        FIRST DIFFERENCE
 <li><strong><code>--stage NAME</code>:</strong> only the named nodes. A name that matches no node is reported.</li>
 </ul>
 <p><strong>Chunk text is opt-in.</strong> A splitting stage that returns <code>ot.chunks(pairs)</code> records a chunk index: each chunk's id, document, length and digest, and no text. With <code>ot.chunks(pairs, keep_text=True)</code> (or the LangChain adapter's <code>--keep-text</code>), each chunk also keeps its text, and <code>--text</code> shows a changed chunk's text diff. The text is shown only after checking that the digest of its bytes equals the chunk's digest; otherwise it says <code>text does not match its digest; not shown</code>. Run folders store each stage's outputs, so treat them like logs that may contain sensitive data. <code>keep_text</code> adds the chunk text to them.</p>
+<p><strong>Input text is opt-in too</strong> (section 16.19). A stage with <code>keep_inputs</code> stores that input's text in plain form in <code>inputs/</code>. Keep inputs only when you would also keep them in a log. <code>trust=&quot;secret&quot;</code> inputs are never kept. <strong>Removing the text is allowed:</strong> delete <code>inputs/</code>, or one file in it, and the run still verifies, because a receipt holds each input's digest, never its text; <code>--text</code> then reads <code>not kept: file missing</code> for that input.</p>
 <p><code>--text</code> never changes a verdict or the exit code. <code>--json</code> prints the same comparison as one JSON document, <code>onetrace-textdiff/0.3</code>, whose fields and escaping are defined in <a href="textdiff-format.html">the textdiff format</a>.</p>
 <h4 id="following-a-changed-corpus-link">Following a changed corpus link</h4>
 <p>When the first difference is at a node whose corpus link changed, <code>--text</code> follows the link one hop into the two linked ingest runs, under its own heading, <code>traced into the linked ingest runs: &lt;run id&gt; -&gt; &lt;run id&gt;</code>:</p>
@@ -919,9 +920,10 @@ settings: none changed
 <li><strong>The first line is a sentence:</strong> where the runs first differ, whether its output text changed, whether any setting did, and which inputs did.</li>
 <li><strong><code>retrieve</code> is the first difference.</strong> No setting changed, but its corpus link did, on a line of its own: the query runs read different ingest runs, named by run id once the trace reached them. Its input <code>help_centre</code> changed too. An input's name is its parameter's name, so it is spelled as Python spells it; <code>help-centre/warranty.md</code> is a document's path, which keeps its own spelling. Inputs are fingerprinted, so only their digests are shown.</li>
 <li><strong>The changed words are marked</strong> <code>[-removed-]{+added+}</code> on a <code>~</code> line under each changed line pair, here <code>twelve</code> to <code>six</code>. A chunk index and a hits list are compared entry by entry, by id.</li>
-<li><strong><code>prompt</code> and <code>answer</code> change as a result:</strong> they are downstream of <code>retrieve</code>, and their settings did not change.</li>
+<li><strong><code>prompt</code> and <code>answer</code> differ too:</strong> they are downstream of <code>retrieve</code>, and their settings did not change.</li>
 <li><strong>The trace follows the changed corpus link one hop</strong> into the two ingest runs, verified first, and compares them the same way. It starts at <code>load</code>, where one of three documents changed, and shows the sentence changing in <code>warranty.md</code> and then in its chunk.</li>
 </ul>
+<p><strong>Which settings a comparison names.</strong> A setting is named, with both values, only when it was recorded with <code>ot.constant()</code> (16.14): <code>constants.temperature: 0.2 -&gt; 0.7</code>. A stage's instrument config is recorded as one digest, so when it changes the comparison says <code>instrument.config_digest</code> changed, not which key. To see a setting by name in <code>diff --text</code>, in its JSON and on the console's Compare page, record it with <code>ot.constant()</code>. A changed tool (<code>instrument.id</code>, <code>kind</code> or <code>version</code>) is counted on the <code>settings:</code> line too.</p>
 <p>The same comparison is available as one JSON document with <code>--json</code>. Its fields are described in <a href="textdiff-format.html">the textdiff format</a>, and its JSON Schema is <code>docs/textdiff-format.schema.json</code>.</p>
 <p>What this does not claim:</p>
 <ul>
@@ -972,14 +974,9 @@ settings: none changed
 <td>use the exact library version or model snapshot</td>
 </tr>
 <tr>
-<td><code>... is a bool, not an accepted metadata value</code></td>
-<td><code>True</code>/<code>False</code> passed to a config, constant or assertion</td>
-<td>use a string (<code>&quot;true&quot;</code>) or an int, not a bool</td>
-</tr>
-<tr>
-<td><code>a float (...) is refused -- its digest is not stable across languages</code></td>
-<td>a float in a config, constant or assertion</td>
-<td>convert it to a string, or (for a whole-number value) an int</td>
+<td><code>... nan is not a number that can be recorded (NaN and Infinity have no RFC 8785 form)</code></td>
+<td>NaN or Infinity in a config, constant or assertion</td>
+<td>record what it stands for as a string (<code>&quot;unbounded&quot;</code>), or leave the setting out</td>
 </tr>
 <tr>
 <td><code>JSON number at $.… : use a decimal string</code> (<code>write_json</code> only)</td>
@@ -1049,7 +1046,7 @@ ctx (StageContext):
   .read_receipt(node) -&gt; dict
   .write(name, data, media_type, trust_class=&quot;operator-authored&quot;) -&gt; Artifact
   .write_json(name, obj, trust_class=&quot;operator-authored&quot;) -&gt; Artifact
-  .constant(key, value)             .assertion(key, value)   # value: str, or int (never bool/float)
+  .constant(key, value)             .assertion(key, value)   # value: str, int, float or bool (rule M)
   .corpus_manifest(digest, member=None, preimage=None, proof=None)
 
 Refusal(reason, detail=None)        # raise inside a stage to decline
@@ -1073,7 +1070,7 @@ VerifyPin(verifier=None, expect_sums=None, per_receipt=False)
 <li><strong>A concurrent pipeline's output files could land under the wrong numbered folder</strong> in 0.1.0: <code>ctx.write</code>'s target directory was chosen from a stage's provisional position, before the real one was decided under the lock, and the two could disagree once two stages genuinely raced. The receipts themselves were never affected — only where the output <em>files</em> ended up on disk. <strong>If you have run folders emitted concurrently by 0.1.0</strong>, re-verifying them under 0.1.1 may now show <code>[FAIL]</code> rows naming misplaced output files that 0.1.0's own verifier could not see. This is 0.1.1 correctly reporting a real, pre-existing mismatch, not a new defect in the run itself.</li>
 <li><strong><code>onetrace-verify -h</code>/<code>--help</code> were previously treated as a path</strong>, and a run with a missing or malformed receipt file made it stop with a Python traceback instead of a clean <code>[FAIL]</code> row. Both are fixed in 0.1.1: usage/version print and exit 0; any file problem the manifest names gives a <code>[FAIL]</code> row (or, for the manifest itself, <code>[REFUSED]</code>), never a traceback.</li>
 <li><strong><code>reproduce</code> could not run your code from a virtual environment on Linux or macOS.</strong> <code>{python}</code> resolved the venv's interpreter link to the system Python, which doesn't have your packages, so every stage read <code>COULD NOT CHECK</code>. Fixed in 0.1.1: <code>{python}</code> is the interpreter running <code>onetrace</code>, exactly as invoked.</li>
-<li><strong>A config, constant or assertion value had to be a string</strong>, including numbers (<code>&quot;3&quot;</code>, not <code>3</code>) — a JSON number anywhere in a receipt was refused outright. As of 0.1.1, a Python <code>int</code> (never <code>bool</code>) is accepted directly and recorded as its own decimal string (section 5.3). <code>write_json</code> payloads are unaffected: a number there is still refused, now with a clearer message naming the output.</li>
+<li><strong>A config, constant or assertion value had to be a string</strong>, including numbers (<code>&quot;3&quot;</code>, not <code>3</code>) — a JSON number anywhere in a receipt was refused outright. As of 0.1.1, a Python <code>int</code> is accepted directly and recorded as its own decimal string (section 5.3); as of 0.2.0, a <code>bool</code> and a <code>float</code> are too (rule M, section 16.16). <code>write_json</code> payloads are unaffected: a number there is still refused, now with a clearer message naming the output.</li>
 </ul>
 <h2 id="15-anchoring-a-run">15. Anchoring a run</h2>
 <p><code>onetrace.anchor.add_anchor(run_dir, record)</code> stores each anchor as its own file, <code>anchors/&lt;n&gt;.json</code>, beside the run's receipts. The writer holds <code>anchors/</code> open while it links the record in and reads it back, and it reports a record stored only when it has confirmed that the record is there, in this run's folder, with the bytes it wrote. If it can't confirm that, it says so (&quot;stored as N.json; could not confirm it landed in this run&quot;), and you should check the folder before relying on it. It never reports a record stored that it hasn't confirmed.</p>
@@ -1193,6 +1190,17 @@ form, which refuses numbers: the two encodings are kept apart on purpose.</li>
 </ul>
 <p>An argument that is an earlier stage's return value, passed on unchanged, is recorded as an edge
 from that stage (<code>receipt:&lt;stage&gt;</code>), not as a second copy of the value.</p>
+<p><strong>Stages link only when the same object is passed on whole.</strong> The link is made by identity: the
+argument must be the very object the earlier stage returned. Anything made from it is a new object,
+recorded as an ordinary input with no edge: a slice, one value taken out of a returned dict, a
+copy or <code>list(x)</code>, an equal value built elsewhere, a string made from it, or the returned object
+placed inside a list, tuple or dict that is passed as one argument. To keep the link, pass the
+whole output on and take the part you need inside the next stage.</p>
+<p><strong>A gap, not yet fixed:</strong> Python reuses some objects across a program: <code>None</code>, <code>True</code> and <code>False</code>,
+and numbers and strings written as literals in your code. A stage that returns one of these, and a
+later stage that is given the same value from anywhere else, are linked as if the second had read
+the first's output. Return a value that carries the stage's data, not a bare <code>None</code>, flag or
+constant.</p>
 <h3 id="162-fields-you-didnt-state">16.2 Fields you didn't state</h3>
 <p>Three fields say what a value means, and the decorators never guess them:</p>
 <ul>
@@ -1310,13 +1318,23 @@ argument, or register an encoder for the type that holds them.</p>
 Otherwise the id is generated, as before. Either way, a <code>:</code> in the id is written as <code>-</code> in the
 folder name only.</p>
 <p>The id must be usable as one folder name on Windows and POSIX alike (after <code>:</code> becomes <code>-</code>): no
-<code>/</code> or <code>\</code>, none of <code>&lt; &gt; &quot; | ? *</code>, no control character or line break (16.12), no trailing space
-or dot, not <code>.</code> or <code>..</code>, and not a name Windows reserves (<code>CON</code>, <code>NUL</code>, <code>COM1</code>, ...). Anything else
-is refused at the call, naming the variable, and nothing is written.</p>
+<code>/</code> or <code>\</code>, none of <code>&lt; &gt; &quot; | ? *</code>, no control character or line break and no lone surrogate (16.12),
+no trailing space or dot, not <code>.</code> or <code>..</code>, not a name Windows reserves (<code>CON</code>, <code>NUL</code>, <code>COM1</code>, ...),
+and at most 255 bytes in UTF-8. Anything else is refused at the call, naming the variable, and
+nothing is written.</p>
 <p>A run folder that already holds anything is refused at the call, before it is touched: a record is
 never merged into or overwritten. That includes a second decorated run in the same process with the
-variable still set. Unset the variable or set a new id, or remove the old run. Under
-<code>ONETRACE_DISABLE=1</code> nothing is written, whatever the variable says.</p>
+variable still set. Unset the variable or set a new id, or remove the old run. An empty folder is
+used as it is. Under <code>ONETRACE_DISABLE=1</code> nothing is written, whatever the variable says.</p>
+<p><strong>Its limits:</strong></p>
+<ul>
+<li><strong>One id names one run.</strong> A process that calls a decorated run more than once needs a new id for
+each call; with the variable unchanged, the second call is refused.</li>
+<li><strong><code>a:b</code> and <code>a-b</code> name the same folder.</strong> The <code>:</code> becomes <code>-</code> in the folder name only, so the
+second of the two is refused as a folder that already holds a run.</li>
+<li><strong>Only <code>@ot.run</code> reads it.</strong> A run opened with <code>Recorder(out_dir, ...)</code> is written where <code>out_dir</code>
+says, whatever the variable holds.</li>
+</ul>
 <h3 id="1611-stages-in-other-threads">16.11 Stages in other threads</h3>
 <p>A decorated run is found through the calling context, and a thread pool's threads start with an
 empty one. So <code>pool.submit(stage, x)</code> or <code>pool.map(stage, xs)</code> inside a run would find no run and,
@@ -1390,6 +1408,19 @@ def split(docs, settings):
 <code>Instrument.config</code> (<code>512</code> as <code>&quot;512&quot;</code>, <code>False</code> as <code>&quot;false&quot;</code>). An assertion still needs a constant
 beside it. Outside a run, and with <code>ONETRACE_DISABLE=1</code>, they do nothing. Inside a run but outside
 any stage there is nothing to record them on, and they are refused.</p>
+<p><strong><code>ot.constant</code> can be called after a model call.</strong> A stage's constants are written when the stage
+returns, so a call anywhere in its body counts, including after the work. Record a setting the
+moment you know it, even if only the model's reply tells you (the model version it answered with,
+say):</p>
+<div class="code"><pre><code class="language-python">@ot.stage(&quot;answer&quot;, instrument=llm, output_trust=&quot;model-generated&quot;)
+def answer(prompt):
+    reply = client.generate(prompt, temperature=0.2)
+    ot.constant(&quot;temperature&quot;, 0.2)
+    ot.constant(&quot;model&quot;, reply.model)          # known only from the reply
+    return reply.text
+</code></pre></div>
+<p>A second call with the same key replaces the first value: the receipt holds the last one. After the
+stage has returned, there is no stage to record on, and the call is refused as above.</p>
 <h3 id="1615-numpy-arrays-langchain-documents-llamaindex-nodes-and-index-objects">16.15 numpy arrays, LangChain documents, LlamaIndex nodes, and index objects</h3>
 <ul>
 <li><strong>A numpy array</strong> passed to or returned by a stage is recorded as bytes, not as metadata: NumPy's
@@ -1505,6 +1536,22 @@ writes nothing to stderr when it closes.</p>
 <p><code>ONETRACE_QUIET=1</code> in the environment suppresses the two lines; only the value <code>1</code> does. With
 <code>ONETRACE_DISABLE=1</code> (16.8) no run is opened, so nothing is written.</p>
 <p>The same setting also silences <code>onetrace-verify</code>'s summary line and its <code>fix</code> lines, which it writes to stderr (section 8.1). Its rows and verdict on stdout, its exit code and <code>--json</code> don't change.</p>
+<h3 id="1619-keeping-a-stages-text-inputs-keep_inputs">16.19 Keeping a stage's text inputs: <code>keep_inputs</code></h3>
+<p>A stage's inputs are recorded as digests, never as text. To read what a stage was given, keep the text of named inputs beside their digests:</p>
+<div class="code"><pre><code class="language-python">@ot.stage(&quot;answer&quot;, instrument=llm, keep_inputs=[&quot;question&quot;])
+def answer(question, passages):
+    ...
+</code></pre></div>
+<p><strong>A stage with <code>keep_inputs</code> stores that input's text in plain form in <code>inputs/</code>. Keep inputs only when you would also keep them in a log. <code>trust=&quot;secret&quot;</code> inputs are never kept.</strong> It is off unless you name an input, and a person decides it, as for <code>trust=</code>.</p>
+<ul>
+<li><strong>What is kept.</strong> Each named input whose value is a <code>str</code>, stored in <code>inputs/&lt;receipt stem&gt;/&lt;name&gt;.json</code> as exactly the bytes its digest was computed over: the text as a JSON string. The file's SHA-256 is the input's digest, and the receipt is unchanged: the same input entry, the same digest. <code>inputs/</code> is beside <code>artifacts/</code>, never inside it. <code>@ot.run(keep_inputs=[...])</code> does the same for the run's own arguments.</li>
+<li><strong>What is not kept, and the stage goes on:</strong> a value that is not text, recorded as before and listed as <code>not text (&lt;type&gt;)</code>; an input whose stored bytes are over the cap, listed as <code>over &lt;cap&gt; bytes</code>; an input not passed, <code>no value passed</code>; an earlier stage's output passed on whole, which is a link to that stage, <code>an earlier stage's output</code>. A stage that doesn't finish keeps nothing: its files are removed, and its inputs are listed as <code>the stage did not finish (&lt;outcome&gt;)</code>.</li>
+<li><strong>The cap is on the stored bytes,</strong> the JSON string as written to the file, so the cap and the file's size are the same number: <code>keep_inputs_cap=</code>, 4096 by default, at most 65536. A name that is not a parameter of the function, or a cap out of range, is refused when the stage is decorated.</li>
+<li><strong>The record says what was kept,</strong> in two constants only onetrace writes: <code>onetrace.kept_inputs</code> lists the kept inputs, and <code>onetrace.inputs_not_kept</code> each named input that wasn't, with why. A constant of your own whose name starts with <code>onetrace.</code> is refused. Kept text counts towards <code>max_run_bytes</code>.</li>
+<li><strong>A reader shows the text only when the record lists the input as kept and the file's SHA-256 equals its digest.</strong> <code>onetrace diff --text</code> shows a changed kept input as <code>- &quot;&lt;baseline&gt;&quot;</code> and <code>+ &quot;&lt;candidate&gt;&quot;</code> under its line, each escaped one character for one character as the verifier escapes names. Otherwise it reads <code>not kept</code>, <code>not kept: file missing</code>, or <code>text does not match its digest; not shown</code>. A file under <code>inputs/</code> that the record does not list is never shown.</li>
+<li><strong>Checking it.</strong> <code>onetrace-verify</code> (0.2.0 and 0.2.1) does not read <code>inputs/</code>: its result is the same with or without the files. The SDK's own check (<code>python -m onetrace.sdk_verify</code>) adds a row per kept input, <code>kept input text matches its digest</code>: PASS, FAIL, or NOT RUN when the file was removed; and a note, <code>inputs/: unlisted file</code>, for a file no receipt lists.</li>
+<li><strong>Removing the text</strong> (all of <code>inputs/</code>, or one file) is allowed and leaves the run verifiable: the digests are in the receipts.</li>
+</ul>
 <h2 id="17-signing-a-run">17. Signing a run</h2>
 <p>A signature is an Ed25519 signature over a finished run's chain head, by a key you hold. It is stored as its own file, <code>signatures/&lt;n&gt;.json</code>, beside the run's receipts. Like an anchor, it is never part of the chain: signing changes no byte that was there before, so the chain head stays byte-identical, and a run may carry several signatures (a recorder and a reviewer, say). Signing and anchoring work together in either order.</p>
 <p><strong>A signature does not show:</strong></p>
@@ -1516,9 +1563,15 @@ writes nothing to stderr when it closes.</p>
 </ul>
 <p>What it does show: the holder of that private key signed this exact record.</p>
 <h3 id="171-making-a-key">17.1 Making a key</h3>
+<p>On macOS or Linux:</p>
 <div class="code"><pre><code>mkdir -p ~/keys
 onetrace keygen --out ~/keys/recorder.key
 </code></pre></div>
+<p>On Windows, in PowerShell:</p>
+<div class="code"><pre><code>New-Item -ItemType Directory -Force &quot;$HOME\keys&quot;
+onetrace keygen --out &quot;$HOME\keys\recorder.key&quot;
+</code></pre></div>
+<p>On Windows, a folder in your user profile (<code>$HOME</code>, which is <code>C:\Users\&lt;you&gt;</code>) is private to you by default: other standard users on the machine can't read it, but administrators can. Step 8 of <a href="https://oneproof.dev/get-started.html">Get started</a> makes a key and signs a run, start to finish.</p>
 <p><code>onetrace keygen</code> writes a new private key as PEM, with owner-only permissions (0600) on Linux and macOS, and prints the public key, its <code>key_id</code> (the <code>sha256:</code> fingerprint of the public key's 32 raw bytes) and where the private key was written; it never prints the private key. It never overwrites a file, and it refuses a path inside a run folder. It doesn't create folders, so make the key's folder first, as above: a path whose folder is missing is refused, and nothing is written. On Windows it can't set owner-only permissions itself: the file inherits its folder's access list, and <code>keygen</code> says so. Keep the key in a folder only you can read.</p>
 <p><code>--test-only</code> adds a first line saying the key was made for tests. A test key is made for one test and never reused.</p>
 <h3 id="172-signing">17.2 Signing</h3>

@@ -1,8 +1,8 @@
-# Documentation
+# All docs pages
 
 - [The record format, in plain words](format.md)
 - [The five verdicts](verdicts.md)
-- [The three verbs](verbs.md) — `diff`, `localize`, `reproduce`
+- [Compare runs: diff, localize, reproduce](verbs.md)
 - [What onetrace does not claim](non-claims.md)
 
 ## Adapters
@@ -14,6 +14,10 @@ framework at all, three wired onto a real RAG/agent framework's own runtime wher
 - [LangChain](adapters/langchain.md)
 - [LlamaIndex](adapters/llamaindex.md)
 - [Langflow](adapters/langflow.md)
+
+## Guides
+
+- [Tool-using agent](tool-using-agent.md) — an agent loop recorded step by step, with a stand-in model.
 
 See the [quickstart](quickstart.md) to run a pipeline and check
 it yourself before reading further.

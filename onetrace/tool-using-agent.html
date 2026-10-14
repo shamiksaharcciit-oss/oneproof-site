@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recording a tool-using agent · onetrace docs</title>
+<meta name="description" content="onetrace documentation: Tool-using agent">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/onetrace/assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html">Developers</a>
+      <a href="/how-it-works.html">How it works</a>
+      <a href="/onetrace/" aria-current="page">Docs</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
+</header>
+<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html" aria-current="page">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Add it to your code</p>
+<h1 id="recording-a-tool-using-agent">Recording a tool-using agent</h1>
+<p>An agent that calls a model, lets the model ask for a tool, runs the tool and calls the model again
+is a pipeline whose steps repeat. onetrace records it the same way as any other: <code>@ot.run</code> on the
+function that does the whole job once, and <code>@ot.stage</code> on each step. This page shows the shape with
+a stand-in model and an invented order table, so it runs with no network calls and no real data,
+then says what to decide for a real one.</p>
+<h2 id="the-example">The example</h2>
+<p>Save this as <code>agent.py</code>:</p>
+<div class="code"><pre><code class="language-python">import onetrace as ot
+
+ORDERS = {&quot;A-100&quot;: &quot;shipped&quot;, &quot;A-101&quot;: &quot;waiting for stock&quot;}    # invented; your own system goes here
+
+
+def stand_in_model(question, tool_result):
+    &quot;&quot;&quot;In place of a hosted model: asks for the order once, then answers from the tool&#x27;s result.&quot;&quot;&quot;
+    if tool_result is None:
+        return {&quot;tool&quot;: &quot;order_status&quot;, &quot;order_id&quot;: &quot;A-101&quot;}
+    return {&quot;text&quot;: f&quot;Order A-101 is {tool_result}.&quot;}
+
+
+@ot.stage(&quot;model&quot;, instrument=ot.pkg(&quot;stand-in-model&quot;, &quot;onetrace&quot;, kind=&quot;model-call&quot;),
+          repeats=True, output_trust=&quot;model-generated&quot;)
+def call_model(question, tool_result=None):
+    reply = stand_in_model(question, tool_result)
+    ot.constant(&quot;model&quot;, &quot;stand-in-model&quot;)
+    return reply
+
+
+@ot.stage(&quot;tool&quot;, instrument=ot.pkg(&quot;order-status&quot;, &quot;onetrace&quot;, kind=&quot;tool&quot;),
+          repeats=True, output_trust=&quot;operator-authored&quot;)
+def run_tool(request):
+    return ORDERS.get(request[&quot;order_id&quot;], &quot;not found&quot;)
+
+
+@ot.run(stages=[&quot;model&quot;, &quot;tool&quot;], trust=&quot;externally-sourced&quot;)
+def agent(question):
+    reply = call_model(question)
+    while &quot;tool&quot; in reply:
+        result = run_tool(reply)
+        reply = call_model(question, result)
+    return reply[&quot;text&quot;]
+
+
+if __name__ == &quot;__main__&quot;:
+    print(agent(&quot;Where is my order A-101?&quot;))
+</code></pre></div>
+<p>Run it and check the record:</p>
+<div class="code"><pre><code class="language-bash">python agent.py
+onetrace-verify --require-artifacts runs/&lt;run_id&gt;
+</code></pre></div>
+<p>The run folder holds four stages: <code>intake</code> (the question), <code>model#1</code>, <code>tool#1</code> and <code>model#2</code>.
+<code>repeats=True</code> lets a stage run more than once in a run, numbering the calls.</p>
+<h2 id="how-the-steps-link">How the steps link</h2>
+<p>Stages link only when the same object is passed on whole (manual, section 16.1). Here:</p>
+<ul>
+<li><code>run_tool(reply)</code> is given the model's whole reply, so <code>tool#1</code> records an edge from <code>model#1</code>.
+Passing <code>reply[&quot;order_id&quot;]</code> instead would record the id as an ordinary input, with no edge.</li>
+<li><code>call_model(question, result)</code> is given the tool's whole return value, so <code>model#2</code> records an
+edge from <code>tool#1</code>.</li>
+</ul>
+<p>Keep each step's output whole when you pass it on, and take the part you need inside the next step.</p>
+<h2 id="trust-classes">Trust classes</h2>
+<p>Each value a stage reads, and each value it returns, has a trust class: where the data came from.
+onetrace never guesses one: an unstated class is recorded as <code>externally-sourced</code> and listed as
+undeclared on that stage. In an agent:</p>
+<ul>
+<li><strong>What a user typed</strong> is <code>externally-sourced</code>, never <code>operator-authored</code>. Here <code>@ot.run</code>'s
+<code>trust=&quot;externally-sourced&quot;</code> records the question that way.</li>
+<li><strong>What a model wrote</strong> is <code>model-generated</code>: <code>output_trust=&quot;model-generated&quot;</code> on the model step.
+That includes the model's request for a tool.</li>
+<li><strong>What a tool returns</strong> depends on the tool, and is a person's answer to give. A lookup in a
+system you run, as here, is <code>operator-authored</code>; a web page, a search result or another party's
+API is <code>externally-sourced</code>.</li>
+</ul>
+<p>A tool that reads a file or a fetched page records it with its own class, through the running
+stage's context:</p>
+<div class="code"><pre><code class="language-python">from onetrace.emit import current_stage
+
+@ot.stage(&quot;fetch&quot;, instrument=ot.pkg(&quot;fetch&quot;, &quot;onetrace&quot;, kind=&quot;tool&quot;), output_trust=&quot;externally-sourced&quot;)
+def fetch(path):
+    raw = current_stage().read_external(path, &quot;text/html&quot;, name=&quot;page&quot;, trust_class=&quot;externally-sourced&quot;)
+    return raw.decode(&quot;utf-8&quot;)
+</code></pre></div>
+<p><code>read_external</code> records the file's digest, its media type and the class you give; the file itself
+is not stored. <code>trust_class=&quot;secret&quot;</code> is refused before anything is digested: keep keys and tokens
+out of every stage's arguments (manual, section 5.4).</p>
+<h2 id="comparing-runs-with-a-hosted-model">Comparing runs with a hosted model</h2>
+<p>A hosted model can answer differently to the same prompt, and its provider can change it without a
+new name. Expect two runs of an agent to differ first at the model step, even when nothing you
+control changed.</p>
+<ul>
+<li><strong>Record what you know about the model</strong> with <code>ot.constant()</code>: its name or version, and the
+settings you send, including any you learn only from the reply. A comparison names a setting
+only when it was recorded this way (manual, sections 10.5 and 16.14).</li>
+<li><strong>Leave <code>rederivable</code> unstated</strong> for a hosted model's step: it is recorded as not re-runnable,
+which is what a hosted model is.</li>
+<li><strong>Test the rest of the agent with a stand-in model</strong>, as above. With the model fixed, two runs
+differ only where your code, your tools or their data differ, and <code>onetrace diff</code> names the
+first such step.</li>
+<li><strong>The console's Compare page looks past a varying model step.</strong> When the first difference is a
+step marked not re-runnable and nothing recorded about it changed except its output, the page
+also names the first later step with a recorded change, marked &quot;First recorded change&quot;.</li>
+</ul>
+<h2 id="what-this-record-does-not-show">What this record does not show</h2>
+<ul>
+<li>That the agent's answer was correct, or why the model wrote what it wrote.</li>
+<li>Anything a tool did that is not in its recorded inputs and outputs, or any step not decorated.</li>
+</ul>
+<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/adapters/langflow.html"><span>← Previous</span>Langflow</a><a class="next" href="/onetrace/verbs.html"><span>Next →</span>Compare runs: diff, localize, reproduce</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#the-example">The example</a><a href="#how-the-steps-link">How the steps link</a><a href="#trust-classes">Trust classes</a><a href="#comparing-runs-with-a-hosted-model">Comparing runs with a hosted model</a><a href="#what-this-record-does-not-show">What this record does not show</a></aside></div>
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Packages</h4>
+        <ul>
+          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/answer-lineage.html">A forensic report</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
+  </div>
+</footer>
+<script src="/onetrace/assets/copy.js" defer></script>
+<script>if(window.matchMedia&&matchMedia("(max-width:760px)").matches){var d=document.querySelector(".docs-side details");if(d)d.removeAttribute("open")}</script>
+</body>
+</html>
