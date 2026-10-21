@@ -16,6 +16,14 @@ first point of difference (if any), and annotations for anything about *how* a s
 changed without changing its output. Writes both a text report and the same information as
 canonical JSON, side by side, in `OUT_DIR`.
 
+`--mask FILE` names release noise (settings, timestamps, ids, paths, JSON fields) not to count as a
+difference; every row it changes says so. See [the manual](manual.md#release-noise---mask-file).
+
+`--durations` adds each node's time in both runs, read from its receipts' `time.started` and
+`time.ended`, and the note "slower" where the candidate took at least `--slow-factor` times as long
+(default 2) and at least `--slow-min-ms` more (default 1000). Timing is a view: it never changes a
+verdict, the exit code or any other part of the report. `localize` takes it too, with two runs.
+
 ## `localize`
 
 ```
@@ -27,9 +35,36 @@ first `COULD NOT CHECK` or refused stage otherwise. With two runs (`CANDIDATE` g
 same comparison `diff` performs, reported the same way — `localize` and `diff` share their
 underlying ladder; the difference is intent, not mechanism.
 
+`--for STAGE` (two-run form only) starts from one stage's output and names where the change it
+shows starts: walking back through the differing stages it reads from, by the links both runs
+recorded. A change that output never reads from, or one that reconverged before it, is never named
+as an origin. See [the manual](manual.md#one-outputs-path-localize---for).
+
 `--doc DOC` (two-run form only) narrows to one document's chunk set under both runs, digest by
 digest, when a per-document stage's `outputs_root` differs and the question is *which* documents
 moved.
+
+## `drift`
+
+```
+onetrace drift RUN RUN [RUN ...] [--against first|previous] --out OUT_DIR
+```
+
+Many runs of one pipeline, oldest first, side by side: each compared with the first (or, with
+`--against previous`, with the run before it) exactly as `diff` compares two, one column per
+compared run and one row per node, each cell the verdict `diff` gave. The exit code is that of the
+first comparison, in run order, whose exit code isn't 0, or 0. `--mask` and `--durations` work as
+for `diff`; with `--durations`, every time slower than the run it was compared with is listed.
+
+## `match`
+
+```
+onetrace match RUN [--runs-root DIR] --out OUT_DIR
+```
+
+Lists the runs one level down in `DIR` (default: the folder holding `RUN`) given the same recorded
+inputs as `RUN`, each checked by the verifier, newest first. `diff` and `localize` point to it when
+two runs were given different inputs. See [the manual](manual.md#runs-on-the-same-input-onetrace-match).
 
 ## `reproduce`
 

@@ -82,7 +82,8 @@ doesn't.
   specified by an Internet-Draft that hasn't reached RFC status. Required members, canonical-form
   rules, and the rejection vectors may still change before major version `1`. Format major
   version is carried in every record and checked explicitly — a verifier that doesn't implement a
-  record's version says so, by name, rather than guessing.
+  record's version (a major other than 0, or a minor that isn't ASCII decimal digits) says so, by
+  name, rather than guessing.
 
 - **`reproduce` does not claim bit-exact floating-point reproduction on every machine.** A stage
   whose own code depends on numpy/BLAS (an embedding step, say) is claimed rederivable only on

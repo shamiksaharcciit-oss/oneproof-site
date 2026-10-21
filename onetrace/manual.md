@@ -58,14 +58,14 @@ This installs two packages:
 Check the install:
 
 ```bash
-python -c "import onetrace; print(onetrace.__version__)"   # 0.1.2
+python -c "import onetrace; print(onetrace.__version__)"   # 0.4.0
 ```
 
 To pin exactly what was published, take each file's sha256 from the **Download files** page of the project on PyPI and put it in a requirements file:
 
 ```
-onetrace==0.1.2         --hash=sha256:<from the PyPI page>
-onetrace-verify==0.1.2  --hash=sha256:<from the PyPI page>
+onetrace==0.4.0         --hash=sha256:<from the PyPI page>
+onetrace-verify==0.4.0  --hash=sha256:<from the PyPI page>
 ```
 
 Then install with `pip install --require-hashes -r requirements.txt`. The hashes can't be printed here, because this manual ships inside one of the files they describe.
@@ -253,6 +253,8 @@ A run that declares instruments refuses a stage that brings its own, or one that
 
 `trust_class="secret"` is **refused** on every input path, so a stage can't put a secret's digest into a record. Don't route API keys or credentials through `ctx`.
 
+A value passed to a decorated stage as an argument is recorded as its digest, never its text. A digest of a value that can be guessed (a short PIN, an email address, a key from a small set) can be matched by trying the guesses, so a digest is not a secret's protection: keep such values out of stage arguments, or declare them `secret`.
+
 Reads that bypass `ctx`, such as a direct `open()` or an HTTP call, aren't recorded. That's allowed, but the receipt won't mention them. Put anything that affects the output through `ctx`.
 
 ### 5.5 Outputs
@@ -352,7 +354,7 @@ finally:
 ```
 
 - The verifier's result goes **beside** the record in `VERIFIER_CALL.json` (`result`, `exit`, `rows`, and the sha256 of the verifier files that ran). It is never written into the record itself.
-- `VERIFIER_CALL.json` uses two spellings of the third outcome, on purpose. Its own `result` uses the SDK's words and exit codes: `PASS` 0, `FAIL` 1, `NOT RUN` 4. Its `rows` are `onetrace-verify`'s own, which spell it `NOT-RUN`. They mean the same thing; each spelling is its own tool's contract. An `onetrace-verify` exit 2 (`NOT VERIFIED`, or refused, section 10.4) is recorded there as `NOT RUN`, exit 4.
+- `VERIFIER_CALL.json` uses two spellings of the third outcome, on purpose. Its own `result` uses the SDK's words and exit codes: `PASS` 0, `FAIL` 1, `NOT RUN` 4. Its `rows` are `onetrace-verify`'s own, which spell it `NOT-RUN`. They mean the same thing; each spelling is its own tool's contract. An `onetrace-verify` exit 2 (`NOT VERIFIED`, or refused, section 10.5) is recorded there as `NOT RUN`, exit 4.
 - `VerifyPin(expect_sums="<sha256>")` pins the exact verifier build. A different verifier is not run, and the mismatch is reported.
 - `VerifyPin(per_receipt=True)` also verifies after every receipt.
 - Under `fail-closed`, a verification failure raises and the run is not declared complete.
@@ -400,6 +402,8 @@ rec.close()
 ```
 
 - Edges are **observed** from `read_receipt` calls and written into the manifest. Each one is checked against `declared_edges` as it happens.
+- **With the decorators, the plan is checked before a stage runs** (0.3.0). A stage called with an earlier stage's output along a path `declared_edges` does not hold does not run: its receipt is written with outcome `refused`, the reason naming the path, and the run ends with `EmissionRefused`. Since 0.4.0 (format 0.3) the receipt keeps the link it would have read under `refused.attempted`, not under `inputs`, so the run's edges stay within the plan: `onetrace-verify`'s plan row does not fail, and its row "step held before running" names each attempted path (`route -> tool_b`). A held step tells you the plan stopped something; an off-plan edge in the record (a `Recorder` stage that ran) still fails the plan row. The verbs read a run with a held step as refused, exit 3, "a step was held before running (route -> tool_b)": the run stopped there. Only a refused receipt can carry `refused.attempted`; any other does not verify. Before 0.4.0 the attempted link was kept under `inputs`, so the plan row failed and the run never read `PASS`; a verifier from before 0.4 reads a 0.3 record with a held step as PASS too, without naming the path. A `Recorder` stage that calls `read_receipt` inside its own body is checked when that receipt is written, as before.
+- A run that declares `declared_edges` but records no edge (a framework that hands each step a fresh copy of its state, say) gets the plan row `NOT-RUN`, `no edges observed`: the plan was declared and nothing was checked against it.
 - A bare stage name that matches several instances is refused as ambiguous. Name the instance.
 - On a DAG, `onetrace localize <run>` reports the **set** of earliest unclean nodes, sorted, never a single "first" node.
 - Linear and DAG runs are **not comparable** with each other: `diff` reports `not comparable`, with exit code 2.
@@ -453,12 +457,43 @@ A receipt, abridged:
 ```bash
 onetrace-verify runs/run-a            # a run folder, or a path to MANIFEST.json
 onetrace-verify --help                # usage
-onetrace-verify --version             # 0.1.2
+onetrace-verify --version             # 0.4.0
 onetrace-verify --require-artifacts runs/run-a   # also FAIL if the output files can't be checked
 onetrace-verify --json runs/run-a     # machine-readable rows and a summary, for a CI gate
+onetrace-verify --require-signature runs/run-a                   # FAIL unless a valid signature is beside the run
+onetrace-verify --require-trusted --trust trust.json runs/run-a  # FAIL unless it is by a key you trust
+onetrace-verify --require-complete runs/run-a                    # FAIL unless every declared stage emitted
 onetrace-verify --headers headers.json runs/run-a               # check OpenTimestamps anchors (15.5)
 onetrace-verify --tsa-cert tsa.pem --tsa-root root.pem runs/run-a   # check RFC 3161 anchors (15.4)
 ```
+
+The three `--require-` gates (0.3.0) are for CI; without them nothing changes. Each adds one row after
+the records beside the chain, `PASS` or `FAIL`, so a `FAIL` gives exit 1:
+- `--require-signature`: `signature required` passes when a valid signature over the chain head is in
+  `signatures/`, by any key. A run never signed, or whose `signatures/` was removed, fails.
+- `--require-trusted`: also `trusted signature required`, which passes only when a valid signature is by
+  a key in `--trust` (it needs `--trust`; without it, a usage error, exit 2). A run re-signed with
+  another key fails.
+- `--require-complete`: `run complete` passes when the run's last receipt says it is complete: every
+  declared stage emitted a receipt. A run that stopped early, or a branch that skipped a declared
+  stage, fails, naming the stages that never emitted. A stage that errored did emit, so this gate reads
+  coverage, not outcomes. **Optional stages** (since 0.4.0, format 0.3): a stage declared
+  `@ot.stage(..., optional=True)`, or listed as `ot.optional("rerank")` in `@ot.run(stages=[...])`,
+  may be skipped. The run's receipts name it under `coverage.optional_stages`, and a run that skipped
+  one still says `incomplete`, so a verifier from before 0.4 reads it as it always did (its
+  `--require-complete` fails such a run: stricter, never looser). onetrace-verify 0.4's
+  `run complete` passes when only optional stages didn't emit, and names them ("optional, not run:
+  rerank"); a required stage that didn't still fails, by name. A comparison of a run that ran it with
+  one that skipped it reads `present in A only (optional)`: a difference in shape, never "same".
+  Optional belongs to the stage's declaration: a stage name declared optional in one place and
+  required in another is refused. In a run written with `Recorder`, pass
+  `optional_stages=[...]`; its stages still run in declared order, and only an optional one may be
+  skipped.
+
+An option the verifier doesn't know, a typo such as `--require-signatures` or one from a later
+version, is a usage error, exit 2, from 0.3.0. Versions before 0.3.0 ignore options they don't know
+and have no gates, so a run would pass them unchecked: in CI, pin `onetrace-verify>=0.3.0` or check
+`onetrace-verify --version` first.
 
 `--json` replaces the row-by-row text with one JSON document: `{"rows": [{"result", "name",
 "detail"}, ...], "summary": {"pass", "fail", "not_run", "result", "exit"}}`, using the same words
@@ -475,7 +510,7 @@ It prints one row per check: each receipt's own format, canonical bytes, require
 |---|---|
 | 0 | PASS: the record is consistent and unbroken |
 | 1 | FAIL: at least one check failed, and the `[FAIL]` rows say which |
-| 2 | NOT VERIFIED: a receipt's own format is one this verifier doesn't implement, and nothing failed (section 10.4). Also exit 2: refused, when the manifest can't be read or its chain format is unknown (refused by name, never guessed), or no manifest found. |
+| 2 | NOT VERIFIED: a receipt's own format is one this verifier doesn't implement, and nothing failed (section 10.5). Also exit 2: refused, when the manifest can't be read or its chain format is unknown (refused by name, never guessed), or no manifest found. |
 
 In human mode it also writes to stderr, before the rows: one summary line drawn only from the rows it computed, which reads `record intact: 2 stages, 2 output files checked`, `record NOT intact: <the first failing row>` (with the number of failing rows when there are several), or `record not verified: <reason>`. After it comes one line for each `FAIL` row, and none for a `NOT-RUN` or `PASS` row: `fix (<row>): <what to do>; see https://oneproof.dev/onetrace/errors.md#<family>`, where the family is the errors page's section for that kind of check: `verify-receipt`, `verify-chain`, `verify-artifacts`, `verify-anchor`, `verify-signature` or `verify-plan`. These lines change nothing else: the rows and the summary on stdout, the exit code, and `--json` (which writes nothing to stderr) are as above. `ONETRACE_QUIET=1` silences them (section 16.18).
 
@@ -500,6 +535,8 @@ As of 0.1.1, `onetrace-verify` reads `artifacts/` itself — you no longer need 
 - **A run with a recognised `artifacts/` layout:** every recorded output must be present with a matching digest, or it's a `[FAIL]` row naming the file. A receipt whose own format this verifier doesn't implement is skipped: its outputs are content it can't read.
 - **A run with no `artifacts/` at all, or one whose layout this verifier doesn't recognise** (an older run, or one built by hand rather than through this SDK): one `NOT-RUN` row, `run: artifacts`, naming which case it is. No file is checked. The summary can still read `PASS`, because the record itself checks out.
 - **With `--require-artifacts`**, that `NOT-RUN` row becomes a `FAIL` and the exit code is 1. Use it whenever the files matter, for example when someone hands you a run folder, and in CI. Otherwise, deleting the whole `artifacts/` folder would leave the summary at `PASS`.
+- **A run that declares it keeps no output files** (since 0.4.0, format 0.3): `@ot.run(..., keep_outputs=False)`, or `Recorder(..., keep_outputs=False)`, records every output's digest and size as before and removes the files when the run closes; its manifest says `outputs_kept: "none"`. onetrace-verify 0.4 reads the declaration: `run: artifacts` is NOT-RUN, "the run declares it keeps no output files", never PASS, and `--require-artifacts` FAILs on it, naming the declaration. A file found beside such a run is not read, so nothing left behind is taken for a checked file. The verbs compare its outputs by digest; what needs the files (a text diff, masking) says the output was not kept.
+- **The flag requires the `artifacts/` folder itself.** A run that wrote no output file at all (its only stage errored, say) has no `artifacts/` and fails under the flag; the same error after a stage that wrote an output leaves the folder, whose files are checked, and passes. To gate on whether a run finished, add `--require-complete`.
 
 ```bash
 onetrace-verify runs/run-a
@@ -519,6 +556,35 @@ Editing a file under `artifacts/` (or deleting one) now fails the verifier direc
 ## 9. Framework integrations (LangChain, LlamaIndex, Langflow)
 
 There is no magic callback. Integration means **wrapping each logical step of your chain as a stage**, so that everything it reads and writes goes through `ctx`. The published source distribution includes complete, runnable examples under `examples/`: `langchain_adapter`, `llamaindex_adapter`, `langflow_adapter`, and `plain_python_control`, a framework-free baseline.
+
+**LangChain, since 0.4.0: `onetrace.langchain`** (`pip install "onetrace[langchain]"`). Importing it registers
+encoders for LangChain's own types, so a stage can take or return them and two runs of the same chain
+record the same bytes: a message records every field but its `id`, `response_metadata` and
+`usage_metadata`, which differ on every call (so its role, tool calls with their ids, invalid tool
+calls, a tool message's status and artifact, and `additional_kwargs` are all kept); a prompt value
+records its messages; a document its page content and metadata, without its `id`; an LLM result each
+generation's text, message and `generation_info` (a finish reason, say), without token counts. A field
+not named here as left out is kept. A hosted model gives each tool call a new id on every call, so
+with one the model stage is the first difference, as it is for any hosted model. `wrap(runnable, "name", ...)`
+makes one Runnable a stage (every `ot.stage` option applies) and returns a Runnable, so an LCEL
+chain records one node per step, each linked to the one before it:
+
+```python
+import onetrace as ot
+from onetrace.langchain import wrap
+
+chain = (wrap(prompt, "prompt", output_trust="operator-authored")
+         | wrap(llm, "llm", output_trust="model-generated", rederivable=False)
+         | wrap(StrOutputParser(), "parse", output_trust="model-generated"))
+
+@ot.run(stages=["prompt", "llm", "parse"])
+def answer(q):
+    return chain.invoke({"q": q})
+```
+
+**LangGraph, since 0.4.0: `from onetrace.langgraph import stage`**, in place of `ot.stage` on each
+node, records which node wrote each key of the state a node is given (section 16, *Lineage through a
+framework's state*).
 
 The pattern, using LangChain:
 
@@ -585,6 +651,35 @@ Each stage gets exactly one of five verdicts, always about the stage's **output*
 
 A change in an instrument's version or config never changes a verdict by itself. It's shown as an annotation, so a `same` never hides that *how* the output was produced changed.
 
+**Different inputs are said first** (0.3.1). When the two runs were given different recorded inputs, the line after the verdict says so and names them: `inputs differ: the runs were given different recorded inputs: q (the intake stage's inputs)`, then that the stages below are compared across different inputs, with the `onetrace match` command that finds a run on the same input (see [runs on the same input](#runs-on-the-same-input-onetrace-match)). A run's recorded inputs, here, are the arguments it was called with: its intake stage's inputs (section 16.3), the job it was given, such as a ticket or a question. An input a stage reads on its own, such as a corpus or a config file, is not one of them: a release changes those, and the ladder compares them stage by stage. A run with no intake stage (a run function without parameters, or a run not recorded with `@ot.run`) records no arguments, and nothing is said. They are compared by digest. The JSON report carries them under `inputs_differ`. The verdicts and the exit code are unchanged, but an `identical` or `identical after masking` verdict on different inputs says so on the verdict line itself, `localize: identical after masking, on different inputs (q)`, and the JSON carries `"on_different_inputs": "true"`: a mask that names the input's own kind of value (a path given as the argument, say) can make two runs on different inputs read the same, and a reader of the verdict alone should not take them for one run.
+
+**The outputs that changed at the end** (0.3.1). When two runs diverge, the report lists each stage nothing else reads from whose output differs, with where its change starts (its origins; see [one output's path](#one-outputs-path-localize---for)), under `end_outputs` in the JSON. The text prints the list as `outputs that changed at the end:` when it says more than the first difference does: more than one such stage, or one whose change starts somewhere else. On a straight line of stages there is one, and it isn't printed. When the origins are more than one stage, the report ranks them (`origins_ranked`): each stage, with how many of those outputs its change reaches. A stage none of whose recorded inputs differs at some origin ("nothing it read differs") ranks above one that was only ever given an input that differs and that no recorded link traces to a stage ("an input it was given differs"), since the second may only be passing on a change from outside the record; then most outputs first. The list and the ranking never change a verdict or the exit code.
+
+#### Release noise: `--mask FILE`
+
+A release changes things nobody needs to look at: a version string, a generated time, the folder a run happened in. `--mask FILE` (0.3.1, on `diff` and two-run `localize`) names them once, so the first difference is one that matters. It is opt-in: with no mask, nothing below applies.
+
+```json
+{"format": "onetrace-mask/0.1",
+ "settings": ["instrument.version", {"stage": "load", "setting": "assertions.constants.app_version"}],
+ "values":   ["timestamp", "uuid", "run-id", "absolute-path"],
+ "fields":   [{"stage": "answer", "output": "return.json", "pointer": "/meta/generated_at"}]}
+```
+
+- **`settings`:** names as the annotations name them (`instrument.version`, `assertions.constants.<key>`), for every stage or, as an object, for one. A masked setting is left out of the annotations and the cause, and listed as `masked at stage …: … (not counted as a change)`.
+- **`values`:** from a fixed set only, no free-form patterns: ISO 8601 timestamps, UUIDs, onetrace run ids (both runs' own, and any in run-id form), absolute paths. For paths, each run's own folder is replaced whole first; then every other absolute path (a POSIX path of two names or more, a Windows path from a drive letter) keeps its last name and only the folders above it are replaced, so `/etc/app/prod.yaml` against `/etc/app/staging.yaml`, or the routes `/v1/refund/approve` against `/v1/refund/deny`, still differ. A path whose folders alone differ between the runs (`/opt/models/v1/model.bin` against `/opt/models/v2/model.bin`) is masked, and the report lists it under the mask line, so you can check it is the same file (a path under either run's own folder is masked whole and not listed; paths that share a last name are each listed, paired by the folders they share from the root, and a path with no partner reads `path | -`; the JSON carries up to 100 such paths per output and `folders_masked_count`, the number of all of them, and the text names the rest by count). In text that reads as JSON (one value, or any line that is one, whatever its media type; a string that is itself JSON text is read one level down), values are looked for inside each string as the string holds them, so a path after an escaped newline, or a Windows path with escaped backslashes, is found; a string the mask changes nothing in keeps its bytes. Each is replaced in the output's text with a placeholder, and nothing else about the bytes changes: a change in spacing or key order still differs.
+- **`fields`:** JSON pointers inside one stage's output (`output` left out: every JSON output of that stage). An output with fields named is read as JSON, the fields replaced, and compared as JSON, so its key order and spacing are not counted; the row says `as JSON`. A pointer that reaches no value in either run (a key neither has, or one that runs into a string or number before its end, such as a field inside JSON text held in a string) replaces nothing, and the mask line lists it under "masked fields no value reaches in either run".
+
+Receipts hold digests, so a masked comparison reads both runs' kept output files, by size and digest. A stage whose outputs are the same once masked gets the verdict they would have had if equal, and says so: `same  (same after masking (2 values): out.json)`. Never a plain `same`. A mask that replaced nothing hides nothing. An output whose file wasn't kept (`not masked: output not kept`), or isn't text (`not masked: not text`), is compared unmasked. The report's second line names the mask file, its sha256 and how many stages and values it changed; the JSON carries `mask` (file, sha256, rules), `masked` on each row it read, and `settings_masked`. A comparison equal only once masked reads `identical after masking`, exit 0.
+
+**A key one run has and the other doesn't** (a config key a release added with its default, say) is a change, and a mask removes it only when a `fields` pointer names it exactly. The row then reads `same after masking (…), masking a key only one run has: /policy/redaction (only in candidate)`, and the mask line under the verdict lists every such key: masking one says its value doesn't matter, so the report keeps it in view.
+
+**`onetrace mask suggest A B`** prints a candidate mask from two runs' differences: each setting with `version` as a word of its name (`instrument.version`, `assertions.constants.app_version`; never `conversion_rate`) that differs, as one rule when it differs in every stage your code decorated, and each value kind that differs inside a differing kept text output, with where it was seen, and what `diff` would read with it. It writes no mask file: review each line (a version change can be the real cause), then save it. `--json` prints the mask alone, ready to save. Of fields, only one named like a version that changed is suggested (`/app/version`); which other fields are noise is your call. To help with that call, it lists the fields that differ in each JSON output where the comparison opens a difference, by pointer and how (`changed`, `only in baseline`, `only in candidate`), never by value, under `fields_to_review`. `onetrace doctor` adds a note (never a fix; its exit is unchanged) when the most recent run's outputs hold timestamps, uuids, run ids or absolute paths, naming the stages and the mask line that leaves them out; a fixed date or path in an output doesn't change between runs, so the note says where those values change, not that they always do.
+
+**`onetrace doctor --entrypoint FILE`** (0.3.1) checks that the most recent run under `runs/` was recorded through `FILE`, the file holding the `@ot.run` function production calls. Every receipt of a decorated run records the sha256 of its manifest as its instrument's `manifest_digest`: that file, unless the `@ot.run` passes `manifest=`, in which case pass the file `manifest=` names. A run recorded through a separate runner or test harness records another file's. A mismatch is a fix: another file recorded the run, or `FILE` changed after it, and the fix line says to record a run the way production runs it after your last edit. Without `--entrypoint`, doctor checks nothing of this.
+
+A mask never changes a record, a verifier result, a refusal or a could-not-check. The runs' arguments (the inputs-differ line) are compared by digest and are not masked. `--text` shows the outputs' text as recorded, unmasked.
+
 #### The text that changed: `diff --text`
 
 ```bash
@@ -639,9 +734,80 @@ On two runs, the cause names what changed at the first difference:
 
 `diff` annotates a changed corpus link on every node that carries one, the way it annotates a changed setting.
 
+When nothing recorded differs at the first difference (the same instrument, version and settings), the cause says so in one sentence (0.3.0): `no recorded cause`, whether the step's instrument declares itself not rederivable (a model call, say, whose output can vary on its own), and the next later step with a recorded change, or `nothing recorded changes after it`. On a run recorded with a topology, the next change is one downstream of the first difference (reachable over the observed edges), never a change on another branch.
+
+#### One output's path: `localize --for`
+
+```bash
+onetrace localize runs/monday runs/tuesday --for check --out r
+```
+
+A release changes many things at once, and the first difference in chain order is often one the output you care about never reads: a version string, a new config key, a reworded document that chunks to the same words. `--for STAGE` (0.3.1) starts from that stage's output instead and asks: where does the change it shows start?
+
+- **The path** is the stage and every stage it reads from, followed back over the links both runs recorded. On a run recorded with a topology, those are its edges. On a run read as linear, they are its receipts' own: a stage reads from each earlier stage whose recorded output it records as an input (by digest), and from a stage a `receipt:` input names. A link either run recorded is followed.
+- **A linear stage that can't be traced** by its inputs (it records none, or one no earlier stage produced that isn't marked `externally-sourced` or `operator-authored`) takes every stage before it onto the path, and the report says so: `'check' records no input it can be traced by, so every stage before it is on the path`. A stage that reads something it never recorded can't be followed; the record doesn't show it.
+- **The walk** goes back from the stage only through stages whose output differs, over links that carry a difference. A differing stage that no such link leads into is an **origin**: the change starts there (one per branch that changed). A difference on the path that the walk never reaches stopped before the stage (its effect reconverged, as a reworded document does once chunked), and is listed as not reaching it.
+- **Which links carry a difference.** A run recorded with `@ot.run(link_parts=True)` records, for each stage, which of its arguments came from which earlier stage, whole or as a part (the `onetrace.links` constant). A link that passed only parts whose recorded digests are the same in both runs carries nothing, and is not followed, unless the stage was also given an input that differs and that no recorded link names (a string or number taken out of a return): that input may have come from the earlier stage, so the link is followed and the stage stays an origin as well, naming the input. Otherwise: a stage that reads `config["policy"]` is an origin of its own change even when another part of the config changed. Without those records, every link from a differing stage is followed, so where two changes meet, a stage that changed and also reads a differing stage, the walk goes on past it; name the noise in a mask to see the second change.
+- **An input that differs at an origin.** An origin that was given an input that differs, which no recorded link traces to a stage, says so: the change may come from there. An input the record links, as a part, to a stage the comparison reads as the same once masked (a config section that gained a masked key, say), at the same place in both runs, is not counted. Nothing is matched by value: an input no recorded link names is always counted.
+- **The answer** prints first: where the change starts, what doesn't reach the stage, the path with each stage's reading (`same`, `differs`, `COULD NOT CHECK`), and under each origin the recorded change there, or the no-recorded-cause sentence. The full ladder follows, as without `--for`; its first differences are the run's, so a stage below a reconverged difference still reads `downstream` there.
+- **The stage's own output must differ.** One that doesn't reads `its output does not differ between the runs; nothing to trace`, exit 0. A stage the walk meets that couldn't be checked makes the answer `COULD NOT CHECK`, exit 4, naming it. A name neither run has, or a bare name several instances share, is a usage error, exit 2, naming the choices.
+
+The verdicts are the ladder's own; `--for` only reads them along one output's path, and changes none. The JSON report carries the answer under `for` (`origins`, `not_reaching`, `given_differs`, `path`). The walk is as good as the links the runs recorded: a stage given a value built between stages (a new dict made from two returns), or a string or number taken out of a return, has no link for it, and the walk can stop early there, naming the stage as an origin given an input that differs.
+
+#### Runs on the same input: `onetrace match`
+
+```bash
+onetrace match runs/tuesday [--runs-root runs] --out r
+```
+
+`match` (0.3.1) lists the runs given the same recorded inputs as this one, so a comparison can be between runs on the same job. It looks one level down in `--runs-root` (default: the folder holding the run), compares each run's arguments (its intake stage's inputs, as above) with this run's by digest, and checks each run that matches with the verifier. Only a run that verifies is listed, newest first by its first receipt's recorded start, each with the `onetrace diff` command that compares it with this one (both paths resolved, as the runs are found, so a linked folder or a Windows short folder name is not mixed with its other form); a run that matches but doesn't verify, or couldn't be checked, is named under `not listed`, with why. Exit 0 when one or more runs are listed, 1 when none, 3 when this run doesn't verify, 4 when it has no intake stage to match on or couldn't be checked. Nothing is read but the receipts.
+
+Each verb prints and writes a carried verifier line that repeats across receipts once, with a count (`[NOT-RUN] originality on 3 receipts -- ...`). `--verbose` prints and writes each line; the JSON report always keeps each.
+
 `localize A B --follow-corpus` follows a changed corpus link one hop, as `diff` does, and reports where the two linked ingest runs first differ and why, after its own report. It never shows stored ingest text (see [following a changed corpus link](#following-a-changed-corpus-link)).
 
 The corpus link is compared on run records only. A query run's retrieval stage is a run record, so the per-document receipts of the two-root form are not compared for a corpus link.
+
+#### A straight-line run against a graph run
+
+A run written with the Recorder API records its stages in a straight line, with no edges; the same
+stages decorated record the graph they ran in. When the two declare the same stages, `diff` and
+`localize` compare them node by node. A straight-line run's receipts may still record what a stage
+read (`ctx.read_receipt`): when they record any read, those reads are its edges, so a stage that
+read something else than in the graph run is a difference and `--for` follows the read it recorded;
+the line under the verdict says `shape: the baseline records no edges in its manifest (a
+straight-line run); its stages are compared under the reads its own receipts record`. Only when it
+records no read at all are its stages compared under the edges the graph run recorded, and the line
+says `... compared node by node under the edges the other run recorded`. Two runs that declare
+different stages are not comparable, as before.
+
+#### How long each stage took: `--durations`
+
+`diff A B --durations` (and `localize A B --durations`) adds a time section: each node's duration
+in both runs, read from its receipts' own `time.started` and `time.ended`, and the note "slower"
+where the candidate took at least `--slow-factor` times as long (default 2) and at least
+`--slow-min-ms` milliseconds more (default 1000). Both conditions, so a stage going from 2 ms to
+9 ms isn't called slower. The JSON report carries it under `durations`, every number a decimal
+string.
+
+**Timing is a view, never a verdict.** The verdict, the exit code and every other part of the
+report are byte for byte what they are without the flag. A run's times depend on the machine, its
+load and the network, so a slower note says what the receipts recorded and nothing about why.
+A receipt whose times can't be read shows `-`.
+
+#### Many runs side by side: `onetrace drift`
+
+`onetrace drift RUN1 RUN2 RUN3 ... --out DIR` compares each run with the first, exactly as `diff`
+compares two (the same verifying, the same mask, the same verdicts), and lays the comparisons side
+by side: one line per run with its verdict against the run it was compared with, then one row per
+node with the verdict of each comparison. `--against previous` compares each run with the one
+before it instead, which shows where a change came in and whether a later run went back.
+
+The exit code is that of the first comparison, in run order, whose exit code isn't 0 (1 diverged,
+2 not comparable, 3 refused, 4 could not check), or 0 when every run reads identical. A run the
+verifier refuses is named on its line and its comparison reads refused; the other comparisons are
+still made. With `--durations`, the time section has one column per run, and every node slower
+than in the run it was compared with is listed.
 
 ### 10.3 `reproduce`: re-run and compare
 
@@ -667,11 +833,23 @@ onetrace reproduce runs/monday --runner runner.json --out reports/repro         
 - Each stage is reported as `REPRODUCED`, `DIVERGED` or `COULD NOT CHECK`.
 - Stages marked `rederivable="false"` are expected not to reproduce.
 
-### 10.4 Exit codes and reports
+### 10.4 A summary for a pull request: `onetrace summary`
+
+```bash
+onetrace-verify --json runs/candidate > verify.json
+onetrace diff runs/baseline runs/candidate --out r
+onetrace summary r --verify-json verify.json --title "release check"
+```
+
+`onetrace summary DIR` (0.3.1) prints a short Markdown summary of what a `diff` or `localize` run wrote in `DIR`, and of `onetrace-verify --json`'s output if you pass it: the verifier's result and any failing row, the comparison's verdict and first difference, and, when the report holds them, the inputs-differ line, the mask used, the `--for` answer, the outputs that changed at the end and the cause sentence. It runs nothing and decides nothing: it repeats the verdicts already reached, and exits 0. Every string taken from a record is shown as inline code, so a record can't add a link, an image, HTML, a mention (`@name`) or an automatic link (a bare URL or address) to a comment; control characters (C0 and C1) are shown as `\xNN`, and format characters (right-to-left overrides, zero-width marks) as `\uNNNN`, so no text is reordered or hidden. The title you pass is escaped for Markdown, with `@` written as an entity. Its first line is the marker `<!-- onetrace summary -->`, so a CI job can find and update its own comment.
+
+### 10.5 Exit codes and reports
 
 | Command | 0 | 1 | 2 | 3 | 4 |
 |---|---|---|---|---|---|
-| `diff`, two-run `localize` | identical | diverged | not comparable | refused | could not check |
+| `diff`, two-run `localize` | identical (or identical after masking) | diverged | not comparable, or a mask file refused | refused | could not check |
+| `localize A B --for STAGE` | the stage's output does not differ | located on its path | not comparable, or `--for` names no stage | refused | could not check |
+| `match` | runs listed | none listed | n/a | refused | could not check |
 | one-run `localize` | clean | located | n/a | refused | could not check |
 | `reproduce` | all REPRODUCED | any DIVERGED | n/a | refused | any COULD NOT CHECK (none diverged) |
 | `onetrace-verify` | `PASS` | `FAIL` | `NOT VERIFIED`, or refused (below) | n/a | n/a |
@@ -682,6 +860,12 @@ For `onetrace-verify`, exit 2 is never a pass and never a fail. It has three cau
 - a usage error, such as a missing path.
 
 A `FAIL` anywhere always outranks `NOT VERIFIED`, giving exit 1. With `--json`, the exit code is the same, and `summary.result` reads `NOT VERIFIED` or `REFUSED` for the first two causes.
+
+`diff`, `localize` and `reproduce` read every run as `onetrace-verify` does, before anything else (0.3.0):
+- a run it shows wrong (its exit 1) is **refused**, exit 3, naming the failing rows;
+- a run it could not check (`NOT VERIFIED`, its exit 2) is **could not check**, exit 4, naming the run and the verifier's reason. No verdict is read from a run whose receipts were not all checked, so such a run never reads `identical`. The one format the verbs read on purpose without the verifier implementing it is the preview format (`stage-receipt/0.0-preview`, Appendix C); its runs compare as before, with the line `COULD NOT CHECK — draft-00 checks not performed` carried.
+
+A refusal always wins: a pair with one refused run and one that could not be checked exits 3.
 
 Every command writes a JSON report and a text report into `--out` (default `onetrace-report/`), plus the verifier's rows for each input run. Use `--quiet` to skip printing.
 
@@ -819,7 +1003,7 @@ Keep a known-good run as `baselines/golden`. When a change is intended, regenera
 
 ```python
 import onetrace
-onetrace.__version__                         # "0.1.2"
+onetrace.__version__                         # "0.4.0"
 onetrace.digest(path_or_bytes) -> "sha256:<hex>"
 
 from onetrace.emit import (Recorder, Instrument, Refusal,
@@ -855,7 +1039,7 @@ Refusal(reason, detail=None)        # raise inside a stage to decline
 VerifyPin(verifier=None, expect_sums=None, per_receipt=False)
 ```
 
-Commands: `onetrace-verify [--require-artifacts] [--json] [--headers FILE] [--tsa-cert FILE --tsa-root FILE] <run>`, `onetrace anchor <run> --source rfc3161|opentimestamps` (section 15), `onetrace diff A B`, `onetrace localize A [B]`, `onetrace reproduce <run> [stage] --runner R`. The common options are `--out`, `--quiet`, `--stages` and `--verifier`. `onetrace-verify -h`/`--help`/`--version` print usage and the version and exit 0.
+Commands: `onetrace-verify [--require-artifacts] [--json] [--headers FILE] [--tsa-cert FILE --tsa-root FILE] [--trust FILE] [--require-signature] [--require-trusted] [--require-complete] <run>`, `onetrace anchor <run> --source rfc3161|opentimestamps` (section 15), `onetrace diff A B`, `onetrace localize A [B]`, `onetrace reproduce <run> [stage] --runner R`. The common options are `--out`, `--quiet`, `--stages` and `--verifier`. `onetrace-verify -h`/`--help`/`--version` print usage and the version and exit 0.
 
 ---
 
@@ -863,7 +1047,7 @@ Commands: `onetrace-verify [--require-artifacts] [--json] [--headers FILE] [--ts
 
 - Records are **hash-chained**; signing (section 17) and anchoring (section 15) are optional. Without them, the chain alone does not show who wrote a record. To show a record existed by a given time, anchor its chain head (section 15); otherwise keep the chain head somewhere independent.
 - Framework "adapters" are worked examples in the source distribution, not importable modules.
-- The format is version 0 and may change before version 1. Every record carries its format version. The manifest's own chain format is checked, and an unknown one is refused by name, never guessed. **A receipt's own format was not checked in 0.1.1** (0.1.0 behaved the same): only its presence was checked, not its value. **From 0.1.2 it is checked.** A missing format, one that is not a string, or one that is not a `stage-receipt/<major>.<minor>` label is a `FAIL`. A version this verifier doesn't implement (a major other than 0, or a minor that isn't ASCII decimal digits) gets one `NOT-RUN` row naming it: that receipt's digest against the manifest and its chain link are still checked, but none of its content is (canonical form, fields, originality, output files). The summary then reads `NOT VERIFIED (receipt format not implemented: N receipt(s))` and the exit code is 2, unless a check failed anywhere, which gives `FAIL` and exit 1 (section 10.4).
+- The format is version 0 and may change before version 1. Every record carries its format version. The manifest's own chain format is checked, and an unknown one is refused by name, never guessed. **A receipt's own format was not checked in 0.1.1** (0.1.0 behaved the same): only its presence was checked, not its value. **From 0.1.2 it is checked.** A missing format, one that is not a string, or one that is not a `stage-receipt/<major>.<minor>` label is a `FAIL`. A version this verifier doesn't implement (a major other than 0, or a minor that isn't ASCII decimal digits) gets one `NOT-RUN` row naming it: that receipt's digest against the manifest and its chain link are still checked, but none of its content is (canonical form, fields, originality, output files). The summary then reads `NOT VERIFIED (receipt format not implemented: N receipt(s))` and the exit code is 2, unless a check failed anywhere, which gives `FAIL` and exit 1 (section 10.5).
 - `onetrace-verify`'s artifact check only applies when it can recognise a run's own `artifacts/<stage>/<output>` layout. A run built by hand, or with a different layout, reads `NOT-RUN` for its files (section 8.3). Receipts don't record where an output file is stored, so the check depends on this SDK's folder convention; a later format version will record the path.
 - `reproduce` re-runs whole runs only (section 10.3).
 - Licence: Apache-2.0.
@@ -1011,12 +1195,63 @@ show what changed in it, not only that it changed:
 An argument that is an earlier stage's return value, passed on unchanged, is recorded as an edge
 from that stage (`receipt:<stage>`), not as a second copy of the value.
 
-**Stages link only when the same object is passed on whole.** The link is made by identity: the
-argument must be the very object the earlier stage returned. Anything made from it is a new object,
-recorded as an ordinary input with no edge: a slice, one value taken out of a returned dict, a
-copy or `list(x)`, an equal value built elsewhere, a string made from it, or the returned object
-placed inside a list, tuple or dict that is passed as one argument. To keep the link, pass the
-whole output on and take the part you need inside the next stage.
+**Stages link only when the same object is passed on whole; with `link_parts=True`, also a dict or
+list inside it** (0.3.1). The link is made by identity: the argument must be the very object the
+earlier stage returned. With `@ot.run(link_parts=True)`, a dict or list that is itself part of that
+return (`config["policy"]`, `ctx["facts"]`, `rows[0]`, to three levels down) links too; it is
+recorded twice, the edge from that stage and its own value under the parameter's name, and each
+stage records which of its arguments link where, whole or at which JSON pointer (the
+`onetrace.links` constant), so a comparison can tell which links carry a difference. A link says the
+stage was given the same object an earlier stage returned, not where that object was made: a
+module-level dict that one stage returns inside its result and another is given directly reads as
+coming from the first. Anything made from a return is a new object, recorded as an ordinary input
+with no edge: a slice, a copy or `list(x)`, a dict built from two returns, an equal value built
+elsewhere, and any string or number, even one taken out of a returned dict (Python shares those
+between unrelated places, so they are never linked). To keep a link for one of those, pass the
+containing dict on and take the value inside the next stage. Part links are off by default: runs
+recorded with and without them differ in their links, so turn it on for a baseline and its
+candidates together (a comparison of one of each says so once, `links: the baseline records part
+links …`), and approve an approved plan (`declared_edges`) again from a run that records
+them.
+
+**Trust through containers** (0.4.0, with `link_parts=True`). A part of an earlier return is
+recorded with the trust class of the return it came from (that stage's `output_trust`), not the
+receiving stage's `trust=`, so a `model-generated` answer passed on as a part stays
+`model-generated` in the record. An argument your code built, a state dict or a prompt bundle, keeps
+the stage's own class, and the constant `onetrace.held` names each earlier return, or part of one,
+it holds: `[parameter, pointer in the argument, stage, pointer in that stage's return, class,
+digest]`, found by identity to three levels and at most 5,000 dicts and lists, with an edge to each
+stage named. Where the search stops short (more containers than that, or dicts and lists nested
+deeper), `onetrace.held_cut` reads `"true"` and `diff` and `localize` say so in a `note:` line under
+the verdict: a value held beyond it is not named. A held value whose digest
+changed between two runs reaches its producer in `localize --for`. `onetrace doctor` notes a stage
+declared `operator-authored` whose input holds `model-generated` values; its exit is unchanged.
+As for part links, only dicts and lists are found, never an equal value made elsewhere, and a
+string taken out of a return and put in a state is a new value: keep model text inside a dict
+(`{"text": …}`) to keep it traceable.
+
+**Lineage through a framework's state** (0.4.0). A LangGraph node is given the graph's state, a
+dict the framework builds afresh for each node, so nothing it is given is the object an earlier node
+returned and no edge is recorded. Decorate its nodes with `from onetrace.langgraph import stage`
+instead of `ot.stage` (every option is the same): each node then records an edge from the node that
+last wrote each key of the state it is given, and the constant `onetrace.state` lists each key with
+its writer, the writer's output class and the key's digest. A node writes a key when its returned
+mapping holds that key with a value different from the one it was given, so a node that returns the
+whole state writes only what it changed. A key the framework combines (a reducer, such as
+`Annotated[list, operator.add]` appending messages) keeps a row for every node that wrote it since it
+was last replaced, since each one's update is in the value the next node reads; a key replaced
+outright names its last writer alone. onetrace tells the two apart by what the next node is given:
+exactly the writer's update, or something else. `localize --for` then follows a writer only when a
+key it wrote reads differently at the node. The edges are data edges (which node's write a node read), not
+the graph's control edges; an approved plan (`declared_edges`) for such a run lists data edges.
+LangGraph itself is not imported by onetrace. A state that holds LangChain messages records each message's per-call `id` unless `onetrace.langchain` is imported, and a key whose digest differs on every run reads as a change from its writer every time: import it alongside.
+
+For a value a stage reads by a way onetrace can't see at all (a shared store, a cache),
+`@ot.stage(..., reads=["stage"])` records an edge from that stage's latest node in the run, and
+`onetrace.reads` names it (`""` where that stage hasn't run yet, as in a loop's first pass; `diff`
+and `localize` then say in a `note:` line that no edge from it is recorded). A node that changes the
+state it was given in place, without returning the change, is not named as the key's writer: return
+every change as an update.
 
 **A gap, not yet fixed:** Python reuses some objects across a program: `None`, `True` and `False`,
 and numbers and strings written as literals in your code. A stage that returns one of these, and a
@@ -1197,16 +1432,45 @@ A decorated run is found through the calling context, and a thread pool's thread
 empty one. So `pool.submit(stage, x)` or `pool.map(stage, xs)` inside a run would find no run and,
 as a plain function, record nothing. That is refused instead: a decorated stage called in a thread
 with no run, while a decorated run is active anywhere in the process, raises `EmissionRefused`
-naming the stage. Carry the run into the thread:
+naming the stage. Carry the run into the thread, with one of these (since 0.4.0):
 
 ```python
-pool.submit(contextvars.copy_context().run, retrieve.instance("en"), query)
+# one call per item, each named by the item's position (embed#0, embed#1, ...) or by key=
+vectors = ot.map(embed, docs, key=lambda d: d.id, workers=8)
+
+# the same for an async def stage, as asyncio tasks
+vectors = await ot.gather(aembed, docs, key=lambda d: d.id)
+
+# a pool whose submit carries the run; it names nothing by itself
+with ot.pool(workers=8) as pool:
+    hit = pool.submit(retrieve.instance("en"), query).result()
+
+# a thread you start yourself
+threading.Thread(target=ot.carry(work)).start()
 ```
 
-`asyncio.to_thread` copies the context itself, so it needs nothing. If a call in another thread
-really belongs to no run, call the undecorated function, `retrieve.__wrapped__(query)`. With no
-decorated run active anywhere in the process, a stage in any thread is a plain function, as
-outside a run.
+`ot.map` and `ot.gather` name each call before any runs: by the item's position in the list you
+passed, never the order calls finish, so the same list gives the same nodes in every run. Key by an
+id when the list's order isn't fixed: inserting one item at the front of a positional fan-out
+changes every node after it, and the comparison says what it sees. A key is a string or an int; two
+items with the same key are refused before any call. Results come back in your list's order. A call
+that raises is recorded with its error, the others run to the end, and then the first error (in
+list order) is raised, with the others named on it. Nothing is lost because a sibling failed.
+
+A carried call belongs to the run it was carried from, even when it runs while another run is
+active; one that runs after that run has closed is refused (`run-closed`) and the finished record is
+left as it was: join your threads, or leave the pool's `with` block, before the run function returns.
+
+`pool.submit(contextvars.copy_context().run, fn, ...)` still works, and `asyncio.to_thread` copies
+the context itself, so it needs nothing. If a call in another thread really belongs to no run, call
+the undecorated function, `retrieve.__wrapped__(query)`. With no decorated run active anywhere in the
+process, a stage in any thread is a plain function, as outside a run.
+
+**Child processes.** One process writes a run folder. A stage called in a forked child of the run's
+process (`multiprocessing` on POSIX, a process pool) is refused by name (`child-process`). A child
+started fresh (the `spawn` method, the default on Windows and macOS) carries no run at all, and a
+stage there runs unrecorded, as outside any run: do the child's work undecorated and record its
+result in a stage of the parent.
 
 ### 16.12 Names that become folders
 
@@ -1314,6 +1578,17 @@ stage has returned, there is no stage to record on, and the call is refused as a
 None of these packages is imported by onetrace itself; an encoder is looked up only for a value
 whose package you have already imported.
 
+- **LangChain messages** (`AIMessage` and the rest) are pydantic models too, and their dump includes
+  `id`, a per-run value (`lc_run--…`): two identical runs then differ at that stage. Register an
+  encoder that leaves it out, `ot.encoder(BaseMessage, lambda m: {"type": m.type, "content": m.content,
+  "tool_calls": getattr(m, "tool_calls", [])})`; `onetrace doctor` names a recorded output that holds one.
+
+**A tool in your own repository.** `ot.pkg(id, distribution)` reads the version from an installed
+distribution. With none installed (code run from its source tree, or vendored), it reads the
+`__version__` that the imported module of that name states (since 0.4.0: import it first), and
+refuses when there is neither. For code with no version of its own, name the instrument yourself:
+`Instrument(id, kind, version, config)` (section 5.2), with the version you pin it by.
+
 ### 16.16 Numbers and booleans: rule M for settings, rule V1 for values
 
 A decorated pipeline records numbers and booleans in two places, each with its own rule.
@@ -1386,6 +1661,11 @@ cmd.exe and sh all accept. stdout is never written to.
 Only a decorated run (`@ot.run`) says this. A `Recorder` you open and close yourself (section 5)
 writes nothing to stderr when it closes.
 
+When nothing was recorded inside the run (its stages ran in threads or tasks that don't carry the
+run's context, 16.11), there is no record, and the first line says so instead:
+`onetrace: no run written to runs/demo: no stage was recorded inside the run`, with how to call the
+stages inside it.
+
 `ONETRACE_QUIET=1` in the environment suppresses the two lines; only the value `1` does. With
 `ONETRACE_DISABLE=1` (16.8) no run is opened, so nothing is written.
 
@@ -1406,7 +1686,7 @@ def answer(question, passages):
 - **What is kept.** Each named input whose value is a `str`, stored in `inputs/<receipt stem>/<name>.json` as exactly the bytes its digest was computed over: the text as a JSON string. The file's SHA-256 is the input's digest, and the receipt is unchanged: the same input entry, the same digest. `inputs/` is beside `artifacts/`, never inside it. `@ot.run(keep_inputs=[...])` does the same for the run's own arguments.
 - **What is not kept, and the stage goes on:** a value that is not text, recorded as before and listed as `not text (<type>)`; an input whose stored bytes are over the cap, listed as `over <cap> bytes`; an input not passed, `no value passed`; an earlier stage's output passed on whole, which is a link to that stage, `an earlier stage's output`. A stage that doesn't finish keeps nothing: its files are removed, and its inputs are listed as `the stage did not finish (<outcome>)`.
 - **The cap is on the stored bytes,** the JSON string as written to the file, so the cap and the file's size are the same number: `keep_inputs_cap=`, 4096 by default, at most 65536. A name that is not a parameter of the function, or a cap out of range, is refused when the stage is decorated.
-- **The record says what was kept,** in two constants only onetrace writes: `onetrace.kept_inputs` lists the kept inputs, and `onetrace.inputs_not_kept` each named input that wasn't, with why. A constant of your own whose name starts with `onetrace.` is refused. Kept text counts towards `max_run_bytes`.
+- **The record says what was kept,** in two constants only onetrace writes: `onetrace.kept_inputs` lists the kept inputs, and `onetrace.inputs_not_kept` each named input that wasn't, with why. A constant of your own whose name starts with `onetrace.` is refused, whether set with `ctx.constant` or straight into `ctx.constants`; it is read once, as 0.3.0 read it (falsy as no constants, anything else as `dict()` reads it), and a name that is a `str` subclass (a `StrEnum` member, say) is read as its characters, as 0.3.0 recorded it. This guards against mistakes through the public interface: a stage's code runs in the recorder's own process and could still write anything there, so a record is only as trustworthy as the code that ran beside it. Kept text counts towards `max_run_bytes`.
 - **A reader shows the text only when the record lists the input as kept and the file's SHA-256 equals its digest.** `onetrace diff --text` shows a changed kept input as `- "<baseline>"` and `+ "<candidate>"` under its line, each escaped one character for one character as the verifier escapes names. Otherwise it reads `not kept`, `not kept: file missing`, or `text does not match its digest; not shown`. A file under `inputs/` that the record does not list is never shown.
 - **Checking it.** `onetrace-verify` (0.2.0 and 0.2.1) does not read `inputs/`: its result is the same with or without the files. The SDK's own check (`python -m onetrace.sdk_verify`) adds a row per kept input, `kept input text matches its digest`: PASS, FAIL, or NOT RUN when the file was removed; and a note, `inputs/: unlisted file`, for a file no receipt lists.
 - **Removing the text** (all of `inputs/`, or one file) is allowed and leaves the run verifiable: the digests are in the receipts.
@@ -1489,3 +1769,50 @@ A FAIL makes the verifier's result FAIL (exit 1). SIGNED-UNTRUSTED and NOT-RUN l
 - a `signatures/` that is a link is FAIL, and nothing in it is read.
 
 `diff` and `localize` never change a verdict for a signature. A signed run's report carries its rows under `"signing"`, as the verifier reads them with no trust list, so a valid signature shows as SIGNED-UNTRUSTED there.
+
+## 18. Seeing a run in your tracing tool
+
+**A trace is a view of a record, never evidence.** Collectors drop, sample, rewrite and re-time
+spans. Whether two runs agree, or whether a run is intact, is answered by `onetrace-verify` and the
+comparison verbs reading the record, never by a trace. Nothing in onetrace reads a trace back.
+
+```sh
+onetrace export otel runs/<run id> --out trace.json
+```
+
+writes the run as one OpenTelemetry trace in OTLP/JSON. It makes no network calls and needs no
+OpenTelemetry package. Sending the file to your collector is your step, with the collector's own
+file receiver. `--service-name NAME` sets the resource's `service.name` (default `onetrace`). A run
+that can't be read is refused (exit 2) and nothing is written.
+
+What it writes:
+
+| onetrace | the trace |
+|---|---|
+| the run | one trace, a root span `onetrace.run` from the first stage's start to the last stage's end |
+| trace id | the first 16 bytes of the chain head |
+| a receipt | a span `onetrace.stage <node>`, a child of the root; its id is the first 8 bytes of the receipt file's sha256 |
+| a `receipt:` input | a span link, `onetrace.edge = "receipt"`; with `link_parts=True`, one per linked parameter, with `onetrace.param` and the pointer's depth and digest (`onetrace.pointer.depth`, `onetrace.pointer.digest`), never the pointer: its keys are part of the output (a digest can confirm a key someone guesses) |
+| a held step's attempted link | a span link, `onetrace.edge = "attempted"` |
+| outcome ok | status Unset |
+| outcome error | status Error, `error: <exception type> (origin <origin>)`; the exception's text is not exported |
+| outcome refused | status Error, `refused: <reason>`; the root span is Error too |
+| the run id, chain head, coverage, anchor state, `outputs_kept` | attributes on the root span (`onetrace.run_id`, `onetrace.chain_head`, `onetrace.coverage.*`, `onetrace.anchor.state`, `onetrace.outputs_kept`), with `onetrace.note`: a view of the record, never evidence |
+| the SDK and the record's format | the resource's `onetrace.sdk.version` and `onetrace.format`; the scope's `name` and `version` |
+
+A stage span also carries its stage and node, `onetrace.outcome`, its start and end from the
+receipt's `time`, its receipt digest, its instrument's name, version and
+digest, the counts and digests of its inputs and outputs (at most 64 digests each; when cut,
+`onetrace.inputs.digests_cut = "true"`), its output bytes, and a count per trust class.
+
+**Never exported:** input, output, constant or assertion values (a part link's pointer included), an
+exception's text, file paths. Names are exported: a stage's, a node's, a parameter's. A key you give
+`ot.map` becomes part of a node's name, so choose one that isn't a value you wouldn't send.
+
+**The export doesn't verify.** A run onetrace-verify fails still exports, and nothing in the trace
+says so. Verify the run first.
+A trace backend is a wider audience than the run folder. To put a value on a span, add it with your
+own tracer.
+
+The same run always exports to the same bytes. A changed receipt changes its own span's id and the
+id of every span after it, since each later receipt's `prev` link changes with it.

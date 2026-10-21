@@ -29,7 +29,7 @@
     </nav>
   </div>
 </header>
-<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html" aria-current="page">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Check and compare</p>
+<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html" aria-current="page">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Check and compare</p>
 <h1 id="compare-runs-diff-localize-reproduce">Compare runs: diff, localize, reproduce</h1>
 <p>Every verb calls the reference verifier first (via the installed <code>onetrace-verify</code> package,
 resolved automatically — see the <a href="quickstart.html">quickstart</a>). A
@@ -42,6 +42,12 @@ attempted against something the verifier itself won't stand behind.</p>
 first point of difference (if any), and annotations for anything about <em>how</em> a stage ran that
 changed without changing its output. Writes both a text report and the same information as
 canonical JSON, side by side, in <code>OUT_DIR</code>.</p>
+<p><code>--mask FILE</code> names release noise (settings, timestamps, ids, paths, JSON fields) not to count as a
+difference; every row it changes says so. See <a href="manual.html#release-noise---mask-file">the manual</a>.</p>
+<p><code>--durations</code> adds each node's time in both runs, read from its receipts' <code>time.started</code> and
+<code>time.ended</code>, and the note &quot;slower&quot; where the candidate took at least <code>--slow-factor</code> times as long
+(default 2) and at least <code>--slow-min-ms</code> more (default 1000). Timing is a view: it never changes a
+verdict, the exit code or any other part of the report. <code>localize</code> takes it too, with two runs.</p>
 <h2 id="localize"><code>localize</code></h2>
 <div class="code"><pre><code>onetrace localize RUN [CANDIDATE] --out OUT_DIR
 </code></pre></div>
@@ -49,9 +55,27 @@ canonical JSON, side by side, in <code>OUT_DIR</code>.</p>
 first <code>COULD NOT CHECK</code> or refused stage otherwise. With two runs (<code>CANDIDATE</code> given), it's the
 same comparison <code>diff</code> performs, reported the same way — <code>localize</code> and <code>diff</code> share their
 underlying ladder; the difference is intent, not mechanism.</p>
+<p><code>--for STAGE</code> (two-run form only) starts from one stage's output and names where the change it
+shows starts: walking back through the differing stages it reads from, by the links both runs
+recorded. A change that output never reads from, or one that reconverged before it, is never named
+as an origin. See <a href="manual.html#one-outputs-path-localize---for">the manual</a>.</p>
 <p><code>--doc DOC</code> (two-run form only) narrows to one document's chunk set under both runs, digest by
 digest, when a per-document stage's <code>outputs_root</code> differs and the question is <em>which</em> documents
 moved.</p>
+<h2 id="drift"><code>drift</code></h2>
+<div class="code"><pre><code>onetrace drift RUN RUN [RUN ...] [--against first|previous] --out OUT_DIR
+</code></pre></div>
+<p>Many runs of one pipeline, oldest first, side by side: each compared with the first (or, with
+<code>--against previous</code>, with the run before it) exactly as <code>diff</code> compares two, one column per
+compared run and one row per node, each cell the verdict <code>diff</code> gave. The exit code is that of the
+first comparison, in run order, whose exit code isn't 0, or 0. <code>--mask</code> and <code>--durations</code> work as
+for <code>diff</code>; with <code>--durations</code>, every time slower than the run it was compared with is listed.</p>
+<h2 id="match"><code>match</code></h2>
+<div class="code"><pre><code>onetrace match RUN [--runs-root DIR] --out OUT_DIR
+</code></pre></div>
+<p>Lists the runs one level down in <code>DIR</code> (default: the folder holding <code>RUN</code>) given the same recorded
+inputs as <code>RUN</code>, each checked by the verifier, newest first. <code>diff</code> and <code>localize</code> point to it when
+two runs were given different inputs. See <a href="manual.html#runs-on-the-same-input-onetrace-match">the manual</a>.</p>
 <h2 id="reproduce"><code>reproduce</code></h2>
 <div class="code"><pre><code>onetrace reproduce RUN [STAGE] --runner RUNNER.json --out OUT_DIR
 </code></pre></div>
@@ -85,7 +109,7 @@ relative to onetrace's own source location.</li>
 chain manifest); a <code>MANIFEST.json</code>-based run doesn't need it.</li>
 <li><code>--quiet</code> suppresses the text report; the JSON report is always written.</li>
 </ul>
-<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/tool-using-agent.html"><span>← Previous</span>Tool-using agent</a><a class="next" href="/onetrace/verdicts.html"><span>Next →</span>The five verdicts</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#diff">diff</a><a href="#localize">localize</a><a href="#reproduce">reproduce</a><a href="#anchor">anchor</a><a href="#common-to-all-three">Common to all three</a></aside></div>
+<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/tool-using-agent.html"><span>← Previous</span>Tool-using agent</a><a class="next" href="/onetrace/verdicts.html"><span>Next →</span>The five verdicts</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#diff">diff</a><a href="#localize">localize</a><a href="#drift">drift</a><a href="#match">match</a><a href="#reproduce">reproduce</a><a href="#anchor">anchor</a><a href="#common-to-all-three">Common to all three</a></aside></div>
 <footer>
   <div class="wrap">
     <div class="foot-grid">

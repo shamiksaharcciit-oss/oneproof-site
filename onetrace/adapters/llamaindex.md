@@ -12,6 +12,8 @@
 | `indexed` / `retrieved` | `VectorStoreIndex` — pure in-memory Python, no external service, so this is genuinely native here (unlike Langflow's own knowledge-store component; see [the Langflow page](langflow.md)). |
 | `answer` | A real `CustomLLM` subclass — LlamaIndex's own extension point for a model — invoked through `.complete()`, with deterministic regex extraction behind it: substituted logic behind a native integration point, not a native answering model. |
 
+**A worked example, not an integration.** This page is a hand-written nine-stage pipeline that calls LlamaIndex classes inside onetrace stages, so a comparison with the plain-Python run is like for like. It is not an adapter you plug an existing LlamaIndex app into: decorated code gets one receipt per decorated function, so a chain or graph called inside one stage is one receipt. Each framework needs its own virtual environment (their pins conflict; `examples/PIN_DISCIPLINE.md`).
+
 ## Get this code
 
 The example's files are not part of the installed `onetrace` package. They come in its source
@@ -20,13 +22,13 @@ your virtual environment active, run:
 
 <!-- quickstart: run -->
 ```
-pip download onetrace==0.2.2 --no-binary :all: --no-deps
-tar -xzf onetrace-0.2.2.tar.gz
-cd onetrace-0.2.2
+pip download onetrace==0.4.0 --no-binary :all: --no-deps
+tar -xzf onetrace-0.4.0.tar.gz
+cd onetrace-0.4.0
 ```
 
 The first line downloads the source package without installing it, the second unpacks it into a
-folder named `onetrace-0.2.2`, and the third moves into that folder. Run the commands below from
+folder named `onetrace-0.4.0`, and the third moves into that folder. Run the commands below from
 there. `tar` comes with current Windows, macOS and Linux; on Windows, use PowerShell.
 
 ## Running it

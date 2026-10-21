@@ -14,8 +14,9 @@ five verdicts. There is no sixth.
   happens in real pipelines (a reranker that recovers the same top document from a differently
   ordered candidate set, say) and silently folding it into "same" would erase real information
   about what actually ran.
-- **COULD NOT CHECK** — the stage can't be evaluated: an unimplemented format major version, a
-  declared boundary placed at or before it, a file the verifier can't read. This is not a pass,
+- **COULD NOT CHECK** — the stage can't be evaluated: a format version the verifier doesn't
+  implement (a major other than 0, or a minor that isn't ASCII decimal digits), a declared boundary
+  placed at or before it, a file the verifier can't read. This is not a pass,
   and it never gets silently treated as one.
 
 ## What a verdict is about

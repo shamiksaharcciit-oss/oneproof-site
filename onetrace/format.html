@@ -29,7 +29,7 @@
     </nav>
   </div>
 </header>
-<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html" aria-current="page">Record format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Reference</p>
+<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html" aria-current="page">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Reference</p>
 <h1 id="the-record-format-in-plain-words">The record format, in plain words</h1>
 <p>Full, normative detail is the Internet-Draft:
 <code>draft/draft-saha-stage-receipts-00.txt</code>. This page
@@ -66,7 +66,7 @@ is an orientation, not a substitute for it.</p>
 </tr>
 <tr>
 <td><code>coverage</code></td>
-<td>Whether this receipt's own view of the run is <code>complete</code> or <code>incomplete</code>, and which stages it declares versus which it saw emit.</td>
+<td>Whether this receipt's own view of the run is <code>complete</code> or <code>incomplete</code>, and which stages it declares versus which it saw emit. Since format 0.3, <code>optional_stages</code> may name declared stages the run may skip; <code>complete</code> still means every declared stage emitted.</td>
 </tr>
 <tr>
 <td><code>emission</code></td>
@@ -116,6 +116,11 @@ overall <code>chain_head</code>, and the run's own <code>format</code> — the m
 <code>stage-receipt-chain/&lt;major&gt;.&lt;minor&gt;</code>, a separate version line from a receipt's own <code>format</code>. A
 manifest declaring a format the verifier doesn't implement is refused outright, by name, rather
 than silently accepted.</p>
+<p>Since format 0.3 the manifest says <code>outputs_kept</code>: <code>&quot;all&quot;</code> (each receipt's output files are kept
+beside it, under <code>artifacts/</code>) or <code>&quot;none&quot;</code> (the run declares it keeps none; the receipts still record
+every output's digest and size). A run that keeps none also says <code>&quot;outputs_kept&quot;: &quot;none&quot;</code> in every
+receipt's <code>coverage</code>, under the chain and any signature. A verifier reads <code>&quot;none&quot;</code> as a declaration,
+never as files checked, and only where the manifest and every receipt agree.</p>
 <h2 id="two-roots-for-a-per-document-stage">Two roots, for a per-document stage</h2>
 <p>A stage that processes many documents in a batch (a <code>split</code> stage producing per-document chunks,
 say) carries two separate digests instead of one output digest: <code>receipts_root</code> (over the
@@ -130,7 +135,57 @@ turning what would otherwise be assumed as a linear sequence into an explicit gr
 fan-in, and loops are all expressible. <code>receipt:</code> inputs are structure, not data to be
 digest-compared. A node present in one run and absent in another is a difference in the shape
 of the run, not something the verifier tries to explain away.</p>
-<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/manual.html"><span>← Previous</span>The full manual</a><a class="next" href="/onetrace/non-claims.html"><span>Next →</span>What onetrace doesn't claim</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#a-receipt">A receipt</a><a href="#trust-classes">Trust classes</a><a href="#a-chain">A chain</a><a href="#a-manifest">A manifest</a><a href="#two-roots-for-a-per-document-stage">Two roots, for a per-document stage</a><a href="#a-dag-not-just-a-chain">A DAG, not just a chain</a></aside></div>
+<h2 id="format-03-and-the-path-to-10">Format 0.3, and the path to 1.0</h2>
+<p>Format 0.3 (written by onetrace 0.4.0, read in full by onetrace-verify 0.4.0) adds three members,
+each designed so that a verifier that doesn't know it reads the record the same or more strictly,
+never more loosely:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Member</th>
+<th>Where</th>
+<th>What an earlier verifier reads</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>coverage.optional_stages</code></td>
+<td>receipt</td>
+<td>A run that skipped an optional stage still says <code>incomplete</code>; its <code>--require-complete</code> fails it (stricter). A run that ran every stage reads the same.</td>
+</tr>
+<tr>
+<td><code>refused.attempted</code></td>
+<td>receipt</td>
+<td>The links a step held before running would have read, kept apart from <code>inputs</code>, each naming a receipt earlier in the chain with its digest. It sees a refused step and a plan the edges keep to: the same verdict, without the path.</td>
+</tr>
+<tr>
+<td><code>outputs_kept</code></td>
+<td>manifest; with <code>&quot;none&quot;</code>, every receipt's <code>coverage</code> too</td>
+<td><code>&quot;all&quot;</code> or <code>&quot;none&quot;</code>. With <code>&quot;none&quot;</code> it sees the files absent, as before: the same verdicts. onetrace-verify 0.4 reads the manifest's copy only where every receipt agrees.</td>
+</tr>
+</tbody>
+</table></div>
+<p>That holds for every record onetrace writes. A member written wrongly by hand (an undeclared
+optional stage, <code>refused.attempted</code> on a step that ran or naming a receipt that isn't an earlier one
+by its digest, an <code>outputs_kept</code> other than <code>all</code> or <code>none</code>, or receipts and the manifest that
+disagree on it) is one an earlier verifier doesn't read at all, so it reads that record more loosely than
+onetrace-verify 0.4, which fails it. Verify format 0.3 records with onetrace-verify 0.4.</p>
+<p>Format 0.3's rejection vectors are in tests/rejection_0_3/: eleven runs, each changed in one of these
+members and re-linked, each FAILed by onetrace-verify 0.4 on the row its INDEX.json names, with what
+onetrace-verify 0.3.0 reads of it.</p>
+<p>The path to 1.0:</p>
+<ol>
+<li><strong>0.3 is the last minor that adds a required behaviour.</strong> After it, a 0.x minor only adds
+members an earlier verifier can ignore with the same reading.</li>
+<li><strong>1.0 when all of these hold:</strong> the Internet-Draft's next revision carries 0.3 as written; a
+second verifier implementation, not onetrace's own, passes the vector suite; two releases pass
+with no format change; the deprecations below are done.</li>
+<li><strong>Before 1.0:</strong> the preview literal <code>0.0-preview</code> stops being accepted for new records (it is
+still read); the <code>receipts_root</code> / <code>outputs_root</code> naming stays, with the warning above.</li>
+<li><strong>What 1.0 promises:</strong> every 1.x verifier reads every 0.x record it has ever been able to read;
+required members don't change within 1.x; a change that would change a reading is 2.0.</li>
+</ol>
+<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/manual.html"><span>← Previous</span>The full manual</a><a class="next" href="/onetrace/explain-format.html"><span>Next →</span>Explanation format</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#a-receipt">A receipt</a><a href="#trust-classes">Trust classes</a><a href="#a-chain">A chain</a><a href="#a-manifest">A manifest</a><a href="#two-roots-for-a-per-document-stage">Two roots, for a per-document stage</a><a href="#a-dag-not-just-a-chain">A DAG, not just a chain</a><a href="#format-03-and-the-path-to-10">Format 0.3, and the path to 1.0</a></aside></div>
 <footer>
   <div class="wrap">
     <div class="foot-grid">

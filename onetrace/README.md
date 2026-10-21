@@ -5,10 +5,12 @@
 - [Compare runs: diff, localize, reproduce](verbs.md)
 - [What onetrace does not claim](non-claims.md)
 
-## Adapters
+## Worked examples with frameworks
 
 Four pipelines, the same nine stages, the same corpus, instrumented the same way — one with no
-framework at all, three wired onto a real RAG/agent framework's own runtime wherever it has one:
+framework at all, three wired onto a real RAG/agent framework's own runtime wherever it has one.
+They are worked examples, not integrations: each is a hand-written pipeline that calls the
+framework's classes inside onetrace stages, and each framework needs its own virtual environment.
 
 - [Plain Python (no framework)](adapters/plain-python.md) — the reference path the other three are compared against.
 - [LangChain](adapters/langchain.md)

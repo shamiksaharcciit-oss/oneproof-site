@@ -17,6 +17,7 @@ Read all of this before editing. The rules in "Never" are hard rules. Fetch this
 7. Use the real services. A stubbed run says so in its run id (`ONETRACE_RUN_ID=stub-…`), and isn't proof.
 8. Run every run in full, verify it with `onetrace-verify --require-artifacts`, and compare two runs.
 9. End with the report in §7, including your questions for the human.
+10. Decorate the function production calls. Never write a separate runner or harness that calls the stages its own way: the record must be of the path production takes (§1).
 
 ## 0. Before you start
 
@@ -53,6 +54,7 @@ A **run** is one call of one function that does the whole job once: answers one 
   - when the index lives in an **external service** (Qdrant, Pinecone, Weaviate, a database), record its identity on the stage that reads it with `ot.constant(...)`: the collection or index name, and the ingest run id or version that built it, if the code knows it. Then list the service as a question for the human ("retrieve reads collection X in Qdrant, outside the run: how should it be treated?").
 
   Without a link, a later comparison can say *that* the retrieved chunks changed, but not that the index behind them changed.
+- **Decorate the function production calls**, where it is: the one the CLI, the API route or the job runner already calls. Never write a new runner, script or test harness that calls the stages in its own way and decorate that instead: its runs would record a path production never takes. `onetrace doctor --entrypoint <file>` (step 4 in §6) checks the most recent run was recorded through the file that holds that function.
 - If you can't tell which function is one run, stop and ask the human. Do not guess.
 
 ## 2. Find the stages
@@ -193,7 +195,7 @@ In a tool-using agent, ask about each tool's output: a lookup in a system the hu
    ```
    onetrace-verify --require-artifacts runs/<run_id>
    ```
-   Exit code 0 means the record is intact. The verifier's first line, on stderr, says so (`record intact: …`), or names the first failing row (`record NOT intact: …`), and under it a `fix (…)` line for each failing row says what to change and which section of the errors page explains it. Don't set `ONETRACE_QUIET=1` while you check: it silences those lines. Anything else: read that row and its `fix (…)` line; the errors page explains each one. `onetrace doctor` checks the setup and says whether the most recent run verifies, not why a row failed. Fix the instrumentation, not the pipeline.
+   Exit code 0 means the record is intact. The verifier's first line, on stderr, says so (`record intact: …`), or names the first failing row (`record NOT intact: …`), and under it a `fix (…)` line for each failing row says what to change and which section of the errors page explains it. Don't set `ONETRACE_QUIET=1` while you check: it silences those lines. Anything else: read that row and its `fix (…)` line; the errors page explains each one. `onetrace doctor` checks the setup and says whether the most recent run verifies, not why a row failed. Then run `onetrace doctor --entrypoint <the file holding the decorated run function>`: it fails if the run was recorded through any other file. Fix the instrumentation, not the pipeline.
 5. **Run it a second time with nothing changed, and compare:** `onetrace diff runs/<first> runs/<second>`. Every stage should read `same`, except stages that call a hosted model, or read a service that changes by itself.
    - If any other stage differs, **stop and find out why before anything else.** Look first for ids generated fresh each run (uuid), timestamps written into outputs, absolute paths, and unordered sets or dict iteration.
    - A stage that calls a hosted model reading differently is expected. Don't stub it to make the comparison read `same` (step 2). The console's Compare page then also names the first later stage with a recorded change.

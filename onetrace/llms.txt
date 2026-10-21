@@ -36,6 +36,7 @@ Key facts for a coding agent:
 - [Verifying a run](https://oneproof.dev/onetrace/manual.md#8-verifying-a-run): `onetrace-verify`, exit codes, `--require-artifacts`, `--trust`
 - [diff and localize](https://oneproof.dev/onetrace/verdicts.md): the five verdicts (`same`, `FIRST DIFFERENCE`, `downstream`, `reconverged`, `COULD NOT CHECK`) and what each means
 - [What onetrace does not claim](https://oneproof.dev/onetrace/non-claims.md)
+- [Suggested explanations](https://oneproof.dev/onetrace/explain-format.md): `onetrace-explain`, a separate package: what it sends to the model you configure, how each claim is checked against the record before it is shown, and what it writes. A suggestion about a record, never a reading of it
 
 ## Optional
 
@@ -43,4 +44,4 @@ Key facts for a coding agent:
 - [Anchoring a run](https://oneproof.dev/onetrace/manual.md#15-anchoring-a-run)
 - [Signing a run](https://oneproof.dev/onetrace/manual.md#17-signing-a-run): a key the human holds, `sign_with=` at close or `onetrace sign` afterwards, and `onetrace-verify --trust`
 - [Receipt format](https://oneproof.dev/onetrace/format.md): the stage-receipt format and its Internet-Draft
-- [Framework adapters](https://oneproof.dev/onetrace/README.md#adapters): plain Python, LangChain, LlamaIndex, Langflow
+- [Worked examples with frameworks](https://oneproof.dev/onetrace/README.md#worked-examples-with-frameworks): plain Python, LangChain, LlamaIndex, Langflow

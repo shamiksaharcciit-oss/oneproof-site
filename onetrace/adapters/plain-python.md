@@ -28,13 +28,13 @@ your virtual environment active, run:
 
 <!-- quickstart: run -->
 ```
-pip download onetrace==0.2.2 --no-binary :all: --no-deps
-tar -xzf onetrace-0.2.2.tar.gz
-cd onetrace-0.2.2
+pip download onetrace==0.4.0 --no-binary :all: --no-deps
+tar -xzf onetrace-0.4.0.tar.gz
+cd onetrace-0.4.0
 ```
 
 The first line downloads the source package without installing it, the second unpacks it into a
-folder named `onetrace-0.2.2`, and the third moves into that folder. Run the commands below from
+folder named `onetrace-0.4.0`, and the third moves into that folder. Run the commands below from
 there. `tar` comes with current Windows, macOS and Linux; on Windows, use PowerShell.
 
 ## Running it

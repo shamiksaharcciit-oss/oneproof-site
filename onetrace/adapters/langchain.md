@@ -18,6 +18,27 @@ Where no LangChain construct exists at all (`document in`, `cleaned`), plain Pyt
 instead and named as a substitution in the run, never silently folded into "this is what
 LangChain does."
 
+**A worked example, not an integration.** This page is a hand-written nine-stage pipeline that calls LangChain classes inside onetrace stages, so a comparison with the plain-Python run is like for like. It is not an adapter you plug an existing LangChain app into: decorated code gets one receipt per decorated function, so a chain or graph called inside one stage is one receipt. Each framework needs its own virtual environment (their pins conflict; `examples/PIN_DISCIPLINE.md`).
+
+**LangChain messages carry a per-run id.** An `AIMessage` returned from a stage is recorded through
+its pydantic fields, including `id` (`lc_run--…`), which is different on every run: two identical
+runs then compare as different at that stage. Register an encoder before the run that leaves it out:
+
+<!-- not executed: a snippet to add to your own pipeline, before its run -->
+```python
+from langchain_core.messages import BaseMessage
+ot.encoder(BaseMessage, lambda m: {"type": m.type, "content": m.content,
+                                   "tool_calls": getattr(m, "tool_calls", [])})
+```
+
+`onetrace doctor` names a stage whose recorded output holds such an id.
+
+**The decorated version passes data outside the record.** `pipeline_decorated.py` moves texts,
+chunks, vectors and the vector store through a module-level `WORK` dict, so its receipts match the
+hand-written run digest for digest. It is a comparison fixture; don't copy that pattern into a
+pipeline of your own: return the working data from each stage instead, so each step's receipt
+records what it handed on.
+
 ## Get this code
 
 The example's files are not part of the installed `onetrace` package. They come in its source
@@ -26,13 +47,13 @@ your virtual environment active, run:
 
 <!-- quickstart: run -->
 ```
-pip download onetrace==0.2.2 --no-binary :all: --no-deps
-tar -xzf onetrace-0.2.2.tar.gz
-cd onetrace-0.2.2
+pip download onetrace==0.4.0 --no-binary :all: --no-deps
+tar -xzf onetrace-0.4.0.tar.gz
+cd onetrace-0.4.0
 ```
 
 The first line downloads the source package without installing it, the second unpacks it into a
-folder named `onetrace-0.2.2`, and the third moves into that folder. Run the commands below from
+folder named `onetrace-0.4.0`, and the third moves into that folder. Run the commands below from
 there. `tar` comes with current Windows, macOS and Linux; on Windows, use PowerShell.
 
 ## Running it

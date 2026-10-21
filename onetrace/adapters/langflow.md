@@ -18,6 +18,10 @@ substitutions, and both are named as such — the standing rule is: use the fram
 runtime wherever it has one, substitute only where none exists at all, and never let a
 substitution pass as native.
 
+**A worked example, not an integration.** This page is a hand-written nine-stage pipeline that calls Langflow classes inside onetrace stages, so a comparison with the plain-Python run is like for like. It is not an adapter you plug an existing Langflow app into: decorated code gets one receipt per decorated function, so a chain or graph called inside one stage is one receipt. Each framework needs its own virtual environment (their pins conflict; `examples/PIN_DISCIPLINE.md`). Langflow's pinned install is large (about
+1.8 GB) and takes several minutes. Only `converted` and `split` run inside Langflow's engine; the
+other steps are plain Python or a substitute, as the table above says.
+
 ## Get this code
 
 The example's files are not part of the installed `onetrace` package. They come in its source
@@ -26,13 +30,13 @@ your virtual environment active, run:
 
 <!-- quickstart: run -->
 ```
-pip download onetrace==0.2.2 --no-binary :all: --no-deps
-tar -xzf onetrace-0.2.2.tar.gz
-cd onetrace-0.2.2
+pip download onetrace==0.4.0 --no-binary :all: --no-deps
+tar -xzf onetrace-0.4.0.tar.gz
+cd onetrace-0.4.0
 ```
 
 The first line downloads the source package without installing it, the second unpacks it into a
-folder named `onetrace-0.2.2`, and the third moves into that folder. Run the commands below from
+folder named `onetrace-0.4.0`, and the third moves into that folder. Run the commands below from
 there. `tar` comes with current Windows, macOS and Linux; on Windows, use PowerShell.
 
 ## Running it

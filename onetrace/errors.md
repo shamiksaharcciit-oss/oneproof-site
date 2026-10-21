@@ -61,9 +61,15 @@ Something that belongs to a stage (`ot.constant`, `ot.assertion`, the stage cont
 
 ## reserved-constant
 
-A constant's name starts with `onetrace.`, which only onetrace's own constants use (`onetrace.kept_inputs`, `onetrace.inputs_not_kept`).
+A constant's name starts with `onetrace.`, which only onetrace's own constants use (`onetrace.kept_inputs`, `onetrace.inputs_not_kept`, `onetrace.links`), whether it was set with `ctx.constant` or straight into `ctx.constants`.
 
 **Fix:** Rename the constant without the `onetrace.` prefix.
+
+## constant-name
+
+A stage's constants can't be read as a dict, a constant's name is not a str, or two names read as the same characters (a `str` subclass, such as a `StrEnum` member, is read as its characters; the constants themselves as `dict()` reads them, as 0.3.0 did).
+
+**Fix:** Add constants with `ctx.constant(name, value)` or by a `str` key in `ctx.constants`, and give each constant its own name.
 
 ## stage-undeclared
 
@@ -99,7 +105,31 @@ An instance name is empty or not a string.
 
 A decorated stage was called in a thread that doesn't carry the active run. A stage is never left out of a run silently.
 
-**Fix:** Carry the run into the thread, `pool.submit(contextvars.copy_context().run, fn, ...)`; or, when the call belongs to no run, call `fn.__wrapped__(...)`.
+**Fix:** Carry the run into the thread: `ot.pool()` for a pool, `ot.map(stage, items)` for a fan-out, `ot.carry(fn)` for a thread you start (or `pool.submit(contextvars.copy_context().run, fn, ...)`); or, when the call belongs to no run, call `fn.__wrapped__(...)`.
+
+## fan-out-key
+
+`ot.map` or `ot.gather` was given something that isn't a decorated stage, an item whose key is not a string or an int, or two items with the same key.
+
+**Fix:** Pass a function decorated with `@ot.stage`, and a `key=` that gives each item its own string or int (a document id, say); left out, the key is the item's position in the list.
+
+## run-closed
+
+A stage was called after its run closed: a call carried into the run (`ot.carry`, `ot.pool`, a copied context) that ran after the run function returned. A finished record is never added to.
+
+**Fix:** Wait for the carried calls before the run function returns (join the thread, leave the pool's `with` block), or call the stage inside a run that is still open.
+
+## export-unreadable
+
+`onetrace export otel` could not read the run well enough to export it: a manifest or receipt that doesn't parse, a chain entry outside the run folder, a chain head or time it can't read. Nothing is written; a partial trace is never exported.
+
+**Fix:** Run `onetrace-verify` on the run: it names what is wrong with the record. Export a run it reads.
+
+## child-process
+
+A decorated stage was called in a child process (a fork of the run's process, as `multiprocessing` and process pools make). One process writes a run folder.
+
+**Fix:** Call the stage in the run's own process, in threads (`ot.map`, `ot.pool`) or asyncio tasks (`ot.gather`); run the child's work undecorated (`fn.__wrapped__`) and record its result in a stage of the parent.
 
 ## stage-function
 
@@ -199,7 +229,7 @@ A stage asked for another node's receipt that isn't in this run, or named a stag
 
 ## assertion-constants
 
-An assertion was recorded without the constants it holds under, or `constants` was used as an assertion's name.
+An assertion was recorded without the constants it holds under, or `constants` or `undeclared` was used as an assertion's name (with `ctx.assertion` or straight into `ctx.assertions`).
 
 **Fix:** Record the constants with `ot.constant` (or `ctx.constant`) alongside the assertion.
 

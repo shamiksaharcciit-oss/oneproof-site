@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>onetrace-explain: what it reads, sends, checks and writes · onetrace docs</title>
+<meta name="description" content="onetrace documentation: Explanation format">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/onetrace/assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html">Developers</a>
+      <a href="/how-it-works.html">How it works</a>
+      <a href="/onetrace/" aria-current="page">Docs</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
+</header>
+<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/explain-format.html" aria-current="page">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Reference</p>
+<h1 id="onetrace-explain-what-it-reads-sends-checks-and-writes">onetrace-explain: what it reads, sends, checks and writes</h1>
+<p><code>onetrace-explain</code> (a separate package, <code>pip install onetrace-explain</code>) suggests where to look in a
+comparison. <strong>An explanation is a suggestion about a record, never a reading of it.</strong> onetrace's
+verdicts, exit codes and <code>onetrace summary</code> are what they are without it; the deterministic tools
+never call a model and never read an explanation back. This page fixes the formats a reader of an
+explanation (the console, a script) can rely on. Version 1, <code>0.1</code>.</p>
+<h2 id="the-command">The command</h2>
+<div class="code"><pre><code>onetrace-explain REPORT_DIR [--model PROVIDER:NAME] [--dry-run] [--include-text] [--redact NAME]... [--yes] [--out DIR]
+</code></pre></div>
+<p><code>REPORT_DIR</code> is a folder <code>onetrace diff</code> or <code>onetrace localize</code> wrote with <code>--out</code>. Exit codes are its
+own and say nothing about the runs: 0 an explanation or a dry run was written; 2 a usage error, or a
+comparison that can't be explained (no report, a refused or could-not-check verdict, a run whose
+chain head is not the one the report checked); 3 the model couldn't be reached, or replied with no
+usable JSON. Never use it as a CI gate.</p>
+<h2 id="the-evidence-packet-onetrace-explain-evidence01">The evidence packet, <code>onetrace-explain-evidence/0.1</code></h2>
+<p>One JSON object, its bytes sorted-key, no spaces, UTF-8, built the same from the same report:</p>
+<div class="code"><pre><code class="language-json">{&quot;format&quot;: &quot;onetrace-explain-evidence/0.1&quot;,
+ &quot;report&quot;: {&quot;name&quot;: &quot;localize.json&quot;, &quot;sha256&quot;: &quot;sha256:…&quot;},
+ &quot;runs&quot;: {&quot;baseline&quot;: {&quot;run_id&quot;: &quot;…&quot;, &quot;chain_head&quot;: &quot;sha256:…&quot;, &quot;format&quot;: &quot;stage-receipt-chain/0.3&quot;},
+          &quot;candidate&quot;: {…}},
+ &quot;items&quot;: [{&quot;id&quot;: &quot;node/load/constant/chunk_size&quot;, &quot;kind&quot;: &quot;constant&quot;, &quot;name&quot;: &quot;chunk_size&quot;,
+            &quot;baseline&quot;: &quot;512&quot;, &quot;candidate&quot;: &quot;1024&quot;}, …],
+ &quot;kinds&quot;: [&quot;constant&quot;, &quot;for&quot;, &quot;input&quot;, …]}
+</code></pre></div>
+<p>Each item has an <code>id</code> (what a claim cites) and a <code>kind</code>:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>kind</th>
+<th>id</th>
+<th>holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>verdict</code></td>
+<td><code>comparison/verdict</code></td>
+<td>verb, envelope, exit, first difference</td>
+</tr>
+<tr>
+<td><code>for</code></td>
+<td><code>comparison/for</code></td>
+<td>the <code>--for</code> node, its result, origins, not reaching, the path's verdicts</td>
+</tr>
+<tr>
+<td><code>end_outputs</code></td>
+<td><code>comparison/end_outputs</code></td>
+<td>the report's end outputs</td>
+</tr>
+<tr>
+<td><code>inputs_differ</code></td>
+<td><code>comparison/inputs_differ</code></td>
+<td>the inputs that differ, and <code>on_different_inputs</code></td>
+</tr>
+<tr>
+<td><code>mask</code></td>
+<td><code>comparison/mask</code></td>
+<td>the mask's sha256, how many settings it masked</td>
+</tr>
+<tr>
+<td><code>node</code></td>
+<td><code>node/&lt;node&gt;</code></td>
+<td>the node's verdict and annotations</td>
+</tr>
+<tr>
+<td><code>instrument</code></td>
+<td><code>node/&lt;node&gt;/instrument</code></td>
+<td>id, kind, version, config digest, in each run</td>
+</tr>
+<tr>
+<td><code>outcome</code></td>
+<td><code>node/&lt;node&gt;/outcome</code></td>
+<td>the outcome class in each run</td>
+</tr>
+<tr>
+<td><code>upstream</code></td>
+<td><code>node/&lt;node&gt;/upstream</code></td>
+<td>the nodes it read</td>
+</tr>
+<tr>
+<td><code>constant</code></td>
+<td><code>node/&lt;node&gt;/constant/&lt;name&gt;</code></td>
+<td>a constant that differs, both values (<code>redacted: true</code> and both digests with <code>--redact</code>)</td>
+</tr>
+<tr>
+<td><code>input</code>, <code>output</code></td>
+<td><code>node/&lt;node&gt;/input/&lt;name&gt;</code></td>
+<td>digest and bytes in each run, <code>differs</code></td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>node/&lt;node&gt;/output/&lt;name&gt;/text</code></td>
+<td>with <code>--include-text</code> only: both runs' kept text of an output that differs, at most 8192 bytes each</td>
+</tr>
+</tbody>
+</table></div>
+<p>In it as recorded: a constant's value, whatever it holds (a path, a token), and the report's
+annotations, which may name an input's folders. <code>--redact NAME</code> sends a constant's name and digests
+only. Never in it: anything not in the two runs or the report, a path of this machine's own folders
+(the runs', the report's, the configuration's), an environment variable, the model key, a signing
+key, an anchor's proof. <code>--dry-run</code> prints the packet's bytes, their size and
+sha256, and sends nothing. The first send of a kind never sent to an endpoint before names the
+kinds and asks; <code>--yes</code> skips the question for scripts, the list is still printed.</p>
+<h2 id="the-reply-and-the-post-check">The reply, and the post-check</h2>
+<p>The model is asked for one JSON object:</p>
+<div class="code"><pre><code class="language-json">{&quot;claims&quot;: [{&quot;text&quot;: &quot;…&quot;, &quot;kind&quot;: &quot;lead&quot; | &quot;ruled out&quot; | &quot;note&quot;, &quot;cites&quot;: [&quot;&lt;item id&gt;&quot;, …]}],
+ &quot;checks&quot;: [{&quot;check&quot;: &quot;text&quot; | &quot;for&quot; | &quot;mask&quot; | &quot;reproduce&quot; | &quot;match&quot;, &quot;node&quot;: &quot;…&quot;, &quot;setting&quot;: &quot;…&quot;,
+             &quot;run&quot;: &quot;baseline&quot; | &quot;candidate&quot;}]}
+</code></pre></div>
+<p>The post-check is mechanical, with no model. Its lists of quoting forms, look-alike letters and causal words are lists: a reply can word around them, and a kept claim is a suggestion, never a reading. A claim is dropped when its kind is not one of the
+three, it cites nothing, a cite is not an item of the packet, a value it quotes (in one of the quoting forms the post-check lists) is not a value of an item it cites, or it says what caused a difference (&quot;cause&quot;,
+&quot;because&quot;, &quot;due to&quot;, &quot;led to&quot;, &quot;resulted in&quot;, &quot;the reason&quot;, &quot;responsible for&quot; and their like; a list
+of words, which a model can still word around: a kept claim is a suggestion, never a reading). A check is dropped when it is not on the menu, names a node or
+setting the packet doesn't hold, or a run other than <code>baseline</code> or <code>candidate</code>. Drops are counted,
+by reason. When every claim is dropped the explanation reads &quot;No suggestion could be tied to the
+record&quot; and shows the checks only. A lead is confirmed or ruled out only by what a check's own
+command reports, never by the model.</p>
+<h2 id="what-it-writes">What it writes</h2>
+<p>Under <code>OUT/explain/</code> (<code>OUT</code> defaults to <code>REPORT_DIR</code>), for each explanation:</p>
+<ul>
+<li><code>&lt;run id&gt;/</code>: a onetrace run of its own, format 0.3, three stages: <code>evidence</code> (the report and both
+runs' manifests and receipts in, by digest; <code>packet.json</code> out), <code>model</code> (instrument: the provider
+and model name, settings: the request parameters; <code>reply.txt</code> out, the raw reply byte for byte,
+<code>model-generated</code>), <code>post_check</code> (<code>checked.json</code> out). <code>onetrace-verify</code> checks it like any run.</li>
+<li><code>&lt;run id&gt;.explanation.json</code>: <code>{&quot;label&quot;, &quot;model&quot;, &quot;record&quot;, &quot;claims&quot;, &quot;checks&quot;, &quot;dropped&quot;, &quot;checks_dropped&quot;}</code>, counts as decimal strings. This is what a reader shows.</li>
+<li><code>&lt;run id&gt;.explanation.txt</code>: the same, as the command printed it.</li>
+</ul>
+<p>Every explanation is shown under the label <strong>&quot;Suggested explanation — AI-generated, may be wrong&quot;</strong>,
+with its model, apart from the verdicts. Two explanations of one comparison can differ; each keeps
+its own record.</p>
+<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/format.html"><span>← Previous</span>Record format</a><a class="next" href="/onetrace/non-claims.html"><span>Next →</span>What onetrace doesn't claim</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#the-command">The command</a><a href="#the-evidence-packet-onetrace-explain-evidence01">The evidence packet, onetrace-explain-evidence/0.1</a><a href="#the-reply-and-the-post-check">The reply, and the post-check</a><a href="#what-it-writes">What it writes</a></aside></div>
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Packages</h4>
+        <ul>
+          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/answer-lineage.html">A forensic report</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
+  </div>
+</footer>
+<script src="/onetrace/assets/copy.js" defer></script>
+<script>if(window.matchMedia&&matchMedia("(max-width:760px)").matches){var d=document.querySelector(".docs-side details");if(d)d.removeAttribute("open")}</script>
+</body>
+</html>
