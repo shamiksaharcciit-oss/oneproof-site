@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What's new in onetrace 0.4 · oneproof</title>
+<meta name="description" content="onetrace 0.4.0: export a run to OpenTelemetry, compare many runs at once with drift, and get a suggested explanation that is checked against the record. Also everything from 0.3.0 and 0.3.1.">
+<link rel="canonical" href="https://oneproof.dev/whats-new.html">
+<meta property="og:title" content="What's new in onetrace 0.4">
+<meta property="og:description" content="Export a run to OpenTelemetry, compare many runs with drift, and get a suggested explanation checked against the record.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneproof.dev/whats-new.html">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html">Developers</a>
+      <a href="/how-it-works.html">How it works</a>
+      <a href="/onetrace/">Docs</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<div class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow"><b>What's new</b> onetrace 0.4.0</span>
+    <h1>Send a run to your tracing tools. Compare many runs at once.</h1>
+    <p class="lede">onetrace 0.4.0 and onetrace-verify 0.4.0 are on PyPI, with a new, separate package: onetrace-explain 0.1.0. This page also covers 0.3.0 and 0.3.1, which shipped without a page of their own. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
+    <div class="crumbs">
+      <a href="#v040">In 0.4.0</a>
+      <a href="#explain">Suggested explanations</a>
+      <a href="#v031">In 0.3.1</a>
+      <a href="#v030">In 0.3.0</a>
+      <a href="#upgrade">Upgrading</a>
+    </div>
+  </div>
+</div>
+
+<section id="v040" aria-labelledby="v040-title">
+  <div class="wrap">
+    <p class="kicker">In 0.4.0</p>
+    <h2 id="v040-title">Three new ways to read your runs.</h2>
+    <p class="sub">Each one is a view of the record. None of them changes a verdict.</p>
+    <div class="grid-3">
+      <div class="card">
+        <h3>Send a run to your tracing tools</h3>
+        <p><code>onetrace export otel RUN</code> writes a run as one OpenTelemetry trace in OTLP/JSON: a span per step, linked where one step read another's output. The same run exports the same bytes. It makes no network calls and needs no OpenTelemetry package, and values, exception text and paths are never exported. The trace is a view; the record stays the evidence.</p>
+      </div>
+      <div class="card">
+        <h3>Many runs, side by side</h3>
+        <p><code>onetrace drift</code> compares a series of runs, each with the first run or with the one before, and every comparison is a <code>diff</code> of its own. Add <code>--durations</code> to see each step's time from its receipts, with a note on the steps that got slower. Timing is shown, never judged.</p>
+      </div>
+      <div class="card">
+        <h3>A suggested explanation, checked</h3>
+        <p><code>onetrace-explain</code> asks a model you configure where to look in a comparison, then checks every claim against the record. Claims that cite nothing, misquote the record or claim to know why something differs are dropped. Everything it shows is labelled AI-generated and may be wrong. <a href="#explain">More below</a>.</p>
+      </div>
+    </div>
+<pre>pip install --upgrade onetrace
+onetrace export otel runs/&lt;run&gt; --out trace.json
+onetrace drift runs/run-1 runs/run-2 runs/run-3 --against first --durations</pre>
+  </div>
+</section>
+
+<section class="section-soft" aria-labelledby="format-title">
+  <div class="wrap">
+    <p class="kicker">Also in 0.4.0</p>
+    <h2 id="format-title">Records that say more, and pipelines that run in parallel.</h2>
+    <div class="grid-3">
+      <div class="card">
+        <h3>Record format 0.3</h3>
+        <p>A stage can be declared optional, and a run that skips it still reads complete. A step a plan held back before it ran keeps the link it attempted. A run can declare that it keeps no output files. An earlier verifier reads each of these the same way or more strictly, never more loosely.</p>
+      </div>
+      <div class="card">
+        <h3>Concurrent stages, named</h3>
+        <p><code>ot.map</code> (threads) and <code>ot.gather</code> (asyncio) run a stage over many items and name each call by its item, never by the order calls finished in. <code>ot.pool</code> and <code>ot.carry</code> carry the run into threads you start yourself.</p>
+      </div>
+      <div class="card">
+        <h3>Inside your framework</h3>
+        <p><code>onetrace.langchain</code> records messages and prompt values without their per-call ids. <code>onetrace.langgraph</code> records which node wrote each key of a graph's state, so a comparison can follow a value back to the node that wrote it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="explain" aria-labelledby="explain-title">
+  <div class="wrap">
+    <p class="kicker">onetrace-explain 0.1.0</p>
+    <h2 id="explain-title">A suggestion about a record, never a reading of it.</h2>
+    <p class="sub">A separate package. onetrace, onetrace-verify and the console neither depend on it nor import it, and nothing they report changes with it.</p>
+    <div class="grid-3">
+      <div class="card">
+        <h3>You choose what's sent</h3>
+        <p>It sends a fixed evidence packet to the model you configure: an OpenAI-compatible endpoint or the Anthropic Messages API. Your machine's paths, your environment and the model key are never in it. Kept text goes only with <code>--include-text</code>, and <code>--dry-run</code> shows the exact packet first.</p>
+      </div>
+      <div class="card">
+        <h3>Claims are checked before you see them</h3>
+        <p>Every claim has to cite the record and quote it correctly. Claims that don't are dropped, without asking any model, and so is any claim to know why something differs. What it suggests next is a onetrace command you can run.</p>
+      </div>
+      <div class="card">
+        <h3>It leaves a record too</h3>
+        <p>Each explanation is recorded as a onetrace run of its own, so you can check later what was sent and what came back.</p>
+      </div>
+    </div>
+<pre>pip install onetrace-explain
+onetrace localize runs/A runs/B --out report
+onetrace-explain report --dry-run</pre>
+    <p class="sub"><a href="/onetrace/explain-format.html">What it reads, sends, checks and writes</a></p>
+  </div>
+</section>
+
+<section id="v031" class="section-soft" aria-labelledby="v031-title">
+  <div class="wrap">
+    <p class="kicker">In 0.3.1</p>
+    <h2 id="v031-title">Fewer false alarms, and comparisons that fit a pull request.</h2>
+    <div class="grid-3">
+      <div class="card">
+        <h3>Follow the output you care about</h3>
+        <p><code>onetrace localize A B --for &lt;stage&gt;</code> starts from one output and walks back to where its change began.</p>
+      </div>
+      <div class="card">
+        <h3>Name the noise you expect</h3>
+        <p><code>--mask FILE</code> on <code>diff</code> and <code>localize</code> sets aside the differences you expect between releases, and every step a mask changes says so. <code>onetrace mask suggest A B</code> drafts a mask from two runs.</p>
+      </div>
+      <div class="card">
+        <h3>A summary for your pull request</h3>
+        <p><code>onetrace summary</code> prints a short Markdown summary of a comparison, and of the verifier's result, for a pull request comment. <code>onetrace match</code> finds the earlier runs that were called with the same inputs.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="v030" aria-labelledby="v030-title">
+  <div class="wrap">
+    <p class="kicker">In 0.3.0</p>
+    <h2 id="v030-title">Gates for your CI.</h2>
+    <p class="sub">onetrace-verify 0.3.0 added three opt-in gates. <code>--require-signature</code> fails a run with no valid signature. <code>--require-trusted</code> fails one not signed by a key you trust. <code>--require-complete</code> fails one whose declared stages didn't all run. The <a href="https://github.com/shamiksaharcciit-oss/onetrace-action">onetrace GitHub Action</a> runs the verifier and the comparison on every pull request, and posts the summary there.</p>
+  </div>
+</section>
+
+<section id="upgrade" class="section-soft" aria-labelledby="upgrade-title">
+  <div class="wrap">
+    <p class="kicker">Upgrading</p>
+    <h2 id="upgrade-title">One command, and your old runs still verify.</h2>
+<pre>pip install --upgrade onetrace</pre>
+    <p class="sub">onetrace-verify 0.4.0 comes with it and reads every earlier record. The console, onetrace-console 0.2.1, runs on onetrace 0.3.0: installed into the same environment, it keeps onetrace at 0.3.0. To try 0.4.0's new commands now, use an environment of their own. A console for 0.4.0 is on its way.</p>
+    <p class="sub">The full list of changes is in the <a href="/onetrace/manual.html">manual</a> and in each package's changelog.</p>
+  </div>
+</section>
+
+<section style="padding-top:0" aria-labelledby="next-title">
+  <div class="wrap">
+    <div class="band">
+      <div>
+        <h2 id="next-title">New to onetrace?</h2>
+        <p>Start with two decorators on the code you already have, then compare two runs in your browser.</p>
+      </div>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="/get-started.html">Get started</a>
+        <a class="btn btn-ghost" href="/developers.html">For developers</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Packages</h4>
+        <ul>
+          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/answer-lineage.html">A forensic report</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
+  </div>
+</footer>
+</body>
+</html>

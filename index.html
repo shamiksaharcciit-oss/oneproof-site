@@ -43,7 +43,7 @@
 
 <section class="hero" aria-labelledby="hero-title">
   <div class="wrap">
-    <span class="eyebrow"><b>New</b> onetrace 0.2 and its console are open source</span>
+    <span class="eyebrow"><b>New</b> onetrace 0.4: OpenTelemetry export, drift and checked explanations · <a href="/whats-new.html">What's new</a></span>
     <h1 id="hero-title">When your AI's answer changes, know <em>which step</em> changed it.</h1>
     <p class="lede">onetrace records every step of your AI pipeline as a receipt anyone can check. When two runs disagree, it shows you the first step where they part ways, and what changed there. No log digging. No guesswork.</p>
     <div class="cta-row">
@@ -132,7 +132,7 @@
         <ul class="clean">
           <li>One small receipt per step: what it read, what it produced, which tool and settings</li>
           <li>Two runs compared step by step, with the first difference named</li>
-          <li>Checkable by anyone, offline, with an independent verifier</li>
+          <li>Checkable by anyone, with no network calls, by an independent verifier</li>
         </ul>
       </div>
     </div>
@@ -161,6 +161,29 @@
         <p>The onetrace console turns run records into pages anyone on the team can read: what was checked, what held, and what needs attention first.</p>
       </div>
     </div>
+  </div>
+</section>
+
+<section aria-labelledby="new-title">
+  <div class="wrap">
+    <p class="kicker">New in 0.4</p>
+    <h2 id="new-title">Read your runs where you already look.</h2>
+    <p class="sub">Three new views of the same record. None of them changes a verdict.</p>
+    <div class="grid-3">
+      <div class="card">
+        <h3>In your tracing tools</h3>
+        <p><code>onetrace export otel</code> turns a run into one OpenTelemetry trace, a span per step. The trace is a view; the record stays the evidence.</p>
+      </div>
+      <div class="card">
+        <h3>Across many runs</h3>
+        <p><code>onetrace drift</code> lines up a series of runs and compares each with the first or the one before, with each step's time beside it.</p>
+      </div>
+      <div class="card">
+        <h3>With a suggested explanation</h3>
+        <p><code>onetrace-explain</code> asks a model you choose where to look, then checks every claim against the record. Labelled AI-generated, and it may be wrong.</p>
+      </div>
+    </div>
+    <p class="sub"><a href="/whats-new.html">Everything new in 0.3 and 0.4 →</a></p>
   </div>
 </section>
 
@@ -204,10 +227,10 @@
     <p class="kicker">Auditable and governable</p>
     <h2 id="gov-title">From evidence to a decision you can defend.</h2>
     <p class="sub">Every agentic run leaves a record an auditor can check on their own. Every change can be held against an approved baseline before it ships, with the step that changed named for the reviewer.</p>
-    <div class="flow" role="img" aria-label="Diagram: a run writes a receipt per step; the verifier checks the record offline; onetrace diff compares it with the approved baseline; identical means ship, diverged means review the named step, and refused or could not check means stop.">
+    <div class="flow" role="img" aria-label="Diagram: a run writes a receipt per step; the verifier checks the record with no network calls; onetrace diff compares it with the approved baseline; identical means ship, diverged means review the named step, and refused or could not check means stop.">
       <div class="f-box"><h3>1 · Run</h3><p>Your pipeline or agent runs. Every step writes a receipt.</p></div>
       <div class="f-arrow" aria-hidden="true">→</div>
-      <div class="f-box"><h3>2 · Verify</h3><p><code>onetrace-verify</code> checks the record offline, trusting none of your code.</p></div>
+      <div class="f-box"><h3>2 · Verify</h3><p><code>onetrace-verify</code> checks the record with no network calls, trusting none of your code.</p></div>
       <div class="f-arrow" aria-hidden="true">→</div>
       <div class="f-box"><h3>3 · Compare</h3><p><code>onetrace diff</code> against the approved baseline: one verdict per step.</p></div>
       <div class="f-arrow" aria-hidden="true">→</div>
@@ -235,7 +258,7 @@
       <div class="card">
         <span class="tag tag-green">Risk and compliance</span>
         <h3>Hand over a record, not a story</h3>
-        <p>Give reviewers the run folder. They check it themselves, offline, with a verifier that doesn't trust your code.</p>
+        <p>Give reviewers the run folder. They check it themselves, with no network calls, using a verifier that doesn't trust your code.</p>
         <p class="outcome">Evidence a third party can verify on their own.</p>
       </div>
       <div class="card">
