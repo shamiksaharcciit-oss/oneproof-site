@@ -52,7 +52,7 @@
 .dhero .install{display:inline-flex;gap:12px;align-items:center;background:var(--navy-2);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;font-family:var(--mono);font-size:15px;color:#fff}
 .dhero .install span{color:var(--on-navy-2)}
 .paths6{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:8px 0 8px}
-.pcard{border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;background:#fff;display:flex;flex-direction:column;gap:8px}
+.pcard{border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;background:var(--card);display:flex;flex-direction:column;gap:8px}
 .pcard .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--navy);color:#fff;font-weight:600;font-size:14px}
 .pcard h3{margin:2px 0 0;font-size:18px}
 .pcard p{margin:0;color:var(--muted);font-size:15px}
