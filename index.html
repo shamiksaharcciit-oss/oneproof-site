@@ -225,22 +225,22 @@
   <div class="wrap">
     <p class="kicker">Suggested explanations</p>
     <h2 id="explain-title">An explanation you can check.</h2>
-    <p class="sub">onetrace asks a model where to look, then holds every claim to the record. If a claim can't be tied to it, you never see it.</p>
+    <p class="sub">onetrace-explain asks a model you configure where to look, then holds every claim to the record. If a claim can't be tied to it, you never see it.</p>
     <div class="tour-row">
       <div class="tour-text">
         <ul style="color:var(--ink-2);line-height:1.7;margin:0 0 20px 20px;padding:0">
           <li><b>Labelled, every time.</b> Each explanation says it is AI-generated and may be wrong, and names the model that wrote it.</li>
-          <li><b>Every claim cites the record.</b> Its citations link to the exact items in the comparison. Claims that misquote the record are dropped before anyone reads them, and the page says how many.</li>
+          <li><b>Every claim cites the record.</b> It names the items in the comparison it rests on, linked where the page can show them. Claims that misquote the record are dropped before anyone reads them, and the page says how many.</li>
           <li><b>Checks you can run.</b> It suggests onetrace commands, and the console runs the ones it can with one click. A lead is confirmed or ruled out only by what those checks report.</li>
           <li><b>It leaves a record too.</b> Each explanation is recorded as a onetrace run of its own, and checked like any other.</li>
-          <li><b>You choose what's sent.</b> To a model you configure, only when you press Explain. Before a first send it lists what it would send, and "Show the packet" shows the exact bytes.</li>
+          <li><b>You choose what's sent.</b> To a model you configure, only when you press Explain. Before it first sends a kind of item to an endpoint, it names those kinds and waits for Send, and "Show the packet" shows the exact bytes.</li>
         </ul>
 <pre>pip install onetrace-explain</pre>
         <p style="color:var(--ink-2);margin-top:12px"><a href="/whats-new.html#explain">How it works</a> · <a href="/onetrace/explain-format.html">What it reads, sends, checks and writes</a></p>
       </div>
-      <div class="shot"><img src="/assets/img/shot-explain.webp" width="1346" height="950" loading="lazy" alt="A real suggested explanation on the console's comparison page for the demo's split comparison. Its heading reads Suggested explanation — AI-generated, may be wrong. Model: anthropic:claude-sonnet-4-6. Its record verifies: 92 pass, 0 fail, 3 not-run, PASS. Its one claim says the first difference is at split, where the chunk_size constant changed from 1024 to 512, with links to the cited items in the record. Below, four onetrace commands it suggests, three with a Run button and one that needs a runner you name. Last line: dropped before anyone read them, 6 claims that quote a value their cites don't hold."></div>
+      <div class="shot"><a href="/assets/img/shot-explain.webp"><img src="/assets/img/shot-explain.webp" width="1346" height="950" loading="lazy" alt="A real suggested explanation on the console's comparison page for the demo's split comparison. Its heading reads Suggested explanation — AI-generated, may be wrong. Model: anthropic:claude-sonnet-4-6. Its record verifies: 92 pass, 0 fail, 3 not-run, PASS. Its one claim says the first difference is at split, where the chunk_size constant changed from 1024 to 512, naming the three items in the record it cites, two of them as links. Below, four onetrace commands it suggests, three with a Run button and one that needs a runner you name. Last line: dropped before anyone read them, 6 claims that quote a value their cites don't hold."></a></div>
     </div>
-    <p class="sub" style="font-size:14px;margin-top:20px">Shown: a real explanation of the demo's split comparison, written by claude-sonnet-4-6 on the local console. The live demo shows none: it makes no network calls.</p>
+    <p class="sub" style="font-size:14px;margin-top:20px">Shown: a real explanation of the demo's split comparison, written by claude-sonnet-4-6 on the local console. Explanations are not set up on the live demo.</p>
   </div>
 </section>
 
