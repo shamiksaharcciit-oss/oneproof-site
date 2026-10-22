@@ -95,7 +95,7 @@ source .venv/bin/activate</pre></div></div>
         <h3>Install onetrace and the console</h3>
 <pre>pip install onetrace onetrace-console</pre>
         <p>This installs <code>onetrace</code> (records your runs), <code>onetrace-verify</code> (checks a record) and <code>onetrace-console</code> (shows runs in your browser). Nothing is sent anywhere (the optional timestamp in step 9 is the one exception); the console only listens on your own machine.</p>
-        <p>The console, onetrace-console 0.2.1, runs on onetrace 0.3.0, so this installs onetrace 0.3.0. onetrace 0.4.0's new commands are on <a href="/whats-new.html">What's new</a>.</p>
+        <p>The console, onetrace-console 0.3.0, runs on onetrace 0.4.0, so this installs onetrace 0.4.0. What's new in both is on <a href="/whats-new.html">What's new</a>.</p>
         <p>Want to see where you're heading first? <code>onetrace-console demo --open</code> opens the demo in your browser. Press <b>Ctrl+C</b> in the terminal to stop it.</p>
       </div></div>
     </div>
@@ -161,7 +161,7 @@ Remove-Item Env:ONETRACE_RUN_ID</pre></div><div><p class="lbl">macOS or Linux (T
         <h3>Check a record, and compare the two</h3>
 <pre>onetrace-verify --require-artifacts runs/after
 onetrace diff runs/before runs/after</pre>
-        <p>The check ends with <code>PASS</code>: the record is complete, and nothing in it was changed afterwards. The comparison lists each stage. <code>intake</code> (the question going in) is <code>same</code>. <code>retrieve</code> is the <code>FIRST DIFFERENCE</code>, because the document it found now says 14 days. <code>answer</code> is <code>downstream</code>: it changed because the step before it did.</p>
+        <p>The check ends with <code>PASS</code>: the record is complete, and nothing in it was changed afterwards. The comparison lists each stage. <code>intake</code> (the question going in) is <code>same</code>. <code>retrieve</code> is the <code>FIRST DIFFERENCE</code>: the document it found now says 14 days. <code>answer</code> is <code>downstream</code>: it differs too, after the first difference.</p>
         <p class="gs-note"><b>Lines marked NOT-RUN are normal.</b> They name checks this record doesn't use, such as signatures. They aren't errors.</p>
       </div></div>
     </div>

@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>What's new in onetrace 0.4 · oneproof</title>
-<meta name="description" content="onetrace 0.4.0: export a run to OpenTelemetry, compare many runs at once with drift, and get a suggested explanation that is checked against the record. Also everything from 0.3.0 and 0.3.1.">
+<title>What's new: onetrace-console 0.3 and onetrace 0.4 · oneproof</title>
+<meta name="description" content="onetrace-console 0.3.0 runs on onetrace 0.4.0, with a drift page for each pipeline and checked explanations. onetrace 0.4.0: export a run to OpenTelemetry, compare many runs at once with drift, and get a suggested explanation that is checked against the record. Also everything from 0.3.0 and 0.3.1.">
 <link rel="canonical" href="https://oneproof.dev/whats-new.html">
-<meta property="og:title" content="What's new in onetrace 0.4">
+<meta property="og:title" content="What's new: onetrace-console 0.3 and onetrace 0.4">
 <meta property="og:description" content="Export a run to OpenTelemetry, compare many runs with drift, and get a suggested explanation checked against the record.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://oneproof.dev/whats-new.html">
@@ -42,10 +42,11 @@
 
 <div class="page-hero">
   <div class="wrap">
-    <span class="eyebrow"><b>What's new</b> onetrace 0.4.0</span>
-    <h1>Send a run to your tracing tools. Compare many runs at once.</h1>
-    <p class="lede">onetrace 0.4.0 and onetrace-verify 0.4.0 are on PyPI, with a new, separate package: onetrace-explain 0.1.0. This page also covers 0.3.0 and 0.3.1, which shipped without a page of their own. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
+    <span class="eyebrow"><b>What's new</b> onetrace-console 0.3.0 · onetrace 0.4.0</span>
+    <h1>Many runs side by side, in your browser and in your terminal.</h1>
+    <p class="lede">onetrace-console 0.3.0 is on PyPI and runs on onetrace 0.4.0. onetrace 0.4.0 and onetrace-verify 0.4.0 came first, with a new, separate package: onetrace-explain 0.1.0. This page also covers onetrace 0.3.0 and 0.3.1, which shipped without a page of their own. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
     <div class="crumbs">
+      <a href="#console030">Console 0.3.0</a>
       <a href="#v040">In 0.4.0</a>
       <a href="#explain">Suggested explanations</a>
       <a href="#v031">In 0.3.1</a>
@@ -55,7 +56,34 @@
   </div>
 </div>
 
-<section id="v040" aria-labelledby="v040-title">
+<section id="console030" aria-labelledby="console030-title">
+  <div class="wrap">
+    <p class="kicker">onetrace-console 0.3.0</p>
+    <h2 id="console030-title">The console moves to onetrace 0.4.0.</h2>
+    <p class="sub">It runs on onetrace 0.4.0 and onetrace-verify 0.4.0, and reads runs recorded in format 0.3 beside runs in the earlier formats, which read as before. Every verdict it shows is still the check's own.</p>
+    <div class="grid-3">
+      <div class="card">
+        <h3>A drift page for each pipeline</h3>
+        <p>The console runs <code>onetrace drift</code> over a pipeline's stored runs, in the order it received them, and shows what it reports: each run against the run it was compared with, then each step's verdict, linked to that comparison, or to choosing it where none is held. It names the command and its exit, and computes no verdict of its own.</p>
+      </div>
+      <div class="card">
+        <h3>A suggested explanation, on the comparison page</h3>
+        <p>Where <code>onetrace-explain</code> is installed, a comparison page has a Suggested explanation section below the verdicts. Explain is pressed per comparison, and each explanation is labelled AI-generated and may be wrong. Its claims link into the record, and the claims it dropped are listed with the reason. Before a first send, it lists what would be sent and waits for Send; "Show the packet" sends nothing. The console does not depend on it.</p>
+      </div>
+      <div class="card">
+        <h3>What format 0.3 adds, in the check's words</h3>
+        <p>Where a run leaves out stages it declares optional, holds a step back before it runs, or keeps no output files, the run's page quotes the check's own row for it. Where a run keeps no output files, the page says the check did not look at them, and does not say the records agree.</p>
+      </div>
+    </div>
+<div class="shot" style="margin-top:28px;max-width:980px"><img src="/assets/img/shot-drift.webp" width="1280" height="800" loading="lazy" alt="The drift page for pipeline P3, ticket triage, on the live demo: 6 runs, oldest first, each compared with the first, as onetrace drift reports it, with its command and exit. Run 5, p3-27-t-1-rules2, diverged with its first difference at classify; the others at intake. Below, each node's verdict in each comparison."></div>
+<pre>pip install --upgrade onetrace-console
+onetrace-console demo --open</pre>
+    <p class="sub"><b>On Windows,</b> Explain needs a store folder of 140 characters or fewer with long paths off, and 195 or fewer with them on. Where the folder is longer, the comparison's page says so in one line, and Explain does not run.</p>
+    <p class="sub">The full list is in the <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.3.0">release notes</a>.</p>
+  </div>
+</section>
+
+<section id="v040" class="section-soft" aria-labelledby="v040-title">
   <div class="wrap">
     <p class="kicker">In 0.4.0</p>
     <h2 id="v040-title">Three new ways to read your runs.</h2>
@@ -80,7 +108,7 @@ onetrace drift runs/run-1 runs/run-2 runs/run-3 --against first --durations</pre
   </div>
 </section>
 
-<section class="section-soft" aria-labelledby="format-title">
+<section aria-labelledby="format-title">
   <div class="wrap">
     <p class="kicker">Also in 0.4.0</p>
     <h2 id="format-title">Records that say more, and pipelines that run in parallel.</h2>
@@ -101,7 +129,7 @@ onetrace drift runs/run-1 runs/run-2 runs/run-3 --against first --durations</pre
   </div>
 </section>
 
-<section id="explain" aria-labelledby="explain-title">
+<section id="explain" class="section-soft" aria-labelledby="explain-title">
   <div class="wrap">
     <p class="kicker">onetrace-explain 0.1.0</p>
     <h2 id="explain-title">A suggestion about a record, never a reading of it.</h2>
@@ -127,7 +155,7 @@ onetrace-explain report --dry-run</pre>
   </div>
 </section>
 
-<section id="v031" class="section-soft" aria-labelledby="v031-title">
+<section id="v031" aria-labelledby="v031-title">
   <div class="wrap">
     <p class="kicker">In 0.3.1</p>
     <h2 id="v031-title">Fewer false alarms, and comparisons that fit a pull request.</h2>
@@ -148,7 +176,7 @@ onetrace-explain report --dry-run</pre>
   </div>
 </section>
 
-<section id="v030" aria-labelledby="v030-title">
+<section id="v030" class="section-soft" aria-labelledby="v030-title">
   <div class="wrap">
     <p class="kicker">In 0.3.0</p>
     <h2 id="v030-title">Gates for your CI.</h2>
@@ -156,12 +184,12 @@ onetrace-explain report --dry-run</pre>
   </div>
 </section>
 
-<section id="upgrade" class="section-soft" aria-labelledby="upgrade-title">
+<section id="upgrade" aria-labelledby="upgrade-title">
   <div class="wrap">
     <p class="kicker">Upgrading</p>
     <h2 id="upgrade-title">One command, and your old runs still verify.</h2>
-<pre>pip install --upgrade onetrace</pre>
-    <p class="sub">onetrace-verify 0.4.0 comes with it and reads every earlier record. The console, onetrace-console 0.2.1, runs on onetrace 0.3.0: installed into the same environment, it keeps onetrace at 0.3.0. To try 0.4.0's new commands now, use an environment of their own. A console for 0.4.0 is on its way.</p>
+<pre>pip install --upgrade onetrace onetrace-console</pre>
+    <p class="sub">onetrace-verify 0.4.0 comes with it and reads every earlier record. The console, onetrace-console 0.3.0, runs on onetrace 0.4.0, so the two now upgrade together in the same environment.</p>
     <p class="sub">The full list of changes is in the <a href="/onetrace/manual.html">manual</a> and in each package's changelog.</p>
   </div>
 </section>

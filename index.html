@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>onetrace — know which step changed your AI's answer</title>
+<title>onetrace — when your AI's answer changes, know which step changed first</title>
 <meta name="description" content="onetrace records every step of your AI pipeline as a receipt anyone can check, and shows you exactly which step changed when an answer changes. Open source. Try the live demo.">
 <link rel="canonical" href="https://oneproof.dev/">
 <meta property="og:title" content="onetrace — know which step changed your AI's answer">
@@ -43,8 +43,8 @@
 
 <section class="hero" aria-labelledby="hero-title">
   <div class="wrap">
-    <a class="eyebrow" href="/whats-new.html" style="text-decoration:none"><b>New</b> onetrace 0.4: OpenTelemetry export, drift, checked explanations &rarr;</a>
-    <h1 id="hero-title">When your AI's answer changes, know <em>which step</em> changed it.</h1>
+    <a class="eyebrow" href="/whats-new.html" style="text-decoration:none"><b>New</b> onetrace-console 0.3: a drift page for each pipeline, and checked explanations &rarr;</a>
+    <h1 id="hero-title">When your AI's answer changes, know <em>which step</em> changed first.</h1>
     <p class="lede">onetrace records every step of your AI pipeline as a receipt anyone can check. When two runs disagree, it shows you the first step where they part ways, and what changed there. No log digging. No guesswork.</p>
     <div class="cta-row">
       <a class="btn btn-primary" href="https://demo.oneproof.dev">Try the live demo</a>
@@ -54,10 +54,10 @@
 
     <div class="hero-shot">
       <div class="frame frame-dark">
-        <img src="/assets/img/illus-compare.webp" width="1280" height="800" alt="Two demo runs compared: load_docs is marked Same, split is marked First difference, with its chunk_size changed from 1024 to 512, and embed, retrieve and answer are marked Changed after it. Below, the settings that changed and the command to repeat the comparison.">
+        <img src="/assets/img/shot-compare-top.webp" width="1280" height="800" alt="A comparison page on the live demo. Both runs' records agree. A is the baseline p3-23-t-1-rules1 and B is the candidate p3-27-t-1-rules2. In the graph, intake and lookup_account are marked Same, classify is marked First difference, with its configuration digest and its rules constant differing, and draft_reply and route are marked Changed after it. Below, a table of the five steps.">
       </div>
-      <div class="callout c1" aria-hidden="true"><b>First difference</b>split's chunk_size changed from 1024 to 512.</div>
-      <div class="callout c2" aria-hidden="true"><b>Same</b>load_docs produced identical output in both runs.</div>
+      <div class="callout c1" aria-hidden="true"><b>First difference</b>classify's rules setting changed from 1 to 2.</div>
+      <div class="callout c2" aria-hidden="true"><b>Same</b>intake's recorded output is the same in both runs.</div>
     </div>
   </div>
 </section>
@@ -142,13 +142,13 @@
 <section class="section-soft" aria-labelledby="value-title">
   <div class="wrap">
     <p class="kicker">What you get</p>
-    <h2 id="value-title">Answers you can trace. Changes you can explain.</h2>
+    <h2 id="value-title">Answers you can trace. Changes you can locate.</h2>
     <p class="sub">Three things your team gets on day one, without changing how your pipeline works.</p>
     <div class="grid-3">
       <div class="card">
         <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
         <h3>Find the step that changed</h3>
-        <p>Compare any two runs. Every step is marked same, first difference or changed after it, so you start at the cause, not at the symptom.</p>
+        <p>Compare any two runs. Every step is marked same, first difference or changed after it, so you start at the first step that differs, not at the symptom.</p>
       </div>
       <div class="card">
         <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div>
@@ -197,9 +197,9 @@
         <div class="tour-text">
           <span class="step-no">01 · Overview</span>
           <h3>Every run, and what the evidence says about it</h3>
-          <p>Counts you can click through to the exact runs behind them. Which runs verified, which changed against their baseline, and which need attention first.</p>
+          <p>Each pipeline with its runs, and how many of their records agree. Then the runs that need attention first, each with what its own page reads, and counts you can click through to the exact runs behind them.</p>
         </div>
-        <div class="shot"><img src="/assets/img/illus-overview.webp" width="1280" height="800" loading="lazy" alt="The demo's Overview: 30 runs in 4 pipelines, 27 of 30 records verified and 2 contradicting their record, 4 changed against their baseline, 2 incidents; the runs that need attention first, and what the evidence establishes across all 30 runs."></div>
+        <div class="shot"><img src="/assets/img/shot-overview.webp" width="1280" height="800" loading="lazy" alt="The live demo's Overview. It starts with a pipeline whose records agree, P3 ticket triage: its five stages, and 6 of 6 records agree. Then, under Then see what onetrace catches, the runs broken on purpose when the demo was built: what was done to each, and what its own page reads, such as Contradicts its record or Not checked."></div>
       </div>
       <div class="tour-row flip">
         <div class="tour-text">
@@ -207,16 +207,16 @@
           <h3>A run, step by step, with its checks</h3>
           <p>A clear verdict at the top, then one question at a time: do the records agree, was it signed, is any step missing. Each answer says exactly what was and wasn't checked.</p>
         </div>
-        <div class="shot"><img src="/assets/img/illus-run.webp" width="1280" height="800" loading="lazy" alt="One demo run: records agree (145 checks, all hold), signed by the demo's key, nothing declared missing, not anchored; each of its five stages matches its receipt."></div>
+        <div class="shot"><img src="/assets/img/shot-run.webp" width="1280" height="800" loading="lazy" alt="One run's page on the live demo: p3-27-t-1-rules2 in pipeline P3, marked Changed vs p3-23-t-1-rules1, first difference at classify. 5 of 5 declared stages, recorded in format stage-receipt-chain/0.3. Records agree: Yes. Ran as approved: Yes. Signed by a known recorder: Yes. Committed by a known time: Not anchored. Below, the case, the check's summary, and what the evidence establishes: 143 checks made, all hold."></div>
       </div>
       <div class="tour-row">
         <div class="tour-text">
           <span class="step-no">03 · Two runs</span>
           <h3>Where two runs part ways, and the text that changed</h3>
-          <p>The graph marks the first step that differs and everything downstream of it. Below, the actual output text that changed, side by side.</p>
+          <p>The comparison's graph marks the first step that differs and everything after it. Its text diff shows, line by line, the output text that changed, each side checked against its receipt first.</p>
           <p style="margin-top:18px"><a class="btn btn-dark" href="https://demo.oneproof.dev">Open the live demo</a></p>
         </div>
-        <div class="shot"><img src="/assets/img/illus-textdiff.webp" width="1280" height="800" loading="lazy" alt="The text that changed in split's output between the two demo runs: with chunk_size 512, the returns-window passage is cut into two chunks."></div>
+        <div class="shot"><img src="/assets/img/shot-textdiff.webp" width="1280" height="800" loading="lazy" alt="The text diff page for classify on the live demo. Settings: rules 1 to 2. In classify's class.json, class changes from billing to technical and matched from charged to app. In draft_reply's reply.json, the class and the reply text change from a billing reply to a technical one. Each output is marked verified against its receipt in both runs."></div>
       </div>
     </div>
   </div>

@@ -72,15 +72,15 @@ onetrace-console runs --open
 onetrace-console runs --compare A B</pre>
         <p style="color:var(--ink-2);margin-top:16px">Try it first on the <a href="https://demo.oneproof.dev">live demo</a>, or locally with <code>onetrace-console demo --open</code>. The page shows where two runs differ and what was recorded there. It does not say why.</p>
       </div>
-      <div class="shot"><img src="/assets/img/illus-compare.webp" width="1280" height="800" loading="lazy" alt="Two demo runs compared: load_docs is marked Same, split is marked First difference, with its chunk_size changed from 1024 to 512, and the steps after it are marked Changed after it."></div>
+      <div class="shot"><img src="/assets/img/shot-compare-top.webp" width="1280" height="800" loading="lazy" alt="A comparison page on the live demo. Both runs' records agree. A is the baseline p3-23-t-1-rules1 and B is the candidate p3-27-t-1-rules2. In the graph, intake and lookup_account are marked Same, classify is marked First difference, with its configuration digest and its rules constant differing, and draft_reply and route are marked Changed after it. Below, a table of the five steps."></div>
     </div>
     <div class="tour-row flip" style="margin-top:56px">
       <div class="tour-text">
         <h3 style="margin-top:0">Down to the exact text.</h3>
         <p style="color:var(--ink-2)">At the first difference, the text diff shows what the step wrote in each run, line by line and word by word. Open it on a page of its own when it's long.</p>
-        <p style="color:var(--ink-2)">The console runs on your machine, listens on <code>127.0.0.1</code> only, and makes no network calls. It watches your runs folder, so a new run appears on its own a few seconds after it has finished writing. Every page also gives the command that repeats its check, for the terminal or for CI.</p>
+        <p style="color:var(--ink-2)">The console runs on your machine, listens on <code>127.0.0.1</code> only, and makes no network calls of its own; only Explain, if you install it and press it, sends to the model endpoint you configure. It watches your runs folder, so a new run appears on its own a few seconds after it has finished writing. Every page also gives the command that repeats its check, for the terminal or for CI.</p>
       </div>
-      <div class="shot"><img src="/assets/img/illus-textdiff.webp" width="1280" height="800" loading="lazy" alt="The text that changed in split's output between the two demo runs: with chunk_size 512, the returns-window passage is cut into two chunks."></div>
+      <div class="shot"><img src="/assets/img/shot-textdiff.webp" width="1280" height="800" loading="lazy" alt="The text diff page for classify on the live demo. Settings: rules 1 to 2. In classify's class.json, class changes from billing to technical and matched from charged to app. In draft_reply's reply.json, the class and the reply text change from a billing reply to a technical one. Each output is marked verified against its receipt in both runs."></div>
     </div>
   </div>
 </section>
