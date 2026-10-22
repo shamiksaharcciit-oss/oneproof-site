@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{
-  --paper:#F3F4F1; --sunk:#EAECE8; --panel:#FFFFFF;
-  --ink:#19212A; --soft:#5C6874; --faint:#8A949D;
-  --rule:#D5D9D5; --rule-strong:#B9C0BD;
-  --meets:#2C7A5E; --fails:#B04338; --check:#9E7526;
-  --meets-bg:#E6F0EB; --fails-bg:#F6E7E5; --check-bg:#F4EDE0;
+:root{color-scheme:dark;
+  --paper:#121820; --sunk:#0d1218; --panel:#1a222c;
+  --ink:#e6ebf0; --soft:#a8b3be; --faint:#7f8a95;
+  --rule:#2c3540; --rule-strong:#3d4752;
+  --meets:#5fc79a; --fails:#ef8a7d; --check:#e0b25a;
+  --meets-bg:#12291e; --fails-bg:#2e1714; --check-bg:#2a2213;
 }
 *{box-sizing:border-box}
 body{
@@ -36,7 +36,7 @@ nav.steps button{
   padding:7px 14px;border-radius:3px;cursor:pointer;display:flex;align-items:center;gap:9px;
 }
 nav.steps button:hover{background:var(--sunk)}
-nav.steps button[aria-selected="true"]{background:var(--ink);color:#EDEFEC}
+nav.steps button[aria-selected="true"]{background:#2c3a48;color:#ffffff}
 nav.steps .tick{width:6px;height:6px;border-radius:50%;background:var(--rule-strong);flex:none}
 nav.steps button[aria-selected="true"] .tick{background:var(--meets)}
 nav.steps button[data-done="1"] .tick{background:var(--meets)}
