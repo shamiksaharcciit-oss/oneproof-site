@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>onetrace — when your AI's answer changes, know which step changed first</title>
+<title>onetrace — your AI changed. Find the first difference.</title>
 <meta name="description" content="onetrace records every step of your AI pipeline as a receipt anyone can check, and shows you exactly which step changed when an answer changes. Open source. Try the live demo.">
 <link rel="canonical" href="https://oneproof.dev/">
 <meta property="og:title" content="onetrace — know which step changed your AI's answer">
@@ -42,75 +42,46 @@
 <main id="main">
 
 <section class="hero" aria-labelledby="hero-title">
-  <div class="wrap">
-    <a class="eyebrow" href="/whats-new.html" style="text-decoration:none"><b>New</b> onetrace-console 0.3: a drift page for each pipeline, and checked explanations &rarr;</a>
-    <h1 id="hero-title">When your AI's answer changes, know <em>which step</em> changed first.</h1>
-    <p class="lede">onetrace records every step of your AI pipeline as a receipt anyone can check. When two runs disagree, it shows you the first step where they part ways, and what changed there. No log digging. No guesswork.</p>
-    <div class="cta-row">
-      <a class="btn btn-primary" href="https://demo.oneproof.dev">Try the live demo</a>
-      <a class="btn btn-ghost" href="/get-started.html">Get started</a>
+  <div class="wrap hero-grid">
+    <div>
+      <a class="eyebrow" href="/whats-new.html" style="text-decoration:none"><b>New</b> onetrace-console 0.3: a drift page for each pipeline, and checked explanations &rarr;</a>
+      <h1 id="hero-title">Your AI changed. Find the <em>first difference</em>.</h1>
+      <p class="lede">Compare two runs of your pipeline. onetrace shows the first step whose output differs, what was recorded there, and every step that changed after it. Each run's record is one receipt per step, checkable by anyone.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://demo.oneproof.dev">Try the live demo</a>
+        <a class="btn btn-ghost" href="/get-started.html">Add it to your pipeline</a>
+      </div>
+      <p class="cta-note">Free and open source (Apache-2.0) · runs on your machine · no account · <code>pip install onetrace</code></p>
     </div>
-    <p class="cta-note">Free and open source (Apache-2.0) · runs on your machine · <code>pip install onetrace</code></p>
-
-    <div class="hero-shot">
-      <div class="frame frame-dark">
-        <img src="/assets/img/shot-compare-top.webp" width="1280" height="800" alt="A comparison page on the live demo. Both runs' records agree. A is the baseline p3-23-t-1-rules1 and B is the candidate p3-27-t-1-rules2. In the graph, intake and lookup_account are marked Same, classify is marked First difference, with its configuration digest and its rules constant differing, and draft_reply and route are marked Changed after it. Below, a table of the five steps.">
+    <div class="cmp" id="cmp">
+      <div class="cmp-head"><b>p3-23-t-1-rules1 → p3-27-t-1-rules2</b><span>The live demo's ticket triage</span></div>
+      <ul class="cmp-rows" aria-label="The five steps of the comparison. Choose one to see what was recorded there.">
+        <li><button class="cmp-row" type="button" data-step="intake" aria-pressed="false" aria-controls="cmp-detail"><span class="n">01</span><span class="s">intake</span><span class="v">Same</span></button></li>
+        <li><button class="cmp-row first" type="button" data-step="classify" aria-pressed="true" aria-controls="cmp-detail"><span class="n">02</span><span class="s">classify</span><span class="v">● First difference</span></button></li>
+        <li><button class="cmp-row" type="button" data-step="lookup_account" aria-pressed="false" aria-controls="cmp-detail"><span class="n">03</span><span class="s">lookup_account</span><span class="v">Same</span></button></li>
+        <li><button class="cmp-row" type="button" data-step="draft_reply" aria-pressed="false" aria-controls="cmp-detail"><span class="n">04</span><span class="s">draft_reply</span><span class="v">Changed after it</span></button></li>
+        <li><button class="cmp-row" type="button" data-step="route" aria-pressed="false" aria-controls="cmp-detail"><span class="n">05</span><span class="s">route</span><span class="v">Changed after it</span></button></li>
+      </ul>
+      <div class="cmp-detail" id="cmp-detail" aria-live="polite">
+        <div data-for="intake" hidden><h3>intake · Same</h3><p>Its recorded output is the same in both runs, byte for byte.</p></div>
+        <div data-for="classify"><h3>classify · First difference</h3>
+          <p>A recorded setting differs: <code>rules</code> <del>1</del> → <ins>2</ins>. Same tool, <code>keyword-rules 1.0.0</code>; its configuration digest differs as well.</p>
+          <p>Its output <code>class.json</code>: <span class="mono">"class": <del>"billing"</del> <ins>"technical"</ins>, "matched": <del>"charged"</del> <ins>"app"</ins></span></p></div>
+        <div data-for="lookup_account" hidden><h3>lookup_account · Same</h3><p>Its recorded output is the same in both runs.</p></div>
+        <div data-for="draft_reply" hidden><h3>draft_reply · Changed after it</h3>
+          <p>It read <code>class.json</code>, which differs. No setting of its own changed.</p>
+          <p>Its reply: <span class="mono">"Thanks for <del>telling us about</del> <ins>reporting</ins> a <del>billing</del> <ins>technical</ins> problem. Our <del>billing desk</del> <ins>support team</ins> will <del>check your account</del> <ins>look into it</ins> and reply within one working day."</span></p></div>
+        <div data-for="route" hidden><h3>route · Changed after it</h3>
+          <p>It read <code>reply.json</code>, which differs. No setting of its own changed.</p>
+          <p>Its output <code>route.json</code>: <span class="mono">"queue": <del>"billing-desk"</del> <ins>"tech-support"</ins></span></p></div>
       </div>
-      <div class="callout c1" aria-hidden="true"><b>First difference</b>classify's rules setting changed from 1 to 2.</div>
-    </div>
-  </div>
-</section>
-
-<section aria-labelledby="harness-title">
-  <div class="wrap">
-    <p class="kicker">The deterministic harness</p>
-    <h2 id="harness-title">Your model is non-deterministic. Your record of it shouldn't be.</h2>
-    <p class="sub">onetrace wraps every step of an AI pipeline or agentic flow, model calls included, in a fixed, byte-exact record. The model still behaves like a model. Everything around it becomes something you can check, compare and audit.</p>
-
-    <div class="dh" role="img" aria-label="Diagram: a request enters the onetrace harness. Inside it, the model's inputs are pinned (data, prompt, model, version and settings), the model itself stays non-deterministic, and every output is recorded by digest. Every stage is receipted and hash-chained, with an optional signature. Comparing two runs gives the first difference. The result then passes your release gate.">
-      <div class="dh-node dh-req"><h3>request</h3></div>
-      <div class="dh-arrow" aria-hidden="true"><span>→</span></div>
-      <div class="dh-box">
-        <div class="dh-top">every stage receipted · hash-chained · signature optional</div>
-        <div class="dh-row">
-          <div class="dh-node"><h3>pinned in</h3><p>data · prompt<br>model · version · settings</p></div>
-          <div class="dh-arrow" aria-hidden="true"><span>→</span></div>
-          <div class="dh-llm"><b>LLM</b><span>non-deterministic</span></div>
-          <div class="dh-arrow" aria-hidden="true"><span>→</span></div>
-          <div class="dh-node"><h3>recorded out</h3><p>digest of every output</p></div>
-        </div>
-        <div class="dh-bottom">compare two runs → <b>the first difference</b></div>
-      </div>
-      <div class="dh-arrow" aria-hidden="true"><span>→</span></div>
-      <div class="dh-node dh-gate"><h3>your release gate</h3><p>ship only what matches, review what changed</p></div>
-    </div>
-    <div class="grid-3 dh-cards">
-      <div class="dh-card a"><h3>Variation is allowed</h3><p>The model can stay probabilistic.</p></div>
-      <div class="dh-card"><h3>Variation is caught</h3><p>Any change shows up as a different digest.</p></div>
-      <div class="dh-card"><h3>Variation is located</h3><p>The first difference, named, and checkable in your CI.</p></div>
-    </div>
-    <p class="dh-note">The model itself is not made deterministic. What is deterministic is the record around it.</p>
-
-    <h3 style="margin-top:56px;font-size:24px">Deterministic where it can be. Honest where it can't.</h3>
-    <div class="grid-3 trio" style="margin-top:20px">
-      <div class="card">
-        <div class="mini" aria-hidden="true"><i>retrieve</i><b>→</b><i>re-run from recorded inputs</i><b>→</b><i class="ok">same output ✓</i></div>
-        <h3>Re-run and checked</h3>
-        <p>Retrieval, ranking and prompt building can be re-run from their recorded inputs, and onetrace tells you which ones reproduce.</p>
-      </div>
-      <div class="card">
-        <div class="mini" aria-hidden="true"><i class="am">model call</i><b>→</b><i>kept byte for byte</i><b>→</b><i class="am">not re-runnable</i></div>
-        <h3>Recorded, never faked</h3>
-        <p>A model call is kept exactly as it happened and marked as not re-runnable. It's reported as "could not check", never quietly passed.</p>
-      </div>
-      <div class="card">
-        <div class="mini" aria-hidden="true"><i>run A</i><b>vs</b><i>run B</i><b>→</b><i class="rd">first difference: rank</i></div>
-        <h3>Pinned to the step</h3>
-        <p>When two runs disagree, the change is pinned to the step where it happened, so you know whether the data, the prompt or only the model moved.</p>
-      </div>
+      <p class="cmp-foot">Recorded values from the live demo's runs, which use invented data. A first difference narrows the investigation; it doesn't by itself say why the output changed. <a href="https://demo.oneproof.dev">Open the demo</a></p>
     </div>
   </div>
+  <script>(function(){var r=document.querySelectorAll('#cmp .cmp-row'),d=document.querySelectorAll('#cmp-detail [data-for]');r.forEach(function(b){b.addEventListener('click',function(){var k=b.getAttribute('data-step');r.forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});d.forEach(function(x){x.hidden=x.getAttribute('data-for')!==k})})})})();</script>
 </section>
+
+<div class="wrap"><div class="stack"><span>Examples for your stack</span><b>Python</b><b>LangChain</b><b>LangGraph</b><a href="/whats-new.html#v040">OpenTelemetry export</a></div></div>
 
 <section aria-labelledby="problem-title">
   <div class="wrap">
@@ -160,29 +131,6 @@
         <p>The onetrace console turns run records into pages anyone on the team can read: what was checked, what held, and what needs attention first.</p>
       </div>
     </div>
-  </div>
-</section>
-
-<section aria-labelledby="new-title">
-  <div class="wrap">
-    <p class="kicker">New in 0.4</p>
-    <h2 id="new-title">Read your runs where you already look.</h2>
-    <p class="sub">Three new views of the same record. None of them changes a verdict.</p>
-    <div class="grid-3">
-      <div class="card">
-        <h3>In your tracing tools</h3>
-        <p><code>onetrace export otel</code> turns a run into one OpenTelemetry trace, a span per step. The trace is a view; the record stays the evidence.</p>
-      </div>
-      <div class="card">
-        <h3>Across many runs</h3>
-        <p><code>onetrace drift</code> lines up a series of runs and compares each with the first or the one before, with each step's time beside it.</p>
-      </div>
-      <div class="card">
-        <h3>With a suggested explanation</h3>
-        <p><code>onetrace-explain</code> asks a model you choose where to look, then checks every claim against the record. Labelled AI-generated, and it may be wrong.</p>
-      </div>
-    </div>
-    <p class="sub"><a href="/whats-new.html">Everything new in 0.3 and 0.4 →</a></p>
   </div>
 </section>
 
@@ -244,7 +192,58 @@
   </div>
 </section>
 
-<section aria-labelledby="gov-title">
+<section aria-labelledby="harness-title">
+  <div class="wrap">
+    <p class="kicker">The deterministic harness</p>
+    <h2 id="harness-title">Your model is non-deterministic. Your record of it shouldn't be.</h2>
+    <p class="sub">onetrace wraps every step of an AI pipeline or agentic flow, model calls included, in a fixed, byte-exact record. The model still behaves like a model. Everything around it becomes something you can check, compare and audit.</p>
+
+    <div class="dh" role="img" aria-label="Diagram: a request enters the onetrace harness. Inside it, the model's inputs are pinned (data, prompt, model, version and settings), the model itself stays non-deterministic, and every output is recorded by digest. Every stage is receipted and hash-chained, with an optional signature. Comparing two runs gives the first difference. The result then passes your release gate.">
+      <div class="dh-node dh-req"><h3>request</h3></div>
+      <div class="dh-arrow" aria-hidden="true"><span>→</span></div>
+      <div class="dh-box">
+        <div class="dh-top">every stage receipted · hash-chained · signature optional</div>
+        <div class="dh-row">
+          <div class="dh-node"><h3>pinned in</h3><p>data · prompt<br>model · version · settings</p></div>
+          <div class="dh-arrow" aria-hidden="true"><span>→</span></div>
+          <div class="dh-llm"><b>LLM</b><span>non-deterministic</span></div>
+          <div class="dh-arrow" aria-hidden="true"><span>→</span></div>
+          <div class="dh-node"><h3>recorded out</h3><p>digest of every output</p></div>
+        </div>
+        <div class="dh-bottom">compare two runs → <b>the first difference</b></div>
+      </div>
+      <div class="dh-arrow" aria-hidden="true"><span>→</span></div>
+      <div class="dh-node dh-gate"><h3>your release gate</h3><p>ship only what matches, review what changed</p></div>
+    </div>
+    <div class="grid-3 dh-cards">
+      <div class="dh-card a"><h3>Variation is allowed</h3><p>The model can stay probabilistic.</p></div>
+      <div class="dh-card"><h3>Variation is caught</h3><p>Any change shows up as a different digest.</p></div>
+      <div class="dh-card"><h3>Variation is located</h3><p>The first difference, named, and checkable in your CI.</p></div>
+    </div>
+    <p class="dh-note">The model itself is not made deterministic. What is deterministic is the record around it.</p>
+
+    <h3 style="margin-top:56px;font-size:24px">Deterministic where it can be. Honest where it can't.</h3>
+    <div class="grid-3 trio" style="margin-top:20px">
+      <div class="card">
+        <div class="mini" aria-hidden="true"><i>retrieve</i><b>→</b><i>re-run from recorded inputs</i><b>→</b><i class="ok">same output ✓</i></div>
+        <h3>Re-run and checked</h3>
+        <p>Retrieval, ranking and prompt building can be re-run from their recorded inputs, and onetrace tells you which ones reproduce.</p>
+      </div>
+      <div class="card">
+        <div class="mini" aria-hidden="true"><i class="am">model call</i><b>→</b><i>kept byte for byte</i><b>→</b><i class="am">not re-runnable</i></div>
+        <h3>Recorded, never faked</h3>
+        <p>A model call is kept exactly as it happened and marked as not re-runnable. It's reported as "could not check", never quietly passed.</p>
+      </div>
+      <div class="card">
+        <div class="mini" aria-hidden="true"><i>run A</i><b>vs</b><i>run B</i><b>→</b><i class="rd">first difference: rank</i></div>
+        <h3>Pinned to the step</h3>
+        <p>When two runs disagree, the change is pinned to the step where it happened, so you know whether the data, the prompt or only the model moved.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-soft" aria-labelledby="gov-title">
   <div class="wrap">
     <p class="kicker">Auditable and governable</p>
     <h2 id="gov-title">From evidence to a decision you can defend.</h2>
@@ -263,6 +262,72 @@
       </div>
     </div>
     <div class="next"><span class="tag">Coming next</span> Approving each action before it runs, using the same receipts. Today onetrace gives you the evidence and the gate; it doesn't yet approve or block individual actions.</div>
+  </div>
+</section>
+
+<section aria-labelledby="agent-title">
+  <div class="wrap">
+    <div class="band">
+      <div>
+        <h2 id="agent-title">Your coding agent can help you start.</h2>
+        <p>Hand it the integration recipe. It adds onetrace to your pipeline, asks you what only you can answer, and reports back with test, verify and diff results for you to review.</p>
+      </div>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="/onetrace/agents/instrument.html">Read the recipe</a>
+        <a class="btn btn-ghost" href="/developers.html">For developers</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="paths-title">
+  <div class="wrap">
+    <p class="kicker">Go deeper</p>
+    <h2 id="paths-title">Pick your level of detail.</h2>
+    <p class="sub">The same product, explained three ways. Each page stands on the one after it.</p>
+    <div class="paths">
+      <a class="path here" href="/" aria-current="page">
+        <span class="who-for">For decision makers</span>
+        <h3>What it does for you</h3>
+        <p>The problem, the value and the product. You're here.</p>
+        <span class="go">This page</span>
+      </a>
+      <a class="path" href="/developers.html">
+        <span class="who-for">For developers</span>
+        <h3>Add it and run it</h3>
+        <p>Install, add two decorators, run, verify, compare, and open the console on your own runs.</p>
+        <span class="go">Developer guide →</span>
+      </a>
+      <a class="path" href="/how-it-works.html">
+        <span class="who-for">For researchers and reviewers</span>
+        <h3>How it works underneath</h3>
+        <p>Receipts, the hash chain, the verifier, the five comparison verdicts and the published format.</p>
+        <span class="go">The mechanism →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="section-soft" aria-labelledby="new-title">
+  <div class="wrap">
+    <p class="kicker">New in 0.4</p>
+    <h2 id="new-title">Read your runs where you already look.</h2>
+    <p class="sub">Three new views of the same record. None of them changes a verdict.</p>
+    <div class="grid-3">
+      <div class="card">
+        <h3>In your tracing tools</h3>
+        <p><code>onetrace export otel</code> turns a run into one OpenTelemetry trace, a span per step. The trace is a view; the record stays the evidence.</p>
+      </div>
+      <div class="card">
+        <h3>Across many runs</h3>
+        <p><code>onetrace drift</code> lines up a series of runs and compares each with the first or the one before, with each step's time beside it.</p>
+      </div>
+      <div class="card">
+        <h3>With a suggested explanation</h3>
+        <p><code>onetrace-explain</code> asks a model you choose where to look, then checks every claim against the record. Labelled AI-generated, and it may be wrong.</p>
+      </div>
+    </div>
+    <p class="sub"><a href="/whats-new.html">Everything new in 0.3 and 0.4 →</a></p>
   </div>
 </section>
 
@@ -304,34 +369,6 @@
       <div class="card"><h3>Not checked is not passed</h3><p>When something couldn't be checked, onetrace says so plainly. It never reports a gap as a pass.</p></div>
     </div>
     <p style="margin-top:28px"><a href="/onetrace/non-claims.html" style="color:#fff">Read the full list of what onetrace does not claim →</a></p>
-  </div>
-</section>
-
-<section aria-labelledby="paths-title">
-  <div class="wrap">
-    <p class="kicker">Go deeper</p>
-    <h2 id="paths-title">Pick your level of detail.</h2>
-    <p class="sub">The same product, explained three ways. Each page stands on the one after it.</p>
-    <div class="paths">
-      <a class="path here" href="/" aria-current="page">
-        <span class="who-for">For decision makers</span>
-        <h3>What it does for you</h3>
-        <p>The problem, the value and the product. You're here.</p>
-        <span class="go">This page</span>
-      </a>
-      <a class="path" href="/developers.html">
-        <span class="who-for">For developers</span>
-        <h3>Add it and run it</h3>
-        <p>Install, add two decorators, run, verify, compare, and open the console on your own runs.</p>
-        <span class="go">Developer guide →</span>
-      </a>
-      <a class="path" href="/how-it-works.html">
-        <span class="who-for">For researchers and reviewers</span>
-        <h3>How it works underneath</h3>
-        <p>Receipts, the hash chain, the verifier, the five comparison verdicts and the published format.</p>
-        <span class="go">The mechanism →</span>
-      </a>
-    </div>
   </div>
 </section>
 

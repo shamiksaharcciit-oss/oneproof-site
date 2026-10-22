@@ -278,3 +278,31 @@ footer a:hover{color:#fff;text-decoration:underline}
   .dh-arrow span{display:inline-block;transform:rotate(90deg)}
   .dh-req,.dh-gate{flex-basis:auto}
 }
+/* Homepage comparison (update C): the live demo's recorded comparison, explorable */
+.hero-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:48px;align-items:start;padding-bottom:64px}
+.hero-grid h1{max-width:12ch}
+.cmp{background:#fff;color:var(--ink);border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.35);overflow:hidden}
+.cmp-head{display:flex;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);font-size:14px}
+.cmp-head b{font-weight:600}.cmp-head span{color:var(--muted);font-size:12.5px}
+.cmp-rows{list-style:none;margin:0;padding:10px 12px}
+.cmp-rows li{margin:0}
+.cmp-row{width:100%;display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid transparent;border-radius:9px;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.cmp-row:hover{background:var(--soft)}
+.cmp-row[aria-pressed="true"]{border-color:var(--ink-2)}
+.cmp-row .n{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.cmp-row .s{font-family:var(--mono);font-size:14.5px}
+.cmp-row .v{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.cmp-row.first{background:var(--amber-soft)}
+.cmp-row.first .v{color:var(--amber-ink);font-weight:600}
+.cmp-row.first[aria-pressed="true"]{border-color:var(--amber)}
+.cmp-detail{margin:4px 12px 12px;padding:14px 16px;background:var(--soft);border-radius:10px;font-size:14px;line-height:1.5;min-height:150px}
+.cmp-detail h3{font-size:13px;margin:0 0 8px;color:var(--ink-2);font-weight:600}
+.cmp-detail p{margin:0 0 8px}
+.cmp-detail code,.cmp-detail .mono{font-family:var(--mono);font-size:12.5px}
+.cmp-detail del{background:#fbe3e3;color:#7a1f1f;text-decoration:line-through}
+.cmp-detail ins{background:#e2f3e6;color:#1d5b2c;text-decoration:none}
+.cmp-foot{padding:0 18px 14px;font-size:12.5px;color:var(--muted)}
+.stack{display:flex;flex-wrap:wrap;gap:12px 32px;align-items:center;padding:22px 0;border-bottom:1px solid var(--line);font-size:15px;color:var(--ink-2)}
+.stack span:first-child{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stack b{font-weight:600;color:var(--ink)}
+@media (max-width:900px){.hero-grid{grid-template-columns:minmax(0,1fr);gap:32px}}
