@@ -148,6 +148,8 @@ onetrace drift runs/run-1 runs/run-2 runs/run-3 --against first --durations</pre
         <p>Each explanation is recorded as a onetrace run of its own, so you can check later what was sent and what came back.</p>
       </div>
     </div>
+<div class="shot" style="margin-top:28px;max-width:980px"><img src="/assets/img/shot-explain.webp" width="1346" height="950" loading="lazy" alt="A real suggested explanation on the console's comparison page for the demo's split comparison. Its heading reads Suggested explanation — AI-generated, may be wrong. Model: anthropic:claude-sonnet-4-6. Its record verifies: 92 pass, 0 fail, 3 not-run, PASS. Its one claim says the first difference is at split, where the chunk_size constant changed from 1024 to 512, with links to the cited items in the record. Below, four onetrace commands it suggests, three with a Run button and one that needs a runner you name. Last line: dropped before anyone read them, 6 claims that quote a value their cites don't hold."></div>
+<p class="sub" style="font-size:14px">A real explanation of the demo's split comparison, written by claude-sonnet-4-6 on the local console 0.3.0.</p>
 <pre>pip install onetrace-explain
 onetrace localize runs/A runs/B --out report
 onetrace-explain report --dry-run</pre>
