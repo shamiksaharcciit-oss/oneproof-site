@@ -49,7 +49,7 @@
       <a class="btn btn-primary" href="https://demo.oneproof.dev/pipeline-p1.html">Open this pipeline in the live demo</a>
       <a class="btn btn-ghost" href="/industries/">All examples</a>
     </div>
-    <p class="cta-note">Invented example data, recorded when the demo was built. The demo records and compares; it controls nothing.</p>
+    <p class="cta-note">Invented example data, recorded when the demo was built. The demo records and compares; it controls nothing. The screenshots are from a build of the same demo: each build gives its runs new fingerprints and times, so those differ from the live demo's, and what the screenshots show is the same.</p>
   </div>
 </div>
 
@@ -58,7 +58,7 @@
     <p class="kicker">The pipeline</p>
     <h2 id="steps-title">Five steps, from documents to a quoted answer.</h2>
     <div class="chain" role="img" aria-label="The pipeline&#x27;s steps in order: load_docs, split, embed, retrieve, answer."><div class="rcpt"><b>01 load_docs</b><span>policy documents</span></div><div class="arrow"></div><div class="rcpt"><b>02 split</b><span>chunk_size</span></div><div class="arrow"></div><div class="rcpt"><b>03 embed</b><span>hashed bag of words</span></div><div class="arrow"></div><div class="rcpt"><b>04 retrieve</b><span>dot product</span></div><div class="arrow"></div><div class="rcpt"><b>05 answer</b><span>extractive</span></div></div>
-    <ul class="clean" style="margin-top:24px;max-width:72ch"><li><code>load_docs</code> loads the example shop's policy documents.</li><li><code>split</code> splits them into chunks of a set size.</li><li><code>embed</code> turns each chunk into counts, without a model.</li><li><code>retrieve</code> ranks chunks against the question.</li><li><code>answer</code> quotes the retrieved sentence that shares the most words with the question.</li></ul>
+    <ul class="clean" style="margin-top:24px;max-width:72ch"><li><code>load_docs</code> loads the example shop's policy documents.</li><li><code>split</code> splits them into chunks of a set size.</li><li><code>embed</code> turns each chunk into counts, without a model.</li><li><code>retrieve</code> ranks chunks against the question.</li><li><code>answer</code> gives the answer, with the tool <code>extractive</code>.</li></ul>
   </div>
 </section>
 

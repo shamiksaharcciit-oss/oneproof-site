@@ -49,7 +49,7 @@
       <a class="btn btn-primary" href="https://demo.oneproof.dev/pipeline-p6.html">Open this pipeline in the live demo</a>
       <a class="btn btn-ghost" href="/industries/">All examples</a>
     </div>
-    <p class="cta-note">Invented example data, recorded when the demo was built. The demo records and compares; it controls nothing.</p>
+    <p class="cta-note">Invented example data, recorded when the demo was built. The demo records and compares; it controls nothing. The screenshots are from a build of the same demo: each build gives its runs new fingerprints and times, so those differ from the live demo's, and what the screenshots show is the same.</p>
   </div>
 </div>
 
@@ -58,7 +58,7 @@
     <p class="kicker">The pipeline</p>
     <h2 id="steps-title">Three steps, from a frame to a reject command.</h2>
     <div class="chain" role="img" aria-label="The pipeline&#x27;s steps in order: measure, classify, reject_command."><div class="rcpt"><b>01 measure</b><span>fill level, mm</span></div><div class="arrow"></div><div class="rcpt"><b>02 classify</b><span>pass or reject</span></div><div class="arrow"></div><div class="rcpt"><b>03 reject_command</b><span>the command</span></div></div>
-    <ul class="clean" style="margin-top:24px;max-width:72ch"><li><code>measure</code> finds the fill level, the rows whose brightness the camera's exposure brings past the liquid's edge.</li><li><code>classify</code> passes a bottle filled to the reject line or above, and rejects one below it.</li><li><code>reject_command</code> records the command a line would be given.</li></ul>
+    <ul class="clean" style="margin-top:24px;max-width:72ch"><li><code>measure</code> reads the fill level, with the tool <code>fill-level-camera</code>.</li><li><code>classify</code> passes a bottle filled to the reject line or above, and rejects one below it.</li><li><code>reject_command</code> records the command a line would be given.</li></ul>
   </div>
 </section>
 
