@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cold-chain logistics example · oneproof</title>
+<meta name="description" content="A demo pipeline from a temperature logger to a release or quarantine decision: one changed reading traced to the decision it flips, and a decision altered after recording, which contradicts its record.">
+<link rel="canonical" href="https://oneproof.dev/industries/cold-chain.html">
+<meta property="og:title" content="Cold-chain logistics example">
+<meta property="og:description" content="A demo pipeline from a temperature logger to a release or quarantine decision: one changed reading traced to the decision it flips, and a decision altered after recording, which contradicts its record.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneproof.dev/industries/cold-chain.html">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html">Developers</a>
+      <a href="/how-it-works.html">How it works</a>
+      <a href="/onetrace/">Docs</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<div class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow"><b>Example</b> Cold-chain logistics</span>
+    <h1>A temperature log releases or quarantines a shipment. See which reading moved, and the decision after it.</h1>
+    <p class="lede">A shipment's temperature logger gives a reading every ten minutes, with a gap or two where it missed one. The pipeline fills the gaps, lists every reading outside the allowed range, and releases or quarantines the shipment.</p>
+    <div class="cta-row" style="margin-top:26px">
+      <a class="btn btn-primary" href="https://demo.oneproof.dev/pipeline-p7.html">Open this pipeline in the live demo</a>
+      <a class="btn btn-ghost" href="/industries/">All examples</a>
+    </div>
+    <p class="cta-note">Invented example data, recorded when the demo was built. The demo records and compares; it controls nothing.</p>
+  </div>
+</div>
+
+<section aria-labelledby="steps-title">
+  <div class="wrap">
+    <p class="kicker">The pipeline</p>
+    <h2 id="steps-title">Three steps, from a logger's file to a release decision.</h2>
+    <div class="chain" role="img" aria-label="The pipeline&#x27;s steps in order: fill_gaps, excursion_check, release."><div class="rcpt"><b>01 fill_gaps</b><span>fills missed readings</span></div><div class="arrow"></div><div class="rcpt"><b>02 excursion_check</b><span>2.0 to 8.0 °C</span></div><div class="arrow"></div><div class="rcpt"><b>03 release</b><span>release or quarantine</span></div></div>
+    <ul class="clean" style="margin-top:24px;max-width:72ch"><li><code>fill_gaps</code> reads the logger's file and fills each gap with the reading before it.</li><li><code>excursion_check</code> lists every reading outside the allowed range.</li><li><code>release</code> releases the shipment where there is no excursion, and quarantines it where there is.</li></ul>
+  </div>
+</section>
+
+<section class="section-soft" aria-labelledby="planted-title">
+  <div class="wrap">
+    <p class="kicker">What the demo plants</p>
+    <h2 id="planted-title">The runs, and what was changed in each.</h2>
+    <table style="margin-top:20px"><thead><tr><th>Run</th><th>What was changed</th></tr></thead><tbody>
+    <tr><td><code>p7-39-cold-chain-baseline</code></td><td>Nothing: the baseline.</td></tr><tr><td><code>p7-40-cold-chain-one-reading-changed</code></td><td>One reading in the logger's file, 4.6 °C to 9.4 °C at minute 30.</td></tr><tr><td><code>p7-41-cold-chain-decision-tampered</code></td><td>Its recorded decision, one byte of it, after the run was recorded.</td></tr>
+    </tbody></table>
+  </div>
+</section>
+
+<section aria-labelledby="shows-title">
+  <div class="wrap">
+    <p class="kicker">What onetrace shows</p>
+    <h2 id="shows-title">Each change, located in the record.</h2>
+    <h3 style="margin-top:44px">One reading changed: release becomes quarantine</h3><p class="sub" style="margin-top:8px">The logger's file is an input from outside the pipeline, kept beside its digest, so the page shows it changed and the reading that did. <code>fill_gaps</code> is the first difference: minute 30 reads 9.4 °C, and the gap at minute 40 is filled with it. <code>excursion_check</code> lists both, and <code>release</code> quarantines where it released.</p><figure style="margin:28px 0 0"><div class="shot"><a href="/assets/img/industries/p7-reading-top.webp"><img src="/assets/img/industries/p7-reading-top.webp" width="1280" height="800" loading="lazy" alt="The live demo&#x27;s comparison of p7-39-cold-chain-baseline and p7-40-cold-chain-one-reading-changed. First difference at fill_gaps; excursion_check and release are marked Changed after it."></a></div><figcaption style="font-size:14px;color:var(--muted);margin-top:10px">Comparison page: first difference at <code>fill_gaps</code>.</figcaption></figure><figure style="margin:28px 0 0"><div class="shot"><a href="/assets/img/industries/p7-reading-text.webp"><img src="/assets/img/industries/p7-reading-text.webp" width="1280" height="800" loading="lazy" alt="The text diff for fill_gaps: the logger&#x27;s kept input text, with the reading at minute 30 changed from 4.6 to 9.4, and filled.json, where minute 30 and the filled minute 40 both read 9.4."></a></div><figcaption style="font-size:14px;color:var(--muted);margin-top:10px">The text diff: the changed reading, and the filled gap that carries it.</figcaption></figure><h3 style="margin-top:44px">A decision altered after the fact: it contradicts its record</h3><p class="sub" style="margin-top:8px">One byte of the recorded decision was changed after the run closed. The run's page says its records do not agree: the release step's output no longer matches the digest its receipt holds. The step-by-step comparison is not shown for a record that does not hold up.</p><figure style="margin:28px 0 0"><div class="shot"><a href="/assets/img/industries/p7-tampered-run.webp"><img src="/assets/img/industries/p7-tampered-run.webp" width="1280" height="800" loading="lazy" alt="The live demo&#x27;s page for run p7-41-cold-chain-decision-tampered: Records agree: No. An incident names receipts/03-release.json, whose output artifact decision.json does not match the digest the receipt expected. Contradicts its record."></a></div><figcaption style="font-size:14px;color:var(--muted);margin-top:10px">Run page: contradicts its record, with the receipt it fails against.</figcaption></figure>
+  </div>
+</section>
+
+<section class="section-soft" aria-labelledby="limits-title">
+  <div class="wrap">
+    <p class="kicker">What it doesn't say</p>
+    <h2 id="limits-title">A located change, not a reason.</h2>
+    <p class="sub">The comparison shows which reading moved and the decision that followed. It doesn't say whether the shipment was in fact spoiled, or whether filling a gap with the last reading is the right rule. See <a href="/onetrace/verdicts.html">what each verdict means</a> and <a href="/onetrace/non-claims.html">what onetrace does not claim</a>.</p>
+    <p class="sub">Try it yourself: <a href="https://demo.oneproof.dev/pipeline-p7.html">this pipeline in the live demo</a>, or on your machine with <code>pip install onetrace-console</code> and <code>onetrace-console demo --open</code>.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/industries/">Examples by industry</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Packages</h4>
+        <ul>
+          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/answer-lineage.html">A forensic report</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knowledge assistants example · oneproof</title>
+<meta name="description" content="A demo retrieval pipeline over an example shop&#x27;s policies: a chunk size change located at split, with the setting named and the chunks that changed.">
+<link rel="canonical" href="https://oneproof.dev/industries/knowledge-assistants.html">
+<meta property="og:title" content="Knowledge assistants example">
+<meta property="og:description" content="A demo retrieval pipeline over an example shop&#x27;s policies: a chunk size change located at split, with the setting named and the chunks that changed.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneproof.dev/industries/knowledge-assistants.html">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html">Developers</a>
+      <a href="/how-it-works.html">How it works</a>
+      <a href="/onetrace/">Docs</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<div class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow"><b>Example</b> Knowledge assistants</span>
+    <h1>A chunk size change alters what the assistant reads. See where the answer's trail first moved.</h1>
+    <p class="lede">A small retrieval pipeline answers questions about an example shop's returns and refunds. It loads the policy documents, splits them into chunks, embeds and retrieves them, and quotes an answer. Nothing calls a hosted model.</p>
+    <div class="cta-row" style="margin-top:26px">
+      <a class="btn btn-primary" href="https://demo.oneproof.dev/pipeline-p1.html">Open this pipeline in the live demo</a>
+      <a class="btn btn-ghost" href="/industries/">All examples</a>
+    </div>
+    <p class="cta-note">Invented example data, recorded when the demo was built. The demo records and compares; it controls nothing.</p>
+  </div>
+</div>
+
+<section aria-labelledby="steps-title">
+  <div class="wrap">
+    <p class="kicker">The pipeline</p>
+    <h2 id="steps-title">Five steps, from documents to a quoted answer.</h2>
+    <div class="chain" role="img" aria-label="The pipeline&#x27;s steps in order: load_docs, split, embed, retrieve, answer."><div class="rcpt"><b>01 load_docs</b><span>policy documents</span></div><div class="arrow"></div><div class="rcpt"><b>02 split</b><span>chunk_size</span></div><div class="arrow"></div><div class="rcpt"><b>03 embed</b><span>hashed bag of words</span></div><div class="arrow"></div><div class="rcpt"><b>04 retrieve</b><span>dot product</span></div><div class="arrow"></div><div class="rcpt"><b>05 answer</b><span>extractive</span></div></div>
+    <ul class="clean" style="margin-top:24px;max-width:72ch"><li><code>load_docs</code> loads the example shop's policy documents.</li><li><code>split</code> splits them into chunks of a set size.</li><li><code>embed</code> turns each chunk into counts, without a model.</li><li><code>retrieve</code> ranks chunks against the question.</li><li><code>answer</code> quotes the retrieved sentence that shares the most words with the question.</li></ul>
+  </div>
+</section>
+
+<section class="section-soft" aria-labelledby="planted-title">
+  <div class="wrap">
+    <p class="kicker">What the demo plants</p>
+    <h2 id="planted-title">The runs, and what was changed in each.</h2>
+    <table style="margin-top:20px"><thead><tr><th>Run</th><th>What was changed</th></tr></thead><tbody>
+    <tr><td><code>p1-02-baseline-set2</code></td><td>Nothing: the baseline, chunk_size 1024.</td></tr><tr><td><code>p1-08-candidate-set2</code></td><td><code>split</code>'s <code>chunk_size</code>, 1024 to 512.</td></tr>
+    </tbody></table>
+  </div>
+</section>
+
+<section aria-labelledby="shows-title">
+  <div class="wrap">
+    <p class="kicker">What onetrace shows</p>
+    <h2 id="shows-title">Each change, located in the record.</h2>
+    <h3 style="margin-top:44px">The chunk size: first difference at split</h3><p class="sub" style="margin-top:8px"><code>split</code> is the first difference, and the page names its setting: <code>chunk_size</code>, 1024 to 512. Each policy document is now cut into two chunks where it was one, so the steps after it read different text.</p><figure style="margin:28px 0 0"><div class="shot"><a href="/assets/img/industries/p1-split-top.webp"><img src="/assets/img/industries/p1-split-top.webp" width="1280" height="800" loading="lazy" alt="The live demo&#x27;s comparison of p1-02-baseline-set2 and p1-08-candidate-set2. First difference at split; load_docs is Same, and embed, retrieve and answer are marked Changed after it."></a></div><figcaption style="font-size:14px;color:var(--muted);margin-top:10px">Comparison page: first difference at <code>split</code>.</figcaption></figure><figure style="margin:28px 0 0"><div class="shot"><a href="/assets/img/industries/p1-split-settings.webp"><img src="/assets/img/industries/p1-split-settings.webp" width="1280" height="800" loading="lazy" alt="Settings that changed: split, chunk_size, 1024 to 512. Below, the text diff of chunks.json, where each document becomes two chunks."></a></div><figcaption style="font-size:14px;color:var(--muted);margin-top:10px">Settings that changed: <code>chunk_size</code>, 1024 to 512.</figcaption></figure>
+  </div>
+</section>
+
+<section class="section-soft" aria-labelledby="limits-title">
+  <div class="wrap">
+    <p class="kicker">What it doesn't say</p>
+    <h2 id="limits-title">A located change, not a reason.</h2>
+    <p class="sub">The comparison shows the setting and the text that moved. It doesn't say whether the new answer is better, or which chunk size is right. See <a href="/onetrace/verdicts.html">what each verdict means</a> and <a href="/onetrace/non-claims.html">what onetrace does not claim</a>.</p>
+    <p class="sub">Try it yourself: <a href="https://demo.oneproof.dev/pipeline-p1.html">this pipeline in the live demo</a>, or on your machine with <code>pip install onetrace-console</code> and <code>onetrace-console demo --open</code>.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/industries/">Examples by industry</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Packages</h4>
+        <ul>
+          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/answer-lineage.html">A forensic report</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
+  </div>
+</footer>
+</body>
+</html>
