@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Procurement example · oneproof</title>
+<meta name="description" content="A demo pipeline from a supplier&#x27;s invoice to a payment decision: a price tolerance change located at match, an invoice quantity change located at its input, and a payment over the approver&#x27;s limit declined.">
+<link rel="canonical" href="https://oneproof.dev/industries/procurement.html">
+<meta property="og:title" content="Procurement example">
+<meta property="og:description" content="A demo pipeline from a supplier&#x27;s invoice to a payment decision: a price tolerance change located at match, an invoice quantity change located at its input, and a payment over the approver&#x27;s limit declined.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneproof.dev/industries/procurement.html">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html">Developers</a>
+      <a href="/how-it-works.html">How it works</a>
+      <a href="/onetrace/">Docs</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<div class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow"><b>Example</b> Procurement</span>
+    <h1>An invoice is matched and paid or held. See which step's setting changed, and which input did.</h1>
+    <p class="lede">A supplier's invoice is read, matched against its purchase order and goods receipt within a price tolerance, and then paid or held. When a payment flips, the comparison names the step where the record first differs, and whether a setting or an input changed there.</p>
+    <div class="cta-row" style="margin-top:26px">
+      <a class="btn btn-primary" href="https://demo.oneproof.dev/pipeline-p8.html">Open this pipeline in the live demo</a>
+      <a class="btn btn-ghost" href="/industries/">All examples</a>
+    </div>
+    <p class="cta-note">Invented example data, recorded when the demo was built. The demo records and compares; it controls nothing. The screenshots are from a build of the same demo: each build gives its runs new fingerprints and times, so those differ from the live demo's, and what the screenshots show is the same.</p>
+  </div>
+</div>
+
+<section aria-labelledby="steps-title">
+  <div class="wrap">
+    <p class="kicker">The pipeline</p>
+    <h2 id="steps-title">Three steps, from an invoice to a payment decision.</h2>
+    <div class="chain" role="img" aria-label="The pipeline&#x27;s steps in order: read_invoice, match, approve_payment."><div class="rcpt"><b>01 read_invoice</b><span>the supplier&#x27;s invoice</span></div><div class="arrow"></div><div class="rcpt"><b>02 match</b><span>price_tolerance</span></div><div class="arrow"></div><div class="rcpt"><b>03 approve_payment</b><span>pay or hold</span></div></div>
+    <ul class="clean" style="margin-top:24px;max-width:72ch"><li><code>read_invoice</code> reads the invoice's line: item, quantity and unit price.</li><li><code>match</code> matches it against the purchase order and the goods received, within a price tolerance, and lists each problem it finds.</li><li><code>approve_payment</code> pays a matched invoice and holds one with problems, and declines an amount over the approver's limit.</li></ul>
+  </div>
+</section>
+
+<section class="section-soft" aria-labelledby="planted-title">
+  <div class="wrap">
+    <p class="kicker">What the demo plants</p>
+    <h2 id="planted-title">The runs, and what was changed in each.</h2>
+    <table style="margin-top:20px"><thead><tr><th>Run</th><th>What was changed</th></tr></thead><tbody>
+    <tr><td><code>p8-42-invoice-tolerance-2pct</code></td><td>Nothing: the baseline, with a 2.00% price tolerance. The unit price is 12.80 against the order's 12.50, so the invoice is held.</td></tr><tr><td><code>p8-43-invoice-tolerance-5pct</code></td><td><code>match</code>'s <code>price_tolerance</code>, 2.00% to 5.00%.</td></tr><tr><td><code>p8-44-invoice-quantity-changed</code></td><td>On top of p8-43, the invoice's quantity, 40 to 400, where 40 were received.</td></tr><tr><td><code>p8-45-invoice-over-limit-declined</code></td><td>An invoice of 3840.00, over the approver's limit of 2500.00.</td></tr>
+    </tbody></table>
+  </div>
+</section>
+
+<section aria-labelledby="shows-title">
+  <div class="wrap">
+    <p class="kicker">What onetrace shows</p>
+    <h2 id="shows-title">Each change, located in the record.</h2>
+    <h3 style="margin-top:44px">The tolerance change: first difference at match, and the payment flips</h3><p class="sub" style="margin-top:8px"><code>read_invoice</code> is the same in both runs. <code>match</code> is the first difference, and the page names its setting: <code>price_tolerance</code>, 2.00% to 5.00%. The unit price that was 2.40% over the order is now inside the tolerance, so <code>match</code> finds no problem, and <code>approve_payment</code> pays where it held.</p><figure style="margin:28px 0 0"><div class="shot"><a href="/assets/img/industries/p8-tolerance-top.webp"><img src="/assets/img/industries/p8-tolerance-top.webp" width="1280" height="800" loading="lazy" alt="The live demo&#x27;s comparison of p8-42-invoice-tolerance-2pct and p8-43-invoice-tolerance-5pct. Both runs&#x27; records agree. First difference at stage 2, match: its settings differ in price_tolerance, 2.00% to 5.00%. read_invoice is Same, and approve_payment is marked Changed after it."></a></div><figcaption style="font-size:14px;color:var(--muted);margin-top:10px">Comparison page: first difference at <code>match</code>, with the setting named.</figcaption></figure><figure style="margin:28px 0 0"><div class="shot"><a href="/assets/img/industries/p8-tolerance-settings.webp"><img src="/assets/img/industries/p8-tolerance-settings.webp" width="1280" height="800" loading="lazy" alt="Settings that changed: match, price_tolerance, 2.00% to 5.00%. Below, the text diff of match.json: matched goes from false to true, and the problem, a unit price of 12.80 that is 2.40% over the order&#x27;s 12.50, past the tolerance of 2.00%, is gone."></a></div><figcaption style="font-size:14px;color:var(--muted);margin-top:10px">Settings that changed, and the match result that moved with it.</figcaption></figure><h3 style="margin-top:44px">The quantity change: an input, not a setting</h3><p class="sub" style="margin-top:8px">Against the paid run, the invoice itself differs: 400 where it read 40. No setting of <code>read_invoice</code> changed, so the run's page says the first difference is at <code>read_invoice</code>, from its input. <code>match</code> now finds that 400 were invoiced and 40 received, and the payment is held again.</p><figure style="margin:28px 0 0"><div class="shot"><a href="/assets/img/industries/p8-quantity-run.webp"><img src="/assets/img/industries/p8-quantity-run.webp" width="1280" height="800" loading="lazy" alt="The live demo&#x27;s page for run p8-44-invoice-quantity-changed: Changed vs p8-43-invoice-tolerance-5pct, first difference at read_invoice. Records agree: Yes, 85 checks made, all hold."></a></div><figcaption style="font-size:14px;color:var(--muted);margin-top:10px">Run page: changed against the paid run, first difference at <code>read_invoice</code>.</figcaption></figure><h3 style="margin-top:44px">Over the approver's limit: declined by its own rule</h3><p class="sub" style="margin-top:8px"><code>approve_payment</code> declines an invoice of 3840.00, over the approver's limit of 2500.00, and records why. The run's page says it stopped there, by the step's own rule, and that no declared step was left without a receipt.</p><figure style="margin:28px 0 0"><div class="shot"><a href="/assets/img/industries/p8-declined-run.webp"><img src="/assets/img/industries/p8-declined-run.webp" width="1280" height="800" loading="lazy" alt="The live demo&#x27;s page for run p8-45-invoice-over-limit-declined: Declined at approve_payment. The step declined by its own rule, and recorded why: an invoice of 3840.00 is over the approver&#x27;s limit of 2500.00. No declared step was left without a receipt."></a></div><figcaption style="font-size:14px;color:var(--muted);margin-top:10px">Run page: declined at <code>approve_payment</code>, with its reason.</figcaption></figure>
+  </div>
+</section>
+
+<section class="section-soft" aria-labelledby="limits-title">
+  <div class="wrap">
+    <p class="kicker">What it doesn't say</p>
+    <h2 id="limits-title">A located change, not a reason.</h2>
+    <p class="sub">The comparison says where the two records first part ways, and whether a setting or an input changed there. It doesn't say whether a 5% tolerance is right, or whether the invoice should have been paid. See <a href="/onetrace/verdicts.html">what each verdict means</a> and <a href="/onetrace/non-claims.html">what onetrace does not claim</a>.</p>
+    <p class="sub">Try it yourself: <a href="https://demo.oneproof.dev/pipeline-p8.html">this pipeline in the live demo</a>, or on your machine with <code>pip install onetrace-console</code> and <code>onetrace-console demo --open</code>.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/industries/">Examples by industry</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Packages</h4>
+        <ul>
+          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/answer-lineage.html">A forensic report</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
+  </div>
+</footer>
+</body>
+</html>
