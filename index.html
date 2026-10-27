@@ -44,7 +44,7 @@
 <section class="hero" aria-labelledby="hero-title">
   <div class="wrap hero-grid">
     <div>
-      <a class="eyebrow" href="/whats-new.html" style="text-decoration:none"><b>New</b> onetrace-console 0.3: a drift page for each pipeline, and checked explanations &rarr;</a>
+      <a class="eyebrow" href="/whats-new.html" style="text-decoration:none"><b>New</b> onetrace-console 0.3.2: the short answer first, then what may have happened &rarr;</a>
       <h1 id="hero-title">Your AI changed. Find the <em>first difference</em>.</h1>
       <p class="lede">Compare two runs of your pipeline. onetrace shows the first step whose output differs, what was recorded there, and every step that changed after it. Each run's record is one receipt per step, checkable by anyone.</p>
       <div class="cta-row">
@@ -180,16 +180,16 @@
         <ul style="color:var(--ink-2);line-height:1.7;margin:0 0 20px 20px;padding:0">
           <li><b>Labelled, every time.</b> Each explanation says it is AI-generated and may be wrong, and names the model that wrote it.</li>
           <li><b>Every claim cites the record.</b> It names the items in the comparison it rests on, linked where the page can show them. Claims that misquote the record are dropped before anyone reads them, and the page says how many.</li>
-          <li><b>Checks you can run.</b> It suggests onetrace commands, and the console runs the ones it can with one click. A lead is confirmed or ruled out only by what those checks report.</li>
+          <li><b>Checks you can run.</b> It suggests onetrace commands, each once; on your own console, the ones it can run get a Run button and every other a Copy button. A lead is confirmed or ruled out only by what those checks report.</li>
           <li><b>It leaves a record too.</b> Each explanation is recorded as a onetrace run of its own, and checked like any other.</li>
           <li><b>You choose what's sent.</b> To a model you configure, only when you press Explain. Before it first sends a kind of item to an endpoint, it names those kinds and waits for Send, and "Show the packet" shows the exact bytes.</li>
         </ul>
 <pre>pip install onetrace-explain</pre>
         <p style="color:var(--ink-2);margin-top:12px"><a href="/whats-new.html#explain">How it works</a> · <a href="/onetrace/explain-format.html">What it reads, sends, checks and writes</a></p>
       </div>
-      <div class="shot"><a href="/assets/img/shot-explain.webp"><img src="/assets/img/shot-explain.webp" width="1346" height="950" loading="lazy" alt="A real suggested explanation on the console's comparison page for the demo's split comparison. Its heading reads Suggested explanation — AI-generated, may be wrong. Model: anthropic:claude-sonnet-4-6. Its record verifies: 92 pass, 0 fail, 3 not-run, PASS. Its one claim says the first difference is at split, where the chunk_size constant changed from 1024 to 512, naming the three items in the record it cites, two of them as links. Below, four onetrace commands it suggests, three with a Run button and one that needs a runner you name. Last line: dropped before anyone read them, 6 claims that quote a value their cites don't hold."></a></div>
+      <div class="shot"><a href="/assets/img/shot-explain.webp"><img src="/assets/img/shot-explain.webp" width="1280" height="1060" loading="lazy" alt="The live demo's split comparison in onetrace-console 0.3.2. At the top, The short answer: The runs first differ at split, where chunk_size went from 1024 to 512. Every stage before it is the same, all 3 stages after it differ; a strip of the five stages with split marked First difference. Directly under it, What may have happened, AI-generated, may be wrong, model anthropic:claude-sonnet-4-6: one card, Lead (possible culprit), saying the first difference originates in the split node where the chunk_size constant changed from 1024 to 512, with four cites as chips, two of them checked; then three onetrace commands under Checks, and the line 5 claims checked against the record, 4 left out."></a></div>
     </div>
-    <p class="sub" style="font-size:14px;margin-top:20px">Shown: a real explanation of the demo's split comparison, written by claude-sonnet-4-6 on the local console. The live demo now shows four kept explanations, made once and served as files; it calls no model. <a href="https://demo.oneproof.dev/diff/371af83389a8a2832741c2d1e147d16d58e739c21ed2938fed7024c003399624.html">See the split comparison's explanation on the live demo</a></p>
+    <p class="sub" style="font-size:14px;margin-top:20px">Shown: the live demo's split comparison in onetrace-console 0.3.2: the short answer first, then the kept explanation, written once by claude-sonnet-4-6 and served as a file. The live demo shows four kept explanations and calls no model. <a href="https://demo.oneproof.dev/diff/371af83389a8a2832741c2d1e147d16d58e739c21ed2938fed7024c003399624.html">See the split comparison's explanation on the live demo</a></p>
   </div>
 </section>
 

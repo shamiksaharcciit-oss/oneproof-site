@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>What's new: onetrace-console 0.3 and onetrace 0.4 · oneproof</title>
-<meta name="description" content="onetrace-console 0.3.0 runs on onetrace 0.4.0, with a drift page for each pipeline and checked explanations. onetrace 0.4.0: export a run to OpenTelemetry, compare many runs at once with drift, and get a suggested explanation that is checked against the record. Also everything from 0.3.0 and 0.3.1.">
+<meta name="description" content="onetrace-console 0.3.2: a short answer at the top of every comparison, the explanation redrawn under it, a setup page for Explain. 0.3.1: a Compare button, a faster store, two more example pipelines, and kept explanations on the live demo. onetrace 0.4.0: export a run to OpenTelemetry, compare many runs at once with drift, and a suggested explanation that is checked against the record.">
 <link rel="canonical" href="https://oneproof.dev/whats-new.html">
 <meta property="og:title" content="What's new: onetrace-console 0.3 and onetrace 0.4">
 <meta property="og:description" content="Export a run to OpenTelemetry, compare many runs with drift, and get a suggested explanation checked against the record.">
@@ -42,10 +42,12 @@
 
 <div class="page-hero">
   <div class="wrap">
-    <span class="eyebrow"><b>What's new</b> onetrace-console 0.3.0 · onetrace 0.4.0</span>
-    <h1>Many runs side by side, in your browser and in your terminal.</h1>
-    <p class="lede">onetrace-console 0.3.0 is on PyPI and runs on onetrace 0.4.0. onetrace 0.4.0 and onetrace-verify 0.4.0 came first, with a new, separate package: onetrace-explain 0.1.0. This page also covers onetrace 0.3.0 and 0.3.1, which shipped without a page of their own. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
+    <span class="eyebrow"><b>What's new</b> onetrace-console 0.3.2 · onetrace 0.4.0</span>
+    <h1>The short answer first, then what may have happened.</h1>
+    <p class="lede">onetrace-console 0.3.2 is on PyPI and runs on onetrace 0.4.0. Every comparison page now opens with one checked sentence on where the runs first differ, and the suggested explanation sits directly under it. 0.3.1 brought a Compare button, a faster store, two more example pipelines and kept explanations on the live demo. onetrace 0.4.0 and onetrace-verify 0.4.0 came first, with onetrace-explain 0.1.0. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
     <div class="crumbs">
+      <a href="#console032">Console 0.3.2</a>
+      <a href="#console031">Console 0.3.1</a>
       <a href="#console030">Console 0.3.0</a>
       <a href="#v040">In 0.4.0</a>
       <a href="#explain">Suggested explanations</a>
@@ -55,6 +57,54 @@
     </div>
   </div>
 </div>
+
+<section id="console032" aria-labelledby="console032-title">
+  <div class="wrap">
+    <p class="kicker">onetrace-console 0.3.2</p>
+    <h2 id="console032-title">A short answer at the top of every comparison.</h2>
+    <p class="sub">From the comparison's own records and no model, so it is the same every time. The sections below it are unchanged.</p>
+    <div class="grid-3">
+      <div class="card">
+        <h3>The short answer</h3>
+        <p>One sentence says where the two runs first differ and what differs there: a setting by its recorded name with both values ("The runs first differ at <code>split</code>, where <code>chunk_size</code> went from 1024 to 512."), an input, a configuration, or the step's output. A line under it says the stages before it are the same and counts what came after. A strip shows each stage in order with its result, the first difference marked. Runs whose outputs all agree say so, and name a setting that differs anyway.</p>
+      </div>
+      <div class="card">
+        <h3>The explanation, redrawn and moved up</h3>
+        <p>It sits directly under the short answer, with one heading, "What may have happened", and "AI-generated, may be wrong" with its model on every explanation. Each kept claim is a card: its kind, its text, and its cites as chips naming the stage and the item, with both values where the records hold them. Each suggested check is listed once, with a Run button where the console can run it and a Copy button where it cannot. A footer counts the claims checked against the record and those left out. The kept explanations on the live demo are drawn this way from the same records.</p>
+      </div>
+      <div class="card">
+        <h3>A setup page for Explain</h3>
+        <p>On your own console, <code>/explain/setup</code> is a guide in three steps, and changes nothing: the model your configuration names, an OpenAI-compatible model on your machine as a choice, what always stays with you and what is sent, the two flags that add text or hold a value back, and the three promises. It has no button, and never shows the key, its variable, the endpoint or the request. The live demo has no setup page.</p>
+      </div>
+    </div>
+<div class="shot" style="margin-top:28px;max-width:980px"><a href="/assets/img/shot-explain.webp"><img src="/assets/img/shot-explain.webp" width="1280" height="1060" loading="lazy" alt="The live demo's split comparison in onetrace-console 0.3.2: The short answer at the top, saying the runs first differ at split where chunk_size went from 1024 to 512, with a strip of the five stages; directly under it, What may have happened, AI-generated, may be wrong, with one Lead card, its cites as chips, three suggested checks, and the line 5 claims checked against the record, 4 left out."></a></div>
+<pre>pip install --upgrade onetrace-console
+onetrace-console demo --open</pre>
+    <p class="sub">The full list is in the <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.3.2">release notes</a>.</p>
+  </div>
+</section>
+
+<section id="console031" class="section-soft" aria-labelledby="console031-title">
+  <div class="wrap">
+    <p class="kicker">onetrace-console 0.3.1</p>
+    <h2 id="console031-title">A Compare button, a faster store, and two more pipelines.</h2>
+    <div class="grid-3">
+      <div class="card">
+        <h3>Compare with one press</h3>
+        <p>On your own console, each pair not compared yet has a Compare button beside its request. A Compare press, a drawing of the pages and the public build each read the store once; every page is the same, byte for byte, as before. On one Windows PC, measured side by side, a Compare press went from 73.8 s to 9.1 s and the public build from 796 s to 309 s.</p>
+      </div>
+      <div class="card">
+        <h3>Invoice match and wheel-bolt torque</h3>
+        <p>Two more example pipelines in the demo: a supplier's invoice matched against its purchase order and goods receipt, with a price tolerance, to paying or holding it; and a tightening tool's five bolt torques against a window, to passing the wheel or sending it to rework. Both use invented example data. See the <a href="/industries/procurement.html">procurement</a> and <a href="/industries/automotive.html">automotive</a> pages.</p>
+      </div>
+      <div class="card">
+        <h3>Kept explanations on the live demo</h3>
+        <p>A public console runs no command and calls no model. It now shows the explanations its build kept, made once and served as files: on the comparison's page, each with its model, its claims with their cites, the checks it names, and the claims dropped with the reason. The live demo keeps four. Every other comparison says none is kept.</p>
+      </div>
+    </div>
+    <p class="sub">The full list is in the <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.3.1">release notes</a>.</p>
+  </div>
+</section>
 
 <section id="console030" aria-labelledby="console030-title">
   <div class="wrap">
@@ -148,7 +198,7 @@ onetrace drift runs/run-1 runs/run-2 runs/run-3 --against first --durations</pre
         <p>Each explanation is recorded as a onetrace run of its own, so you can check later what was sent and what came back.</p>
       </div>
     </div>
-<div class="shot" style="margin-top:28px;max-width:980px"><img src="/assets/img/shot-explain.webp" width="1346" height="950" loading="lazy" alt="A real suggested explanation on the console's comparison page for the demo's split comparison. Its heading reads Suggested explanation — AI-generated, may be wrong. Model: anthropic:claude-sonnet-4-6. Its record verifies: 92 pass, 0 fail, 3 not-run, PASS. Its one claim says the first difference is at split, where the chunk_size constant changed from 1024 to 512, naming the three items in the record it cites, two of them as links. Below, four onetrace commands it suggests, three with a Run button and one that needs a runner you name. Last line: dropped before anyone read them, 6 claims that quote a value their cites don't hold."></div>
+<div class="shot" style="margin-top:28px;max-width:980px"><img src="/assets/img/shot-explain.webp" width="1280" height="1060" loading="lazy" alt="The live demo's split comparison as onetrace-console 0.3.2 draws it: the short answer, then the kept explanation, AI-generated, may be wrong, with its one claim, its cites as chips, and the checks it suggests."></div>
 <p class="sub" style="font-size:14px">A real explanation of the demo's split comparison, written by claude-sonnet-4-6 on the local console 0.3.0.</p>
 <pre>pip install onetrace-explain
 onetrace localize runs/A runs/B --out report
