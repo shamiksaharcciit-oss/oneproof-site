@@ -67,7 +67,7 @@
     <div class="grid-3">
       <div class="card">
         <h3>Decisions, recorded with the step they gate</h3>
-        <p><code>@ot.run(..., gated_stages=[...])</code> declares which steps must be gated. Inside such a step, <code>ot.decision(ref, permit=None, action=None)</code> records the onedoor decision it cites, the bound permit's compact JWS, and the action's digest. onetrace-verify 0.5.0 adds five rows for them, read with <code>--decisions</code> and <code>--permit-issuers</code>: the gated step is well formed, it acted on a permit, the permit covers the recorded action, and the decision is in the export. onetrace never imports onedoor; the checks are vendored, standard-library code tested against onedoor's published vectors.</p>
+        <p><code>@ot.run(..., gated_stages=[...])</code> declares which steps must be gated. Inside such a step, <code>ot.decision(ref, permit=None, action=None)</code> records the onedoor decision it cites, the bound permit's compact JWS, and the action's digest. onetrace-verify 0.5.0 adds five rows for them, read with <code>--decisions</code> and <code>--permit-issuers</code>: every gated step cites a decision, each reference is well formed, a step that acted cites a permitting decision, the permit covers the recorded action, and the decision is in the export. onetrace never imports onedoor; the checks are vendored, standard-library code tested against onedoor's published vectors.</p>
       </div>
       <div class="card">
         <h3>The span context</h3>
@@ -81,7 +81,7 @@
 <pre>pip install --upgrade "onetrace[crypto]"
 onetrace-verify runs/&lt;run&gt; --decisions decisions.jsonl --permit-issuers permit-issuers.json
 onetrace localize runs/a runs/b --nested-run runs/a-inner --nested-run runs/b-inner</pre>
-    <p class="sub">The full list is in the package's changelog at the tag. The documentation pages on this site describe 0.4.0 and still apply; the three new pages ship in the package.</p>
+    <p class="sub">The full list is in the package's changelog at the tag. The documentation pages on this site describe 0.4.0 and still apply; the three new pages are in the source package and at the tag.</p>
   </div>
 </section>
 
