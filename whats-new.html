@@ -44,7 +44,7 @@
   <div class="wrap">
     <span class="eyebrow"><b>What's new</b> onetrace-console 0.3.2 · onetrace 0.4.0</span>
     <h1>The short answer first, then what may have happened.</h1>
-    <p class="lede">onetrace-console 0.3.2 is on PyPI and runs on onetrace 0.4.0. Every comparison page now opens with one checked sentence on where the runs first differ, and the suggested explanation sits directly under it. 0.3.1 brought a Compare button, a faster store, two more example pipelines and kept explanations on the live demo. onetrace 0.4.0 and onetrace-verify 0.4.0 came first, with onetrace-explain 0.1.0. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
+    <p class="lede">onetrace-console 0.3.2 is on PyPI and runs on onetrace 0.4.0. Every comparison page now opens with one checked sentence on where the runs first differ, and the suggested explanation sits directly under it. 0.3.1 brought a Compare button, a faster store, two more example pipelines, and kept explanations on a public console, which the live demo has shown since. onetrace 0.4.0 and onetrace-verify 0.4.0 came first, with onetrace-explain 0.1.0. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
     <div class="crumbs">
       <a href="#console032">Console 0.3.2</a>
       <a href="#console031">Console 0.3.1</a>
@@ -70,7 +70,7 @@
       </div>
       <div class="card">
         <h3>The explanation, redrawn and moved up</h3>
-        <p>It sits directly under the short answer, with one heading, "What may have happened", and "AI-generated, may be wrong" with its model on every explanation. Each kept claim is a card: its kind, its text, and its cites as chips naming the stage and the item, with both values where the records hold them. Each suggested check is listed once, with a Run button where the console can run it and a Copy button where it cannot. A footer counts the claims checked against the record and those left out. The kept explanations on the live demo are drawn this way from the same records.</p>
+        <p>It sits directly under the short answer, with one heading, "What may have happened", and "AI-generated, may be wrong" with its model on every explanation. Each kept claim is a card: its kind, its text, and its cites as chips naming the stage and the item, with both values where the records hold them. Each suggested check is listed once; on your own console, the ones it can run get a Run button and every other a Copy button, and the live demo lists them as text. A footer counts the claims checked against the record and those left out. The kept explanations on the live demo are drawn in this layout from the same records.</p>
       </div>
       <div class="card">
         <h3>A setup page for Explain</h3>
@@ -98,8 +98,8 @@ onetrace-console demo --open</pre>
         <p>Two more example pipelines in the demo: a supplier's invoice matched against its purchase order and goods receipt, with a price tolerance, to paying or holding it; and a tightening tool's five bolt torques against a window, to passing the wheel or sending it to rework. Both use invented example data. See the <a href="/industries/procurement.html">procurement</a> and <a href="/industries/automotive.html">automotive</a> pages.</p>
       </div>
       <div class="card">
-        <h3>Kept explanations on the live demo</h3>
-        <p>A public console runs no command and calls no model. It now shows the explanations its build kept, made once and served as files: on the comparison's page, each with its model, its claims with their cites, the checks it names, and the claims dropped with the reason. The live demo keeps four. Every other comparison says none is kept.</p>
+        <h3>Kept explanations on a public console</h3>
+        <p>A public console runs no command and makes no network calls. It now shows the explanations its build kept, made once and served as files: on the comparison's page, each with its model, its claims with their cites, the checks it names, and the claims dropped with the reason. The live demo has shown four since, and every other comparison there says none is kept.</p>
       </div>
     </div>
     <p class="sub">The full list is in the <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.3.1">release notes</a>.</p>
