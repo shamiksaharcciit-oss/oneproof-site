@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>What's new: onetrace-console 0.3 and onetrace 0.4 · oneproof</title>
-<meta name="description" content="onetrace-console 0.3.2: a short answer at the top of every comparison, the explanation redrawn under it, a setup page for Explain. 0.3.1: a Compare button, a faster store, two more example pipelines, and kept explanations on the live demo. onetrace 0.4.0: export a run to OpenTelemetry, compare many runs at once with drift, and a suggested explanation that is checked against the record.">
+<title>What's new: onetrace 0.5 and onetrace-console 0.3 · oneproof</title>
+<meta name="description" content="onetrace 0.5.0: decisions from onedoor recorded with the step they gate, the span context of each step, and nested runs that a comparison descends into. onetrace-console 0.3.2: a short answer at the top of every comparison, the explanation redrawn under it, a setup page for Explain. 0.3.1: a Compare button, a faster store, two more example pipelines, and kept explanations on the live demo. onetrace 0.4.0: export a run to OpenTelemetry, compare many runs at once with drift, and a suggested explanation that is checked against the record.">
 <link rel="canonical" href="https://oneproof.dev/whats-new.html">
-<meta property="og:title" content="What's new: onetrace-console 0.3 and onetrace 0.4">
-<meta property="og:description" content="Export a run to OpenTelemetry, compare many runs with drift, and get a suggested explanation checked against the record.">
+<meta property="og:title" content="What's new: onetrace 0.5 and onetrace-console 0.3">
+<meta property="og:description" content="Decisions recorded with the step they gate, the span context of each step, and nested runs a comparison descends into; a short answer at the top of every comparison.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://oneproof.dev/whats-new.html">
 <meta property="og:image" content="https://oneproof.dev/og.png">
@@ -42,10 +42,11 @@
 
 <div class="page-hero">
   <div class="wrap">
-    <span class="eyebrow"><b>What's new</b> onetrace-console 0.3.2 · onetrace 0.4.0</span>
-    <h1>The short answer first, then what may have happened.</h1>
-    <p class="lede">onetrace-console 0.3.2 is on PyPI and runs on onetrace 0.4.0. Every comparison page now opens with one checked sentence on where the runs first differ, and the suggested explanation sits directly under it. 0.3.1 brought a Compare button, a faster store, two more example pipelines, and kept explanations on a public console, which the live demo has shown since. onetrace 0.4.0 and onetrace-verify 0.4.0 came first, with onetrace-explain 0.1.0. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
+    <span class="eyebrow"><b>What's new</b> onetrace 0.5.0 · onetrace-console 0.3.2</span>
+    <h1>Decisions, spans and nested runs, in the record.</h1>
+    <p class="lede">onetrace 0.5.0 and onetrace-verify 0.5.0 are on PyPI. A step that acts on an onedoor decision records the decision it cites and the permit it acted on, and the verifier checks that what ran was permitted. A step inside a span records its trace id, and a run started inside another run's step is recorded as that step's input, so a comparison descends into it. The record format stays 0.3, and a run that uses none of this writes the same bytes as before. onetrace-console 0.3.2 opens every comparison with one checked sentence on where the runs first differ, with the suggested explanation directly under it. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
     <div class="crumbs">
+      <a href="#v050">In 0.5.0</a>
       <a href="#console032">Console 0.3.2</a>
       <a href="#console031">Console 0.3.1</a>
       <a href="#console030">Console 0.3.0</a>
@@ -57,6 +58,32 @@
     </div>
   </div>
 </div>
+
+<section id="v050" class="section-soft" aria-labelledby="v050-title">
+  <div class="wrap">
+    <p class="kicker">onetrace 0.5.0</p>
+    <h2 id="v050-title">What a step was allowed to do, where it ran, and what it called.</h2>
+    <p class="sub">Three optional blocks in the receipt. A 0.4.0 verifier reads a 0.5.0 record unchanged, and a run that records none of them writes receipts byte-identical to 0.4.0.</p>
+    <div class="grid-3">
+      <div class="card">
+        <h3>Decisions, recorded with the step they gate</h3>
+        <p><code>@ot.run(..., gated_stages=[...])</code> declares which steps must be gated. Inside such a step, <code>ot.decision(ref, permit=None, action=None)</code> records the onedoor decision it cites, the bound permit's compact JWS, and the action's digest. onetrace-verify 0.5.0 adds five rows for them, read with <code>--decisions</code> and <code>--permit-issuers</code>: the gated step is well formed, it acted on a permit, the permit covers the recorded action, and the decision is in the export. onetrace never imports onedoor; the checks are vendored, standard-library code tested against onedoor's published vectors.</p>
+      </div>
+      <div class="card">
+        <h3>The span context</h3>
+        <p>A step that runs inside an active OpenTelemetry span records that span's trace id and span id; the run's manifest records its <code>traceparent</code>, read from the active span or from the <code>TRACEPARENT</code> environment variable. No OpenTelemetry package is required. A malformed <code>TRACEPARENT</code> is refused and named, never recorded. The trace is a view; the record stays the evidence.</p>
+      </div>
+      <div class="card">
+        <h3>Nested runs</h3>
+        <p>A step called while another runs records its parent, and the caller lists its children in call order. A run started inside another run's step records which run and step started it, and the outer step records the inner run as an input whose digest is the inner chain head. A call nested past 32 levels is refused and named. A comparison descends into a step's children and, with <code>--nested-run</code>, into a nested run, naming the first differing child: "inside <code>plan</code>, at <code>price_lookup</code>". onetrace-verify checks that each nested run's chain head is the one the outer step recorded.</p>
+      </div>
+    </div>
+<pre>pip install --upgrade "onetrace[crypto]"
+onetrace-verify runs/&lt;run&gt; --decisions decisions.jsonl --permit-issuers permit-issuers.json
+onetrace localize runs/a runs/b --nested-run runs/a-inner --nested-run runs/b-inner</pre>
+    <p class="sub">The full list is in the package's changelog at the tag. The documentation pages on this site describe 0.4.0 and still apply; the three new pages ship in the package.</p>
+  </div>
+</section>
 
 <section id="console032" aria-labelledby="console032-title">
   <div class="wrap">
@@ -241,7 +268,7 @@ onetrace-explain report --dry-run</pre>
     <p class="kicker">Upgrading</p>
     <h2 id="upgrade-title">One command, and your old runs still verify.</h2>
 <pre>pip install --upgrade onetrace onetrace-console</pre>
-    <p class="sub">onetrace-verify 0.4.0 comes with it and reads every earlier record. The console, onetrace-console 0.3.0, runs on onetrace 0.4.0, so the two now upgrade together in the same environment.</p>
+    <p class="sub">onetrace-verify comes with it and reads every earlier record. onetrace-console 0.3.2 runs on onetrace 0.4.0; the console release that runs on 0.5.0 follows, and until then an environment that holds the console keeps onetrace 0.4.0, while one without it takes 0.5.0.</p>
     <p class="sub">The full list of changes is in the <a href="/onetrace/manual.html">manual</a> and in each package's changelog.</p>
   </div>
 </section>
