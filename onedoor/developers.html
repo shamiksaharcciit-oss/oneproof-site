@@ -97,6 +97,10 @@
     <p class="kicker">1 · Quickstart</p>
     <h2 id="qs-title">Four commands, from PyPI.</h2>
     <p class="sub">Python 3.12 or later. Nothing here needs the source repository. Step 2 copies the shipped payments examples: worked examples of the policy vocabulary, not a compliance artifact (read <code>PACK.md</code> beside the file in the installed package).</p>
+<p class="sub" style="margin-top:14px">First, a fresh virtual environment, so nothing goes into your system Python (recommended):</p>
+<pre>python -m venv .venv
+source .venv/bin/activate        <span class="c"># Windows PowerShell: .venv\Scripts\Activate.ps1</span></pre>
+    <p class="sub" style="margin-top:14px">Then the four commands. In the first, <code>[service]</code> is the name of one of onedoor's optional extras: it adds what the HTTP decision service needs. Type it as shown, quotes included. Other extras work the same way, for example <code>onedoor[studio]</code>.</p>
 <pre>pip install "onedoor[service]"
 python -c "import shutil; from onedoor import templates; shutil.copy(templates.PAYMENTS.policies_path, 'policies.yaml')"
 export ONEDOOR_DECIDE_KEYS=dev ONEDOOR_ADMIN_KEYS=root ONEDOOR_DB=onedoor.db ONEDOOR_POLICIES=policies.yaml
