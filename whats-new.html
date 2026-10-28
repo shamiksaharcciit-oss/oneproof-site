@@ -66,7 +66,7 @@
   <div class="wrap">
     <p class="kicker">onetrace 0.6.0</p>
     <h2 id="v060-title">A verdict against a known-good run, and what a model call ran on.</h2>
-    <p class="sub">With onetrace-verify 0.6.0. The record format stays 0.3: every new member is optional, a 0.5.0 verifier reads a 0.6.0 receipt unchanged, and a run that uses none of this writes receipts byte-identical to 0.5.0.</p>
+    <p class="sub">With onetrace-verify 0.6.0. The record format stays 0.3: every new member is optional, a 0.5.0 verifier reads a 0.6.0 receipt unchanged, and a run that uses none of this writes the same receipts as 0.5.0, apart from the onetrace version they name.</p>
     <div class="grid-3">
       <div class="card">
         <h3>References and verdicts</h3>
@@ -74,11 +74,11 @@
       </div>
       <div class="card">
         <h3>Variation across repeat runs</h3>
-        <p>Record several runs of one input as a set (<code>@ot.run(repeat_of=RUN_ID)</code>, or <code>onetrace repeat -n N</code> around a command), mark a step whose output may differ with <code>may_vary=True</code>, and <code>onetrace profile</code> shows, per step, how often its output differs across the set, and whether a setting, an input, or nothing changed when it did. <code>--before</code> and <code>--after</code> show whether a fix holds, and name the setting that changed between the sets. Counts only, no score.</p>
+        <p>Record several runs of one input as a set (<code>@ot.run(repeat_of=RUN_ID)</code>, or <code>onetrace repeat -n N --runs-root DIR</code> around a command), mark a step whose output may differ with <code>may_vary=True</code>, and <code>onetrace profile</code> shows, per step, how often its output differs across the set, and whether a setting, an input, or nothing changed when it did. <code>--before</code> and <code>--after</code> show whether a fix holds, and name the setting that changed between the sets. Counts only, no score.</p>
       </div>
       <div class="card">
         <h3>The model-call record</h3>
-        <p>Behind the optional <code>onetrace[model-call]</code> extra: one record per model call, beside the step's receipt, saying for each field whether it was observed, declared, or not observed, and from where. Adapters for vLLM, transformers and OpenAI-style hosted APIs; your engine stays your own version. A per-step token capture is a separate file marked as model output, and the record holds no token id or text. A comparator gives <code>same</code>, <code>diverged</code> or <code>could not compare</code>, and says what it rested on.</p>
+        <p>Behind the optional <code>onetrace[model-call]</code> extra: one record per model call, beside the step's receipt, giving each field one of five states (observed; declared, not observed; declared, contradicted; not observed; not applicable) and where it came from. Adapters for vLLM and transformers, and for hosted APIs that answer in the OpenAI chat-completions shape; your engine stays your own version. A per-step token capture is a separate file marked as model output, and the record holds no token id or text. A comparator gives <code>same</code>, <code>diverged</code> or <code>could not compare</code>, and says what it rested on.</p>
       </div>
     </div>
     <div class="grid-3" style="margin-top:16px">
@@ -88,7 +88,7 @@
       </div>
       <div class="card">
         <h3>Receipts as they are written</h3>
-        <p><code>stream_to</code>, or <code>ONETRACE_STREAM_TO</code>, sends each receipt as the step finishes, so a run that stops halfway still leaves its steps somewhere. It changes no receipt and adds nothing to the chain.</p>
+        <p><code>stream_to</code>, or <code>ONETRACE_STREAM_TO</code>, sends each receipt as the step finishes, so a console can show a run filling in while it is still going. Streaming shares the record as it grows; it is not the record, and it changes no receipt and adds nothing to the chain.</p>
       </div>
       <div class="card">
         <h3>The step you are in</h3>
@@ -98,7 +98,7 @@
 <pre>pip install --upgrade "onetrace[crypto]"
 onetrace reference make runs/known-good --out reference.json
 onetrace verdict runs/today --reference reference.json</pre>
-    <p class="sub">onetrace-console 0.4.0 runs on onetrace 0.5.0, so <code>pip install onetrace-console</code> still installs 0.5.0; install 0.6.0 in its own environment to use what is new now. Console 0.5.0, which shows verdicts, the variation profile and model-call records, is next. The full list is in the package's changelog at the tag; the new pages (references, verdicts, variation, streaming, storage, the model-call record) are in the source package.</p>
+    <p class="sub">onetrace-console 0.4.0 runs on onetrace 0.5.0, so <code>pip install onetrace-console</code> still installs 0.5.0; install 0.6.0 in its own environment to use what is new now. Console 0.5.0, which shows verdicts, the variation profile and model-call records, is in progress. The full list is in the package's changelog at the tag; the new pages (references, variation, streaming, storage, the model-call record) and the extended verdicts page are in the source package.</p>
   </div>
 </section>
 
