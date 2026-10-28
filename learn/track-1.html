@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learn onetrace, track 1: record, check, compare</title>
+<meta name="description" content="Nine levels on your own machine: a first verified run, breaking the chain on purpose, the first difference between two runs, a detective level on the live demo, release noise, kept inputs, signing, timestamping and reproducing a stage.">
+<link rel="canonical" href="https://oneproof.dev/learn/track-1.html">
+<meta property="og:title" content="Learn onetrace, track 1: record, check, compare">
+<meta property="og:description" content="Nine levels on your own machine: a first verified run, breaking the chain on purpose, the first difference between two runs, a detective level on the live demo, release noise, kept inputs, signing, timestamping and reproducing a stage.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneproof.dev/learn/track-1.html">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<style>.os{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:12px}.os>div{min-width:0}.os .lbl{font-size:13px;font-weight:600;color:var(--ink-2);margin:0 0 6px}.os pre{margin:0}@media(max-width:760px){.os{grid-template-columns:1fr}}.gs-note{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:14px;color:var(--ink-2)}.gs-note b{color:var(--ink)}.stepx p{max-width:70ch}</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html">Developers</a>
+      <a href="/how-it-works.html">How it works</a>
+      <a href="/onetrace/">Docs</a>
+      <a href="/learn.html" aria-current="page">Learn</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<div class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow"><b>Learn onetrace</b> track 1 · nine levels · about two hours</span>
+    <h1>Record, check, compare.</h1>
+    <p class="lede">Nine levels on your own machine, with onetrace 0.5.0 and the console. Each level says what to do, what its output must be, and what the verifier must say for it to pass. Most levels build on the one before, so do them in order and keep every folder: they are your proof, and the badge's inputs later.</p>
+    <div class="crumbs">
+      <a href="#before">Before you start</a>
+      <a href="#levels">The levels</a>
+      <a href="#after">When you're done</a>
+    </div>
+  </div>
+</div>
+
+<section id="before" aria-labelledby="before-title">
+  <div class="wrap">
+    <p class="kicker">Before you start</p>
+    <h2 id="before-title">What you need.</h2>
+    <div class="grid-3" style="margin-top:20px">
+      <div class="card"><h3>Python 3.12 or newer</h3><p>And a terminal. Windows, macOS and Linux all work; the commands are given for each where they differ.</p></div>
+      <div class="card"><h3>onetrace installed</h3><p><code>pip install onetrace onetrace-console</code> in a virtual environment, as in <a href="/get-started.html#setup">Get started</a>. Nothing is sent anywhere by any level except 1.8, which says so.</p></div>
+      <div class="card"><h3>A folder you keep</h3><p>Everything below goes under one project folder. Keep its <code>runs/</code> when you finish: each level's folder is its proof.</p></div>
+    </div>
+    <p class="gs-note" style="margin-top:20px"><b>How a level passes.</b> Not by you saying so: by the verifier's line, the comparison's verdict, or, on the detective level, the console's own short answer. Every level states the exact line to look for.</p>
+  </div>
+</section>
+
+<section id="levels" class="section-soft" aria-labelledby="levels-title">
+  <div class="wrap">
+    <p class="kicker">The levels</p>
+    <h2 id="levels-title">Nine levels, in order.</h2>
+    <div class="steps">
+      <div class="stepx"><div>
+        <h3>1.1 First run</h3>
+        <p>Set up a folder with a virtual environment and install onetrace, exactly as in <a href="/get-started.html#setup">Get started, steps 1 to 3</a>. Then create <code>app.py</code> from <a href="/get-started.html#example">step 4 there</a>: a retrieve stage and an answer stage, with a <code>TOP_K</code> setting. Add one line as the first line inside <code>retrieve</code>, so the setting is recorded by name:</p>
+<pre>    ot.constant("top_k", TOP_K)</pre>
+        <p>Record your first run with a fixed run id, so the level's folder has a known name:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = "level-1"
+python app.py
+onetrace-verify --require-artifacts runs/level-1</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-1 python app.py
+onetrace-verify --require-artifacts runs/level-1</pre></div></div>
+        <p><b>Pass when:</b> the last line reads <code>-> PASS</code> with <code>0 fail</code>, and <code>runs/level-1/receipts/</code> holds three receipts: <code>01-intake.json</code> (the question going in), <code>02-retrieve.json</code> and <code>03-answer.json</code>. Lines marked <code>NOT-RUN</code> name checks this record doesn't use; they are not failures.</p>
+        <p class="gs-note"><b>Badge:</b> first verified run. Keep <code>runs/level-1</code>.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>1.2 Break it</h3>
+        <p>Copy the level 1 folder to <code>runs/level-2</code>. Open <code>runs/level-2/receipts/03-answer.json</code> in a text editor and change one character inside the recorded output digest (any hex digit). Save, then verify:</p>
+<pre>onetrace-verify --require-artifacts runs/level-2</pre>
+        <p><b>Pass when:</b> the result is <code>FAIL</code>, and the failing lines name the receipt you edited: <code>receipts/03-answer.json: digest matches the manifest</code> and <code>manifest: chain head matches the last receipt</code>. Nothing else fails. You changed one character; the record says which file, and that the chain no longer closes.</p>
+        <p>Now the lesson's other half: put the character back exactly, verify again, and the run passes. A record is bytes; the check is on the bytes.</p>
+        <p class="gs-note"><b>Badge:</b> saw the chain hold. Keep <code>runs/level-2</code> as broken; it is the output.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>1.3 Two runs</h3>
+        <p>In <code>app.py</code>, change <code>TOP_K = 1</code> to <code>TOP_K = 2</code>. Record a second run and compare it with the first:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = "level-3"
+python app.py
+onetrace localize runs/level-1 runs/level-3 --out r3</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-3 python app.py
+onetrace localize runs/level-1 runs/level-3 --out r3</pre></div></div>
+        <p><b>Pass when:</b> the ladder reads <code>retrieve</code> as <b>FIRST DIFFERENCE</b> and <code>answer</code> as <b>downstream</b>, and the recorded change at <code>retrieve</code> names the setting by its recorded name with both values, <code>constants.top_k: 1 -> 2</code> (the instrument's config digest is listed as changed too; that is the same change, seen as a digest). The command exits 1, which is what "the runs differ" looks like to a script. Open <code>r3/localize.json</code>: it is the same answer as data.</p>
+        <p class="gs-note"><b>Badge:</b> found the first difference. Keep <code>runs/level-3</code> and the comparison report <code>r3/</code>.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>1.4 Detective, on the live demo</h3>
+        <p>On the <a href="https://demo.oneproof.dev">live demo</a>, open pipeline P1 and the two runs <code>p1-02-baseline-set2</code> and <code>p1-08-candidate-set2</code>. Do not open their comparison yet. From the two run pages alone, answer three questions: at which stage do the outputs first differ, which setting differs there, and what are its two values?</p>
+        <p>Then open the comparison between them. The short answer at the top is one sentence, from the records and no model.</p>
+        <p><b>Pass when:</b> your three answers equal the short answer's. If they don't, read the stage pages again: every number on them comes from a receipt.</p>
+        <p class="gs-note"><b>Badge:</b> read the record. Your answer is the output; the console's short answer is the check.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>1.5 Noise</h3>
+        <p>Set <code>TOP_K</code> back to <code>1</code> and record the example once more, as <code>level-5</code>. Compare it with level 1:</p>
+<pre>onetrace diff runs/level-1 runs/level-5</pre>
+        <p>Nothing you control changed, and the comparison may still find differences: a run id, a timestamp, a path. That is release noise. Ask onetrace what to mask, read each line (a version change can be a real cause, not noise), then save the suggestion and compare again with it:</p>
+<pre>onetrace mask suggest runs/level-1 runs/level-5
+onetrace mask suggest runs/level-1 runs/level-5 --json > mask.json
+onetrace diff runs/level-1 runs/level-5 --mask mask.json</pre>
+        <p><b>Pass when:</b> the masked comparison reads <code>identical after masking</code> (exit 0), and every row the mask changed says so. If the first comparison was already identical, the example recorded no noise; the level still passes, and <code>mask.json</code> is empty, which is also an answer.</p>
+        <p class="gs-note"><b>Badge:</b> masked the noise. Keep <code>runs/level-5</code> and <code>mask.json</code>.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>1.6 Keep an input, then erase it</h3>
+        <p>Inputs are fingerprinted, not stored. Keeping one is a choice you make per input, in the decorator: add <code>keep_inputs=["question"]</code> to the <code>retrieve</code> stage (the manual's section 16.19 gives the exact form and the size cap). Record <code>level-6</code> and verify it; the folder now holds <code>inputs/</code> with the question's text.</p>
+        <p>Now erase it: delete <code>runs/level-6/inputs/</code> entirely, and verify again.</p>
+<pre>onetrace-verify --require-artifacts runs/level-6
+onetrace diff runs/level-1 runs/level-6 --text</pre>
+        <p><b>Pass when:</b> the run still verifies after the deletion (a receipt holds the input's digest, never its text), and the text comparison reads <code>not kept: file missing</code> for that input. You have kept a value, and taken it back, without touching the record.</p>
+        <p class="gs-note"><b>Badge:</b> kept and erased. Keep <code>runs/level-6</code>, with its <code>inputs/</code> removed.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>1.7 Sign</h3>
+        <p>Follow <a href="/get-started.html#trust">Get started, step 8</a> exactly: make a key once in a folder outside your project, sign the level 1 run copied as <code>runs/level-7</code>, write <code>trust.json</code> with your key id, and verify with it:</p>
+<pre>onetrace-verify --require-artifacts --trust trust.json runs/level-7</pre>
+        <p><b>Pass when:</b> the signature line reads <code>PASS</code> with the label from your trust list. Then the break-it half: edit <code>trust.json</code> so the key id has one wrong character and verify again. The same signature now reads <code>SIGNED-UNTRUSTED</code>: valid, but by a key your list doesn't name. Put the id back. A signature shows the record is unchanged since signing; your trust list is what says whose key it is.</p>
+        <p class="gs-note"><b>Badge:</b> signed it. Keep <code>runs/level-7</code> and <code>trust.json</code>.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>1.8 Timestamp (this level goes online)</h3>
+        <p>This is the one onetrace command that uses the network, and it sends only the run's fingerprint. Follow <a href="/get-started.html#trust">Get started, step 9</a> with the level 7 folder copied as <code>runs/level-8</code>: fetch the authority's two certificate files, anchor the run, and verify with them:</p>
+<pre>onetrace-verify --require-artifacts --trust trust.json --tsa-cert tsa.crt --tsa-root tsa-root.pem runs/level-8</pre>
+        <p><b>Pass when:</b> the check gains a <code>PASS</code> line for <code>anchors/1.json</code> with the attested time. Without the two certificate files, the anchor can't be checked and the verifier says so; that is the right reading, not a failure of the record.</p>
+        <p class="gs-note"><b>Badge:</b> committed to a time. Keep <code>runs/level-8</code> and the two certificate files.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>1.9 Reproduce</h3>
+        <p>A comparison says what differs between two runs. Reproduce asks a different question: if the recorded code runs again, does it give the recorded outputs? It needs a runner file that says how to run your code; write <code>runner.json</code> as the manual's section 10.3 gives it, with <code>"code": "app.py"</code>. Then reproduce the level 5 run, the last one recorded with <code>app.py</code> as it is now:</p>
+<pre>onetrace reproduce runs/level-5 --runner runner.json --out r9</pre>
+        <p><b>Pass when:</b> each stage reads <code>REPRODUCED</code>, or <code>COULD NOT CHECK</code> with its reason named (the code's digest no longer equals the recorded one, if you edited <code>app.py</code> after level 5, say). Either is a pass: the level is about reading what reproduce can and cannot say, and <code>COULD NOT CHECK</code> is never "close enough". A <code>DIVERGED</code> stage is also a reading, and worth a look at <code>r9/</code>: the code ran, and gave something else.</p>
+        <p class="gs-note"><b>Badge:</b> reproduced a stage. Keep the reproduce report <code>r9/</code>.</p>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<section id="after" aria-labelledby="after-title">
+  <div class="wrap">
+    <p class="kicker">When you're done</p>
+    <h2 id="after-title">Nine folders, one chain.</h2>
+    <p class="sub">You now hold nine run folders and three reports, every one checkable by anyone with <code>onetrace-verify</code>, and you have seen the verifier refuse twice for reasons it named. That is the whole method of onetrace, done by hand once. When the <code>onetrace quest</code> command ships, it reads these folders, checks each level's shape, and writes your badge records from them, signed with the key you made at level 1.7. Keep the folders until then.</p>
+    <p class="sub">Next: <a href="/learn.html#tracks">track 2</a>, decisions, tracing and nesting, which opens when onetrace-console 0.4.0 is on the live demo. Or take what you did here to <a href="/get-started.html#own">your own code</a>.</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/industries/">Examples by industry</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Packages</h4>
+        <ul>
+          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/answer-lineage.html">A forensic report</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
+  </div>
+</footer>
+</body>
+</html>

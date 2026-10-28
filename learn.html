@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learn onetrace: levels proved by records</title>
+<meta name="description" content="Learn onetrace through levels whose proof is a run record the verifier checks, and badges that are signed records anyone can verify. Two tracks, fourteen levels, no points, no leaderboard.">
+<link rel="canonical" href="https://oneproof.dev/learn.html">
+<meta property="og:title" content="Learn onetrace: levels proved by records">
+<meta property="og:description" content="Learn onetrace through levels whose proof is a run record the verifier checks, and badges that are signed records anyone can verify. Two tracks, fourteen levels, no points, no leaderboard.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneproof.dev/learn.html">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<style>.os{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:12px}.os>div{min-width:0}.os .lbl{font-size:13px;font-weight:600;color:var(--ink-2);margin:0 0 6px}.os pre{margin:0}@media(max-width:760px){.os{grid-template-columns:1fr}}.gs-note{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:14px;color:var(--ink-2)}.gs-note b{color:var(--ink)}.stepx p{max-width:70ch}</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html">Developers</a>
+      <a href="/how-it-works.html">How it works</a>
+      <a href="/onetrace/">Docs</a>
+      <a href="/learn.html" aria-current="page">Learn</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<div class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow"><b>Learn onetrace</b> levels, each proved by a record</span>
+    <h1>Learn it the way it works: every level you pass leaves a record anyone can check.</h1>
+    <p class="lede">onetrace is a tool for proving what a pipeline did. So the course is built the same way. Each level is a task with a definite output: a run folder, a comparison, a refusal the verifier names. You pass a level when the verifier says so, on your own machine, with no account and nothing sent anywhere. Your progress is a chain of records, and a badge is a signed record you can give to anyone to check.</p>
+    <div class="crumbs">
+      <a href="#how">How it works</a>
+      <a href="#tracks">The tracks</a>
+      <a href="#badges">Badges</a>
+      <a href="#rules">What it is not</a>
+    </div>
+  </div>
+</div>
+
+<section id="how" aria-labelledby="how-title">
+  <div class="wrap">
+    <p class="kicker">How it works</p>
+    <h2 id="how-title">Levels, in a chain.</h2>
+    <p class="sub">A level gives you a task and tells you exactly what its output must look like. Most levels take the previous level's output as their input, so a track is a chain: skip one and the next won't verify, the same way a record won't verify once a receipt is missing.</p>
+    <div class="grid-3" style="margin-top:20px">
+      <div class="card"><h3>Build levels</h3><p>Record a run, change one setting, sign it, timestamp it, keep an input and erase it again. The output is a run folder that the verifier passes.</p></div>
+      <div class="card"><h3>Break-it levels</h3><p>You are asked to make the verifier refuse in a named way: edit a receipt after the run, sign with the wrong key. You pass when the refusal names exactly what you did. That is how you learn what the record protects.</p></div>
+      <div class="card"><h3>Detective levels</h3><p>Two runs on the live demo, a changed answer, and a question: which stage changed first, and what setting changed there? The record is the answer key, and the console's own answer is there to check yourself against afterwards.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="tracks" class="section-soft" aria-labelledby="tracks-title">
+  <div class="wrap">
+    <p class="kicker">The tracks</p>
+    <h2 id="tracks-title">Two tracks, fourteen levels.</h2>
+    <div class="grid-2" style="margin-top:20px">
+      <div class="card">
+        <h3>Track 1: record, check, compare</h3>
+        <p>Nine levels on onetrace 0.5.0 and the console. Your first verified run; breaking the chain on purpose; two runs and the first difference; a detective level on the live demo; release noise and masking; keeping an input and erasing it; signing; timestamping; reproducing a stage. About two hours, on your own machine.</p>
+        <p><a class="btn btn-primary" href="/learn/track-1.html">Start track 1</a></p>
+      </div>
+      <div class="card">
+        <h3>Track 2: decisions, tracing, nesting</h3>
+        <p>Five levels on what onetrace 0.5.0 added: a step gated by a decision and its permit; paying on a deny, and catching it; a run inside a span, with its trace; a step that starts a sub-agent run; and a boss level with a planted incident across all three. It opens when onetrace-console 0.4.0 is on the live demo.</p>
+        <p><span class="btn" aria-disabled="true">Opens with console 0.4.0</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="badges" aria-labelledby="badges-title">
+  <div class="wrap">
+    <p class="kicker">Badges</p>
+    <h2 id="badges-title">A badge is a record, not a picture.</h2>
+    <p class="sub">When you pass a level, the proof is the run folder the level produced. A badge is a onetrace run of its own whose inputs are that folder's chain head, signed with your key and timestamped if you choose, which <code>onetrace-verify</code> checks like any run. A track badge is a run whose inputs are the level badges' chain heads: it verifies only if every level does.</p>
+    <div class="grid-3" style="margin-top:20px">
+      <div class="card"><h3>Nobody issues it</h3><p>Your badge is your own record. There is no server, no account and no list you must be on. You can publish the folder, or just its chain head, and anyone with the verifier can check it.</p></div>
+      <div class="card"><h3>What it says</h3><p>That records of yours verify and have the shape the level asked for. Nothing about speed, rank or skill. The badge reads "completed", never "correct" and never "expert".</p></div>
+      <div class="card"><h3>What it holds</h3><p>Your key id, the level, the checks and their results, and the chain heads it rests on. No name, no email, no path from your machine. A display name is yours to add, as a declared setting.</p></div>
+    </div>
+    <p class="gs-note" style="margin-top:20px"><b>Today:</b> the levels below are complete and the checks are the verifier's, so you can do every level now and keep the folders. The <code>onetrace quest</code> command that writes the badge records from those folders ships with a later release; until then your folders are the proof, and they will be the badge's inputs when it lands.</p>
+  </div>
+</section>
+
+<section id="rules" class="section-soft" aria-labelledby="rules-title">
+  <div class="wrap">
+    <p class="kicker">What it is not</p>
+    <h2 id="rules-title">No points, no timers, no leaderboard.</h2>
+    <p class="sub">They would reward speed and volume, which the record doesn't measure, and they would need a server that keeps scores, which this project doesn't run. A level is passed or not, by the verifier's reading. No level is judged by a model, and no badge is given for a judgment ("explained a run well"), since no record can check one.</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/industries/">Examples by industry</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Packages</h4>
+        <ul>
+          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/answer-lineage.html">A forensic report</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
+  </div>
+</footer>
+</body>
+</html>
