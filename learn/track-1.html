@@ -45,7 +45,7 @@
   <div class="wrap">
     <span class="eyebrow"><b>Learn onetrace</b> track 1 · nine levels · about two hours</span>
     <h1>Record, check, compare.</h1>
-    <p class="lede">Nine levels on your own machine, with onetrace 0.5.0 and the console. Each level says what to do, what its output must be, and what the verifier must say for it to pass. Most levels build on the one before, so do them in order and keep every folder: they are your proof, and the badge's inputs later.</p>
+    <p class="lede">Nine levels on your own machine, with onetrace 0.5.0, and one on the live demo. Each level says what to do, what its output must be, and what the verifier must say for it to pass. Most levels build on the one before, so do them in order and keep every folder: they are your proof, and the badge's inputs later.</p>
     <div class="crumbs">
       <a href="#before">Before you start</a>
       <a href="#levels">The levels</a>
@@ -60,7 +60,7 @@
     <h2 id="before-title">What you need.</h2>
     <div class="grid-3" style="margin-top:20px">
       <div class="card"><h3>Python 3.12 or newer</h3><p>And a terminal. Windows, macOS and Linux all work; the commands are given for each where they differ.</p></div>
-      <div class="card"><h3>onetrace 0.5.0 installed</h3><p><code>pip install onetrace</code> in a virtual environment, as in <a href="/get-started.html#setup">Get started</a>; the console is not needed for this track. Nothing is sent anywhere by any level except 1.8, which says so.</p></div>
+      <div class="card"><h3>onetrace 0.5.0, with signing</h3><p>Installed in level 1.1 as <code>onetrace[crypto]</code>, in a folder of its own; the console is not needed. Nothing is sent anywhere except at level 1.8, which says so; level 1.4 reads the public demo in your browser.</p></div>
       <div class="card"><h3>A folder you keep</h3><p>Everything below goes under one project folder. Keep its <code>runs/</code> when you finish: each level's folder is its proof.</p></div>
     </div>
     <p class="gs-note" style="margin-top:20px"><b>How a level passes.</b> Not by you saying so: by the verifier's line, the comparison's verdict, or, on the detective level, the console's own short answer. Every level states the exact line to look for.</p>
@@ -74,82 +74,177 @@
     <div class="steps">
       <div class="stepx"><div>
         <h3>1.1 First run</h3>
-        <p>Set up a folder with a virtual environment and install onetrace, exactly as in <a href="/get-started.html#setup">Get started, steps 1 to 3</a>. Then create <code>app.py</code> from <a href="/get-started.html#example">step 4 there</a>: a retrieve stage and an answer stage, with a <code>TOP_K</code> setting. Add one line as the first line inside <code>retrieve</code>, so the setting is recorded by name:</p>
-<pre>    ot.constant("top_k", TOP_K)</pre>
-        <p>Record your first run with a fixed run id, so the level's folder has a known name:</p>
-        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = "level-1"
+        <p>Make a folder with a private Python space in it, and install onetrace with its signing and timestamp support (levels 1.7 and 1.8 need it):</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>mkdir onetrace-learn
+cd onetrace-learn
+py -3.12 -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install &quot;onetrace[crypto]&quot;
+onetrace --version</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>mkdir onetrace-learn
+cd onetrace-learn
+python3 -m venv .venv
+source .venv/bin/activate
+pip install &#x27;onetrace[crypto]&#x27;
+onetrace --version</pre></div></div>
+        <p>The last line prints <code>onetrace 0.5.0</code>. The console is not needed for this track. Every later command runs in this folder, with the virtual environment active. If you close the terminal, come back with <code>cd onetrace-learn</code> and the activate line.</p>
+        <p>Create <code>app.py</code> with this in it: a retrieve stage and an answer stage, with a <code>TOP_K</code> setting recorded by name with <code>ot.constant</code>. It is the <a href="/get-started.html#example">Get started</a> example plus that one line.</p>
+        <pre>import sys
+import onetrace as ot
+
+DOCUMENTS = [
+    &quot;Customers can request a refund within 30 days of purchase.&quot;,
+    &quot;Shipping is free on orders over 50 euros.&quot;,
+    &quot;Support is open Monday to Friday, 9:00 to 17:00.&quot;,
+]
+
+TOP_K = 1  # how many documents to retrieve
+
+
+@ot.stage(&quot;retrieve&quot;, instrument=ot.pkg(&quot;word-overlap&quot;, &quot;onetrace&quot;,
+                                         kind=&quot;retriever&quot;, config={&quot;top_k&quot;: TOP_K}))
+def retrieve(question):
+    ot.constant(&quot;top_k&quot;, TOP_K)
+    words = set(question.lower().split())
+    ranked = sorted(DOCUMENTS, key=lambda d: -len(words &amp; set(d.lower().split())))
+    return ranked[:TOP_K]
+
+
+@ot.stage(&quot;answer&quot;, instrument=ot.pkg(&quot;first-passage&quot;, &quot;onetrace&quot;, kind=&quot;model-call&quot;))
+def answer(question, passages):
+    return &quot;Answer: &quot; + passages[0]
+
+
+@ot.run(stages=[&quot;retrieve&quot;, &quot;answer&quot;])
+def main(question):
+    passages = retrieve(question)
+    print(answer(question, passages))
+
+
+if __name__ == &quot;__main__&quot;:
+    main(&quot; &quot;.join(sys.argv[1:]) or &quot;How long do I have to request a refund?&quot;)</pre>
+        <p>Record your first run with a fixed run id, so the level's folder has a known name, and check it:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = &quot;level-1&quot;
 python app.py
 onetrace-verify --require-artifacts runs/level-1</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-1 python app.py
 onetrace-verify --require-artifacts runs/level-1</pre></div></div>
-        <p><b>Pass when:</b> the last line reads <code>-> PASS</code> with <code>0 fail</code>, and <code>runs/level-1/receipts/</code> holds three receipts: <code>01-intake.json</code> (the question going in), <code>02-retrieve.json</code> and <code>03-answer.json</code>. Lines marked <code>NOT-RUN</code> name checks this record doesn't use; they are not failures.</p>
+        <p><b>Pass when:</b> the last line reads <code>81 pass, 0 fail, 4 not-run  -&gt;  PASS</code>, and <code>runs/level-1/receipts/</code> holds three receipts: <code>01-intake.json</code> (the question going in), <code>02-retrieve.json</code> and <code>03-answer.json</code>. The four <code>NOT-RUN</code> lines name checks this record doesn't use (no anchor, no declared plan); they are not failures.</p>
         <p class="gs-note"><b>Badge:</b> first verified run. Keep <code>runs/level-1</code>.</p>
       </div></div>
       <div class="stepx"><div>
         <h3>1.2 Break it</h3>
-        <p>Copy the level 1 folder to <code>runs/level-2</code>. Open <code>runs/level-2/receipts/03-answer.json</code> in a text editor. The receipt is one long line; find <code>"outputs"</code>, and in its <code>digest</code> change the first character after <code>sha256:</code> to another hex digit. Save, then verify:</p>
-<pre>onetrace-verify --require-artifacts runs/level-2</pre>
-        <p><b>Pass when:</b> the first line reads <code>record NOT intact: receipts/03-answer.json: digest matches the manifest (3 failing rows)</code> and the summary ends <code>-> FAIL</code>. The three <code>[FAIL]</code> rows are: the receipt's digest no longer matches the manifest; the output file <code>return.json</code> no longer matches the digest the receipt now claims for it, with the expected and found digests printed; and the chain head no longer matches the last receipt. Nothing else fails. You changed one character; the record says which file, which value, and that the chain no longer closes.</p>
-        <p>Now the lesson's other half: put the character back exactly, verify again, and the run passes. A record is bytes; the check is on the bytes.</p>
-        <p class="gs-note"><b>Badge:</b> saw the chain hold. Keep <code>runs/level-2</code>, restored, and the verifier's output as text; the refusal is the output.</p>
+        <p>Copy the level 1 folder, then open the copy's last receipt in a text editor:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>Copy-Item -Recurse runs\level-1 runs\level-2
+notepad runs\level-2\receipts\03-answer.json</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>cp -R runs/level-1 runs/level-2
+open -e runs/level-2/receipts/03-answer.json   # or any text editor</pre></div></div>
+        <p>The receipt is one long line. Find <code>"outputs"</code>, and in its <code>digest</code> change the first character after <code>sha256:</code> to another hex digit (<code>f</code> to <code>e</code>, say). Save, then verify:</p>
+        <pre>onetrace-verify --require-artifacts runs/level-2</pre>
+        <p><b>Pass when:</b> the first line reads <code>record NOT intact: receipts/03-answer.json: digest matches the manifest (3 failing rows)</code> and the summary ends <code>77 pass, 3 fail, 5 not-run  -&gt;  FAIL</code>. The three <code>[FAIL]</code> rows are: the receipt's digest no longer matches the manifest; the output file <code>return.json</code> no longer matches the digest the receipt now claims for it, with the expected and found digests printed; and the chain head no longer matches the last receipt. Each comes with a <code>fix</code> line that says how to restore it. You changed one character; the record says which file, which value, and that the chain no longer closes.</p>
+        <p>Now the other half. Copy the original receipt back and verify again:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>Copy-Item runs\level-1\receipts\03-answer.json runs\level-2\receipts\03-answer.json -Force
+onetrace-verify --require-artifacts runs/level-2</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>cp runs/level-1/receipts/03-answer.json runs/level-2/receipts/03-answer.json
+onetrace-verify --require-artifacts runs/level-2</pre></div></div>
+        <p>It reads <code>-&gt; PASS</code> again. A record is bytes; the check is on the bytes.</p>
+        <p class="gs-note"><b>Badge:</b> saw the chain hold. Keep the verifier's refusal as text, and <code>runs/level-2</code> restored.</p>
       </div></div>
       <div class="stepx"><div>
         <h3>1.3 Two runs</h3>
-        <p>In <code>app.py</code>, change <code>TOP_K = 1</code> to <code>TOP_K = 2</code>. Record a second run and compare it with the first:</p>
-        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = "level-3"
+        <p>In <code>app.py</code>, change <code>TOP_K = 1</code> to <code>TOP_K = 2</code> and save. Record a second run and compare it with the first:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = &quot;level-3&quot;
 python app.py
-onetrace localize runs/level-1 runs/level-3 --out r3</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-3 python app.py
-onetrace localize runs/level-1 runs/level-3 --out r3</pre></div></div>
-        <p><b>Pass when:</b> the first line after the two run names reads <code>localize: diverged</code>; the ladder reads <code>intake</code> <code>same</code>, <code>retrieve</code> <code>FIRST DIFFERENCE</code> and <code>answer</code> <code>reconverged</code>; under <code>retrieve</code> it lists <code>constant top_k differs</code> and <code>output return.json differs</code>; and the <code>CAUSE at node 'retrieve'</code> block names <code>constant top_k differs</code> again, with the instrument unchanged. The command exits 1, which is what "the runs differ" looks like to a script (<code>echo $LASTEXITCODE</code> in PowerShell, <code>echo $?</code> in a terminal).</p>
+onetrace localize runs/level-1 runs/level-3 --out r3
+echo $LASTEXITCODE</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-3 python app.py
+onetrace localize runs/level-1 runs/level-3 --out r3
+echo $?</pre></div></div>
+        <p><b>Pass when:</b> the line after the two run names reads <code>localize: diverged</code>; the ladder reads <code>intake</code> <code>same</code>, <code>retrieve</code> <code>FIRST DIFFERENCE</code> and <code>answer</code> <code>reconverged</code>; under <code>retrieve</code> it lists <code>instrument config_digest differs</code>, <code>constant top_k differs</code> and <code>output return.json differs</code>; the <code>CAUSE at node 'retrieve'</code> block names the same; and the exit code is 1, which is what "the runs differ" looks like to a script. The instrument's name and version are unchanged; its config digest changed too, as <code>top_k</code> is also in its config: the same change, seen as a digest.</p>
         <p>Read <code>reconverged</code> carefully: it is the lesson of this level. Retrieve now returns two passages, so its output differs; but the answer stage uses only the first passage, which is the same, so the answer's output is identical. A setting changed, an intermediate result changed, and the final answer did not. The record shows exactly where the difference started and where it stopped. <code>r3/localize.json</code> is the same answer as data.</p>
         <p class="gs-note"><b>Badge:</b> found the first difference. Keep <code>runs/level-3</code> and the comparison report <code>r3/</code>.</p>
       </div></div>
       <div class="stepx"><div>
         <h3>1.4 Detective, on the live demo</h3>
-        <p>On the <a href="https://demo.oneproof.dev">live demo</a>, open pipeline P1 and the two runs <code>p1-02-baseline-set2</code> and <code>p1-08-candidate-set2</code>. Do not open their comparison yet. From the two run pages alone, answer three questions: at which stage do the outputs first differ, which setting differs there, and what are its two values?</p>
-        <p>Then open the comparison between them. The short answer at the top is one sentence, from the records and no model.</p>
-        <p><b>Pass when:</b> your three answers equal the short answer's. If they don't, read the stage pages again: every number on them comes from a receipt.</p>
-        <p class="gs-note"><b>Badge:</b> read the record. Your answer is the output; the console's short answer is the check.</p>
+        <p>On the <a href="https://demo.oneproof.dev">live demo</a>, open pipeline P1 and the run <code>p1-08-candidate-set2</code>. Its page already says where it first differs from <code>p1-02-baseline-set2</code>. The detective work is the next part: open that stage's page in each of the two runs, not the comparison, and find which setting differs there and its two values.</p>
+        <p>Then open the comparison between the two runs. Its short answer, at the top, is one sentence checked from the records, with no model involved. Below it the demo shows an explanation written by a model and labelled as such; that is not the check.</p>
+        <p><b>Pass when:</b> the setting you found and its two values equal the short answer's. If they don't, read the stage pages again: every value on them comes from a receipt.</p>
+        <p class="gs-note"><b>Badge:</b> read the record. Your answer is the output; the comparison's short answer is the check.</p>
       </div></div>
       <div class="stepx"><div>
         <h3>1.5 Noise</h3>
-        <p>Set <code>TOP_K</code> back to <code>1</code> and record the example once more, as <code>level-5</code>. Compare it with level 1:</p>
-<pre>onetrace diff runs/level-1 runs/level-5</pre>
-        <p>Nothing you control changed, and the comparison may still find differences: a run id, a timestamp, a path. That is release noise. Ask onetrace what to mask, read each line (a version change can be a real cause, not noise), then save the suggestion and compare again with it:</p>
-<pre>onetrace mask suggest runs/level-1 runs/level-5
-onetrace mask suggest runs/level-1 runs/level-5 --json > mask.json
-onetrace diff runs/level-1 runs/level-5 --mask mask.json</pre>
-        <p><b>Pass when:</b> the masked comparison reads <code>identical after masking</code> (exit 0), and every row the mask changed says so. If the first comparison was already identical, the example recorded no noise; the level still passes, and <code>mask.json</code> is empty, which is also an answer.</p>
-        <p class="gs-note"><b>Badge:</b> masked the noise. Keep <code>runs/level-5</code> and <code>mask.json</code>.</p>
+        <p>Set <code>TOP_K</code> back to <code>1</code> in <code>app.py</code>, save, and record the example once more:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = &quot;level-5&quot;
+python app.py</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-5 python app.py</pre></div></div>
+        <p>Nothing you control changed. Compare it with level 1, and ask onetrace which differences look like release noise (run ids, timestamps, paths, version settings) and could be masked:</p>
+        <pre>onetrace diff runs/level-1 runs/level-5
+onetrace mask suggest runs/level-1 runs/level-5</pre>
+        <p>Save the suggestion as a mask file and compare again with it. In Windows PowerShell, <code>&gt;</code> writes UTF-16, which onetrace refuses; <code>Set-Content -Encoding ascii</code> writes the plain bytes it reads.</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>onetrace mask suggest runs/level-1 runs/level-5 --json | Set-Content -Encoding ascii mask.json
+onetrace diff runs/level-1 runs/level-5 --mask mask.json</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>onetrace mask suggest runs/level-1 runs/level-5 --json &gt; mask.json
+onetrace diff runs/level-1 runs/level-5 --mask mask.json</pre></div></div>
+        <p><b>Pass when:</b> the first comparison reads <code>diff: identical</code> with all three stages <code>same</code>; <code>mask suggest</code> says there is nothing to suggest; <code>mask.json</code> holds <code>{"format": "onetrace-mask/0.1"}</code>, a mask with no rules; and the masked comparison reads <code>diff: identical</code>, exit 0. This example records no noise: its outputs hold no run id, time or path. On a pipeline whose outputs do, <code>mask suggest</code> lists each such value with where it was seen, and a comparison equal only once masked reads <code>identical after masking</code>. Read each suggested line before you save it: a version change can be a real difference, not noise.</p>
+        <p class="gs-note"><b>Badge:</b> read a comparison for noise. Keep <code>runs/level-5</code> and <code>mask.json</code>.</p>
       </div></div>
       <div class="stepx"><div>
         <h3>1.6 Keep an input, then erase it</h3>
-        <p>Inputs are fingerprinted, not stored. Keeping one is a choice you make per input, in the decorator: add <code>keep_inputs=["question"]</code> to the <code>retrieve</code> stage (the manual's section 16.19 gives the exact form and the size cap). Record <code>level-6</code> and verify it; the folder now holds <code>inputs/</code> with the question's text.</p>
-        <p>Now erase it: delete <code>runs/level-6/inputs/</code> entirely, and verify again.</p>
-<pre>onetrace-verify --require-artifacts runs/level-6
-onetrace diff runs/level-1 runs/level-6 --text</pre>
-        <p><b>Pass when:</b> the run still verifies after the deletion (a receipt holds the input's digest, never its text), and the text comparison reads <code>not kept: file missing</code> for that input. You have kept a value, and taken it back, without touching the record.</p>
+        <p>Inputs are fingerprinted, not stored. Keeping one is a choice you make per input, in the decorator. Change the <code>retrieve</code> stage's decorator in <code>app.py</code> to end with <code>keep_inputs=["question"]</code>:</p>
+        <pre>@ot.stage(&quot;retrieve&quot;, instrument=ot.pkg(&quot;word-overlap&quot;, &quot;onetrace&quot;,
+                                         kind=&quot;retriever&quot;, config={&quot;top_k&quot;: TOP_K}), keep_inputs=[&quot;question&quot;])</pre>
+        <p>Record and check the run, then erase the kept text and check again:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = &quot;level-6&quot;
+python app.py
+onetrace-verify --require-artifacts runs/level-6
+Remove-Item -Recurse runs\level-6\inputs
+onetrace-verify --require-artifacts runs/level-6</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-6 python app.py
+onetrace-verify --require-artifacts runs/level-6
+rm -r runs/level-6/inputs
+onetrace-verify --require-artifacts runs/level-6</pre></div></div>
+        <p><b>Pass when:</b> before the deletion, the folder holds <code>inputs/02-retrieve/question.json</code> (the question's text) and the check reads <code>-&gt; PASS</code>; after it, the check reads exactly the same, <code>81 pass, 0 fail, 4 not-run  -&gt;  PASS</code>. A receipt holds each input's digest, never its text, so the kept file was an extra you could take back without touching the record.</p>
         <p class="gs-note"><b>Badge:</b> kept and erased. Keep <code>runs/level-6</code>, with its <code>inputs/</code> removed.</p>
       </div></div>
       <div class="stepx"><div>
         <h3>1.7 Sign</h3>
-        <p>Follow <a href="/get-started.html#trust">Get started, step 8</a> exactly: make a key once in a folder outside your project, sign the level 1 run copied as <code>runs/level-7</code>, write <code>trust.json</code> with your key id, and verify with it:</p>
-<pre>onetrace-verify --require-artifacts --trust trust.json runs/level-7</pre>
-        <p><b>Pass when:</b> the signature line reads <code>PASS</code> with the label from your trust list. Then the break-it half: edit <code>trust.json</code> so the key id has one wrong character and verify again. The same signature now reads <code>SIGNED-UNTRUSTED</code>: valid, but by a key your list doesn't name. Put the id back. A signature shows the record is unchanged since signing; your trust list is what says whose key it is.</p>
+        <p>Make a key once, in a folder of its own outside your project, then sign a copy of the level 1 run:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>New-Item -ItemType Directory -Force $HOME\onetrace-keys | Out-Null
+onetrace keygen --out $HOME\onetrace-keys\recorder.key
+Copy-Item -Recurse runs\level-1 runs\level-7
+onetrace sign runs/level-7 --key $HOME\onetrace-keys\recorder.key</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>mkdir -p ~/onetrace-keys
+onetrace keygen --out ~/onetrace-keys/recorder.key
+cp -R runs/level-1 runs/level-7
+onetrace sign runs/level-7 --key ~/onetrace-keys/recorder.key</pre></div></div>
+        <p><code>keygen</code> prints a <code>key_id</code> starting <code>sha256:</code>; it only names your key, so it is safe to share. The key file is the secret: never in a run folder, your project or git. If you already made a key in Get started, use it and skip <code>keygen</code>. Create <code>trust.json</code> in the project folder, with your own <code>key_id</code> pasted in:</p>
+        <pre>{&quot;format&quot;: &quot;onetrace-trust/0.1&quot;,
+ &quot;keys&quot;: [{&quot;key_id&quot;: &quot;sha256:PASTE-YOUR-KEY-ID-HERE&quot;, &quot;label&quot;: &quot;my laptop&quot;}]}</pre>
+        <pre>onetrace-verify --require-artifacts --trust trust.json runs/level-7</pre>
+        <p><b>Pass when:</b> the signature line reads <code>[PASS   ]</code> … <code>signed by my laptop (sha256:…)</code> and the summary ends <code>-&gt; PASS</code>. Then change one character of the key id in <code>trust.json</code>, save, and verify again: the same signature now reads <code>[SIGNED-UNTRUSTED]</code> … <code>signer not on the reader's trust list</code>, and the run still passes. That is a reading, not a refusal: the signature is valid and shows the record is unchanged since signing, but your list no longer names the key. Put the id back. Your trust list is what says whose key it is.</p>
         <p class="gs-note"><b>Badge:</b> signed it. Keep <code>runs/level-7</code> and <code>trust.json</code>.</p>
       </div></div>
       <div class="stepx"><div>
         <h3>1.8 Timestamp (this level goes online)</h3>
-        <p>This is the one onetrace command that uses the network, and it sends only the run's fingerprint. Follow <a href="/get-started.html#trust">Get started, step 9</a> with the level 7 folder copied as <code>runs/level-8</code>: fetch the authority's two certificate files, anchor the run, and verify with them:</p>
-<pre>onetrace-verify --require-artifacts --trust trust.json --tsa-cert tsa.crt --tsa-root tsa-root.pem runs/level-8</pre>
-        <p><b>Pass when:</b> the check gains a <code>PASS</code> line for <code>anchors/1.json</code> with the attested time. Without the two certificate files, the anchor can't be checked and the verifier says so; that is the right reading, not a failure of the record.</p>
+        <p>This is the one level that sends anything: the run's fingerprint, to a public timestamp authority, which signs it with the time. Copy the signed level 7 run, fetch the authority's two certificate files, and anchor the copy:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>Copy-Item -Recurse runs\level-7 runs\level-8
+Invoke-WebRequest https://freetsa.org/files/tsa.crt -OutFile tsa.crt
+Invoke-WebRequest https://freetsa.org/files/cacert.pem -OutFile tsa-root.pem
+onetrace anchor runs/level-8 --source rfc3161 `
+  --tsa-url https://freetsa.org/tsr `
+  --tsa-cert tsa.crt --tsa-root tsa-root.pem</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>cp -R runs/level-7 runs/level-8
+curl -o tsa.crt https://freetsa.org/files/tsa.crt
+curl -o tsa-root.pem https://freetsa.org/files/cacert.pem
+onetrace anchor runs/level-8 --source rfc3161 \
+  --tsa-url https://freetsa.org/tsr \
+  --tsa-cert tsa.crt --tsa-root tsa-root.pem</pre></div></div>
+        <pre>onetrace-verify --require-artifacts --trust trust.json --tsa-cert tsa.crt --tsa-root tsa-root.pem runs/level-8</pre>
+        <p><b>Pass when:</b> the check gains a line <code>[PASS   ] anchors/1.json: originality -- time-stamp token</code> … with the attested time, and ends <code>-&gt; PASS</code>. Verify once more without the two <code>--tsa</code> options: that line reads <code>[NOT-RUN]</code> and names the two options it needs, and the run still passes. The anchor can't be checked without the authority's certificates, and the verifier says so rather than guessing.</p>
         <p class="gs-note"><b>Badge:</b> committed to a time. Keep <code>runs/level-8</code> and the two certificate files.</p>
       </div></div>
       <div class="stepx"><div>
-        <h3>1.9 Reproduce</h3>
-        <p>A comparison says what differs between two runs. Reproduce asks a different question: if the recorded code runs again, does it give the recorded outputs? It needs a runner file that says how to run your code; write <code>runner.json</code> as the manual's section 10.3 gives it, with <code>"code": "app.py"</code>. Then reproduce the level 5 run, the last one recorded with <code>app.py</code> as it is now:</p>
-<pre>onetrace reproduce runs/level-5 --runner runner.json --out r9</pre>
-        <p><b>Pass when:</b> each stage reads <code>REPRODUCED</code>, or <code>COULD NOT CHECK</code> with its reason named (the code's digest no longer equals the recorded one, if you edited <code>app.py</code> after level 5, say). Either is a pass: the level is about reading what reproduce can and cannot say, and <code>COULD NOT CHECK</code> is never "close enough". A <code>DIVERGED</code> stage is also a reading, and worth a look at <code>r9/</code>: the code ran, and gave something else.</p>
-        <p class="gs-note"><b>Badge:</b> reproduced a stage. Keep the reproduce report <code>r9/</code>.</p>
+        <h3>1.9 Reproduce, and read what it can't check</h3>
+        <p>A comparison says what differs between two runs. Reproduce asks another question: if the recorded code runs again, does it give the recorded outputs? It needs a runner file that says how to run your code. Create <code>runner.json</code>:</p>
+        <pre>{&quot;format&quot;: &quot;onetrace-runner/0.1&quot;,
+ &quot;code&quot;: &quot;app.py&quot;,
+ &quot;argv&quot;: [&quot;{python}&quot;, &quot;-B&quot;, &quot;{code}&quot;, &quot;{out}&quot;],
+ &quot;cwd&quot;: &quot;{code_dir}&quot;,
+ &quot;timeout_seconds&quot;: &quot;600&quot;}</pre>
+        <pre>onetrace reproduce runs/level-5 --runner runner.json --out r9</pre>
+        <p><b>Pass when:</b> every stage reads <code>COULD NOT CHECK</code> with its reason in brackets, and the command exits 4 (<code>echo $LASTEXITCODE</code>, or <code>echo $?</code>). With <code>app.py</code> as level 1.6 left it, the reason is an instrument mismatch: the code's digest is not the one the run recorded, so reproduce refuses to call it the same code. Undo the 1.6 change and you get the next reason: this example writes its run under <code>runs/</code>, and takes its arguments as the question, so reproduce finds no run in the folder it handed over.</p>
+        <p>That is the lesson: <code>COULD NOT CHECK</code> is never "close enough", and it always says what stopped it. Reproducing for real needs code that writes its run to the folder reproduce gives it, which the manual's reproduce section describes.</p>
+        <p class="gs-note"><b>Badge:</b> read a reproduce report. Keep <code>r9/</code>.</p>
       </div></div>
     </div>
   </div>
@@ -158,8 +253,8 @@ onetrace diff runs/level-1 runs/level-6 --text</pre>
 <section id="after" aria-labelledby="after-title">
   <div class="wrap">
     <p class="kicker">When you're done</p>
-    <h2 id="after-title">Nine folders, one chain.</h2>
-    <p class="sub">You now hold nine run folders and three reports, every one checkable by anyone with <code>onetrace-verify</code>, and you have seen the verifier refuse twice for reasons it named. That is the whole method of onetrace, done by hand once. When the <code>onetrace quest</code> command ships, it reads these folders, checks each level's shape, and writes your badge records from them, signed with the key you made at level 1.7. Keep the folders until then.</p>
+    <h2 id="after-title">Seven runs, two reports, one refusal.</h2>
+    <p class="sub">You now hold seven run folders (levels 1.1, 1.2, 1.3, 1.5, 1.6, 1.7 and 1.8), two reports (<code>r3/</code> and <code>r9/</code>) and a mask, every run checkable by anyone with <code>onetrace-verify</code>. You have seen the verifier refuse once, naming exactly what you changed; read a valid signature it would not trust; and read a reproduce report that said what it could not check. That is the whole method of onetrace, done by hand once. When the <code>onetrace quest</code> command ships, it reads these folders, checks each level's shape, and writes your badge records from them, signed with the key you made at level 1.7. Keep the folders until then.</p>
     <p class="sub">Next: <a href="/learn.html#tracks">track 2</a>, decisions, tracing and nesting, which opens when onetrace-console 0.4.0 is on the live demo. Or take what you did here to <a href="/get-started.html#own">your own code</a>.</p>
   </div>
 </section>
