@@ -79,7 +79,7 @@
     <div>
       <span class="eyebrow"><b>onedoor</b> optional · standalone · open source</span>
       <h1 id="hero-title">Your agent can act. Decide what it <em>may do</em>, before it does.</h1>
-      <p class="lede">onedoor is a policy engine for agent actions. Every action an agent proposes is checked against a policy you wrote, before anything touches the world: permitted within limits, held for a person, or refused with a reason. Every decision is written to an append-only ledger.</p>
+      <p class="lede">onedoor is a policy engine for agent actions. Every action an agent proposes is checked against a policy you wrote, before anything touches the world: permitted within limits, held for a person, or refused with a reason. Every decision on a well-formed request is written to an append-only ledger.</p>
       <div class="cta-row">
         <a class="btn btn-primary" href="/onedoor/developers.html">Add it in four commands</a>
         <a class="btn btn-ghost" href="/onedoor/how-it-works.html">How it works</a>
@@ -87,7 +87,7 @@
       <p class="cta-note">Free and open source (Apache-2.0) · runs on your machine · no account · <code>pip install onedoor</code></p>
     </div>
     <figure class="od-fig" style="margin:0">
-      <img src="/assets/img/onedoor/hero-illustration.svg" width="640" height="470" alt="Illustration: an agent proposes three actions. onedoor permits a 40 euro transfer within its day cap, denies wire.anywhere with default_deny, as no policy declares it, and holds payouts.schedule as proposed until a person approves. Every answer goes to an append-only ledger.">
+      <img src="/assets/img/onedoor/hero-illustration.svg" width="640" height="470" alt="Illustration: an agent proposes three actions. onedoor permits a 40 euro transfer within its day cap, denies wire.anywhere with default_deny, as no policy declares it, and holds payouts.schedule as proposed until a person approves. Every decision goes to an append-only ledger.">
       <figcaption><span class="od-ill">Illustration</span>The screens further down are the real product.</figcaption>
     </figure>
   </div>
@@ -181,9 +181,9 @@
         <div class="tour-text">
           <span class="step-no">03 · The editor</span>
           <h3>A guided form and the raw rule, never out of step</h3>
-          <p>Both panes are drawn from one parsed rule, so they cannot disagree. Validation runs on the engine's own loader as you type. The rules in force are not touched by anything on this page. (Its note that a numeric bound refuses a decimal-string amount predates 0.8.1, which accepts them.)</p>
+          <p>Both panes are drawn from one parsed rule, so they cannot disagree. Validation runs on the engine's own loader as you type. The rules in force are not touched by anything on this page. (Its note that a numeric bound refuses a decimal-string amount is out of date: 0.8.1's engine accepts them.)</p>
         </div>
-        <div class="shot"><img src="/assets/img/onedoor/studio-editor.webp" width="1600" height="1080" loading="lazy" alt="Editing refunds.issue inside the draft raise the refund ceiling. Left, the guided pane: action type, tier AUTO_CAPPED (2), dry run, compensating command payments.reverse, cost parameter amount_eur, cap EUR per day 400. Right, the rule as JSON with bounds, caps and the compensating command."></div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-editor.webp" width="1600" height="1080" loading="lazy" alt="Editing refunds.issue inside the draft raise the refund ceiling. Left, the guided pane: action type, tier AUTO_CAPPED (2), dry run off, compensating command payments.reverse, cost parameter amount_eur, cap EUR per day 400 and per month 2000. Right, the rule as JSON with bounds, caps and the compensating command."></div>
       </div>
       <div class="tour-row flip">
         <div class="tour-text">
@@ -213,7 +213,7 @@
         <div class="tour-text">
           <span class="step-no">07 · History</span>
           <h3>Every decision, by action, verdict and version</h3>
-          <p>Filter the ledger by action, verdict, policy version, origin or date. The Studio's note on this page that no caller identity is recorded predates 0.8.1, which writes a keyed fingerprint of the decide key to each row it permits.</p>
+          <p>Filter the ledger by action, verdict, policy version, origin or date. The Studio's note on this page that no caller identity is recorded is out of date: 0.8.1's decision service writes a keyed fingerprint of the decide key to the rows it permits. Rows from in-process callers carry none.</p>
         </div>
         <div class="shot"><img src="/assets/img/onedoor/studio-history.webp" width="1600" height="812" loading="lazy" alt="The History page with filters for action, verdict, policy version, request origin and dates. Five decisions: payments.transfer denied budget_exhausted; ledger.read executed observe; payouts.schedule proposed tier_confirm; payments.transfer denied bounds; wire.anywhere denied default_deny. Each under policy version 0c12ff2d…5bab, origin llm."></div>
       </div>

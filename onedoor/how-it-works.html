@@ -179,7 +179,7 @@
       <div class="card"><h3>Parameters, not intent</h3><p>Rules match parameters. A command assembled indirectly carries nothing to match; a URL pattern matches text unless you opt into the URL block, which matches the canonical target. Use an egress control that fails closed for anything that matters.</p></div>
       <div class="card"><h3>Who times the action</h3><p>The in-process executor puts a hard timeout on the act. Behind the HTTP service, onedoor never sees the act itself: your enforcement point owns its timeout, and reports <code>timeout</code> when it cannot tell what happened.</p></div>
       <div class="card"><h3>The documented deployment</h3><p>One process, one SQLite writer behind an internal lock. Several writers on one store, without that, can see a window between checking a cap and consuming it.</p></div>
-      <div class="card"><h3>One obligation</h3><p>onedoor implements one obligation, <code>present_bound</code>: the permit may be used only at the audience it names. The in-process executor and the MCP proxy refuse when it is not met; the LangChain middleware does not check it.</p></div>
+      <div class="card"><h3>One obligation</h3><p>onedoor implements one obligation, <code>present_bound</code>: the permit may be used only at the audience it names. In 0.8.1 the in-process executor and the MCP proxy refuse to act on any permit that carries it, since neither presents to an audience; the LangChain middleware does not check it.</p></div>
     </div>
   </div>
 </section>
