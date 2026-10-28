@@ -43,10 +43,11 @@
 
 <div class="page-hero">
   <div class="wrap">
-    <span class="eyebrow"><b>What's new</b> onetrace 0.5.0 · onetrace-console 0.3.2</span>
+    <span class="eyebrow"><b>What's new</b> onetrace-console 0.4.0 · onetrace 0.5.0</span>
     <h1>Decisions, spans and nested runs, in the record.</h1>
-    <p class="lede">onetrace 0.5.0 and onetrace-verify 0.5.0 are on PyPI. A step that acts on an onedoor decision records the decision it cites and the permit it acted on, and the verifier checks that what ran was permitted. A step inside a span records its trace id, and a run started inside another run's step is recorded as that step's input, so a comparison descends into it. The record format stays 0.3, and a run that uses none of this writes the same bytes as before. onetrace-console 0.3.2 opens every comparison with one checked sentence on where the runs first differ, with the suggested explanation directly under it. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
+    <p class="lede">onetrace 0.5.0 and onetrace-verify 0.5.0 are on PyPI. A step that acts on an onedoor decision records the decision it cites and the permit it acted on, and the verifier checks that what ran was permitted. A step inside a span records its trace id, and a run started inside another run's step is recorded as that step's input, so a comparison descends into it. The record format stays 0.3, and a run that uses none of this writes the same bytes as before. onetrace-console 0.4.0 shows all of it: the decisions a gated step cites with the verifier's rows beside them, each step's span, and the runs a step started, and the live demo runs it. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
     <div class="crumbs">
+      <a href="#console040">Console 0.4.0</a>
       <a href="#v050">In 0.5.0</a>
       <a href="#console032">Console 0.3.2</a>
       <a href="#console031">Console 0.3.1</a>
@@ -59,6 +60,31 @@
     </div>
   </div>
 </div>
+
+<section id="console040" aria-labelledby="console040-title">
+  <div class="wrap">
+    <p class="kicker">onetrace-console 0.4.0</p>
+    <h2 id="console040-title">The console reads what onetrace 0.5.0 records.</h2>
+    <p class="sub">It installs onetrace 0.5.0 and onetrace-verify 0.5.0, and shows decisions, spans and nested runs as the record holds them. The live demo runs it now: 54 runs of 11 example pipelines.</p>
+    <div class="grid-3">
+      <div class="card">
+        <h3>Gated steps, with the decisions they cite</h3>
+        <p>A run that declares gated steps shows each one with the decisions it cites, as recorded: the verdict, the request, the reference's format, issuer and digest, and what the permit itself states (issuer, subject, the action's digest, its validity). Below them, onetrace-verify's own <code>decisions:</code> rows, each with its result. On the live demo, pipeline P8 pays an invoice through a gated step, and two runs are broken on purpose: one paid after a deny, one with a permit for another amount. Each fails on its own row.</p>
+      </div>
+      <div class="card">
+        <h3>Spans, and runs inside runs</h3>
+        <p>Each step's trace and span ids, as the run recorded them, with a link to your tracing tool if you set one. Beside a comparison's first difference, the app's own spans for that step, labelled as the app's report and not checked by onetrace. A step's child steps sit under it in call order; a run a step started is a row under that step. A comparison that descends into an inner run says where the runs part: on the live demo, P10's agent differs "inside <code>agent_step</code>", in its sub-agent's run, at <code>settle</code>.</p>
+      </div>
+      <div class="card">
+        <h3>"What changed?" on every run</h3>
+        <p>Each run's page names the comparison to open first, by a stated rule: the nearest earlier run with the same recorded inputs, else the latest earlier run whose output differs, else the latest earlier run. The page says which rule it used. Every count that adds up (checks made, stages compared) has an "i" that says which of the verifier's rows make it up. A step's model-call records are shown as written, in a draft format that may change, and never compared.</p>
+      </div>
+    </div>
+<pre>pip install --upgrade onetrace-console
+onetrace-console demo --open</pre>
+    <p class="sub">The kept explanations on the live demo were made again on the new records, by the same model, once, and are served as files. onetrace-explain 0.1.1 installs beside onetrace 0.5.0: it accepts onetrace from 0.4 up to, not including, 0.7. The full list is in the <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.4.0">release notes</a>.</p>
+  </div>
+</section>
 
 <section id="v050" class="section-soft" aria-labelledby="v050-title">
   <div class="wrap">

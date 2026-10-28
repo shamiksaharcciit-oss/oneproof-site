@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Learn onetrace, track 1: record, check, compare</title>
-<meta name="description" content="Nine levels on your own machine: a first verified run, breaking the chain on purpose, the first difference between two runs, a detective level on the live demo, release noise, kept inputs, signing, timestamping and reproducing a stage.">
+<meta name="description" content="Nine levels, eight on your own machine and one on the live demo: a first verified run, breaking the chain on purpose, the first difference between two runs, a detective level on the live demo, release noise, kept inputs, signing, timestamping and reproducing a stage.">
 <link rel="canonical" href="https://oneproof.dev/learn/track-1.html">
 <meta property="og:title" content="Learn onetrace, track 1: record, check, compare">
-<meta property="og:description" content="Nine levels on your own machine: a first verified run, breaking the chain on purpose, the first difference between two runs, a detective level on the live demo, release noise, kept inputs, signing, timestamping and reproducing a stage.">
+<meta property="og:description" content="Nine levels, eight on your own machine and one on the live demo: a first verified run, breaking the chain on purpose, the first difference between two runs, a detective level on the live demo, release noise, kept inputs, signing, timestamping and reproducing a stage.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://oneproof.dev/learn/track-1.html">
 <meta property="og:image" content="https://oneproof.dev/og.png">
@@ -45,7 +45,7 @@
   <div class="wrap">
     <span class="eyebrow"><b>Learn onetrace</b> track 1 · nine levels · about two hours</span>
     <h1>Record, check, compare.</h1>
-    <p class="lede">Nine levels on your own machine, with onetrace 0.5.0, and one on the live demo. Each level says what to do, what its output must be, and what the verifier must say for it to pass. Most levels build on the one before, so do them in order and keep every folder: they are your proof, and the badge's inputs later.</p>
+    <p class="lede">Nine levels with onetrace 0.5.0: eight on your own machine and one on the live demo. Each level says what to do, what its output must be, and what the verifier must say for it to pass. Most levels build on the one before, so do them in order and keep every folder: they are your proof, and the badge's inputs later.</p>
     <div class="crumbs">
       <a href="#before">Before you start</a>
       <a href="#levels">The levels</a>
@@ -155,7 +155,7 @@ onetrace localize runs/level-1 runs/level-3 --out r3
 echo $LASTEXITCODE</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-3 python app.py
 onetrace localize runs/level-1 runs/level-3 --out r3
 echo $?</pre></div></div>
-        <p><b>Pass when:</b> the line after the two run names reads <code>localize: diverged</code>; the ladder reads <code>intake</code> <code>same</code>, <code>retrieve</code> <code>FIRST DIFFERENCE</code> and <code>answer</code> <code>reconverged</code>; under <code>retrieve</code> it lists <code>instrument config_digest differs</code>, <code>constant top_k differs</code> and <code>output return.json differs</code>; the <code>CAUSE at node 'retrieve'</code> block names the same; and the exit code is 1, which is what "the runs differ" looks like to a script. The instrument's name and version are unchanged; its config digest changed too, as <code>top_k</code> is also in its config: the same change, seen as a digest.</p>
+        <p><b>Pass when:</b> the line after the two run names reads <code>localize: diverged</code>; the ladder reads <code>intake</code> <code>same</code>, <code>retrieve</code> <code>FIRST DIFFERENCE</code> and <code>answer</code> <code>reconverged</code>; under <code>retrieve</code> it lists <code>instrument config_digest differs</code>, <code>constant top_k differs</code> and <code>output return.json differs</code>; the <code>CAUSE at node 'retrieve'</code> block names the instrument, its config and <code>constant top_k differs</code>; and the exit code is 1, which is what "the runs differ" looks like to a script. The instrument's name and version are unchanged; its config digest changed too, as <code>top_k</code> is also in its config: the same change, seen as a digest.</p>
         <p>Read <code>reconverged</code> carefully: it is the lesson of this level. Retrieve now returns two passages, so its output differs; but the answer stage uses only the first passage, which is the same, so the answer's output is identical. A setting changed, an intermediate result changed, and the final answer did not. The record shows exactly where the difference started and where it stopped. <code>r3/localize.json</code> is the same answer as data.</p>
         <p class="gs-note"><b>Badge:</b> found the first difference. Keep <code>runs/level-3</code> and the comparison report <code>r3/</code>.</p>
       </div></div>
@@ -242,7 +242,7 @@ onetrace anchor runs/level-8 --source rfc3161 \
  &quot;cwd&quot;: &quot;{code_dir}&quot;,
  &quot;timeout_seconds&quot;: &quot;600&quot;}</pre>
         <pre>onetrace reproduce runs/level-5 --runner runner.json --out r9</pre>
-        <p><b>Pass when:</b> every stage reads <code>COULD NOT CHECK</code> with its reason in brackets, and the command exits 4 (<code>echo $LASTEXITCODE</code>, or <code>echo $?</code>). With <code>app.py</code> as level 1.6 left it, the reason is an instrument mismatch: the code's digest is not the one the run recorded, so reproduce refuses to call it the same code. Undo the 1.6 change and you get the next reason: this example writes its run under <code>runs/</code>, and takes its arguments as the question, so reproduce finds no run in the folder it handed over.</p>
+        <p><b>Pass when:</b> every stage reads <code>COULD NOT CHECK</code> with its reason in brackets, and the command exits 4 (<code>echo $LASTEXITCODE</code>, or <code>echo $?</code>). With <code>app.py</code> as level 1.6 left it, the reason is an instrument mismatch: the code's digest is not the one the run recorded, so reproduce refuses to call it the same code. Undo the 1.6 change and run it again in a new terminal, where <code>ONETRACE_RUN_ID</code> is not set, and you get the next reason: this example writes its run under <code>runs/</code>, and takes its arguments as the question, so reproduce finds no run in the folder it handed over.</p>
         <p>That is the lesson: <code>COULD NOT CHECK</code> is never "close enough", and it always says what stopped it. Reproducing for real needs code that writes its run to the folder reproduce gives it, which the manual's reproduce section describes.</p>
         <p class="gs-note"><b>Badge:</b> read a reproduce report. Keep <code>r9/</code>.</p>
       </div></div>
@@ -255,7 +255,7 @@ onetrace anchor runs/level-8 --source rfc3161 \
     <p class="kicker">When you're done</p>
     <h2 id="after-title">Seven runs, two reports, one refusal.</h2>
     <p class="sub">You now hold seven run folders (levels 1.1, 1.2, 1.3, 1.5, 1.6, 1.7 and 1.8), two reports (<code>r3/</code> and <code>r9/</code>) and a mask, every run checkable by anyone with <code>onetrace-verify</code>. You have seen the verifier refuse once, naming exactly what you changed; read a valid signature it would not trust; and read a reproduce report that said what it could not check. That is the whole method of onetrace, done by hand once. When the <code>onetrace quest</code> command ships, it reads these folders, checks each level's shape, and writes your badge records from them, signed with the key you made at level 1.7. Keep the folders until then.</p>
-    <p class="sub">Next: <a href="/learn.html#tracks">track 2</a>, decisions, tracing and nesting, which opens when onetrace-console 0.4.0 is on the live demo. Or take what you did here to <a href="/get-started.html#own">your own code</a>.</p>
+    <p class="sub">Next: <a href="/learn.html#tracks">track 2</a>, decisions, tracing and nesting, on the live demo's P8, P10 and P11; it is being written. Or take what you did here to <a href="/get-started.html#own">your own code</a>.</p>
   </div>
 </section>
 </main>
