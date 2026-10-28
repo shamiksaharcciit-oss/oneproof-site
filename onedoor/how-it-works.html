@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How onedoor works — the check order, two phases and the ledger · oneproof</title>
+<meta name="description" content="The mechanism underneath onedoor: one ordered check per action, decide-and-reserve then report, policy versions changed only by ratifying, an append-only ledger, and decision references onetrace can verify.">
+<link rel="canonical" href="https://oneproof.dev/onedoor/how-it-works.html">
+<meta property="og:title" content="How onedoor works">
+<meta property="og:description" content="One ordered check, two phases, ratified policy versions and an append-only ledger, with their limits stated.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneproof.dev/onedoor/how-it-works.html">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<style>
+  .od-sub{border-bottom:1px solid var(--line);background:var(--soft)}
+  .od-sub .wrap{display:flex;gap:6px 22px;flex-wrap:wrap;align-items:center;min-height:46px;font-size:14px}
+  .od-sub b{font-weight:600;color:var(--ink)}
+  .od-sub a{color:var(--ink-2);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+  .od-sub a:hover{color:var(--ink)}
+  .od-sub a[aria-current=page]{color:var(--ink);border-bottom-color:var(--amber)}
+  .od-sub .opt{margin-left:auto;font-size:12.5px;color:var(--muted)}
+  figure.od-fig{margin:28px 0 0}
+  figure.od-fig figcaption{font-size:14px;color:var(--muted);margin-top:10px;line-height:1.5}
+  .od-diagram{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:18px;overflow-x:auto}
+  .od-diagram svg{display:block;width:100%;height:auto;min-width:560px}
+  .od-shot{border-radius:12px;border:1px solid var(--line);overflow:hidden;background:var(--card)}
+  .od-shot img{width:100%}
+  .od-real{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:var(--green-soft);color:var(--green);margin-right:6px}
+  .od-ill{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:#1c2a3f;color:#b7c2d1;margin-right:6px}
+  .od-next{border:1px dashed var(--line);border-radius:12px;padding:22px 24px;margin-top:22px}
+  .od-next h3{margin-top:0}
+  .od-tiers td:first-child{font-family:var(--mono);white-space:nowrap}
+  pre.od-out .p{color:var(--green)} pre.od-out .n{color:var(--muted)} pre.od-out .f{color:var(--red)}
+  p code{overflow-wrap:anywhere}
+  @media (max-width:640px){.od-sub .opt{margin-left:0;width:100%}}
+</style>
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html">Developers</a>
+      <a href="/how-it-works.html">How it works</a>
+      <a href="/onetrace/">Docs</a>
+      <a href="/learn.html">Learn</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
+</header>
+<nav class="od-sub" aria-label="onedoor">
+  <div class="wrap">
+    <b>onedoor</b>
+    <a href="/onedoor/">Overview</a>
+    <a href="/onedoor/developers.html">Developers</a>
+    <a href="/onedoor/how-it-works.html" aria-current="page">How it works</a>
+    <a href="https://github.com/shamiksaharcciit-oss/onedoor">Source</a>
+    <span class="opt">Optional. Works on its own, or beside onetrace.</span>
+  </div>
+</nav>
+
+<main id="main">
+
+<div class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow"><b>For researchers and reviewers</b> layer 3 of 3</span>
+    <h1>The mechanism: one ordered check, two phases, a ledger that is never edited.</h1>
+    <p class="lede">What onedoor checks, in which order, when the budget is spent, how a policy version comes into force, and what its records can and cannot show. Described for onedoor 0.8.1.</p>
+    <div class="crumbs">
+      <a href="#order">The check order</a>
+      <a href="#phases">Two phases</a>
+      <a href="#split">Decision and enforcement</a>
+      <a href="#versions">Policy versions</a>
+      <a href="#ledger">The ledger</a>
+      <a href="#refs">With onetrace</a>
+      <a href="#limits">The limits</a>
+      <a href="#next">Coming next</a>
+    </div>
+  </div>
+</div>
+
+<section id="order" aria-labelledby="order-title">
+  <div class="wrap">
+    <p class="kicker">1 · The check order</p>
+    <h2 id="order-title">Every action is one structured request, checked in a fixed order.</h2>
+    <p class="sub">Scheduled, rule-fired, model-proposed or clicked by a person, every action is an <code>ActionRequest</code>: an action type, its parameters, its source and a rationale. One executor checks it against the policy table before anything touches the world. The first check that fails decides, with its own reason code.</p>
+    <figure class="od-fig"><div class="od-diagram"><svg viewBox="0 0 900 250" role="img" aria-labelledby="d1t"><title id="d1t">The check order: kill switch, policy lookup, tier-1 integrity, bounds, dry-run, caps, then tier decides whether to act or ask. Each check can stop the request with its own reason code.</title><defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b7d99"/></marker></defs><rect x="12" y="40" width="112" height="56" rx="10" fill="#111d2f" stroke="#f5a524"/><text x="68.0" y="62.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">Kill switch</text><text x="68.0" y="80.0" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle" dominant-baseline="middle">engaged?</text><path d="M124 68.0L139 68.0" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a1)"/><path d="M68.0 96L68.0 134" stroke="#6b7d99" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#a1)"/><rect x="14" y="138" width="108" height="40" rx="8" fill="#0b1626" stroke="#26344a"/><text x="68.0" y="155" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#ff8f8f" text-anchor="middle">denied</text><text x="68.0" y="169" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="9.5" fill="#8e9aac" text-anchor="middle">kill_switch</text><rect x="140" y="40" width="112" height="56" rx="10" fill="#111d2f" stroke="#26344a"/><text x="196.0" y="62.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">Policy lookup</text><text x="196.0" y="80.0" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle" dominant-baseline="middle">declared?</text><path d="M252 68.0L267 68.0" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a1)"/><path d="M196.0 96L196.0 134" stroke="#6b7d99" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#a1)"/><rect x="142" y="138" width="108" height="40" rx="8" fill="#0b1626" stroke="#26344a"/><text x="196.0" y="155" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#ff8f8f" text-anchor="middle">denied</text><text x="196.0" y="169" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="9.5" fill="#8e9aac" text-anchor="middle">default_deny</text><rect x="268" y="40" width="112" height="56" rx="10" fill="#111d2f" stroke="#26344a"/><text x="324.0" y="62.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">Undo check</text><text x="324.0" y="80.0" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle" dominant-baseline="middle">tier 1 or 2?</text><path d="M380 68.0L395 68.0" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a1)"/><path d="M324.0 96L324.0 134" stroke="#6b7d99" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#a1)"/><rect x="270" y="138" width="108" height="40" rx="8" fill="#0b1626" stroke="#26344a"/><text x="324.0" y="155" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#ffd38e" text-anchor="middle">confirm</text><text x="324.0" y="169" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="9.5" fill="#8e9aac" text-anchor="middle">no undo named</text><rect x="396" y="40" width="112" height="56" rx="10" fill="#111d2f" stroke="#26344a"/><text x="452.0" y="62.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">Bounds</text><text x="452.0" y="80.0" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle" dominant-baseline="middle">params sane?</text><path d="M508 68.0L523 68.0" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a1)"/><path d="M452.0 96L452.0 134" stroke="#6b7d99" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#a1)"/><rect x="398" y="138" width="108" height="40" rx="8" fill="#0b1626" stroke="#26344a"/><text x="452.0" y="155" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#ff8f8f" text-anchor="middle">denied</text><text x="452.0" y="169" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="9.5" fill="#8e9aac" text-anchor="middle">bounds</text><rect x="524" y="40" width="112" height="56" rx="10" fill="#111d2f" stroke="#26344a"/><text x="580.0" y="62.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">Dry-run</text><text x="580.0" y="80.0" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle" dominant-baseline="middle">rehearsal?</text><path d="M636 68.0L651 68.0" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a1)"/><path d="M580.0 96L580.0 134" stroke="#6b7d99" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#a1)"/><rect x="526" y="138" width="108" height="40" rx="8" fill="#0b1626" stroke="#26344a"/><text x="580.0" y="155" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#b7c2d1" text-anchor="middle">recorded, not done</text><rect x="652" y="40" width="112" height="56" rx="10" fill="#111d2f" stroke="#26344a"/><text x="708.0" y="62.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">Caps</text><text x="708.0" y="80.0" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle" dominant-baseline="middle">budget left?</text><path d="M764 68.0L779 68.0" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a1)"/><path d="M708.0 96L708.0 134" stroke="#6b7d99" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#a1)"/><rect x="654" y="138" width="108" height="40" rx="8" fill="#0b1626" stroke="#26344a"/><text x="708.0" y="155" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#ff8f8f" text-anchor="middle">denied</text><text x="708.0" y="169" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="9.5" fill="#8e9aac" text-anchor="middle">budget_exhausted</text><rect x="780" y="40" width="112" height="56" rx="10" fill="#111d2f" stroke="#26344a"/><text x="836.0" y="62.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">Tier</text><text x="836.0" y="80.0" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle" dominant-baseline="middle">act or ask?</text><path d="M836.0 96L836.0 134" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a1)"/><rect x="782" y="138" width="108" height="40" rx="8" fill="#11281b" stroke="#2c5a3d"/><text x="836.0" y="155" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#6fdc97" text-anchor="middle">permitted</text><text x="836.0" y="169" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="9.5" fill="#ffd38e" text-anchor="middle">or proposed</text><text x="12" y="22" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="11" fill="#8e9aac" letter-spacing="1">IN ORDER · THE FIRST CHECK THAT FAILS DECIDES · EVERY OUTCOME IS WRITTEN TO THE LEDGER</text><rect x="12" y="200" width="876" height="36" rx="8" fill="#13233a"/><text x="450" y="223" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="12.5" fill="#e6ecf4" text-anchor="middle">Append-only ledger: decision, reason code, frozen parameters, tier, budget at decision, policy version</text></svg></div>
+      <figcaption>The kill switch is read before any policy lookup, so it outranks approvals already granted. Bounds are checked before a person ever sees a proposal. Dry-run is resolved before caps, so a rehearsal never spends a real budget.</figcaption></figure>
+    <div class="grid-3" style="margin-top:28px">
+      <div class="card"><h3>Default-deny</h3><p>An action type no policy declares is refused as <code>default_deny</code>. Nothing is proposed, and nothing promotes itself.</p></div>
+      <div class="card"><h3>Reversibility before autonomy</h3><p>A tier 1 or 2 policy must name a <code>compensating_command</code>. Without one, the loader refuses to start, and an auto-tier action without an undo is demoted to a person's approval.</p></div>
+      <div class="card"><h3>Effects share limits</h3><p>Actions that declare the same effect (say <code>money.egress</code>) share one budget and one tier floor, however their tools are named.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="phases" class="section-soft" aria-labelledby="phases-title">
+  <div class="wrap">
+    <p class="kicker">2 · Two phases</p>
+    <h2 id="phases-title">Decide and reserve, act, then append what happened.</h2>
+    <p class="sub">Caps are reserved inside the deciding transaction (<code>BEGIN IMMEDIATE</code>), so two concurrent requests cannot share the last slot. The action itself runs outside any database lock.</p>
+    <figure class="od-fig"><div class="od-diagram"><svg viewBox="0 0 900 330" role="img" aria-labelledby="d2t"><title id="d2t">Two phases. The enforcement point asks; transaction A decides, reserves the budget and writes an intent row. The action runs outside any database lock under a hard timeout. Transaction B appends the outcome and settles or releases the reservation.</title><defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b7d99"/></marker></defs><rect x="20" y="14" width="220" height="34" rx="8" fill="#13233a" stroke="#26344a"/><text x="130" y="36" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13" font-weight="600" fill="#e6ecf4" text-anchor="middle">Your enforcement point</text><path d="M130 48V318" stroke="#26344a" stroke-dasharray="3 5"/><rect x="340" y="14" width="220" height="34" rx="8" fill="#13233a" stroke="#26344a"/><text x="450" y="36" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13" font-weight="600" fill="#e6ecf4" text-anchor="middle">onedoor (decision)</text><path d="M450 48V318" stroke="#26344a" stroke-dasharray="3 5"/><rect x="660" y="14" width="220" height="34" rx="8" fill="#13233a" stroke="#26344a"/><text x="770" y="36" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13" font-weight="600" fill="#e6ecf4" text-anchor="middle">The tool or system</text><path d="M770 48V318" stroke="#26344a" stroke-dasharray="3 5"/><path d="M130 78L446 78" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a2)"/><text x="288" y="70" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle">POST /v1/decide</text><rect x="330" y="88" width="240" height="64" rx="10" fill="#1a2a42" stroke="#f5a524"/><text x="450" y="110" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13" font-weight="600" fill="#e6ecf4" text-anchor="middle">Tx A: decide</text><text x="450" y="128" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle">checks · reserve caps (race-free)</text><text x="450" y="143" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle">write the intent row</text><path d="M446 168L134 168" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a2)"/><text x="288" y="160" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle">permitted · intent_audit_id</text><path d="M130 196L766 196" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a2)"/><text x="450" y="188" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle">act, outside any lock, under a hard timeout</text><path d="M766 222L134 222" stroke="#6b7d99" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#a2)"/><text x="450" y="214" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle">what happened</text><path d="M130 252L446 252" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a2)"/><text x="288" y="244" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle">POST /v1/report · outcome</text><rect x="330" y="262" width="240" height="56" rx="10" fill="#1a2a42" stroke="#26344a"/><text x="450" y="284" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13" font-weight="600" fill="#e6ecf4" text-anchor="middle">Tx B: append the result</text><text x="450" y="302" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle">settle, or release on not_attempted</text><text x="770" y="282" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="12" fill="#8e9aac" text-anchor="middle">A hung tool cannot hold</text><text x="770" y="298" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="12" fill="#8e9aac" text-anchor="middle">the engine; a crash leaves</text><text x="770" y="314" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="12" fill="#8e9aac" text-anchor="middle">"intended, unconfirmed".</text></svg></div>
+      <figcaption>The report's outcome decides the budget: <code>success</code>, <code>failure</code> and <code>timeout</code> settle it (a timeout is doubt, so onedoor assumes the action happened); only <code>not_attempted</code>, a positive statement that nothing happened, releases it, and the release is itself recorded.</figcaption></figure>
+  </div>
+</section>
+
+<section id="split" aria-labelledby="split-title">
+  <div class="wrap">
+    <p class="kicker">3 · Decision and enforcement</p>
+    <h2 id="split-title">One decision point. Enforcement wherever your tools are called.</h2>
+    <p class="sub">onedoor separates the classic authorization pair: a policy decision point, and enforcement points that ask it and then act. Any enforcement point, in any language, can ask the HTTP service. The same engine runs in-process behind the library and the integrations.</p>
+    <figure class="od-fig"><div class="od-diagram"><svg viewBox="0 0 900 330" role="img" aria-labelledby="d3t"><title id="d3t">One decision point, many enforcement points. The HTTP service, the library, the MCP proxy, the LangChain middleware and the LiteLLM example all ask the same engine. The engine reads the policy version in force and writes one ledger. The Studio drafts and ratifies policy versions and reads the ledger. Operators hold the admin key for approvals and the kill switch.</title><defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b7d99"/></marker></defs><text x="20" y="24" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="11" fill="#8e9aac" letter-spacing="1">ENFORCEMENT POINTS</text><rect x="20" y="38" width="190" height="42" rx="10" fill="#111d2f" stroke="#26344a"/><text x="115.0" y="59.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">HTTP client</text><path d="M210 59L336 160" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a3)"/><rect x="20" y="94" width="190" height="42" rx="10" fill="#111d2f" stroke="#26344a"/><text x="115.0" y="115.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">Python library</text><path d="M210 115L336 160" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a3)"/><rect x="20" y="150" width="190" height="42" rx="10" fill="#111d2f" stroke="#26344a"/><text x="115.0" y="171.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">MCP proxy</text><path d="M210 171L336 160" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a3)"/><rect x="20" y="206" width="190" height="42" rx="10" fill="#111d2f" stroke="#26344a"/><text x="115.0" y="227.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">LangChain middleware</text><path d="M210 227L336 160" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a3)"/><rect x="20" y="262" width="190" height="42" rx="10" fill="#111d2f" stroke="#26344a"/><text x="115.0" y="283.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">LiteLLM example</text><path d="M210 283L336 160" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a3)"/><rect x="340" y="104" width="230" height="112" rx="12" fill="#1a2a42" stroke="#f5a524" stroke-width="1.5"/><text x="455" y="138" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="15" font-weight="600" fill="#e6ecf4" text-anchor="middle">onedoor engine</text><text x="455" y="160" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle">one decision point</text><text x="455" y="178" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle">the check order</text><text x="455" y="196" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle">policy version in force</text><rect x="640" y="40" width="240" height="52" rx="10" fill="#111d2f" stroke="#6b5220"/><text x="760.0" y="60.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">Operators</text><text x="760.0" y="78.0" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle" dominant-baseline="middle">admin key: approvals, kill switch</text><path d="M640 70L574 120" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a3)"/><rect x="640" y="134" width="240" height="52" rx="10" fill="#111d2f" stroke="#26344a"/><text x="760.0" y="154.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">Policy Studio</text><text x="760.0" y="172.0" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle" dominant-baseline="middle">drafts · ratify · read-only views</text><path d="M640 160L574 160" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a3)"/><rect x="640" y="230" width="240" height="52" rx="10" fill="#111d2f" stroke="#26344a"/><text x="760.0" y="250.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">Ledger (SQLite)</text><text x="760.0" y="268.0" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle" dominant-baseline="middle">append-only · export · receipts</text><path d="M570 200L640 250" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a3)"/><text x="455" y="262" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="12" fill="#8e9aac" text-anchor="middle">The process that asks holds a decide key.</text><text x="455" y="280" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="12" fill="#8e9aac" text-anchor="middle">The process that grants holds an admin key.</text></svg></div>
+      <figcaption>Approvals and the kill switch are operator acts. They need an admin key and are not reachable from an agent's side of the MCP proxy. A person cannot approve their own proposal, and an approval can be used only by the caller that proposed the action.</figcaption></figure>
+  </div>
+</section>
+
+<section id="versions" class="section-soft" aria-labelledby="versions-title">
+  <div class="wrap">
+    <p class="kicker">4 · Policy versions</p>
+    <h2 id="versions-title">A policy set is a version, named by its digest, changed only by ratifying.</h2>
+    <p class="sub">The Studio keeps drafts in their own store. Nothing in a draft touches the rules in force. A draft becomes the version in force only through ratification: a page that shows the new version's digest, what it replaces and every changed rule in sentences, and asks for a name.</p>
+    <div class="grid-3">
+      <div class="card"><h3>The loader's own words</h3><p>Every draft is checked by the engine's own loader, stage by stage. What it would refuse at start-up is listed apart from how a loadable rule will behave at decision time; the two are never merged.</p></div>
+      <div class="card"><h3>A receipt per ratification</h3><p>Each ratification seals a receipt: the version, the one it replaced, the time, the name given, and the kill switch's state. The Verify page re-checks it, with the receipt and the policy snapshot downloadable.</p></div>
+      <div class="card"><h3>No un-ratify</h3><p>To go back, you ratify again: a new version and a new receipt. Nothing decided under an earlier version is changed. The name given is what the store knows, not an authenticated identity.</p></div>
+    </div>
+    <figure class="od-fig"><div class="od-shot"><img src="/assets/img/onedoor/studio-ratified.webp" width="1600" height="688" loading="lazy" alt="Ratified: the new version's full digest in force, the version it replaced, the receipt digest, the time, the session name operator on duty, and the kill switch not engaged at ratification."></div>
+      <figcaption><span class="od-real">Real screen</span>A ratification, from the shipped payments examples.</figcaption></figure>
+  </div>
+</section>
+
+<section id="ledger" aria-labelledby="ledger-title">
+  <div class="wrap">
+    <p class="kicker">5 · The ledger</p>
+    <h2 id="ledger-title">Append-only rows, and checks that say what they rest on.</h2>
+    <p class="sub">Every decision, result, denial, dry-run and kill-switch block is a row with a typed reason code. Database triggers forbid updates and deletes. The export writes one JSON object per row with a <code>.sha256</code> file beside it.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">State</th><th scope="col">Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>verified</code></td><td>Checked against something the store does not hold: a trusted key id passed in from outside, or a published anchor root.</td></tr>
+          <tr><td><code>self_consistent</code></td><td>The signature matches a key in the same store, or a proof checks against a root the store itself carries. Real information, and not independence: whoever can write the store supplies both halves.</td></tr>
+          <tr><td><code>absent</code></td><td>Not produced for this row, for example rows newer than the last anchor, or signing not switched on. Shown as absent, not as a fault.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:20px;color:var(--ink-2)">The receipt page (<code>python -m onedoor.viewer</code>) is static and read-only. Every value on it is read from a verified artifact; if the evidence does not check out, it shows the failure state and none of the receipt's values.</p>
+  </div>
+</section>
+
+<section id="refs" class="section-soft" aria-labelledby="refs-title">
+  <div class="wrap">
+    <p class="kicker">6 · With onetrace</p>
+    <h2 id="refs-title">A decision reference, joinable to the export by digest.</h2>
+    <p class="sub">When a deployment declares its name (<code>ONEDOOR_ISSUER</code>), each decision carries a small reference: format <code>onedoor-decision-ref/1</code>, the request id, a digest of the decision's ledger row, the verdict (<code>permit</code>, <code>deny</code> or <code>propose</code>) and the issuer. Without a declared name, no reference is returned: never a guessed one.</p>
+    <figure class="od-fig"><div class="od-diagram"><svg viewBox="0 0 900 270" role="img" aria-labelledby="d4t"><title id="d4t">With onetrace. The gated step asks onedoor and gets a decision with a decision reference. The step records the reference in its receipt. onedoor exports its ledger with a sha256 file beside it. onetrace-verify reads the run and the export, and matches each reference to a row by its digest.</title><defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b7d99"/></marker></defs><rect x="20" y="30" width="230" height="70" rx="10" fill="#111d2f" stroke="#26344a"/><text x="135.0" y="59.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">Gated step</text><text x="135.0" y="77.0" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle" dominant-baseline="middle">approve_payment</text><rect x="335" y="30" width="230" height="70" rx="10" fill="#1a2a42" stroke="#f5a524"/><text x="450.0" y="59.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">onedoor</text><text x="450.0" y="77.0" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle" dominant-baseline="middle">decision + decision_ref</text><path d="M250 55L331 55" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a4)"/><text x="290" y="48" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle">decide</text><path d="M335 82L254 82" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a4)"/><text x="294" y="96" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle">ref</text><rect x="20" y="170" width="230" height="70" rx="10" fill="#111d2f" stroke="#26344a"/><text x="135.0" y="199.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">Step receipt</text><text x="135.0" y="217.0" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle" dominant-baseline="middle">decisions: [ref]</text><path d="M135 100L135 166" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a4)"/><text x="150" y="138" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="start">ot.decision(ref)</text><rect x="335" y="170" width="230" height="70" rx="10" fill="#111d2f" stroke="#26344a"/><text x="450.0" y="199.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">decisions.jsonl</text><text x="450.0" y="217.0" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle" dominant-baseline="middle">+ decisions.jsonl.sha256</text><path d="M450 100L450 166" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a4)"/><text x="462" y="138" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="start">onedoor.export</text><rect x="650" y="100" width="230" height="70" rx="10" fill="#111d2f" stroke="#2c5a3d"/><text x="765.0" y="129.0" font-family="IBM Plex Sans,system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#e6ecf4" text-anchor="middle" dominant-baseline="middle">onetrace-verify</text><text x="765.0" y="147.0" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#8e9aac" text-anchor="middle" dominant-baseline="middle">--decisions</text><path d="M250 205L646 150" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a4)"/><path d="M565 205L646 160" stroke="#6b7d99" stroke-width="1.8" marker-end="url(#a4)"/><text x="765" y="196" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#6fdc97" text-anchor="middle">each reference matches</text><text x="765" y="212" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#6fdc97" text-anchor="middle">a row by digest</text><text x="765" y="234" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="10.5" fill="#6fdc97" text-anchor="middle">no step acted on a deny</text><text x="20" y="18" font-family="IBM Plex Mono,ui-monospace,monospace" font-size="11" fill="#8e9aac" letter-spacing="1">OPTIONAL · EACH PRODUCT WORKS WITHOUT THE OTHER</text></svg></div>
+      <figcaption>onetrace records the reference in the step's receipt; <code>onetrace-verify --decisions</code> checks that gated steps cite a decision, that a step that acted cites a permit, and that each reference matches a row of the export by digest. Either product's records stand on their own without the other.</figcaption></figure>
+  </div>
+</section>
+
+<section id="limits" class="honest" aria-labelledby="limits-title">
+  <div class="wrap">
+    <p class="kicker" style="color:var(--amber)">7 · The limits</p>
+    <h2 id="limits-title">What the mechanism does not cover.</h2>
+    <div class="grid-2">
+      <div class="card"><h3>Parameters, not intent</h3><p>Rules match parameters. A command assembled indirectly carries nothing to match; a URL pattern matches text unless you opt into the URL block, which matches the canonical target. Use an egress control that fails closed for anything that matters.</p></div>
+      <div class="card"><h3>Numbers in parameters</h3><p>A numeric bound refuses a decimal-string amount (<code>"120.00"</code>) that caps would read exactly. Send JSON numbers where a numeric bound applies.</p></div>
+      <div class="card"><h3>The documented deployment</h3><p>One process, one SQLite writer behind an internal lock. Several writers on one store, without that, can see a window between checking a cap and consuming it.</p></div>
+      <div class="card"><h3>Obligations</h3><p>An obligation attached to a permit by another decision point would be ignored by onedoor's own enforcement points rather than failing closed.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="next" aria-labelledby="next-title">
+  <div class="wrap">
+    <p class="kicker">8 · Coming next</p>
+    <h2 id="next-title">A permit the receiving system can check, and its signed reply.</h2>
+    <div class="od-next">
+      <p style="margin:0 0 12px">Not in 0.8.1; no dates. The receiving system checks a signed permit on its own, without calling onedoor, and signs back what it did:</p>
+      <ul class="clean">
+        <li><b>Bound to the request.</b> The permit names the exact action by digest, the key that must sign the request, the request body's digest, a short lifetime and a one-time id.</li>
+        <li><b>Checked in a fixed order by the recipient.</b> Thirteen steps, stopping at the first failure, with the permit used up only at the last one, so a refused request never burns it.</li>
+        <li><b>A signed confirmation back.</b> The recipient signs which permit and which request it acted on, and whether the effect happened, was refused or is unknown. A onetrace record can then show an action authorized and its effect confirmed, and check both.</li>
+      </ul>
+    </div>
+    <p class="sub" style="margin-top:22px">Back to the <a href="/onedoor/">overview</a>, or start on the <a href="/onedoor/developers.html">Developers page</a>.</p>
+  </div>
+</section>
+
+</main>
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>onedoor</h4>
+        <ul>
+          <li><a href="/onedoor/">Overview</a></li>
+          <li><a href="/onedoor/developers.html">Developers</a></li>
+          <li><a href="/onedoor/how-it-works.html">How it works</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">Source on GitHub</a></li>
+          <li><a href="https://pypi.org/project/onedoor/">onedoor on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>onetrace</h4>
+        <ul>
+          <li><a href="/">Product</a></li>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onedoor itself reports to no one. Screens are onedoor's own Studio and receipt page, run on its shipped payments example policies with sample requests, not customer data.</div>
+  </div>
+</footer>
+
+</body>
+</html>

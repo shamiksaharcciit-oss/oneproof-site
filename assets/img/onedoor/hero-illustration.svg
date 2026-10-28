@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 470" role="img" aria-labelledby="t d">
+  <title id="t">Illustration: three proposed actions meet one door</title>
+  <desc id="d">An agent proposes three actions. onedoor permits a 40 euro transfer within its cap, denies an action no policy declares, and holds a batch payout for a person to approve. Every answer is written to an append-only ledger.</desc>
+  <defs>
+    <style>
+      .t{font-family:'IBM Plex Sans',system-ui,sans-serif;fill:#e6ecf4}
+      .m{font-family:'IBM Plex Mono',ui-monospace,monospace}
+      .dim{fill:#8e9aac}
+    </style>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#4d5f7a"/></marker>
+  </defs>
+  <rect width="640" height="470" rx="16" fill="#0f1a2b"/>
+  <rect x="0.5" y="0.5" width="639" height="469" rx="16" fill="none" stroke="#26344a"/>
+  <text x="24" y="34" class="t m dim" font-size="11" letter-spacing="1.5">ILLUSTRATION</text>
+
+  <!-- agent -->
+  <g>
+    <rect x="24" y="62" width="150" height="320" rx="12" fill="#111d2f" stroke="#26344a"/>
+    <text x="40" y="88" class="t" font-size="13" font-weight="600">Agent proposes</text>
+    <g class="m" font-size="11.5">
+      <rect x="38" y="104" width="122" height="64" rx="8" fill="#13233a"/>
+      <text x="48" y="126" class="t m">payments.</text><text x="48" y="141" class="t m">transfer</text><text x="48" y="157" class="t m dim">€40.00 → acct-1</text>
+      <rect x="38" y="188" width="122" height="64" rx="8" fill="#13233a"/>
+      <text x="48" y="210" class="t m">wire.anywhere</text><text x="48" y="226" class="t m dim">no params</text><text x="48" y="241" class="t m dim">"move funds"</text>
+      <rect x="38" y="272" width="122" height="64" rx="8" fill="#13233a"/>
+      <text x="48" y="294" class="t m">payouts.</text><text x="48" y="309" class="t m">schedule</text><text x="48" y="325" class="t m dim">batch b-7</text>
+    </g>
+  </g>
+
+  <!-- arrows in -->
+  <path d="M162 136H246" stroke="#4d5f7a" stroke-width="2" marker-end="url(#ah)"/>
+  <path d="M162 220H246" stroke="#4d5f7a" stroke-width="2" marker-end="url(#ah)"/>
+  <path d="M162 304H246" stroke="#4d5f7a" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- the door -->
+  <g>
+    <rect x="252" y="62" width="128" height="320" rx="12" fill="#1a2a42" stroke="#f5a524" stroke-width="1.5"/>
+    <text x="316" y="90" class="t" font-size="15" font-weight="600" text-anchor="middle">onedoor</text>
+    <text x="316" y="108" class="t dim" font-size="11" text-anchor="middle">policy, before the act</text>
+    <g class="m" font-size="10.5">
+      <text x="268" y="140" class="t m dim">kill switch</text>
+      <text x="268" y="160" class="t m dim">policy or deny</text>
+      <text x="268" y="180" class="t m dim">bounds</text>
+      <text x="268" y="200" class="t m dim">dry-run</text>
+      <text x="268" y="220" class="t m dim">caps</text>
+      <text x="268" y="240" class="t m dim">tier</text>
+    </g>
+    <path d="M268 256H364" stroke="#26344a"/>
+    <text x="268" y="278" class="t" font-size="11.5">payments.yaml</text>
+    <text x="268" y="294" class="t m dim" font-size="10.5">6 policies</text>
+    <text x="268" y="310" class="t m dim" font-size="10.5">transfer: tier 2</text>
+    <text x="268" y="326" class="t m dim" font-size="10.5">€500/day cap</text>
+    <text x="268" y="342" class="t m dim" font-size="10.5">payouts: tier 3</text>
+  </g>
+
+  <!-- arrows out -->
+  <path d="M380 136H452" stroke="#4d5f7a" stroke-width="2" marker-end="url(#ah)"/>
+  <path d="M380 220H452" stroke="#4d5f7a" stroke-width="2" marker-end="url(#ah)"/>
+  <path d="M380 304H452" stroke="#4d5f7a" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- verdicts -->
+  <g>
+    <rect x="458" y="104" width="160" height="64" rx="8" fill="#11281b" stroke="#2c5a3d"/>
+    <text x="472" y="128" class="t" font-size="13" font-weight="600" fill="#6fdc97" style="fill:#6fdc97">permitted</text>
+    <text x="472" y="146" class="t m dim" font-size="10.5">passed · tier 2</text>
+    <text x="472" y="160" class="t m dim" font-size="10.5">within the day cap</text>
+
+    <rect x="458" y="188" width="160" height="64" rx="8" fill="#2a1416" stroke="#6b2e33"/>
+    <text x="472" y="212" class="t" font-size="13" font-weight="600" style="fill:#ff8f8f">denied</text>
+    <text x="472" y="230" class="t m dim" font-size="10.5">default_deny</text>
+    <text x="472" y="244" class="t m dim" font-size="10.5">no policy declares it</text>
+
+    <rect x="458" y="272" width="160" height="64" rx="8" fill="#2a2112" stroke="#6b5220"/>
+    <text x="472" y="296" class="t" font-size="13" font-weight="600" style="fill:#ffd38e">proposed</text>
+    <text x="472" y="314" class="t m dim" font-size="10.5">tier_confirm</text>
+    <text x="472" y="328" class="t m dim" font-size="10.5">waits for a person</text>
+  </g>
+
+  <!-- ledger -->
+  <path d="M316 382V404" stroke="#4d5f7a" stroke-width="2" marker-end="url(#ah)"/>
+  <rect x="24" y="410" width="594" height="40" rx="10" fill="#111d2f" stroke="#26344a"/>
+  <text x="40" y="435" class="t" font-size="12.5" font-weight="600">Append-only ledger</text>
+  <text x="182" y="435" class="t m dim" font-size="10.5">every decision, with its reason code · exportable · checkable</text>
+</svg>

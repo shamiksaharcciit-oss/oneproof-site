@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>onedoor for developers — decide, act, report · oneproof</title>
+<meta name="description" content="Install onedoor from PyPI, copy a policy, run the decision service, and route every agent action through decide, act, report. With the Studio, approvals, the kill switch, and onetrace.">
+<link rel="canonical" href="https://oneproof.dev/onedoor/developers.html">
+<meta property="og:title" content="onedoor for developers">
+<meta property="og:description" content="Four commands from PyPI, a policy file, and the decide-act-report loop, with real outputs.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneproof.dev/onedoor/developers.html">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<style>
+  .od-sub{border-bottom:1px solid var(--line);background:var(--soft)}
+  .od-sub .wrap{display:flex;gap:6px 22px;flex-wrap:wrap;align-items:center;min-height:46px;font-size:14px}
+  .od-sub b{font-weight:600;color:var(--ink)}
+  .od-sub a{color:var(--ink-2);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+  .od-sub a:hover{color:var(--ink)}
+  .od-sub a[aria-current=page]{color:var(--ink);border-bottom-color:var(--amber)}
+  .od-sub .opt{margin-left:auto;font-size:12.5px;color:var(--muted)}
+  figure.od-fig{margin:28px 0 0}
+  figure.od-fig figcaption{font-size:14px;color:var(--muted);margin-top:10px;line-height:1.5}
+  .od-diagram{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:18px;overflow-x:auto}
+  .od-diagram svg{display:block;width:100%;height:auto;min-width:560px}
+  .od-shot{border-radius:12px;border:1px solid var(--line);overflow:hidden;background:var(--card)}
+  .od-shot img{width:100%}
+  .od-real{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:var(--green-soft);color:var(--green);margin-right:6px}
+  .od-ill{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:#1c2a3f;color:#b7c2d1;margin-right:6px}
+  .od-next{border:1px dashed var(--line);border-radius:12px;padding:22px 24px;margin-top:22px}
+  .od-next h3{margin-top:0}
+  .od-tiers td:first-child{font-family:var(--mono);white-space:nowrap}
+  pre.od-out .p{color:var(--green)} pre.od-out .n{color:var(--muted)} pre.od-out .f{color:var(--red)}
+  p code{overflow-wrap:anywhere}
+  @media (max-width:640px){.od-sub .opt{margin-left:0;width:100%}}
+</style>
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html">Developers</a>
+      <a href="/how-it-works.html">How it works</a>
+      <a href="/onetrace/">Docs</a>
+      <a href="/learn.html">Learn</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
+</header>
+<nav class="od-sub" aria-label="onedoor">
+  <div class="wrap">
+    <b>onedoor</b>
+    <a href="/onedoor/">Overview</a>
+    <a href="/onedoor/developers.html" aria-current="page">Developers</a>
+    <a href="/onedoor/how-it-works.html">How it works</a>
+    <a href="https://github.com/shamiksaharcciit-oss/onedoor">Source</a>
+    <span class="opt">Optional. Works on its own, or beside onetrace.</span>
+  </div>
+</nav>
+
+<main id="main">
+
+<div class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow"><b>onedoor for developers</b> layer 2 of 3</span>
+    <h1>Put one door between your agent and its tools.</h1>
+    <p class="lede">Install from PyPI, copy a policy, start the decision service, and every action goes decide, act, report. Everything below was run against onedoor 0.8.1 as published; the outputs are what it printed.</p>
+    <div class="crumbs">
+      <a href="#quickstart">Quickstart</a>
+      <a href="#policy">A policy</a>
+      <a href="#loop">Decide, act, report</a>
+      <a href="#operators">Approvals and the kill switch</a>
+      <a href="#studio">The Studio</a>
+      <a href="#onetrace">With onetrace</a>
+      <a href="#records">Records and receipts</a>
+      <a href="#surfaces">Other surfaces</a>
+    </div>
+  </div>
+</div>
+
+<section id="quickstart" aria-labelledby="qs-title">
+  <div class="wrap">
+    <p class="kicker">1 · Quickstart</p>
+    <h2 id="qs-title">Four commands, from PyPI.</h2>
+    <p class="sub">Python 3.12 or later. Nothing here needs the source repository. Step 2 copies the shipped payments examples: worked examples of the policy vocabulary, not a compliance artifact (read <code>PACK.md</code> beside the file in the installed package).</p>
+<pre>pip install "onedoor[service]"
+python -c "import shutil; from onedoor import templates; shutil.copy(templates.PAYMENTS.policies_path, 'policies.yaml')"
+export ONEDOOR_DECIDE_KEYS=dev ONEDOOR_ADMIN_KEYS=root ONEDOOR_DB=onedoor.db ONEDOOR_POLICIES=policies.yaml
+python -m uvicorn onedoor.service.app:create_app --factory --host 127.0.0.1 --port 8099</pre>
+    <p class="sub">On Windows PowerShell, the third line is <code>$env:ONEDOOR_DECIDE_KEYS="dev"; $env:ONEDOOR_ADMIN_KEYS="root"; $env:ONEDOOR_DB="onedoor.db"; $env:ONEDOOR_POLICIES="policies.yaml"</code>. <code>dev</code> and <code>root</code> are local example keys; choose your own anywhere else.</p>
+    <p class="sub" style="margin-top:14px">Then, in another terminal, three requests:</p>
+<pre>curl -s localhost:8099/v1/health
+curl -s -X POST localhost:8099/v1/decide -H "Authorization: Bearer dev" -H "Content-Type: application/json" \
+  -d '{"request_id":"11111111-1111-1111-1111-111111111111","action_type":"payments.transfer","params":{"amount_eur":120.00,"destination_account":"acct-1"},"source":"llm","rationale":"pay supplier invoice"}'
+curl -s -X POST localhost:8099/v1/decide -H "Authorization: Bearer dev" -H "Content-Type: application/json" \
+  -d '{"request_id":"22222222-2222-2222-2222-222222222222","action_type":"wire.anywhere","params":{},"source":"llm","rationale":"move funds"}'</pre>
+<pre class="od-out"><span class="n">{"status":"ok","kill_switch":false,"pending_intents":0}</span>
+<span class="p">{"decision":"permitted","reason":"passed",</span>"effective_tier":2,...,"intent_audit_id":1,...}
+<span class="f">{"decision":"denied","reason":"default_deny",</span>"detail":"action type 'wire.anywhere' is declared by no policy, so it is refused; declare it in the policy set (at tier 3 to require a human's approval) to allow it",...}</pre>
+    <p class="sub">The first decision is a permit: capped, reversible, and you now owe a report. The second is default-deny, with the refusal saying what would allow it. Amounts in <code>params</code> are JSON numbers (<code>120.00</code>) where a numeric bound applies.</p>
+  </div>
+</section>
+
+<section id="policy" class="section-soft" aria-labelledby="pol-title">
+  <div class="wrap">
+    <p class="kicker">2 · A policy</p>
+    <h2 id="pol-title">Policies are data, not code.</h2>
+    <p class="sub">One entry per action type: its tier, bounds, caps, effects, how to undo it, and whether it rehearses first. Changing what is allowed never means changing the engine. This is the transfer rule from the shipped examples.</p>
+<pre>policies:
+  - action_type: payments.transfer
+    tier: 2                              <span class="c"># runs without asking, up to its caps</span>
+    dry_run: false
+    compensating_command: payments.reverse   <span class="c"># no undo, no auto-execution</span>
+    cost_param: amount_eur
+    undo_window_seconds: 900
+    caps:
+      eur_day: 500.00
+      eur_month: 5000.00
+    effects: [money.egress]              <span class="c"># shares a budget and tier floor with every action with this effect</span>
+    bounds:
+      required: [amount_eur, destination_account]
+      strict_params: true                <span class="c"># any other parameter is refused</span>
+      numeric:
+        amount_eur: { min: 0.01, max: 2000.00 }</pre>
+    <div class="grid-2" style="margin-top:22px">
+      <div class="card"><h3>The loader refuses to start on a bad policy</h3><p>An auto-running tier with no <code>compensating_command</code>, or a <code>cost_param</code> that is not required, stops the service at start-up rather than at the first request.</p></div>
+      <div class="card"><h3>Effects, not just names</h3><p>The same real-world effect through differently named tools shares one budget and one tier floor. Declare <code>effects: [money.egress]</code>, and add <code>param_effects</code> rules for generic tools.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="loop" aria-labelledby="loop-title">
+  <div class="wrap">
+    <p class="kicker">3 · Decide, act, report</p>
+    <h2 id="loop-title">Ask first. Act only on a permit. Then say what happened.</h2>
+    <p class="sub">A permitted decision carries an <code>intent_audit_id</code>: an obligation. Do the action, then report its outcome against that id. The report is what settles or releases the reserved budget.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col"><code>decision</code></th><th scope="col">What your code does</th></tr></thead>
+        <tbody>
+          <tr><td><code>permitted</code></td><td>Act, then <code>POST /v1/report</code> with the <code>intent_audit_id</code> and an <code>outcome</code>.</td></tr>
+          <tr><td><code>proposed</code></td><td>Don't act. It waits for a person; the response carries an <code>approval_id</code>.</td></tr>
+          <tr><td><code>denied</code></td><td>Don't act. <code>reason</code> names the check that refused it: <code>default_deny</code>, <code>bounds</code>, <code>budget_exhausted</code>, <code>kill_switch</code>, and others.</td></tr>
+          <tr><td><code>executed</code></td><td>Observe-tier actions (reads) are recorded and need no report.</td></tr>
+        </tbody>
+      </table>
+    </div>
+<pre>curl -s -X POST localhost:8099/v1/report -H "Authorization: Bearer dev" -H "Content-Type: application/json" \
+  -d '{"intent_audit_id":1,"outcome":"success","payload":{"transfer_id":"tx-1001"}}'</pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col"><code>outcome</code></th><th scope="col">Budget</th></tr></thead>
+        <tbody>
+          <tr><td><code>success</code></td><td>Settled: the action happened.</td></tr>
+          <tr><td><code>failure</code></td><td>Settled: it was attempted. Add <code>"no_effect": true</code> when you know nothing happened.</td></tr>
+          <tr><td><code>timeout</code></td><td>Settled: it may have happened, so onedoor assumes it did.</td></tr>
+          <tr><td><code>not_attempted</code></td><td>Released, as an audited event: you assert it did not happen.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sub">When a cap runs out, the denial says which counter and how much is left. From the same run, after a €120 transfer, a request for €400:</p>
+<pre class="od-out"><span class="f">{"decision":"denied","reason":"budget_exhausted","detail":"€/day cap 500 reached",</span>...,
+ "budget":{"name":"payments.transfer.eur_day","dimension":"EUR","limit":"500","remaining":"380","window":"day","consumed":"120",...}}</pre>
+  </div>
+</section>
+
+<section id="operators" class="section-soft" aria-labelledby="ops-title">
+  <div class="wrap">
+    <p class="kicker">4 · Approvals and the kill switch</p>
+    <h2 id="ops-title">Operator acts live behind a different key.</h2>
+    <p class="sub">Listing, approving, granting and denying approvals, and the kill switch, need an admin key (<code>ONEDOOR_ADMIN_KEYS</code>). Decide keys cannot reach them.</p>
+<pre>curl -s localhost:8099/v1/approvals -H "Authorization: Bearer root"
+curl -s -X POST localhost:8099/v1/approvals/1/approve -H "Authorization: Bearer root"   <span class="c"># approve and resume</span>
+curl -s -X POST localhost:8099/v1/approvals/1/grant   -H "Authorization: Bearer root"   <span class="c"># approve only; a later caller resumes by reference</span>
+curl -s -X POST localhost:8099/v1/approvals/1/deny    -H "Authorization: Bearer root"
+curl -s -X POST localhost:8099/v1/killswitch -H "Authorization: Bearer root" -H "Content-Type: application/json" -d '{"engaged":true}'</pre>
+    <p class="sub">With the switch engaged, the same €40 transfer that was permitted a moment earlier:</p>
+<pre class="od-out"><span class="f">{"decision":"denied","reason":"kill_switch","detail":"kill switch engaged; not proposed",</span>...}</pre>
+    <p class="sub">Releasing it reports whether the policy version changed while the door was shut (<code>policy_change_while_engaged</code>). A person cannot approve their own proposal, and an approval can be used only by the caller that proposed the action. Set <code>ONEDOOR_APPROVAL_WEBHOOK</code> to send tier-3 proposals to a Slack-compatible webhook.</p>
+  </div>
+</section>
+
+<section id="studio" aria-labelledby="studio-title">
+  <div class="wrap">
+    <p class="kicker">5 · The Studio</p>
+    <h2 id="studio-title">Write, check and ratify policy in a browser, on your machine.</h2>
+<pre>pip install "onedoor[studio]"
+python -m onedoor.studio --db onedoor.db --studio-db studio.db
+<span class="c"># then open http://127.0.0.1:8787</span></pre>
+    <p class="sub"><code>--db</code> must name the same file the decision service uses: their defaults differ, and two different files give you a Studio that works and shows an empty world. <code>--studio-db</code> holds your drafts and stays separate. The Studio binds to loopback only and refuses any other address before it opens a socket.</p>
+    <div class="grid-3" style="margin-top:22px">
+      <div class="card"><h3>Three ways to write</h3><p>The guided editor, an uploaded YAML file, or the REST API (<code>/api/v1/drafts</code>, schema at <code>/api/v1/openapi.json</code>). The API can draft and submit; it cannot approve.</p></div>
+      <div class="card"><h3>Two lists, never merged</h3><p>"The loader would refuse this" is what fails at start-up. "Once in force, these rules will…" is how a loadable rule behaves at decision time, with the reason code it will record.</p></div>
+      <div class="card"><h3>Drafts from a model, if you want</h3><p>Off by default and absent when off. Point it at your own endpoint and a description becomes a draft that goes through the same loader and the same ratification as anything you type.</p></div>
+    </div>
+    <figure class="od-fig">
+      <div class="od-shot"><img src="/assets/img/onedoor/studio-draft-refused.webp" width="1600" height="1269" loading="lazy" alt="A draft uploaded from a file with two rules the loader would refuse: crm.update_contact and invoices.pay, each an auto-executing tier with no compensating_command."></div>
+      <figcaption><span class="od-real">Real screen</span>An uploaded file still becomes a draft. You get the reasons, not your file handed back.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="onetrace" class="section-soft" aria-labelledby="ot-title">
+  <div class="wrap">
+    <p class="kicker">6 · With onetrace (optional)</p>
+    <h2 id="ot-title">Each gated step cites the decision that allowed it.</h2>
+    <p class="sub">Set <code>ONEDOOR_ISSUER</code> to a name for your deployment and every decide response carries a <code>decision_ref</code>. Pass it to <code>ot.decision()</code> inside a step you declared as gated. Requires onetrace 0.5.0 or later; this was run with 0.6.0.</p>
+<pre>export ONEDOOR_ISSUER=https://payments.example/onedoor     <span class="c"># before starting the service</span></pre>
+<pre>import json, uuid, urllib.request
+import onetrace as ot
+
+ONEDOOR = "http://127.0.0.1:8099"
+
+def call(path, body):
+    req = urllib.request.Request(ONEDOOR + path, data=json.dumps(body).encode(),
+        headers={"Authorization": "Bearer dev", "Content-Type": "application/json"})
+    with urllib.request.urlopen(req) as r:
+        return json.load(r)
+
+@ot.stage("approve_payment", instrument=ot.pkg("pay-invoice", "onetrace", kind="tool"))
+def approve_payment(invoice, amount_eur):
+    answer = call("/v1/decide", {"request_id": str(uuid.uuid4()), "action_type": "payments.transfer",
+        "params": {"amount_eur": amount_eur, "destination_account": "acct-1"},
+        "source": "llm", "rationale": f"pay {invoice}"})
+    ot.decision(answer["decision_ref"])          <span class="c"># recorded in this step's receipt</span>
+    if answer["decision"] != "permitted":
+        raise RuntimeError(f"onedoor said {answer['decision']}: {answer['reason']}")
+    # ... move the money here ...
+    call("/v1/report", {"intent_audit_id": answer["intent_audit_id"], "outcome": "success"})
+    return {"paid": invoice}
+
+@ot.run(stages=["approve_payment"], gated_stages=["approve_payment"])
+def main(invoice, amount_eur):
+    print(approve_payment(invoice, amount_eur))
+
+if __name__ == "__main__":
+    main("INV-0001", 40.00)</pre>
+    <p class="sub">Run it, export onedoor's ledger, and verify the run against the export:</p>
+<pre>python pay.py
+python -m onedoor.export --store onedoor.db --out decisions.jsonl     <span class="c"># writes decisions.jsonl.sha256 beside it</span>
+onetrace-verify --require-artifacts --decisions decisions.jsonl runs/&lt;run id&gt;</pre>
+<pre class="od-out"><span class="p">[PASS   ]</span> decisions: gated steps cite a decision -- 1 gated step(s), each citing a decision
+<span class="p">[PASS   ]</span> decisions: references are well formed -- 1 reference(s), each a well-formed onedoor-decision-ref/1
+<span class="p">[PASS   ]</span> decisions: a step that acted cites a permitting decision -- 1 acting step(s), each citing a permitting decision
+<span class="n">[NOT-RUN]</span> decisions: the permit covers the recorded action -- no permit recorded
+<span class="p">[PASS   ]</span> decisions: the decision is in the export -- 1 reference(s), each matching a row in the export by digest
+
+59 pass, 0 fail, 3 not-run  -&gt;  PASS</pre>
+    <p class="sub">A step that acts on a deny, or a gated step that cites nothing, fails its row by name. A reference can also be checked on its own, with onedoor alone: <code>python -m onedoor.decision_ref check --export decisions.jsonl --ref ref.json</code> answers matches, digest mismatch, not in export, malformed ref or export damaged, each with its own exit code.</p>
+  </div>
+</section>
+
+<section id="records" aria-labelledby="rec-title">
+  <div class="wrap">
+    <p class="kicker">7 · Records and receipts</p>
+    <h2 id="rec-title">Read the ledger without trusting the process that wrote it.</h2>
+<pre>python -m onedoor.export --store onedoor.db --out decisions.jsonl          <span class="c"># one JSON object per line, read-only</span>
+python -m onedoor.viewer --store onedoor.db --out oneview.html             <span class="c"># a static receipt page for a real store</span>
+python -m onedoor.viewer --demo-store demo.db --out oneview.html           <span class="c"># or a labelled sample, built by the real engine</span>
+pip install "onedoor[signed]"                                              <span class="c"># Ed25519 signatures over each row, off until you turn them on</span></pre>
+    <div class="grid-2" style="margin-top:22px">
+      <div class="card"><h3>Signing that refuses to pretend</h3><p>Configure signing without the library installed and the process refuses to start. The private key is yours and never enters the store or a receipt; rotation keeps old keys, so old receipts verify forever.</p></div>
+      <div class="card"><h3>Anchoring, wherever you like</h3><p>Merkle roots over ranges of rows, published where you choose. Someone holding a published root and one exported receipt can check membership with nothing else from onedoor.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="surfaces" class="section-soft" aria-labelledby="surf-title">
+  <div class="wrap">
+    <p class="kicker">8 · Other surfaces</p>
+    <h2 id="surf-title">The same checks, wherever your agent calls tools.</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Surface</th><th scope="col">Install</th><th scope="col">Guide</th></tr></thead>
+        <tbody>
+          <tr><td>HTTP decision service</td><td><code>onedoor[service]</code></td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-service.md">integration-service.md</a></td></tr>
+          <tr><td>Python library (decide and reserve, then report)</td><td><code>onedoor</code></td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-library.md">integration-library.md</a></td></tr>
+          <tr><td>MCP proxy (stdio, both sides)</td><td><code>onedoor</code></td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-mcp.md">integration-mcp.md</a></td></tr>
+          <tr><td>LangChain / LangGraph middleware</td><td><code>onedoor[langchain]</code></td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-langgraph.md">integration-langgraph.md</a></td></tr>
+          <tr><td>LiteLLM guardrail (experimental example)</td><td><code>onedoor[litellm]</code></td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-litellm.md">integration-litellm.md</a></td></tr>
+          <tr><td>OpenTelemetry spans and counters</td><td><code>onedoor[otel]</code></td><td>No code changes once installed.</td></tr>
+          <tr><td>The full policy reference</td><td></td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/policy-reference.md">policy-reference.md</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sub" style="margin-top:18px">Next: <a href="/onedoor/how-it-works.html">how it works</a>, the check order and what each record proves.</p>
+  </div>
+</section>
+
+</main>
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>onedoor</h4>
+        <ul>
+          <li><a href="/onedoor/">Overview</a></li>
+          <li><a href="/onedoor/developers.html">Developers</a></li>
+          <li><a href="/onedoor/how-it-works.html">How it works</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">Source on GitHub</a></li>
+          <li><a href="https://pypi.org/project/onedoor/">onedoor on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>onetrace</h4>
+        <ul>
+          <li><a href="/">Product</a></li>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onedoor itself reports to no one. Screens are onedoor's own Studio and receipt page, run on its shipped payments example policies with sample requests, not customer data.</div>
+  </div>
+</footer>
+
+</body>
+</html>

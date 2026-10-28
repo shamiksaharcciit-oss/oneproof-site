@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>onedoor — decide what your agent may do, before it does · oneproof</title>
+<meta name="description" content="onedoor is an optional, open-source policy engine for agent actions: default-deny, bounds, caps, approvals, a kill switch and an append-only ledger. Works on its own or beside onetrace.">
+<link rel="canonical" href="https://oneproof.dev/onedoor/">
+<meta property="og:title" content="onedoor — policy for what agents do">
+<meta property="og:description" content="Every action an agent proposes is checked against your policy before it runs: permitted within limits, held for a person, or refused with a reason.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneproof.dev/onedoor/">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<style>
+  .od-sub{border-bottom:1px solid var(--line);background:var(--soft)}
+  .od-sub .wrap{display:flex;gap:6px 22px;flex-wrap:wrap;align-items:center;min-height:46px;font-size:14px}
+  .od-sub b{font-weight:600;color:var(--ink)}
+  .od-sub a{color:var(--ink-2);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+  .od-sub a:hover{color:var(--ink)}
+  .od-sub a[aria-current=page]{color:var(--ink);border-bottom-color:var(--amber)}
+  .od-sub .opt{margin-left:auto;font-size:12.5px;color:var(--muted)}
+  figure.od-fig{margin:28px 0 0}
+  figure.od-fig figcaption{font-size:14px;color:var(--muted);margin-top:10px;line-height:1.5}
+  .od-diagram{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:18px;overflow-x:auto}
+  .od-diagram svg{display:block;width:100%;height:auto;min-width:560px}
+  .od-shot{border-radius:12px;border:1px solid var(--line);overflow:hidden;background:var(--card)}
+  .od-shot img{width:100%}
+  .od-real{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:var(--green-soft);color:var(--green);margin-right:6px}
+  .od-ill{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:#1c2a3f;color:#b7c2d1;margin-right:6px}
+  .od-next{border:1px dashed var(--line);border-radius:12px;padding:22px 24px;margin-top:22px}
+  .od-next h3{margin-top:0}
+  .od-tiers td:first-child{font-family:var(--mono);white-space:nowrap}
+  pre.od-out .p{color:var(--green)} pre.od-out .n{color:var(--muted)} pre.od-out .f{color:var(--red)}
+  p code{overflow-wrap:anywhere}
+  @media (max-width:640px){.od-sub .opt{margin-left:0;width:100%}}
+</style>
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html">Developers</a>
+      <a href="/how-it-works.html">How it works</a>
+      <a href="/onetrace/">Docs</a>
+      <a href="/learn.html">Learn</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
+</header>
+<nav class="od-sub" aria-label="onedoor">
+  <div class="wrap">
+    <b>onedoor</b>
+    <a href="/onedoor/" aria-current="page">Overview</a>
+    <a href="/onedoor/developers.html">Developers</a>
+    <a href="/onedoor/how-it-works.html">How it works</a>
+    <a href="https://github.com/shamiksaharcciit-oss/onedoor">Source</a>
+    <span class="opt">Optional. Works on its own, or beside onetrace.</span>
+  </div>
+</nav>
+
+<main id="main">
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow"><b>onedoor</b> optional · standalone · open source</span>
+      <h1 id="hero-title">Your agent can act. Decide what it <em>may do</em>, before it does.</h1>
+      <p class="lede">onedoor is a policy engine for agent actions. Every action an agent proposes is checked against a policy you wrote, before anything touches the world: permitted within limits, held for a person, or refused with a reason. Every answer lands in an append-only ledger.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="/onedoor/developers.html">Add it in four commands</a>
+        <a class="btn btn-ghost" href="/onedoor/how-it-works.html">How it works</a>
+      </div>
+      <p class="cta-note">Free and open source (Apache-2.0) · runs on your machine · no account · <code>pip install onedoor</code></p>
+    </div>
+    <figure class="od-fig" style="margin:0">
+      <img src="/assets/img/onedoor/hero-illustration.svg" width="640" height="470" alt="Illustration: an agent proposes three actions. onedoor permits a 40 euro transfer within its day cap, denies wire.anywhere with default_deny, as no policy declares it, and holds payouts.schedule as proposed until a person approves. Every answer goes to an append-only ledger.">
+      <figcaption><span class="od-ill">Illustration</span>The screens further down are the real product.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section aria-labelledby="problem-title">
+  <div class="wrap">
+    <p class="kicker">The problem</p>
+    <h2 id="problem-title">Most guardrails govern what a model says. Agents do things.</h2>
+    <p class="sub">An agent with tools can move money, change records, send messages. The question that matters before each one is plain: is this action allowed, within what limits, and who said so?</p>
+    <div class="versus">
+      <div class="card">
+        <h3><span class="tag tag-grey">Usually</span> Rules in prompts and code</h3>
+        <ul class="clean">
+          <li>What the agent may do is scattered across prompts, tool code and good intentions.</li>
+          <li>An action nobody thought about is allowed: nothing said no.</li>
+          <li>Limits like "no more than €500 a day" are counted by hand, if at all.</li>
+          <li>Afterwards, nobody can show which rule allowed what.</li>
+        </ul>
+      </div>
+      <div class="card good">
+        <h3><span class="tag tag-amber">With onedoor</span> One door, one policy</h3>
+        <ul class="clean">
+          <li>Every action goes through one check, against a policy file you can read.</li>
+          <li>An action no policy declares is refused, with a reason that says what would allow it.</li>
+          <li>Caps are reserved race-free, so two requests cannot share the last euro.</li>
+          <li>Every decision is written with its reason code, and never edited afterwards.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-soft" aria-labelledby="value-title">
+  <div class="wrap">
+    <p class="kicker">What you get</p>
+    <h2 id="value-title">Positions most frameworks leave as wishes.</h2>
+    <div class="grid-3">
+      <div class="card"><h3>Default-deny</h3><p>An unlisted action type is not an error and not a pass. It is refused as <code>default_deny</code>, and the refusal says how to allow it.</p></div>
+      <div class="card"><h3>Bounds before a person</h3><p>Parameters are checked against declared ranges first, so an approval screen only ever shows a request that is physically sane.</p></div>
+      <div class="card"><h3>Caps, counted honestly</h3><p>Per-action and per-effect budgets (€ per day, per month, calls per day), reserved inside the deciding transaction.</p></div>
+      <div class="card"><h3>Undo before autonomy</h3><p>An action runs without asking only if its policy names how to reverse it. The loader refuses to start otherwise.</p></div>
+      <div class="card"><h3>A kill switch that wins</h3><p>Checked before any policy lookup. While it holds, no action runs on its own, approved or not. Reads stay open.</p></div>
+      <div class="card"><h3>An append-only ledger</h3><p>Decisions, results, denials, dry-runs and kill-switch blocks, each with a typed reason code. Exportable, and checkable row by row.</p></div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="tiers-title">
+  <div class="wrap">
+    <p class="kicker">Four tiers</p>
+    <h2 id="tiers-title">How much an action may do on its own.</h2>
+    <p class="sub">Each policy puts an action type in one tier. New action types can start in dry-run: decided and recorded as "would have executed", with nothing done and no budget spent.</p>
+    <div class="table-wrap">
+      <table class="od-tiers">
+        <thead><tr><th scope="col">Tier</th><th scope="col">Meaning</th><th scope="col">From the shipped payments examples</th></tr></thead>
+        <tbody>
+          <tr><td>0 · observe</td><td>Recorded, never blocked by the kill switch. For reads.</td><td><code>ledger.read</code></td></tr>
+          <tr><td>1 · auto</td><td>Runs without asking: reversible and within bounds.</td><td><code>payments.reverse</code></td></tr>
+          <tr><td>2 · auto, capped</td><td>Runs without asking, up to cumulative caps.</td><td><code>payments.transfer</code>: €500/day, €5000/month, €0.01–€2000 each</td></tr>
+          <tr><td>3 · confirm</td><td>Proposed, and waits for a person to approve before it runs.</td><td><code>payouts.schedule</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section-soft" aria-labelledby="tour-title">
+  <div class="wrap">
+    <p class="kicker">Product tour</p>
+    <h2 id="tour-title">The Policy Studio, on the shipped payments examples.</h2>
+    <p class="sub"><span class="od-real">Real screens</span>Screenshots of onedoor 0.8.1's own Studio and receipt page, run on this site's machine with the payments example policies and a handful of sample requests. The Studio binds to your own machine only: nothing it shows leaves it.</p>
+    <div class="tour">
+      <div class="tour-row">
+        <div class="tour-text">
+          <span class="step-no">01 · Policies</span>
+          <h3>What is allowed, and under what limits</h3>
+          <p>Every policy in force, with its tier, caps, bounds and effects. The page says plainly what it is not: a list of what is blocked. Nothing needs to be listed to be blocked.</p>
+        </div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-policies.webp" width="1600" height="875" loading="lazy" alt="The Studio's Policies page. Header: in force 0c12ff2d…5bab, never ratified, 6 policies, 2 effects, loopback only, nothing leaves this machine. A table of six actions: ledger.read review OBSERVE; payments.reverse allowed AUTO; payments.transfer allowed AUTO_CAPPED, EUR 500/day, EUR 5000/month, amount_eur 0.01 to 2000, effect money.egress; payouts.schedule review CONFIRM; refunds.issue allowed AUTO_CAPPED EUR 300/day; webhooks.post allowed AUTO_CAPPED. Each marked covered."></div>
+      </div>
+      <div class="tour-row flip">
+        <div class="tour-text">
+          <span class="step-no">02 · Drafts</span>
+          <h3>Upload a file; see what the loader would refuse</h3>
+          <p>A policy file becomes a draft, even one the engine would refuse at start-up. The draft shows each refusal from the engine's own loader, in its own words: here, two auto-running actions that name no way to undo them.</p>
+        </div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-draft-refused.webp" width="1600" height="1269" loading="lazy" alt="A draft uploaded from a file, bad.yaml, with two rules: crm.update_contact at AUTO and invoices.pay at AUTO_CAPPED. Changes: this draft cannot be previewed, it would be refused at load. Validation lists two problems: each is an auto-executing tier with no compensating_command, so it cannot auto-execute."></div>
+      </div>
+      <div class="tour-row">
+        <div class="tour-text">
+          <span class="step-no">03 · The editor</span>
+          <h3>A guided form and the raw rule, never out of step</h3>
+          <p>Both panes are drawn from one parsed rule, so they cannot disagree. Validation runs on the engine's own loader as you type. The rules in force are not touched by anything on this page.</p>
+        </div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-editor.webp" width="1600" height="1080" loading="lazy" alt="Editing refunds.issue inside the draft raise the refund ceiling. Left, the guided pane: action type, tier AUTO_CAPPED (2), dry run, compensating command payments.reverse, cost parameter amount_eur, cap EUR per day 400. Right, the rule as JSON with bounds, caps and the compensating command."></div>
+      </div>
+      <div class="tour-row flip">
+        <div class="tour-text">
+          <span class="step-no">04 · Review the change</span>
+          <h3>What changes, in sentences, before you ratify</h3>
+          <p>Each changed rule is described as it was and as it would become. Ratifying is a deliberate step with a name on it, and it seals a receipt for the new version. There is no un-ratify: going back is a new version, and nothing already decided is rewritten.</p>
+        </div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-draft-changes.webp" width="1600" height="1350" loading="lazy" alt="The draft raise the refund ceiling. Changes: refunds.issue modified. Was: capped at EUR 300/day, EUR 2000/month. Would become: capped at EUR 400/day, EUR 2000/month, otherwise the same bounds, effect money.egress, undoable by payments.reverse within 900 seconds. Validation: the validator found no problems."></div>
+      </div>
+      <div class="tour-row">
+        <div class="tour-text">
+          <span class="step-no">05 · Ratified</span>
+          <h3>A new version in force, and its receipt</h3>
+          <p>The version in force is a digest of the policy set. The receipt records what it replaced, when, under which name, and the kill switch's state at that moment. Each ratification can be checked again later on the Verify page.</p>
+        </div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-ratified.webp" width="1600" height="688" loading="lazy" alt="Ratified. In force: 0d38f505061f47a2e22a34246e4506e812957f0e3219fbbeaf98d146a52b0e86. Replaced 0c12ff2d…5bab, receipt 38cbe77c…ac52, ratified by session operator on duty, kill switch not engaged."></div>
+      </div>
+      <div class="tour-row flip">
+        <div class="tour-text">
+          <span class="step-no">06 · Live state</span>
+          <h3>The kill switch, every budget, every pending approval</h3>
+          <p>How much of each cap is consumed, reserved and free; open reservations; approvals and when they expire. The Studio only shows the kill switch. Throwing it lives on the decision service, behind its own admin key.</p>
+        </div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-live-state.webp" width="1600" height="1400" loading="lazy" alt="The Live state page. Kill switch: not engaged, with a note that it outranks everything including granted approvals. Budgets: effect money.egress consumed 165 with no cap declared; payments.transfer EUR per day consumed 120 of 500; per month 120 of 5000; refunds.issue 45 of 300 per day and 45 of 2000 per month, each with a bar."></div>
+      </div>
+      <div class="tour-row">
+        <div class="tour-text">
+          <span class="step-no">07 · History</span>
+          <h3>Every decision, by action, verdict and version</h3>
+          <p>Filter the ledger by action, verdict, policy version, origin or date. The page says what it cannot do too: no caller identity is written to a row, so it shows what was asked and decided, not who asked.</p>
+        </div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-history.webp" width="1600" height="812" loading="lazy" alt="The History page with filters for action, verdict, policy version, request origin and dates. Five decisions: payments.transfer denied budget_exhausted; ledger.read executed observe; payouts.schedule proposed tier_confirm; payments.transfer denied bounds; wire.anywhere denied default_deny. Each under policy version 0c12ff2d…5bab, origin llm."></div>
+      </div>
+      <div class="tour-row flip">
+        <div class="tour-text">
+          <span class="step-no">08 · The decision receipt</span>
+          <h3>One decision, and the checks that back it</h3>
+          <p>A static, read-only page built from the ledger: the verdict, the frozen parameters, the budget at the moment of decision and the policy version. Every value on it is read from a verified artifact; if the evidence does not check out, it shows the failure and none of the values.</p>
+          <p style="margin-top:18px"><a class="btn btn-dark" href="/onedoor/developers.html">Try it on your machine</a></p>
+        </div>
+        <div class="shot"><img src="/assets/img/onedoor/decision-receipt.webp" width="1520" height="1600" loading="lazy" alt="The onedoor decision receipt page: payments.transfer, denied. DENY budget_exhausted: a value cap was reached for this effect; the reservation was refused and nothing executed. Request id, source llm, frozen params amount_eur 400.00 to acct-2, tier nominal 2 effective 2, budget at decision: payments.transfer.eur_day, limit 500, consumed 120, remaining 380, and the policy version digest."></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="pair-title">
+  <div class="wrap">
+    <p class="kicker">Optional, and better together</p>
+    <h2 id="pair-title">onedoor decides. onetrace records. Each works without the other.</h2>
+    <p class="sub">onedoor is a separate product with its own package. Use it on its own to govern what agents may do. Add it beside onetrace and each gated step of a run cites the decision that allowed it, which anyone can check against onedoor's export.</p>
+    <div class="grid-3">
+      <div class="card"><h3>onedoor alone</h3><p>Policies, approvals, caps and the kill switch, with an append-only ledger and its own receipt page. No onetrace needed.</p></div>
+      <div class="card"><h3>onetrace alone</h3><p>A checkable record of each run and the comparison that finds the first difference. No policy engine needed.</p></div>
+      <div class="card"><h3>Together</h3><p>A step marked as gated must cite a onedoor decision. The verifier fails a step that acted on a deny, or cited nothing, and matches each reference to a row of onedoor's export.</p></div>
+    </div>
+    <p style="margin-top:24px;color:var(--ink-2)">From a real run of onetrace 0.6.0 against onedoor 0.8.1's decision service, checked with <code>onetrace-verify --decisions</code>:</p>
+<pre class="od-out"><span class="p">[PASS   ]</span> decisions: gated steps cite a decision -- 1 gated step(s), each citing a decision
+<span class="p">[PASS   ]</span> decisions: references are well formed -- 1 reference(s), each a well-formed onedoor-decision-ref/1
+<span class="p">[PASS   ]</span> decisions: a step that acted cites a permitting decision -- 1 acting step(s), each citing a permitting decision
+<span class="n">[NOT-RUN]</span> decisions: the permit covers the recorded action -- no permit recorded
+<span class="p">[PASS   ]</span> decisions: the decision is in the export -- 1 reference(s), each matching a row in the export by digest</pre>
+    <p style="color:var(--ink-2)">The <code>NOT-RUN</code> row is honest: onedoor 0.8.1's decision service does not hand a signed permit to the caller yet (see <a href="#next">Coming next</a>). The code for this run is on the <a href="/onedoor/developers.html#onetrace">Developers page</a>.</p>
+  </div>
+</section>
+
+<section class="section-soft" aria-labelledby="where-title">
+  <div class="wrap">
+    <p class="kicker">Where it plugs in</p>
+    <h2 id="where-title">In front of the tools you already have.</h2>
+    <div class="grid-3">
+      <div class="card"><h3>An HTTP decision service</h3><p>Any enforcement point, in any language, asks <code>POST /v1/decide</code>, acts, then reports the outcome. Admin keys are separate from decide keys: the process that asks is not the process that grants.</p></div>
+      <div class="card"><h3>A Python library</h3><p>Decide-and-reserve, then report the result, around your own call. The same checks, in-process.</p></div>
+      <div class="card"><h3>An MCP proxy</h3><p>Point an MCP host at the proxy instead of the tool server. Every <code>tools/call</code> goes through the full check; unknown tools are denied by default.</p></div>
+      <div class="card"><h3>LangChain middleware</h3><p>Wraps tool calls in a LangChain or LangGraph agent, including a mode that pauses for a person's approval.</p></div>
+      <div class="card"><h3>An AI gateway example</h3><p>An experimental LiteLLM guardrail adapter: model allow-lists, daily caps, and the gateway's MCP tool calls.</p></div>
+      <div class="card"><h3>Signals out</h3><p>Approval requests to a webhook (Slack-compatible payload), and OpenTelemetry spans and decision counters with the <code>otel</code> extra.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="honest" aria-labelledby="honest-title">
+  <div class="wrap">
+    <p class="kicker" style="color:var(--amber)">Honest by design</p>
+    <h2 id="honest-title">What it doesn't do, stated up front.</h2>
+    <p class="sub">onedoor's own documentation lists its known limits. These are the ones to read before you trust a boundary to it.</p>
+    <div class="grid-2">
+      <div class="card"><h3>Parameter rules can be dodged</h3><p>A command built indirectly (for example, decoded at run time) carries nothing a parameter rule can match. URL patterns match the string, not where it leads, unless you use the opt-in URL block. Put a fail-closed network control in front of anything that matters.</p></div>
+      <div class="card"><h3>Not its own witness</h3><p>A signature checked against a key found in the same store reads <code>self_consistent</code>, never <code>verified</code>. Independence needs a key or an anchor the store does not hold.</p></div>
+      <div class="card"><h3>One process, one writer</h3><p>The documented deployment is one process with one SQLite writer. Running several writers on one store without that serialization opens a window between check and act.</p></div>
+      <div class="card"><h3>Who asked is not recorded</h3><p>Callers authenticate with bearer keys, but no caller identity is written to a ledger row. The ledger says what was asked and decided.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="next" aria-labelledby="next-title">
+  <div class="wrap">
+    <p class="kicker">Coming next</p>
+    <h2 id="next-title">From "allowed" to "done, and confirmed".</h2>
+    <div class="od-next">
+      <p style="margin:0 0 12px">Not in the current release (0.8.1). Built in the open, described here so you know where it is going; no dates.</p>
+      <ul class="clean">
+        <li><b>A signed permit, bound to the request.</b> A permitted action comes with a short-lived permit the receiving system can check on its own: bound to the exact action, the sender's key and the request body, and usable once.</li>
+        <li><b>The recipient's signed confirmation.</b> The system that acted signs what it did with which permit, so a record can show the action was authorized and its effect confirmed.</li>
+        <li><b>Decision references on every surface.</b> Today the decision service and the library return them; next, the MCP proxy, the gateway adapter and the LangChain middleware too.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section-soft" aria-labelledby="paths-title">
+  <div class="wrap">
+    <p class="kicker">Go deeper</p>
+    <h2 id="paths-title">Pick your level of detail.</h2>
+    <div class="paths">
+      <a class="path here" href="/onedoor/" aria-current="page">
+        <span class="who-for">For decision makers</span>
+        <h3>What onedoor is</h3>
+        <p>What it governs, how it looks, and what it does not do.</p>
+        <span class="go">You are here</span>
+      </a>
+      <a class="path" href="/onedoor/developers.html">
+        <span class="who-for">For developers</span>
+        <h3>Add it to your agent</h3>
+        <p>Four commands from PyPI, a policy, the decide-act-report loop, the Studio, and onetrace.</p>
+        <span class="go">Developers →</span>
+      </a>
+      <a class="path" href="/onedoor/how-it-works.html">
+        <span class="who-for">For researchers and reviewers</span>
+        <h3>The mechanism</h3>
+        <p>The check order, the two phases, ratification, receipts and what "verified" means.</p>
+        <span class="go">How it works →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>onedoor</h4>
+        <ul>
+          <li><a href="/onedoor/">Overview</a></li>
+          <li><a href="/onedoor/developers.html">Developers</a></li>
+          <li><a href="/onedoor/how-it-works.html">How it works</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">Source on GitHub</a></li>
+          <li><a href="https://pypi.org/project/onedoor/">onedoor on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>onetrace</h4>
+        <ul>
+          <li><a href="/">Product</a></li>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onedoor itself reports to no one. Screens are onedoor's own Studio and receipt page, run on its shipped payments example policies with sample requests, not customer data.</div>
+  </div>
+</footer>
+
+</body>
+</html>
