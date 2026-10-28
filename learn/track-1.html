@@ -86,11 +86,11 @@ onetrace-verify --require-artifacts runs/level-1</pre></div></div>
       </div></div>
       <div class="stepx"><div>
         <h3>1.2 Break it</h3>
-        <p>Copy the level 1 folder to <code>runs/level-2</code>. Open <code>runs/level-2/receipts/03-answer.json</code> in a text editor and change one character inside the recorded output digest (any hex digit). Save, then verify:</p>
+        <p>Copy the level 1 folder to <code>runs/level-2</code>. Open <code>runs/level-2/receipts/03-answer.json</code> in a text editor. The receipt is one long line; find <code>"outputs"</code>, and in its <code>digest</code> change the first character after <code>sha256:</code> to another hex digit. Save, then verify:</p>
 <pre>onetrace-verify --require-artifacts runs/level-2</pre>
-        <p><b>Pass when:</b> the result is <code>FAIL</code>, and the failing lines name the receipt you edited: <code>receipts/03-answer.json: digest matches the manifest</code> and <code>manifest: chain head matches the last receipt</code>. Nothing else fails. You changed one character; the record says which file, and that the chain no longer closes.</p>
+        <p><b>Pass when:</b> the first line reads <code>record NOT intact: receipts/03-answer.json: digest matches the manifest (3 failing rows)</code> and the summary ends <code>-> FAIL</code>. The three <code>[FAIL]</code> rows are: the receipt's digest no longer matches the manifest; the output file <code>return.json</code> no longer matches the digest the receipt now claims for it, with the expected and found digests printed; and the chain head no longer matches the last receipt. Nothing else fails. You changed one character; the record says which file, which value, and that the chain no longer closes.</p>
         <p>Now the lesson's other half: put the character back exactly, verify again, and the run passes. A record is bytes; the check is on the bytes.</p>
-        <p class="gs-note"><b>Badge:</b> saw the chain hold. Keep <code>runs/level-2</code> as broken; it is the output.</p>
+        <p class="gs-note"><b>Badge:</b> saw the chain hold. Keep <code>runs/level-2</code>, restored, and the verifier's output as text; the refusal is the output.</p>
       </div></div>
       <div class="stepx"><div>
         <h3>1.3 Two runs</h3>
