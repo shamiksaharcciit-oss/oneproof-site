@@ -79,7 +79,7 @@
     <div>
       <span class="eyebrow"><b>onedoor</b> optional · standalone · open source</span>
       <h1 id="hero-title">Your agent can act. Decide what it <em>may do</em>, before it does.</h1>
-      <p class="lede">onedoor is a policy engine for agent actions. Every action an agent proposes is checked against a policy you wrote, before anything touches the world: permitted within limits, held for a person, or refused with a reason. Every answer lands in an append-only ledger.</p>
+      <p class="lede">onedoor is a policy engine for agent actions. Every action an agent proposes is checked against a policy you wrote, before anything touches the world: permitted within limits, held for a person, or refused with a reason. Every decision is written to an append-only ledger.</p>
       <div class="cta-row">
         <a class="btn btn-primary" href="/onedoor/developers.html">Add it in four commands</a>
         <a class="btn btn-ghost" href="/onedoor/how-it-works.html">How it works</a>
@@ -130,7 +130,7 @@
       <div class="card"><h3>Bounds before a person</h3><p>Parameters are checked against declared ranges first, so an approval screen only ever shows a request that is physically sane.</p></div>
       <div class="card"><h3>Caps, counted honestly</h3><p>Per-action and per-effect budgets (€ per day, per month, calls per day), reserved inside the deciding transaction.</p></div>
       <div class="card"><h3>Undo before autonomy</h3><p>An action runs without asking only if its policy names how to reverse it. The loader refuses to start otherwise.</p></div>
-      <div class="card"><h3>A kill switch that wins</h3><p>Checked before any policy lookup. While it holds, no action runs on its own, approved or not. Reads stay open.</p></div>
+      <div class="card"><h3>A kill switch that wins</h3><p>Read before any policy lookup, and it outranks approvals already granted. While it holds, nothing runs on its own and nothing new is proposed. Reads stay open.</p></div>
       <div class="card"><h3>An append-only ledger</h3><p>Decisions, results, denials, dry-runs and kill-switch blocks, each with a typed reason code. Exportable, and checkable row by row.</p></div>
     </div>
   </div>
@@ -146,7 +146,7 @@
         <thead><tr><th scope="col">Tier</th><th scope="col">Meaning</th><th scope="col">From the shipped payments examples</th></tr></thead>
         <tbody>
           <tr><td>0 · observe</td><td>Recorded, never blocked by the kill switch. For reads.</td><td><code>ledger.read</code></td></tr>
-          <tr><td>1 · auto</td><td>Runs without asking: reversible and within bounds.</td><td><code>payments.reverse</code></td></tr>
+          <tr><td>1 · auto</td><td>Runs without asking: reversible and within bounds.</td><td><code>payments.reverse</code>, declared at tier 1; its <code>money.egress</code> effect lifts it to an effective tier 2</td></tr>
           <tr><td>2 · auto, capped</td><td>Runs without asking, up to cumulative caps.</td><td><code>payments.transfer</code>: €500/day, €5000/month, €0.01–€2000 each</td></tr>
           <tr><td>3 · confirm</td><td>Proposed, and waits for a person to approve before it runs.</td><td><code>payouts.schedule</code></td></tr>
         </tbody>
@@ -181,7 +181,7 @@
         <div class="tour-text">
           <span class="step-no">03 · The editor</span>
           <h3>A guided form and the raw rule, never out of step</h3>
-          <p>Both panes are drawn from one parsed rule, so they cannot disagree. Validation runs on the engine's own loader as you type. The rules in force are not touched by anything on this page.</p>
+          <p>Both panes are drawn from one parsed rule, so they cannot disagree. Validation runs on the engine's own loader as you type. The rules in force are not touched by anything on this page. (Its note that a numeric bound refuses a decimal-string amount predates 0.8.1, which accepts them.)</p>
         </div>
         <div class="shot"><img src="/assets/img/onedoor/studio-editor.webp" width="1600" height="1080" loading="lazy" alt="Editing refunds.issue inside the draft raise the refund ceiling. Left, the guided pane: action type, tier AUTO_CAPPED (2), dry run, compensating command payments.reverse, cost parameter amount_eur, cap EUR per day 400. Right, the rule as JSON with bounds, caps and the compensating command."></div>
       </div>
@@ -205,15 +205,15 @@
         <div class="tour-text">
           <span class="step-no">06 · Live state</span>
           <h3>The kill switch, every budget, every pending approval</h3>
-          <p>How much of each cap is consumed, reserved and free; open reservations; approvals and when they expire. The Studio only shows the kill switch. Throwing it lives on the decision service, behind its own admin key.</p>
+          <p>How much of each action's cap is consumed, reserved and free; open reservations; approvals and when they expire. The Studio only shows the kill switch. Throwing it lives on the decision service, behind its own admin key.</p><p>One thing this screen gets wrong: the shipped policies cap the <code>money.egress</code> effect at €750 a day and €6000 a month, and 0.8.1's Studio shows that effect's limit as "none declared". The engine enforces the cap; the display is a known defect, reported to onedoor.</p>
         </div>
-        <div class="shot"><img src="/assets/img/onedoor/studio-live-state.webp" width="1600" height="1400" loading="lazy" alt="The Live state page. Kill switch: not engaged, with a note that it outranks everything including granted approvals. Budgets: effect money.egress consumed 165 with no cap declared; payments.transfer EUR per day consumed 120 of 500; per month 120 of 5000; refunds.issue 45 of 300 per day and 45 of 2000 per month, each with a bar."></div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-live-state.webp" width="1600" height="1400" loading="lazy" alt="The Live state page. Kill switch: not engaged, with a note that it outranks everything including granted approvals. Budgets: effect money.egress consumed 165, its limit shown as none declared (a display defect: the policies cap it at 750 a day and 6000 a month); payments.transfer EUR per day consumed 120 of 500; per month 120 of 5000; refunds.issue 45 of 300 per day and 45 of 2000 per month, each with a bar."></div>
       </div>
       <div class="tour-row">
         <div class="tour-text">
           <span class="step-no">07 · History</span>
           <h3>Every decision, by action, verdict and version</h3>
-          <p>Filter the ledger by action, verdict, policy version, origin or date. The page says what it cannot do too: no caller identity is written to a row, so it shows what was asked and decided, not who asked.</p>
+          <p>Filter the ledger by action, verdict, policy version, origin or date. The Studio's note on this page that no caller identity is recorded predates 0.8.1, which writes a keyed fingerprint of the decide key to each row it permits.</p>
         </div>
         <div class="shot"><img src="/assets/img/onedoor/studio-history.webp" width="1600" height="812" loading="lazy" alt="The History page with filters for action, verdict, policy version, request origin and dates. Five decisions: payments.transfer denied budget_exhausted; ledger.read executed observe; payouts.schedule proposed tier_confirm; payments.transfer denied bounds; wire.anywhere denied default_deny. Each under policy version 0c12ff2d…5bab, origin llm."></div>
       </div>
@@ -224,7 +224,7 @@
           <p>A static, read-only page built from the ledger: the verdict, the frozen parameters, the budget at the moment of decision and the policy version. Every value on it is read from a verified artifact; if the evidence does not check out, it shows the failure and none of the values.</p>
           <p style="margin-top:18px"><a class="btn btn-dark" href="/onedoor/developers.html">Try it on your machine</a></p>
         </div>
-        <div class="shot"><img src="/assets/img/onedoor/decision-receipt.webp" width="1520" height="1600" loading="lazy" alt="The onedoor decision receipt page: payments.transfer, denied. DENY budget_exhausted: a value cap was reached for this effect; the reservation was refused and nothing executed. Request id, source llm, frozen params amount_eur 400.00 to acct-2, tier nominal 2 effective 2, budget at decision: payments.transfer.eur_day, limit 500, consumed 120, remaining 380, and the policy version digest."></div>
+        <div class="shot"><img src="/assets/img/onedoor/decision-receipt.webp" width="1600" height="1488" loading="lazy" alt="The onedoor decision receipt page: payments.transfer, denied. DENY budget_exhausted: a value cap was reached for this effect; the reservation was refused and nothing executed. Request id, source llm, frozen params amount_eur 400.00 to acct-2, tier nominal 2 effective 2, budget at decision: payments.transfer.eur_day, limit 500, consumed 120, remaining 380, and the policy version digest."></div>
       </div>
     </div>
   </div>
@@ -259,7 +259,7 @@
       <div class="card"><h3>A Python library</h3><p>Decide-and-reserve, then report the result, around your own call. The same checks, in-process.</p></div>
       <div class="card"><h3>An MCP proxy</h3><p>Point an MCP host at the proxy instead of the tool server. Every <code>tools/call</code> goes through the full check; unknown tools are denied by default.</p></div>
       <div class="card"><h3>LangChain middleware</h3><p>Wraps tool calls in a LangChain or LangGraph agent, including a mode that pauses for a person's approval.</p></div>
-      <div class="card"><h3>An AI gateway example</h3><p>An experimental LiteLLM guardrail adapter: model allow-lists, daily caps, and the gateway's MCP tool calls.</p></div>
+      <div class="card"><h3>An AI gateway example</h3><p>An experimental LiteLLM guardrail adapter in onedoor's repository (not in the package; the <code>litellm</code> extra installs what it needs): model allow-lists, daily caps, and the gateway's MCP tool calls.</p></div>
       <div class="card"><h3>Signals out</h3><p>Approval requests to a webhook (Slack-compatible payload), and OpenTelemetry spans and decision counters with the <code>otel</code> extra.</p></div>
     </div>
   </div>
@@ -274,7 +274,7 @@
       <div class="card"><h3>Parameter rules can be dodged</h3><p>A command built indirectly (for example, decoded at run time) carries nothing a parameter rule can match. URL patterns match the string, not where it leads, unless you use the opt-in URL block. Put a fail-closed network control in front of anything that matters.</p></div>
       <div class="card"><h3>Not its own witness</h3><p>A signature checked against a key found in the same store reads <code>self_consistent</code>, never <code>verified</code>. Independence needs a key or an anchor the store does not hold.</p></div>
       <div class="card"><h3>One process, one writer</h3><p>The documented deployment is one process with one SQLite writer. Running several writers on one store without that serialization opens a window between check and act.</p></div>
-      <div class="card"><h3>Who asked is not recorded</h3><p>Callers authenticate with bearer keys, but no caller identity is written to a ledger row. The ledger says what was asked and decided.</p></div>
+      <div class="card"><h3>Operator keys guard the service</h3><p>Admin keys separate approving from asking on the HTTP decision service. The library and the MCP proxy's operator paths run in your own process, so who may approve there depends on how you deploy them.</p></div>
     </div>
   </div>
 </section>
@@ -284,11 +284,11 @@
     <p class="kicker">Coming next</p>
     <h2 id="next-title">From "allowed" to "done, and confirmed".</h2>
     <div class="od-next">
-      <p style="margin:0 0 12px">Not in the current release (0.8.1). Built in the open, described here so you know where it is going; no dates.</p>
+      <p style="margin:0 0 12px">What 0.8.1 does not do yet. Built in the open, described here so you know where it is going; no dates.</p>
       <ul class="clean">
-        <li><b>A signed permit, bound to the request.</b> A permitted action comes with a short-lived permit the receiving system can check on its own: bound to the exact action, the sender's key and the request body, and usable once.</li>
+        <li><b>Signed permits on every surface.</b> 0.8.1 can already issue a short-lived signed permit, bound to the exact action, the sender's key and the request body and usable once, and its library includes the receiving system's own check. The decision service does not hand that permit to its caller yet; next, every surface will.</li>
         <li><b>The recipient's signed confirmation.</b> The system that acted signs what it did with which permit, so a record can show the action was authorized and its effect confirmed.</li>
-        <li><b>Decision references on every surface.</b> Today the decision service and the library return them; next, the MCP proxy, the gateway adapter and the LangChain middleware too.</li>
+        <li><b>Decision references on every surface.</b> Today the decision service and the library return them, and the MCP proxy builds one without passing it on; next, the MCP proxy, the gateway adapter and the LangChain middleware return them too.</li>
       </ul>
     </div>
   </div>

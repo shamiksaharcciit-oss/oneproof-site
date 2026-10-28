@@ -38,12 +38,12 @@
     <text x="316" y="90" class="t" font-size="15" font-weight="600" text-anchor="middle">onedoor</text>
     <text x="316" y="108" class="t dim" font-size="11" text-anchor="middle">policy, before the act</text>
     <g class="m" font-size="10.5">
-      <text x="268" y="140" class="t m dim">kill switch</text>
+      <text x="268" y="140" class="t m dim">kill switch (read)</text>
       <text x="268" y="160" class="t m dim">policy or deny</text>
-      <text x="268" y="180" class="t m dim">bounds</text>
-      <text x="268" y="200" class="t m dim">dry-run</text>
-      <text x="268" y="220" class="t m dim">caps</text>
-      <text x="268" y="240" class="t m dim">tier</text>
+      <text x="268" y="180" class="t m dim">tier and bounds</text>
+      <text x="268" y="200" class="t m dim">ask a person?</text>
+      <text x="268" y="220" class="t m dim">dry-run</text>
+      <text x="268" y="240" class="t m dim">caps</text>
     </g>
     <path d="M268 256H364" stroke="#26344a"/>
     <text x="268" y="278" class="t" font-size="11.5">payments.yaml</text>

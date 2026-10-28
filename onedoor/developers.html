@@ -109,9 +109,11 @@ curl -s -X POST localhost:8099/v1/decide -H "Authorization: Bearer dev" -H "Cont
 curl -s -X POST localhost:8099/v1/decide -H "Authorization: Bearer dev" -H "Content-Type: application/json" \
   -d '{"request_id":"22222222-2222-2222-2222-222222222222","action_type":"wire.anywhere","params":{},"source":"llm","rationale":"move funds"}'</pre>
 <pre class="od-out"><span class="n">{"status":"ok","kill_switch":false,"pending_intents":0}</span>
-<span class="p">{"decision":"permitted","reason":"passed",</span>"effective_tier":2,...,"intent_audit_id":1,...}
+<span class="p">{"decision":"permitted","reason":"passed",</span>"detail":null,"effective_tier":2,...,"intent_audit_id":1,...}
 <span class="f">{"decision":"denied","reason":"default_deny",</span>"detail":"action type 'wire.anywhere' is declared by no policy, so it is refused; declare it in the policy set (at tier 3 to require a human's approval) to allow it",...}</pre>
-    <p class="sub">The first decision is a permit: capped, reversible, and you now owe a report. The second is default-deny, with the refusal saying what would allow it. Amounts in <code>params</code> are JSON numbers (<code>120.00</code>) where a numeric bound applies.</p>
+    <p class="sub">The first decision is a permit: capped, reversible, and you now owe a report. The second is default-deny, with the refusal saying what would allow it. Amounts in <code>params</code> may be JSON numbers (<code>120.00</code>) or decimal strings (<code>"120.00"</code>).</p>
+    <p class="sub" style="margin-top:14px">On Windows PowerShell 5.1, a JSON body with a space in it is split before curl sees it. Use <code>curl.exe</code> with <code>--%</code>, escape the inner quotes, and put each command alone on its line, for example:</p>
+<pre>curl.exe --% -s -X POST localhost:8099/v1/decide -H "Authorization: Bearer dev" -H "Content-Type: application/json" -d "{\"request_id\":\"11111111-1111-1111-1111-111111111111\",\"action_type\":\"payments.transfer\",\"params\":{\"amount_eur\":120.00,\"destination_account\":\"acct-1\"},\"source\":\"llm\",\"rationale\":\"pay supplier invoice\"}"</pre>
   </div>
 </section>
 
@@ -166,9 +168,9 @@ curl -s -X POST localhost:8099/v1/decide -H "Authorization: Bearer dev" -H "Cont
         <thead><tr><th scope="col"><code>outcome</code></th><th scope="col">Budget</th></tr></thead>
         <tbody>
           <tr><td><code>success</code></td><td>Settled: the action happened.</td></tr>
-          <tr><td><code>failure</code></td><td>Settled: it was attempted. Add <code>"no_effect": true</code> when you know nothing happened.</td></tr>
+          <tr><td><code>failure</code></td><td>Settled: it was attempted. With <code>"no_effect": true</code> (you know nothing happened), released instead, as an audited event.</td></tr>
           <tr><td><code>timeout</code></td><td>Settled: it may have happened, so onedoor assumes it did.</td></tr>
-          <tr><td><code>not_attempted</code></td><td>Released, as an audited event: you assert it did not happen.</td></tr>
+          <tr><td><code>not_attempted</code></td><td>Released, as an audited event: you assert it did not happen. A calls-per-day count is never given back, whatever the outcome.</td></tr>
         </tbody>
       </table>
     </div>
@@ -184,13 +186,13 @@ curl -s -X POST localhost:8099/v1/decide -H "Authorization: Bearer dev" -H "Cont
     <h2 id="ops-title">Operator acts live behind a different key.</h2>
     <p class="sub">Listing, approving, granting and denying approvals, and the kill switch, need an admin key (<code>ONEDOOR_ADMIN_KEYS</code>). Decide keys cannot reach them.</p>
 <pre>curl -s localhost:8099/v1/approvals -H "Authorization: Bearer root"
-curl -s -X POST localhost:8099/v1/approvals/1/approve -H "Authorization: Bearer root"   <span class="c"># approve and resume</span>
-curl -s -X POST localhost:8099/v1/approvals/1/grant   -H "Authorization: Bearer root"   <span class="c"># approve only; a later caller resumes by reference</span>
-curl -s -X POST localhost:8099/v1/approvals/1/deny    -H "Authorization: Bearer root"
+curl -s -X POST localhost:8099/v1/approvals/1/approve -H "Authorization: Bearer root"   <span class="c"># either: approve and resume</span>
+curl -s -X POST localhost:8099/v1/approvals/1/grant   -H "Authorization: Bearer root"   <span class="c"># or: approve only; the proposer resumes later by reference</span>
+curl -s -X POST localhost:8099/v1/approvals/1/deny    -H "Authorization: Bearer root"   <span class="c"># or: deny</span>
 curl -s -X POST localhost:8099/v1/killswitch -H "Authorization: Bearer root" -H "Content-Type: application/json" -d '{"engaged":true}'</pre>
     <p class="sub">With the switch engaged, the same €40 transfer that was permitted a moment earlier:</p>
 <pre class="od-out"><span class="f">{"decision":"denied","reason":"kill_switch","detail":"kill switch engaged; not proposed",</span>...}</pre>
-    <p class="sub">Releasing it reports whether the policy version changed while the door was shut (<code>policy_change_while_engaged</code>). A person cannot approve their own proposal, and an approval can be used only by the caller that proposed the action. Set <code>ONEDOOR_APPROVAL_WEBHOOK</code> to send tier-3 proposals to a Slack-compatible webhook.</p>
+    <p class="sub">Releasing it reports whether the policy version changed while the door was shut (<code>policy_change_while_engaged</code>). Approve, grant and deny are alternatives: once one has acted, the others answer "not pending". In the shipped examples, <code>payouts.schedule</code> sets no <code>dry_run: false</code>, so approving it runs a rehearsal ("would have executed"), not a payout. A person cannot approve their own proposal, and an approval presented by reference can be used only by the caller that proposed the action. Set <code>ONEDOOR_APPROVAL_WEBHOOK</code> to send tier-3 proposals to a Slack-compatible webhook.</p>
   </div>
 </section>
 
@@ -203,7 +205,7 @@ python -m onedoor.studio --db onedoor.db --studio-db studio.db
 <span class="c"># then open http://127.0.0.1:8787</span></pre>
     <p class="sub"><code>--db</code> must name the same file the decision service uses: their defaults differ, and two different files give you a Studio that works and shows an empty world. <code>--studio-db</code> holds your drafts and stays separate. The Studio binds to loopback only and refuses any other address before it opens a socket.</p>
     <div class="grid-3" style="margin-top:22px">
-      <div class="card"><h3>Three ways to write</h3><p>The guided editor, an uploaded YAML file, or the REST API (<code>/api/v1/drafts</code>, schema at <code>/api/v1/openapi.json</code>). The API can draft and submit; it cannot approve.</p></div>
+      <div class="card"><h3>Three ways to write</h3><p>The guided editor, an uploaded YAML file, or the REST API (<code>/api/v1/drafts</code>, schema at <code>/api/v1/openapi.json</code>). The v1 API can draft and submit, and has no approval route; one older route that still ratifies over HTTP is being retired.</p></div>
       <div class="card"><h3>Two lists, never merged</h3><p>"The loader would refuse this" is what fails at start-up. "Once in force, these rules will…" is how a loadable rule behaves at decision time, with the reason code it will record.</p></div>
       <div class="card"><h3>Drafts from a model, if you want</h3><p>Off by default and absent when off. Point it at your own endpoint and a description becomes a draft that goes through the same loader and the same ratification as anything you type.</p></div>
     </div>
@@ -218,7 +220,7 @@ python -m onedoor.studio --db onedoor.db --studio-db studio.db
   <div class="wrap">
     <p class="kicker">6 · With onetrace (optional)</p>
     <h2 id="ot-title">Each gated step cites the decision that allowed it.</h2>
-    <p class="sub">Set <code>ONEDOOR_ISSUER</code> to a name for your deployment and every decide response carries a <code>decision_ref</code>. Pass it to <code>ot.decision()</code> inside a step you declared as gated. Requires onetrace 0.5.0 or later; this was run with 0.6.0.</p>
+    <p class="sub">Set <code>ONEDOOR_ISSUER</code> to a name for your deployment and each decision that permits, denies or proposes carries a <code>decision_ref</code> (dry-runs and tier-0 reads carry none). Pass it to <code>ot.decision()</code> inside a step you declared as gated. Requires onetrace 0.5.0 or later; this was run with 0.6.0.</p>
 <pre>export ONEDOOR_ISSUER=https://payments.example/onedoor     <span class="c"># before starting the service</span></pre>
 <pre>import json, uuid, urllib.request
 import onetrace as ot
@@ -291,7 +293,7 @@ pip install "onedoor[signed]"                                              <span
           <tr><td>Python library (decide and reserve, then report)</td><td><code>onedoor</code></td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-library.md">integration-library.md</a></td></tr>
           <tr><td>MCP proxy (stdio, both sides)</td><td><code>onedoor</code></td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-mcp.md">integration-mcp.md</a></td></tr>
           <tr><td>LangChain / LangGraph middleware</td><td><code>onedoor[langchain]</code></td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-langgraph.md">integration-langgraph.md</a></td></tr>
-          <tr><td>LiteLLM guardrail (experimental example)</td><td><code>onedoor[litellm]</code></td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-litellm.md">integration-litellm.md</a></td></tr>
+          <tr><td>LiteLLM guardrail (experimental example, in the repository's <code>examples/</code>, not in the package)</td><td><code>onedoor[litellm]</code> for its dependencies</td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-litellm.md">integration-litellm.md</a></td></tr>
           <tr><td>OpenTelemetry spans and counters</td><td><code>onedoor[otel]</code></td><td>No code changes once installed.</td></tr>
           <tr><td>The full policy reference</td><td></td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/policy-reference.md">policy-reference.md</a></td></tr>
         </tbody>
