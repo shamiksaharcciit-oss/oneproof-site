@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learn onetrace, track 2: decisions, tracing, nesting</title>
+<meta name="description" content="Five levels: gate a step with a decision, pay on a deny and catch it, run inside a trace, a step inside a step, and the live demo\'s planted incidents.">
+<link rel="canonical" href="https://oneproof.dev/learn/track-2.html">
+<meta property="og:title" content="Learn onetrace, track 2: decisions, tracing, nesting">
+<meta property="og:description" content="Five levels on decisions, tracing and nesting, each passed by the verifier\'s own rows.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneproof.dev/learn/track-2.html">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<style>.os{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:12px}.os>div{min-width:0}.os .lbl{font-size:13px;font-weight:600;color:var(--ink-2);margin:0 0 6px}.os pre{margin:0}@media(max-width:760px){.os{grid-template-columns:1fr}}.gs-note{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:14px;color:var(--ink-2)}.gs-note b{color:var(--ink)}.stepx p{max-width:70ch}</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
+      onetrace <small>by oneproof</small>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="/">Product</a>
+      <a href="/developers.html">Developers</a>
+      <a href="/how-it-works.html">How it works</a>
+      <a href="/onetrace/">Docs</a>
+      <a href="/learn.html" aria-current="page">Learn</a>
+      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<div class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow"><b>Learn onetrace</b> track 2 · five levels · about an hour</span>
+    <h1>Decisions, tracing, nesting.</h1>
+    <p class="lede">Five levels on what onetrace 0.5.0 added: four on your own machine, in your track 1 folder, and a last one on the live demo. A step gated by a decision; paying on a deny, and the verifier catching it; a run inside a trace; a step inside a step; and the demo's planted incidents.</p>
+    <div class="crumbs">
+      <a href="#before">Before you start</a>
+      <a href="#levels">The levels</a>
+      <a href="#after">When you're done</a>
+    </div>
+  </div>
+</div>
+
+<section id="before" aria-labelledby="before-title">
+  <div class="wrap">
+    <p class="kicker">Before you start</p>
+    <h2 id="before-title">What you need.</h2>
+    <div class="grid-3" style="margin-top:20px">
+      <div class="card"><h3>Track 1's folder</h3><p>The <code>onetrace-learn</code> folder and its virtual environment from <a href="/learn/track-1.html">track 1</a>, with onetrace 0.5.0 or later. <code>onetrace --version</code> tells you which.</p></div>
+      <div class="card"><h3>No onedoor needed</h3><p>The decision levels use a hand-written stand-in reference. The rows that need onedoor's own permit and export read <code>NOT-RUN</code>, and say so; the demo's level shows them checked.</p></div>
+      <div class="card"><h3>Nothing sent</h3><p>No level sends anything. The trace level uses an environment variable, not a tracing service; the last level reads the public demo in your browser.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="levels" class="section-soft" aria-labelledby="levels-title">
+  <div class="wrap">
+    <p class="kicker">The levels</p>
+    <h2 id="levels-title">Five levels, in order.</h2>
+    <div class="steps">
+      <div class="stepx"><div>
+        <h3>2.1 Gate a step</h3>
+        <p>A run can declare which of its steps must be gated: each must cite the onedoor decision that allowed it. Create <code>pay.py</code> in your track 1 folder. Its decision reference is a stand-in with the right shape, written by hand: there is no onedoor here, and the page says what that leaves unchecked.</p>
+        <pre>import onetrace as ot
+
+# A stand-in for the reference onedoor returns. Not from onedoor: there is no onedoor here.
+REF = {
+    &quot;format&quot;: &quot;onedoor-decision-ref/1&quot;,
+    &quot;request_id&quot;: &quot;req-0001&quot;,
+    &quot;decision_digest&quot;: &quot;sha256:&quot; + &quot;0&quot; * 64,
+    &quot;verdict&quot;: &quot;permit&quot;,
+    &quot;issuer&quot;: &quot;https://issuer.example/learn&quot;,
+}
+
+
+@ot.stage(&quot;approve_payment&quot;, instrument=ot.pkg(&quot;pay-invoice&quot;, &quot;onetrace&quot;, kind=&quot;tool&quot;))
+def approve_payment(invoice):
+    ot.decision(REF, action={&quot;type&quot;: &quot;pay&quot;, &quot;invoice&quot;: invoice, &quot;amount_eur&quot;: &quot;40.00&quot;})
+    return {&quot;paid&quot;: invoice}
+
+
+@ot.run(stages=[&quot;approve_payment&quot;], gated_stages=[&quot;approve_payment&quot;])
+def main(invoice):
+    print(approve_payment(invoice))
+
+
+if __name__ == &quot;__main__&quot;:
+    main(&quot;INV-1&quot;)
+</pre>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = &quot;level-2-1&quot;
+python pay.py
+onetrace-verify --require-artifacts runs/level-2-1</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-2-1 python pay.py
+onetrace-verify --require-artifacts runs/level-2-1</pre></div></div>
+        <p><b>Pass when:</b> the check ends <code>-&gt; PASS</code>, with five <code>decisions:</code> rows:</p>
+        <pre>[PASS   ] decisions: gated steps cite a decision -- 1 gated step(s), each citing a decision
+[PASS   ] decisions: references are well formed -- 1 reference(s), each a well-formed onedoor-decision-ref/1
+[PASS   ] decisions: a step that acted cites a permitting decision -- 1 acting step(s), each citing a permitting decision
+[NOT-RUN] decisions: the permit covers the recorded action -- no permit recorded
+[NOT-RUN] decisions: the decision is in the export -- no export given (pass --decisions)</pre>
+        <p>Read the two <code>NOT-RUN</code> rows: they are the checks that need onedoor's side, a signed permit and onedoor's own export of its decisions. Without them the record shows that the step cited a permitting decision of the right shape, and nothing reads as checked that was not. The action itself is recorded by digest only, never as the object.</p>
+        <p class="gs-note"><b>Badge:</b> gated a step. Keep <code>runs/level-2-1</code>.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>2.2 Pay on a deny, and catch it</h3>
+        <p>Copy <code>pay.py</code> to <code>pay_deny.py</code> and change <code>&quot;verdict&quot;: &quot;permit&quot;</code> to <code>&quot;verdict&quot;: &quot;deny&quot;</code>. The step still pays. Run it and check:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = &quot;level-2-2&quot;
+python pay_deny.py
+onetrace-verify --require-artifacts runs/level-2-2</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-2-2 python pay_deny.py
+onetrace-verify --require-artifacts runs/level-2-2</pre></div></div>
+        <p><b>Pass when:</b> the first line reads <code>record NOT intact: decisions: a step that acted cites a permitting decision</code>, the summary ends <code>-&gt; FAIL</code>, and the failing row is:</p>
+        <pre>[FAIL   ] decisions: a step that acted cites a permitting decision -- approve_payment: acted on a decision whose last verdict is &#x27;deny&#x27;, not &#x27;permit&#x27;</pre>
+        <p>Now the other way to get it wrong: copy <code>pay.py</code> to <code>pay_none.py</code> and delete the <code>ot.decision(...)</code> line, so the gated step cites nothing.</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = &quot;level-2-2-none&quot;
+python pay_none.py
+onetrace-verify --require-artifacts runs/level-2-2-none</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-2-2-none python pay_none.py
+onetrace-verify --require-artifacts runs/level-2-2-none</pre></div></div>
+        <p>It fails with <code>[FAIL   ] decisions: gated steps cite a decision -- declared gated, cited no decision: approve_payment</code>, and the three rows that need a reference read <code>NOT-RUN</code>.</p>
+        <p>The right way to handle a deny is not to act. In <code>pay_deny.py</code>, put these two lines just before <code>return {&quot;paid&quot;: invoice}</code>:</p>
+        <pre>    if REF[&quot;verdict&quot;] != &quot;permit&quot;:
+        raise PermissionError(&quot;onedoor did not permit this payment&quot;)</pre>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = &quot;level-2-2-ok&quot;
+python pay_deny.py
+onetrace-verify runs/level-2-2-ok</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-2-2-ok python pay_deny.py
+onetrace-verify runs/level-2-2-ok</pre></div></div>
+        <p>The script stops with the <code>PermissionError</code>, as it should. Verify without <code>--require-artifacts</code>: a step that did not act wrote no output. The row reads <code>[NOT-RUN] decisions: a step that acted cites a permitting decision -- no references on a step that acted</code> and the check ends <code>-&gt; PASS</code>. A deny is fine; paying on one is the finding.</p>
+        <p class="gs-note"><b>Badge:</b> caught a deny. Keep <code>runs/level-2-2</code> and <code>runs/level-2-2-none</code>, and the two refusals as text.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>2.3 Run inside a trace</h3>
+        <p>When a run starts inside a trace, each step's receipt records the trace and span it ran in. No OpenTelemetry package is needed: onetrace reads the <code>TRACEPARENT</code> environment variable. Run <code>pay.py</code> inside the W3C specification's own example trace:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:TRACEPARENT = &quot;00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01&quot;
+$env:ONETRACE_RUN_ID = &quot;level-2-3&quot;
+python pay.py
+Select-String -Path runs\level-2-3\MANIFEST.json -Pattern traceparent -Quiet
+Select-String -Path runs\level-2-3\receipts\*.json -Pattern 4bf92f3577b34da6a3ce929d0e0e4736 | Measure-Object | Select-Object Count</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>TRACEPARENT=00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01 ONETRACE_RUN_ID=level-2-3 python pay.py
+grep -c traceparent runs/level-2-3/MANIFEST.json
+grep -l 4bf92f3577b34da6a3ce929d0e0e4736 runs/level-2-3/receipts/*.json</pre></div></div>
+        <p><b>Pass when:</b> the manifest holds the run's <code>traceparent</code>, both receipts (<code>01-intake.json</code> and <code>02-approve-payment.json</code>) hold a <code>trace</code> block with that trace id and span id <code>00f067aa0ba902b7</code>, and <code>onetrace-verify --require-artifacts runs/level-2-3</code> still ends <code>-&gt; PASS</code>.</p>
+        <p>Then give it a broken one, and a new run id:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:TRACEPARENT = &quot;not-a-trace&quot;
+$env:ONETRACE_RUN_ID = &quot;level-2-3-bad&quot;
+python pay.py
+Remove-Item Env:TRACEPARENT</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>TRACEPARENT=not-a-trace ONETRACE_RUN_ID=level-2-3-bad python pay.py</pre></div></div>
+        <p>The run is refused before any step: <code>EmissionRefused: TRACEPARENT &#x27;not-a-trace&#x27; is not a W3C traceparent</code>, with a fix line, and <code>runs/level-2-3-bad</code> holds no receipt. A broken trace is never written into the record. The trace stays a view: it says which trace the steps ran in, and only the record proves what went in and came out.</p>
+        <p class="gs-note"><b>Badge:</b> traced a run. Keep <code>runs/level-2-3</code>.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>2.4 A step inside a step</h3>
+        <p>A step called while another runs records its caller, and the caller lists it. Create <code>order.py</code>: a <code>plan</code> step that calls a <code>price_lookup</code> step, with a setting recorded by name.</p>
+        <pre>import onetrace as ot
+
+RATE_CENTS = 120  # the price of one unit, in cents
+
+
+@ot.stage(&quot;price_lookup&quot;, instrument=ot.pkg(&quot;rate-table&quot;, &quot;onetrace&quot;, kind=&quot;tool&quot;))
+def price_lookup(item, qty):
+    ot.constant(&quot;rate_cents&quot;, RATE_CENTS)
+    return {&quot;item&quot;: item, &quot;total_cents&quot;: qty * RATE_CENTS}
+
+
+@ot.stage(&quot;plan&quot;, instrument=ot.pkg(&quot;planner&quot;, &quot;onetrace&quot;, kind=&quot;planner&quot;))
+def plan(item, qty):
+    quote = price_lookup(item, qty)
+    return {&quot;steps&quot;: [&quot;quote&quot;, &quot;order&quot;], &quot;quote&quot;: quote}
+
+
+@ot.run(stages=[&quot;plan&quot;, &quot;price_lookup&quot;])
+def main(item, qty):
+    print(plan(item, qty))
+
+
+if __name__ == &quot;__main__&quot;:
+    main(&quot;widget&quot;, 3)
+</pre>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = &quot;level-2-4&quot;
+python order.py
+onetrace-verify --require-artifacts runs/level-2-4</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-2-4 python order.py
+onetrace-verify --require-artifacts runs/level-2-4</pre></div></div>
+        <p>The check ends <code>-&gt; PASS</code>. Open the receipts: <code>02-price-lookup.json</code> holds <code>&quot;parent&quot;:&quot;plan&quot;</code> and <code>03-plan.json</code> holds <code>&quot;children&quot;:[&quot;price_lookup&quot;]</code>. The child finishes first, so its receipt comes first in the chain.</p>
+        <p>Now change <code>RATE_CENTS = 120</code> to <code>RATE_CENTS = 125</code>, record again and compare:</p>
+        <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>$env:ONETRACE_RUN_ID = &quot;level-2-4-b&quot;
+python order.py
+onetrace localize runs/level-2-4 runs/level-2-4-b --out r24
+Remove-Item Env:ONETRACE_RUN_ID</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-2-4-b python order.py
+onetrace localize runs/level-2-4 runs/level-2-4-b --out r24</pre></div></div>
+        <p><b>Pass when:</b> <code>localize: diverged</code>; <code>price_lookup</code> reads <code>FIRST DIFFERENCE</code> with <code>constant rate_cents differs</code>; and <code>plan</code> also reads <code>FIRST DIFFERENCE</code>, the line below saying <code>first difference  price_lookup, plan   (2 branches)</code>.</p>
+        <p>That second line is the lesson. <code>plan</code> used the child's result inside its own body, but nothing passed it in as an input, so the record links the call (parent and children) and not the data. Each output's change is traced to where it starts, and <code>plan</code>'s reads "nothing it read differs". When a result is passed from one step to another as an argument, the record links the two by digest, and a comparison follows it.</p>
+        <p class="gs-note"><b>Badge:</b> nested a step. Keep <code>runs/level-2-4</code>, <code>runs/level-2-4-b</code> and <code>r24/</code>.</p>
+      </div></div>
+      <div class="stepx"><div>
+        <h3>2.5 Boss: the live demo's planted incidents</h3>
+        <p>Three questions on the <a href="https://demo.oneproof.dev">live demo</a>, each answered from the record alone.</p>
+        <p><b>1.</b> Open pipeline P8 and the run <code>p8-49-invoice-paid-on-deny</code>. Which <code>decisions:</code> row fails, and what did the step do that it should not have?</p>
+        <p><b>2.</b> Open <code>p8-50-invoice-permit-other-amount</code>. Which row fails this time, and what was wrong with the permit?</p>
+        <p><b>3.</b> Open pipeline P10, an agent whose one step calls a sub-agent's run (P11). In the comparison of <code>pz-51-agent-baseline</code> and <code>pz-53-agent-amount-changed</code>: in which step of the outer run do the runs part, into which run does the comparison descend, and at which of that run's steps?</p>
+        <p><b>Pass when</b> your answers match what the demo shows:</p>
+        <pre>1. decisions: a step that acted cites a permitting decision -- approve_payment: acted on a decision whose last verdict is 'deny', not 'permit'
+2. decisions: the permit covers the recorded action -- approve_payment: the permit covers a different action than the step recorded
+3. The runs first differ inside agent_step, into run pz-52-agent-baseline-subagent at settle.</pre>
+        <p>On the demo the decisions and permits are invented example data, signed with a throwaway key made when the demo was built; the checks on them are the verifier's own.</p>
+        <p class="gs-note"><b>Badge:</b> solved the incidents. Your answers are the output; each run's own rows and the comparison's short answer are the check.</p>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<section id="after" aria-labelledby="after-title">
+  <div class="wrap">
+    <p class="kicker">When you're done</p>
+    <h2 id="after-title">What a record of an action can say, and what it can't.</h2>
+    <p class="sub">You have seen the verifier pass a gated step, refuse a payment made on a deny and a gated step that cited nothing, and leave unchecked what it had no evidence for. You have recorded the trace a run ran in, seen a broken one refused, and seen a record name a step's caller. None of it says a decision was right: only that the record names an unaltered decision, and what that decision allowed.</p>
+    <p class="sub">Back to <a href="/learn.html">Learn</a>, or take it to <a href="/get-started.html#own">your own code</a>.</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
+        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
+        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
+          <li><a href="/industries/">Examples by industry</a></li>
+          <li><a href="/developers.html">Developers</a></li>
+          <li><a href="/how-it-works.html">How it works</a></li>
+          <li><a href="/onetrace/">Documentation</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Packages</h4>
+        <ul>
+          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
+          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>More from oneproof</h4>
+        <ul>
+          <li><a href="/oneground/">oneground</a></li>
+          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
+          <li><a href="/where-it-fits.html">Where it fits</a></li>
+          <li><a href="/answer-lineage.html">A forensic report</a></li>
+          <li><a href="/building.html">What we're building</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
+  </div>
+</footer>
+</body>
+</html>
