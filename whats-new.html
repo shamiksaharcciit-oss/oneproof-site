@@ -84,11 +84,12 @@
         <p>Each check is marked "runnable here" or "needs a runner you name", with a step's replay-safety label where its record carries one, and is never run for you. The exit code is <code>onetrace diff</code>'s, whatever the model says. Each explanation is a run of its own, holding every probe, its arguments and result digest, and what was sent.</p>
       </div>
     </div>
-<pre>python -m venv explain-env
-source explain-env/bin/activate        <span class="c"># Windows PowerShell: explain-env\Scripts\Activate.ps1</span>
+<pre><span class="c"># Windows PowerShell: run explain-env\Scripts\Activate.ps1 in place of the source line</span>
+python -m venv explain-env
+source explain-env/bin/activate
 pip install onetrace-explain
 onetrace-explain runs/a runs/b --no-model</pre>
-    <p class="sub">onetrace-explain 0.2.0 needs onetrace 0.6.1 or later, and onetrace-console 0.5.0 pins onetrace 0.6.0, so install it in an environment of its own for now. <code>--no-model</code> prints what changed and the evidence, and sends nothing. Not in this release: the probes that read a console store, and those that wait for console 0.6.0 or onetrace 0.7; each reads <code>not run</code> and names what it waits for. The format page on this site still describes the 0.1 form. The full list is in the package's changelog at the tag.</p>
+    <p class="sub">onetrace-explain 0.2.0 needs onetrace 0.6.1 or a later 0.6 or 0.7 release, and onetrace-console 0.5.0 pins onetrace 0.6.0, so install it in an environment of its own for now. <code>--no-model</code> prints what changed, the evidence and the checks, and sends nothing. Not in this release: the probes that read a console store, and those that wait for console 0.6.0 or onetrace 0.7; each reads <code>not run</code> and names what it waits for. The format page on this site still describes the 0.1 form. The full list is in the package's changelog at the tag.</p>
   </div>
 </section>
 
