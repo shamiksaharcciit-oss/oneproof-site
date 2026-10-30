@@ -84,7 +84,8 @@
         <p>Each check is marked "runnable here" or "needs a runner you name", with a step's replay-safety label where its record carries one, and is never run for you. The exit code is <code>onetrace diff</code>'s, whatever the model says. Each explanation is a run of its own, holding every probe, its arguments and result digest, and what was sent.</p>
       </div>
     </div>
-<pre><span class="c"># Windows PowerShell: run explain-env\Scripts\Activate.ps1 in place of the source line</span>
+<pre><span class="c"># Windows: in place of source, run</span>
+<span class="c"># explain-env\Scripts\Activate.ps1</span>
 python -m venv explain-env
 source explain-env/bin/activate
 pip install onetrace-explain
