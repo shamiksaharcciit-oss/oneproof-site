@@ -45,7 +45,7 @@
   <div class="wrap">
     <span class="eyebrow"><b>Learn onetrace</b> track 1 · nine levels · about two hours</span>
     <h1>Record, check, compare.</h1>
-    <p class="lede">Nine levels with onetrace 0.5.0: eight on your own machine and one on the live demo. Each level says what to do, what its output must be, and what the verifier must say for it to pass. Most levels build on the one before, so do them in order and keep every folder: they are your proof, and the badge's inputs later.</p>
+    <p class="lede">Nine levels with onetrace 0.5.0 or later: eight on your own machine and one on the live demo. Each level says what to do, what its output must be, and what the verifier must say for it to pass. Most levels build on the one before, so do them in order and keep every folder: they are your proof, and the badge's inputs later.</p>
     <div class="crumbs">
       <a href="#before">Before you start</a>
       <a href="#levels">The levels</a>
@@ -60,7 +60,7 @@
     <h2 id="before-title">What you need.</h2>
     <div class="grid-3" style="margin-top:20px">
       <div class="card"><h3>Python 3.12 or newer</h3><p>And a terminal. Windows, macOS and Linux all work; the commands are given for each where they differ.</p></div>
-      <div class="card"><h3>onetrace 0.5.0, with signing</h3><p>Installed in level 1.1 as <code>onetrace[crypto]</code>, in a folder of its own; the console is not needed. Nothing is sent anywhere except at level 1.8, which says so; level 1.4 reads the public demo in your browser.</p></div>
+      <div class="card"><h3>onetrace, with signing</h3><p>Installed in level 1.1 as <code>onetrace[crypto]</code>, in a folder of its own; the console is not needed. Nothing is sent anywhere except at level 1.8, which says so; level 1.4 reads the public demo in your browser.</p></div>
       <div class="card"><h3>A folder you keep</h3><p>Everything below goes under one project folder. Keep its <code>runs/</code> when you finish: each level's folder is its proof.</p></div>
     </div>
     <p class="gs-note" style="margin-top:20px"><b>How a level passes.</b> Not by you saying so: by the verifier's line, the comparison's verdict, or, on the detective level, the console's own short answer. Every level states the exact line to look for.</p>
@@ -86,7 +86,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install &#x27;onetrace[crypto]&#x27;
 onetrace --version</pre></div></div>
-        <p>The last line prints <code>onetrace 0.5.0</code>. The console is not needed for this track. Every later command runs in this folder, with the virtual environment active. If you close the terminal, come back with <code>cd onetrace-learn</code> and the activate line.</p>
+        <p>The last line prints the version installed, <code>onetrace 0.6.1</code> at the time of writing; the levels were checked on 0.5.0 and 0.6.0. The console is not needed for this track. Every later command runs in this folder, with the virtual environment active. If you close the terminal, come back with <code>cd onetrace-learn</code> and the activate line.</p>
         <p>Create <code>app.py</code> with this in it: a retrieve stage and an answer stage, with a <code>TOP_K</code> setting recorded by name with <code>ot.constant</code>. It is the <a href="/get-started.html#example">Get started</a> example plus that one line.</p>
         <pre>import sys
 import onetrace as ot

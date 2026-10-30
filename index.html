@@ -45,7 +45,7 @@
 <section class="hero" aria-labelledby="hero-title">
   <div class="wrap hero-grid">
     <div>
-      <a class="eyebrow" href="/whats-new.html" style="text-decoration:none"><b>New</b> onetrace-console 0.4.0: gated decisions, spans and nested runs, on the live demo &rarr;</a>
+      <a class="eyebrow" href="/whats-new.html" style="text-decoration:none"><b>New</b> onetrace-console 0.5.0: model-call records, verdicts that name their reference, and compare any two runs on the live demo &rarr;</a>
       <h1 id="hero-title">Your AI changed. Find the <em>first difference</em>.</h1>
       <p class="lede">Compare two runs of your pipeline. onetrace shows the first step whose output differs, what was recorded there, and every step that changed after it. Each run's record is one receipt per step, checkable by anyone.</p>
       <div class="cta-row">
@@ -190,7 +190,7 @@
       </div>
       <div class="shot"><a href="/assets/img/shot-explain.webp"><img src="/assets/img/shot-explain.webp" width="1280" height="1060" loading="lazy" alt="The live demo's split comparison in onetrace-console 0.3.2. At the top, The short answer: The runs first differ at split, where chunk_size went from 1024 to 512. Every stage before it is the same, all 3 stages after it differ; a strip of the five stages with split marked First difference. Directly under it, What may have happened, AI-generated, may be wrong, model anthropic:claude-sonnet-4-6: one card, Lead (possible culprit), saying the first difference originates in the split node where the chunk_size constant changed from 1024 to 512, with four cites as chips, two of them checked; then three onetrace commands under Checks, and the line 5 claims checked against the record, 4 left out."></a></div>
     </div>
-    <p class="sub" style="font-size:14px;margin-top:20px">Shown: the live demo's split comparison as onetrace-console 0.3.2 drew it; the live demo now serves the same comparison in 0.4.0: the short answer first, then the kept explanation, written once by claude-sonnet-4-6 and served as a file. The live demo shows four kept explanations and makes no network calls. <a href="https://demo.oneproof.dev/diff/b56e0b73e5e3324556fbdbcfc2a5561a1389322ba405c2184f2fdb620f8284da.html">See the split comparison's explanation on the live demo</a></p>
+    <p class="sub" style="font-size:14px;margin-top:20px">Shown: the live demo's split comparison as onetrace-console 0.3.2 drew it; the live demo now serves the same comparison in 0.5.0: the short answer first, then the kept explanation, written once by claude-sonnet-4-6 and served as a file. The live demo shows four kept explanations and makes no network calls. <a href="https://demo.oneproof.dev/diff/85dc0852a57737a69d71b9e12c697b77e69ab92d30b5c358ca9f8fb7cfc7dd1b.html">See the split comparison's explanation on the live demo</a></p>
   </div>
 </section>
 
@@ -343,7 +343,7 @@
         <p><code>onetrace-explain</code> asks a model you choose where to look, then checks every claim against the record. Labelled AI-generated, and it may be wrong.</p>
       </div>
     </div>
-    <p class="sub"><a href="/whats-new.html">Everything new in 0.3 and 0.4 →</a></p>
+    <p class="sub"><a href="/whats-new.html">Everything new, release by release →</a></p>
   </div>
 </section>
 
