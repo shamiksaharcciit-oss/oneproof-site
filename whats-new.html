@@ -76,7 +76,7 @@
       </div>
       <div class="card">
         <h3>A verdict, and the reference it was judged against</h3>
-        <p>Each verdict names its reference. A run whose own records could not be checked gets no verdict. The "Action authorized, effect confirmed" row now reads onetrace-verify's decision rows, with their counts and a link to any failing row. On a local console, verdict counts per pipeline as runs arrive: counts only, no alerts.</p>
+        <p>Each verdict names its reference. A run whose own records could not be checked gets no verdict. The "Action authorized, effect confirmed" row now reads onetrace-verify's decision rows, with their counts, each failing row by name, and a link to the run's Gated steps section. On a local console, verdict counts per pipeline as runs arrive: counts only, no alerts.</p>
       </div>
       <div class="card">
         <h3>Compare any two runs, search, benchmarks</h3>
@@ -92,12 +92,12 @@ onetrace-console demo --open</pre>
 <section id="v061" aria-labelledby="v061-title">
   <div class="wrap">
     <p class="kicker">onetrace 0.6.1</p>
-    <h2 id="v061-title">A patch: four fixes, the record format unchanged.</h2>
+    <h2 id="v061-title">A patch of four items, the record format unchanged.</h2>
     <p class="sub">With onetrace-verify 0.6.1, which changes only its version. No receipt or manifest member is added, removed or changed, and a 0.6.0 verifier reads a 0.6.1 run as it reads a 0.6.0 run.</p>
     <div class="grid-3">
       <div class="card">
         <h3>A refused start leaves no run folder</h3>
-        <p>A run refused at its start (a malformed <code>TRACEPARENT</code>, a <code>repeat_of</code> that is not a run id) used to leave an empty run folder behind, and a retry with the same id was refused. Everything that can refuse a run is now checked before the folder is made. A folder that holds a receipt is never removed.</p>
+        <p>A run refused at its start (a malformed <code>TRACEPARENT</code>, a <code>repeat_of</code> that is not a run id) used to leave a run folder holding only a lock and an empty <code>receipts/</code>, and a retry with the same id was refused. Everything that can refuse a run is now checked before the folder is made. A folder that holds a receipt is never removed.</p>
       </div>
       <div class="card">
         <h3>The model-call schema ships in the wheel</h3>
