@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>What's new: onetrace-console 0.5 and onetrace 0.6 · oneproof</title>
-<meta name="description" content="onetrace-explain 0.2.0: give it two runs for what changed, read-only evidence, and checks to run. onetrace-console 0.5.0: model-call records, a verdict that names its reference, and compare any two runs on the live demo. onetrace 0.6.1: a patch, the record format unchanged. onetrace 0.6.0: verdicts against a sealed reference run, variation across repeat runs, a run sink, and the model-call record. onetrace-console 0.4.0: gated steps with the decisions they cite and the verifier's rows beside them, each step's span, runs inside runs, and What changed? on every run, on the live demo. onetrace 0.5.0: decisions from onedoor recorded with the step they gate, the span context of each step, and nested runs that a comparison descends into. onetrace-console 0.3.2: a short answer at the top of every comparison, the explanation redrawn under it, a setup page for Explain. 0.3.1: a Compare button, a faster store, two more example pipelines, and kept explanations on the live demo. onetrace 0.4.0: export a run to OpenTelemetry, compare many runs at once with drift, and a suggested explanation that is checked against the record.">
+<meta name="description" content="onetrace-console 0.5.1: read a console store from your own program, and each model-call record linked from its run, on onetrace 0.6.1. onetrace-explain 0.2.0: give it two runs for what changed, read-only evidence, and checks to run. onetrace-console 0.5.0: model-call records, a verdict that names its reference, and compare any two runs on the live demo. onetrace 0.6.1: a patch, the record format unchanged. onetrace 0.6.0: verdicts against a sealed reference run, variation across repeat runs, a run sink, and the model-call record. onetrace-console 0.4.0: gated steps with the decisions they cite and the verifier's rows beside them, each step's span, runs inside runs, and What changed? on every run, on the live demo. onetrace 0.5.0: decisions from onedoor recorded with the step they gate, the span context of each step, and nested runs that a comparison descends into. onetrace-console 0.3.2: a short answer at the top of every comparison, the explanation redrawn under it, a setup page for Explain. 0.3.1: a Compare button, a faster store, two more example pipelines, and kept explanations on the live demo. onetrace 0.4.0: export a run to OpenTelemetry, compare many runs at once with drift, and a suggested explanation that is checked against the record.">
 <link rel="canonical" href="https://oneproof.dev/whats-new.html">
 <meta property="og:title" content="What's new: onetrace-console 0.5 and onetrace 0.6">
 <meta property="og:description" content="Model-call records and compare any two runs on the live demo; verdicts against a run you trust, variation across repeat runs, and the record of a model call; decisions recorded with the step they gate and shown on the live demo, the span context of each step, and nested runs a comparison descends into.">
@@ -43,10 +43,11 @@
 
 <div class="page-hero">
   <div class="wrap">
-    <span class="eyebrow"><b>What's new</b> onetrace-explain 0.2.0 · onetrace-console 0.5.0 · onetrace 0.6.1</span>
+    <span class="eyebrow"><b>What's new</b> onetrace-console 0.5.1 · onetrace-explain 0.2.0 · onetrace 0.6.1</span>
     <h1>A verdict against a run you trust, and the record of a model call, on the live demo.</h1>
-    <p class="lede">onetrace-console 0.5.0 is on PyPI and runs the live demo: it shows model-call records, names the reference each verdict was judged against, and lets anyone compare two runs of a pipeline. It runs on onetrace 0.6.0, whose patch, 0.6.1, is out too, and onetrace-explain 0.2.0 takes two runs and prints what changed, the evidence and checks you can run. With onetrace 0.6.0, read a run against a sealed record of one you trust and get one verdict word per step; record repeat runs and see how often each step varies; and let a model call leave a record of what it ran on, beside the step's receipt. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
+    <p class="lede">onetrace-console 0.5.1 is on PyPI and runs the live demo, on onetrace 0.6.1: it shows model-call records, names the reference each verdict was judged against, and lets anyone compare two runs of a pipeline. onetrace-explain 0.2.0 installs beside it, takes two runs and prints what changed, the evidence and checks you can run. With onetrace 0.6.0, read a run against a sealed record of one you trust and get one verdict word per step; record repeat runs and see how often each step varies; and let a model call leave a record of what it ran on, beside the step's receipt. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
     <div class="crumbs">
+      <a href="#console051">Console 0.5.1</a>
       <a href="#explain020">Explain 0.2.0</a>
       <a href="#console050">Console 0.5.0</a>
       <a href="#v061">In 0.6.1</a>
@@ -64,6 +65,31 @@
     </div>
   </div>
 </div>
+
+<section id="console051" class="section-soft" aria-labelledby="console051-title">
+  <div class="wrap">
+    <p class="kicker">onetrace-console 0.5.1</p>
+    <h2 id="console051-title">Read a console store from your own program, and each model-call record linked from its run.</h2>
+    <p class="sub">It installs onetrace 0.6.1 and onetrace-verify 0.6.1, and onetrace-explain 0.2.0 now installs beside it in one environment. The live demo runs it now: 58 runs of 11 example pipelines.</p>
+    <div class="grid-3">
+      <div class="card">
+        <h3>A read interface over the store</h3>
+        <p><code>onetrace_console.store_read</code> answers three questions for a program outside the console: the runs whose stage records exactly a configuration digest, the runs whose model-call records name the same model files, and a run's neighbours by input where the <code>[neighbours]</code> extra is on. It only reads, and a store whose run index is another format is refused with the reason. One page of docs: <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/blob/v0.5.1/docs/store_read.md">store_read</a>.</p>
+      </div>
+      <div class="card">
+        <h3>Each model-call record, linked from its run</h3>
+        <p>On a run's page, under "What came out", an output that is a model-call record links to its section on the step's page, as the step page's own list does. Other outputs are listed as they were.</p>
+      </div>
+      <div class="card">
+        <h3>An earlier comparison points to the newer one</h3>
+        <p>Where the same two runs have been compared again under the onetrace build the console runs, the earlier page says so and links to the newer one, and both are kept. On the live demo, P1's split comparison has a new address under 0.5.1, and the earlier links to it lead there.</p>
+      </div>
+    </div>
+<pre>pip install --upgrade onetrace-console
+pip install --upgrade onetrace-explain</pre>
+    <p class="sub">The run index is now format 0.2: a local console writes it again when it draws its pages, and a public console built before 0.5.1 is built again. The record format is unchanged. The full list is in the <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.5.1">release notes</a>.</p>
+  </div>
+</section>
 
 <section id="explain020" aria-labelledby="explain020-title">
   <div class="wrap">
@@ -90,7 +116,7 @@ python -m venv explain-env
 source explain-env/bin/activate
 pip install onetrace-explain
 onetrace-explain runs/a runs/b --no-model</pre>
-    <p class="sub">onetrace-explain 0.2.0 needs onetrace 0.6.1 or a later 0.6 or 0.7 release, and onetrace-console 0.5.0 pins onetrace 0.6.0, so install it in an environment of its own for now. <code>--no-model</code> prints what changed, the evidence and the checks, and sends nothing. Not in this release: the probes that read a console store, and those that wait for console 0.6.0 or onetrace 0.7; each reads <code>not run</code> and names what it waits for. The format page on this site still describes the 0.1 form. The full list is in the package's changelog at the tag.</p>
+    <p class="sub">onetrace-explain 0.2.0 needs onetrace 0.6.1 or a later 0.6 or 0.7 release, and onetrace-console 0.5.1 runs on onetrace 0.6.1, so the two install in one environment. <code>--no-model</code> prints what changed, the evidence and the checks, and sends nothing. Not in this release: the probes that read a console store, and those that wait for console 0.6.0 or onetrace 0.7; each reads <code>not run</code> and names what it waits for. The format page on this site still describes the 0.1 form. The full list is in the package's changelog at the tag.</p>
   </div>
 </section>
 
@@ -139,7 +165,7 @@ onetrace-console demo --open</pre>
       </div>
     </div>
 <pre>pip install --upgrade "onetrace[crypto]"</pre>
-    <p class="sub">onetrace-console 0.5.0 pins onetrace 0.6.0, so <code>pip install onetrace-console</code> installs 0.6.0; install 0.6.1 in its own environment. onetrace-explain 0.1.1 accepts onetrace from 0.4 up to, not including, 0.7. The full list is in the package's changelog at the tag.</p>
+    <p class="sub">onetrace-console 0.5.1 runs on onetrace 0.6.1, so <code>pip install onetrace-console</code> installs 0.6.1. onetrace-explain 0.1.1 accepts onetrace from 0.4 up to, not including, 0.7. The full list is in the package's changelog at the tag.</p>
   </div>
 </section>
 
