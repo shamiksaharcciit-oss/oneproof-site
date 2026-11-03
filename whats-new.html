@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>What's new: onetrace-console 0.5 and onetrace 0.6 · oneproof</title>
-<meta name="description" content="onetrace-console 0.5.1: read a console store from your own program, and each model-call record linked from its run, on onetrace 0.6.1. onetrace-explain 0.2.0: give it two runs for what changed, read-only evidence, and checks to run. onetrace-console 0.5.0: model-call records, a verdict that names its reference, and compare any two runs on the live demo. onetrace 0.6.1: a patch, the record format unchanged. onetrace 0.6.0: verdicts against a sealed reference run, variation across repeat runs, a run sink, and the model-call record. onetrace-console 0.4.0: gated steps with the decisions they cite and the verifier's rows beside them, each step's span, runs inside runs, and What changed? on every run, on the live demo. onetrace 0.5.0: decisions from onedoor recorded with the step they gate, the span context of each step, and nested runs that a comparison descends into. onetrace-console 0.3.2: a short answer at the top of every comparison, the explanation redrawn under it, a setup page for Explain. 0.3.1: a Compare button, a faster store, two more example pipelines, and kept explanations on the live demo. onetrace 0.4.0: export a run to OpenTelemetry, compare many runs at once with drift, and a suggested explanation that is checked against the record.">
+<title>What's new: onetrace 0.7, onetrace-console 0.5 · oneproof</title>
+<meta name="description" content="onetrace 0.7.0: every run ends with a close receipt, onetrace-auto records library calls with no code change, and a re-run stops before a write. onetrace-console 0.5.1: read a console store from your own program, and each model-call record linked from its run, on onetrace 0.6.1. onetrace-explain 0.2.0: give it two runs for what changed, read-only evidence, and checks to run. onetrace-console 0.5.0: model-call records, a verdict that names its reference, and compare any two runs on the live demo. onetrace 0.6.1: a patch, the record format unchanged. onetrace 0.6.0: verdicts against a sealed reference run, variation across repeat runs, a run sink, and the model-call record. onetrace-console 0.4.0: gated steps with the decisions they cite and the verifier's rows beside them, each step's span, runs inside runs, and What changed? on every run, on the live demo. onetrace 0.5.0: decisions from onedoor recorded with the step they gate, the span context of each step, and nested runs that a comparison descends into. onetrace-console 0.3.2: a short answer at the top of every comparison, the explanation redrawn under it, a setup page for Explain. 0.3.1: a Compare button, a faster store, two more example pipelines, and kept explanations on the live demo. onetrace 0.4.0: export a run to OpenTelemetry, compare many runs at once with drift, and a suggested explanation that is checked against the record.">
 <link rel="canonical" href="https://oneproof.dev/whats-new.html">
 <meta property="og:title" content="What's new: onetrace-console 0.5 and onetrace 0.6">
 <meta property="og:description" content="Model-call records and compare any two runs on the live demo; verdicts against a run you trust, variation across repeat runs, and the record of a model call; decisions recorded with the step they gate and shown on the live demo, the span context of each step, and nested runs a comparison descends into.">
@@ -43,10 +43,11 @@
 
 <div class="page-hero">
   <div class="wrap">
-    <span class="eyebrow"><b>What's new</b> onetrace-console 0.5.1 · onetrace-explain 0.2.0 · onetrace 0.6.1</span>
-    <h1>A verdict against a run you trust, and the record of a model call, on the live demo.</h1>
-    <p class="lede">onetrace-console 0.5.1 is on PyPI and runs the live demo, on onetrace 0.6.1: it shows model-call records, names the reference each verdict was judged against, and lets anyone compare two runs of a pipeline. onetrace-explain 0.2.0 installs beside it, takes two runs and prints what changed, the evidence and checks you can run. With onetrace 0.6.0, read a run against a sealed record of one you trust and get one verdict word per step; record repeat runs and see how often each step varies; and let a model call leave a record of what it ran on, beside the step's receipt. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
+    <span class="eyebrow"><b>What's new</b> onetrace 0.7.0 · onetrace-console 0.5.1 · onetrace-explain 0.2.0</span>
+    <h1>Every run says whether it finished, a library call records itself, and a re-run stops before it writes.</h1>
+    <p class="lede">onetrace 0.7.0 is on PyPI with onetrace-verify 0.7.0 and the new onetrace-auto: every run ends with a close receipt, an app's calls through httpx, requests and openai are recorded with no code change, and <code>onetrace reproduce</code> stops before a step that writes. onetrace-console 0.5.1 is on PyPI and runs the live demo, on onetrace 0.6.1: it shows model-call records, names the reference each verdict was judged against, and lets anyone compare two runs of a pipeline. onetrace-explain 0.2.0 installs beside it, takes two runs and prints what changed, the evidence and checks you can run. With onetrace 0.6.0, read a run against a sealed record of one you trust and get one verdict word per step; record repeat runs and see how often each step varies; and let a model call leave a record of what it ran on, beside the step's receipt. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
     <div class="crumbs">
+      <a href="#v070">In 0.7.0</a>
       <a href="#console051">Console 0.5.1</a>
       <a href="#explain020">Explain 0.2.0</a>
       <a href="#console050">Console 0.5.0</a>
@@ -65,6 +66,44 @@
     </div>
   </div>
 </div>
+
+<section id="v070" aria-labelledby="v070-title">
+  <div class="wrap">
+    <p class="kicker">onetrace 0.7.0</p>
+    <h2 id="v070-title">Every run says whether it finished, and a library call can record itself.</h2>
+    <p class="sub">With onetrace-verify 0.7.0 and a new package, onetrace-auto 0.7.0. The record format moves to 0.4: a run written now is never byte-identical to a 0.6.1 run of the same pipeline, and a gate that checks the newer records should read them with onetrace-verify 0.7.</p>
+    <div class="grid-3">
+      <div class="card">
+        <h3>A close receipt ends every run</h3>
+        <p>When a run closes, onetrace writes one last receipt, before the manifest and any signature, so a run that finished and one cut short no longer read alike. A run killed before it closed holds no close receipt, and <code>onetrace sign</code> signs only a closed run unless told otherwise.</p>
+      </div>
+      <div class="card">
+        <h3>Recording with no code change</h3>
+        <p>onetrace-auto records an app's calls through httpx, requests and the openai client, one receipt per call: <code>onetrace-run python app.py</code>, or <code>ONETRACE_AUTO=1</code>. A library is hooked only inside its supported versions, and the run lists which were. A hook never changes what the app gets back, and a call it could not record is a gap that says so. By default the run holds digests only.</p>
+      </div>
+      <div class="card">
+        <h3>A re-run stops before a write</h3>
+        <p><code>@ot.stage(effect="read")</code> or <code>effect="write"</code> labels a step. <code>onetrace reproduce</code> now stops before a step recorded as write or unknown, such as an HTTP <code>POST</code>, and names it first; <code>--allow-writes</code> runs it. A re-run's records carry a mark, and a re-run is never made a reference.</p>
+      </div>
+    </div>
+    <div class="grid-3" style="margin-top:18px">
+      <div class="card">
+        <h3>One claim, checked and recorded</h3>
+        <p><code>onetrace check</code> checks one claim about two runs (<code>reproduce</code>, <code>localize</code>, <code>diff-text</code> or <code>match</code>) and records the check as a run of its own. It ends "confirmed by a check", "not supported by its check", or "the check did not run" with its reason.</p>
+      </div>
+      <div class="card">
+        <h3>A twin, and one value put in</h3>
+        <p>With <code>keep_config=True</code> a step keeps its configuration. <code>onetrace reproduce RUN --config-of OTHER</code>, given a runner file, runs RUN's kept inputs with OTHER's configuration and names the first difference; <code>--substitute STEP --from B</code> puts B's kept output in at one step and runs the rest. Each shows what happens today, with today's tools and services.</p>
+      </div>
+      <div class="card">
+        <h3>Expectations, and vLLM's tokens</h3>
+        <p>Step expectations (<code>ot.expect.range</code>, <code>unit</code>, <code>relation</code>, <code>member</code>) are declared in code and recorded with the run; one that holds shows the declared rule held, not that the output was right. Self-hosted vLLM capture at L1, L2 and L3 writes the model-call record 1.1 and a steps file per request.</p>
+      </div>
+    </div>
+<pre>pip install --upgrade "onetrace[crypto]" onetrace-auto</pre>
+    <p class="sub">onetrace-console 0.5.1 runs on onetrace 0.6.1, so an environment that holds the console keeps 0.6.1: install 0.7.0 in an environment of its own until a console release runs on it. onetrace-explain 0.2.0 accepts onetrace 0.7. The full list is in the changelog inside each package's source distribution, <a href="https://pypi.org/project/onetrace/0.7.0/">onetrace 0.7.0 on PyPI</a>.</p>
+  </div>
+</section>
 
 <section id="console051" class="section-soft" aria-labelledby="console051-title">
   <div class="wrap">
@@ -443,7 +482,7 @@ onetrace-explain report --dry-run</pre>
     <p class="kicker">Upgrading</p>
     <h2 id="upgrade-title">One command, and your old runs still verify.</h2>
 <pre>pip install --upgrade onetrace onetrace-console</pre>
-    <p class="sub">onetrace-verify comes with it and reads every earlier record. onetrace-console 0.3.2 runs on onetrace 0.4.0; the console release that runs on 0.5.0 follows, and until then an environment that holds the console keeps onetrace 0.4.0, while one without it takes 0.5.0.</p>
+    <p class="sub">onetrace-verify comes with it and reads every earlier record. onetrace-console 0.5.1 runs on onetrace 0.6.1, so an environment that holds the console keeps 0.6.1, while one without it takes 0.7.0.</p>
     <p class="sub">The full list of changes is in the <a href="/onetrace/manual.html">manual</a> and in each package's changelog.</p>
   </div>
 </section>
