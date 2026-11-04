@@ -205,7 +205,7 @@
         <div class="tour-text">
           <span class="step-no">06 · Live state</span>
           <h3>The kill switch, every budget, every pending approval</h3>
-          <p>How much of each action's cap is consumed, reserved and free; open reservations; approvals and when they expire. The Studio only shows the kill switch. Throwing it lives on the decision service, behind its own admin key. While it holds, every acting tier is denied outright, not queued for approval.</p>
+          <p>How much of each action's cap is consumed, reserved and free; open reservations; approvals and when they expire. The Studio only shows the kill switch. Throwing it lives on the decision service, behind its own admin key. While it holds, every acting tier but reads is denied outright, not queued for approval.</p>
         </div>
         <div class="shot"><img src="/assets/img/onedoor/studio-live-state.webp" width="1600" height="1885" loading="lazy" alt="The Live state page. Kill switch: not engaged, with a note that it outranks everything including granted approvals, and that while it holds every acting tier but reads is denied outright. Budgets: effect money.egress 165 of 750 a day and 165 of 6000 a month; payments.transfer 120 of 500 a day and 120 of 5000 a month; refunds.issue 45 of 300 a day and 45 of 2000 a month; effect net.egress 0 of 500 actions a day, each with a bar. No open reservations; one pending approval for payouts.schedule."></div>
       </div>
@@ -236,9 +236,9 @@
     <h2 id="pair-title">onedoor decides. onetrace records. Each works without the other.</h2>
     <p class="sub">onedoor is a separate product with its own package. Use it on its own to govern what agents may do. Add it beside onetrace and each gated step of a run cites the decision that allowed it, which anyone can check against onedoor's export.</p>
     <div class="grid-3">
-      <div class="card"><h3>onedoor alone</h3><p>Policies, approvals, caps and the kill switch, with an append-only ledger and its own receipt page. No onetrace needed.</p></div>
+      <div class="card"><h3>onedoor alone</h3><p>Policies, approvals, caps and the kill switch, with an append-only ledger and its own receipt page. No onetrace needed. <a href="/onedoor/developers.html#quickstart">Install it on its own</a>.</p></div>
       <div class="card"><h3>onetrace alone</h3><p>A checkable record of each run and the comparison that finds the first difference. No policy engine needed.</p></div>
-      <div class="card"><h3>Together</h3><p>A step marked as gated must cite a onedoor decision. The verifier fails a step that acted on a deny, or cited nothing, and matches each reference to a row of onedoor's export.</p></div>
+      <div class="card"><h3>Together</h3><p>A step marked as gated must cite a onedoor decision. The verifier fails a step that acted on a deny, or cited nothing, and matches each reference to a row of onedoor's export. <a href="/onedoor/developers.html#onetrace">Add onetrace</a>.</p></div>
     </div>
     <p style="margin-top:24px;color:var(--ink-2)">From a real run of onetrace 0.7.0 against onedoor 0.10.2's decision service, checked with <code>onetrace-verify --decisions</code>:</p>
 <pre class="od-out"><span class="p">[PASS   ]</span> decisions: gated steps cite a decision -- 1 gated step(s), each citing a decision
@@ -288,10 +288,10 @@
         <li><b>Decision references on every surface.</b> The library call, the decision service, the LangChain middleware and the MCP proxy each hand back the decision reference, and a <code>bound_permit</code> field beside it.</li>
         <li><b>Signed permits from the library.</b> Where an action type asks for one and the request names the key it will sign with, the library call issues a short-lived signed permit, bound to the exact action and usable once.</li>
         <li><b>The recipient's signed confirmation.</b> The system that acted signs which permit and which request it acted on, and whether the effect happened, was refused or is unknown. The presenter, or anyone auditing later, checks it with onedoor alone.</li>
-        <li><b>One key per attempt.</b> A request presenting a permit must carry an <code>Idempotency-Key</code> equal to the permit's own id, or the recipient refuses it.</li>
+        <li><b>One key per permit.</b> A request presenting a permit must carry an <code>Idempotency-Key</code> equal to the permit's own id, or the recipient refuses it.</li>
       </ul></div>
       <div class="od-next" style="margin-top:0"><h3>Coming next</h3><ul class="clean">
-        <li><b>Permits from every surface.</b> Today the decision service, the MCP proxy and the LangChain middleware return the <code>bound_permit</code> field empty. Next, each issues one.</li>
+        <li><b>Permits from every surface.</b> Today the decision service, the MCP proxy and the LangChain middleware return the <code>bound_permit</code> field empty, and deny an action whose policy asks for a permit. Next, each issues one.</li>
         <li><b>The confirmation in a onetrace record.</b> onedoor signs and checks the confirmation today. Next, a onetrace step records it, so a run can show an action authorized and its effect confirmed, and check both.</li>
       </ul><p style="margin:12px 0 0;color:var(--muted);font-size:14px">Built in the open; no dates.</p></div>
     </div>

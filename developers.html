@@ -304,7 +304,7 @@ ollama serve                   <span class="c"># if it is not already running</s
           </div>
           <div id="p-nb-ep" role="tabpanel" aria-labelledby="tab-nb-ep" hidden>
             <ol class="nums">
-              <li>Any OpenAI-compatible server that answers <code>POST &lt;endpoint&gt;/embeddings</code> with <code>{"model", "input"}</code>, such as vLLM or llama.cpp's server running an embedding model.</li>
+              <li>Any OpenAI-compatible server that answers <code>POST &lt;endpoint&gt;/embeddings</code> with <code>{"model", "input"}</code>, such as llama.cpp's server started with <code>--embedding</code>.</li>
               <li>On the setup page, choose the endpoint option, enter its address (for example <code>http://127.0.0.1:8000/v1</code>) and the model name, then <b>Continue</b> and <b>Confirm and turn on</b>.</li>
               <li>Kept inputs and kept outputs are sent to that address. No key is sent, and none can be set.</li>
             </ol>
@@ -314,7 +314,7 @@ ollama serve                   <span class="c"># if it is not already running</s
           <li><b>On a run's page:</b> "Runs with near inputs (same configuration)", each with its nearness and a Compare button.</li>
           <li><b>On a comparison of two of them:</b> "Nearness ladder: the embedder's view", per step, for inputs and outputs, with the largest drop marked. "1.00 by the record" means the digests are equal and nothing was embedded.</li>
           <li>Nearness is the embedding model's reading. The exact comparison, the short answer and every verdict are unchanged.</li>
-          <li>"Same configuration" means what the record states: the plan, and each step's instrument, kind, version and configuration.</li>
+          <li>"Same configuration" means what the record states: the plan, and each step's name, instrument (id, kind, version, configuration digest) and recorded settings; never its inputs or outputs. Runs whose recorded settings differ are never neighbours.</li>
           <li>Local consoles only: it never runs on a public console, the hosted demo among them. Each embedding batch is recorded as a run of its own.</li>
           <li>To stop, press <b>Turn neighbours off</b> on the same page.</li>
         </ul>

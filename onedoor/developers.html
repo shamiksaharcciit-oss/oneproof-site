@@ -78,9 +78,11 @@
   <div class="wrap">
     <span class="eyebrow"><b>onedoor for developers</b> layer 2 of 3</span>
     <h1>Put one door between your agent and its tools.</h1>
-    <p class="lede">Install from PyPI, copy a policy, start the decision service, and every action goes decide, act, report. Everything below was run against onedoor 0.10.2 as published; the outputs are what it printed.</p>
+    <p class="lede">Install from PyPI, copy a policy, start the decision service, and every action goes decide, act, report. It works on its own; onetrace is optional (section 6). Everything below was run against onedoor 0.10.2 as published; the outputs are what it printed.</p>
     <div class="crumbs">
       <a href="#quickstart">Quickstart</a>
+      <a href="#library">Library only</a>
+      <a href="#config">Configuration</a>
       <a href="#policy">A policy</a>
       <a href="#loop">Decide, act, report</a>
       <a href="#operators">Approvals and the kill switch</a>
@@ -96,6 +98,7 @@
   <div class="wrap">
     <p class="kicker">1 · Quickstart</p>
     <h2 id="qs-title">Four commands, from PyPI.</h2>
+    <div class="card" style="margin:6px 0 20px"><h3>Two ways to use it</h3><p><b>onedoor on its own:</b> sections 1 to 5, 7 and 8. Nothing there needs onetrace. <b>With onetrace:</b> add section 6, which records each decision in a onetrace run and checks it.</p></div>
     <p class="sub">Python 3.12 or later. Nothing here needs the source repository. Step 2 copies the shipped payments examples: worked examples of the policy vocabulary, not a compliance artifact (read <code>PACK.md</code> beside the file in the installed package).</p>
 <p class="sub" style="margin-top:14px">First, a fresh virtual environment, so nothing goes into your system Python (recommended):</p>
 <pre>python -m venv .venv
@@ -119,6 +122,75 @@ curl -s -X POST localhost:8099/v1/decide -H "Authorization: Bearer dev" -H "Cont
     <p class="sub">The first decision is a permit: capped, reversible, and you now owe a report. The second is default-deny, with the refusal saying what would allow it. Amounts in <code>params</code> may be JSON numbers (<code>120.00</code>) or decimal strings (<code>"120.00"</code>).</p>
     <p class="sub" style="margin-top:14px">On Windows PowerShell 5.1, a JSON body with a space in it is split before curl sees it. Use <code>curl.exe</code> with <code>--%</code>, escape the inner quotes, and put each command alone on its line, for example:</p>
 <pre>curl.exe --% -s -X POST localhost:8099/v1/decide -H "Authorization: Bearer dev" -H "Content-Type: application/json" -d "{\"request_id\":\"11111111-1111-1111-1111-111111111111\",\"action_type\":\"payments.transfer\",\"params\":{\"amount_eur\":120.00,\"destination_account\":\"acct-1\"},\"source\":\"llm\",\"rationale\":\"pay supplier invoice\"}"</pre>
+  </div>
+</section>
+
+<section id="library" class="section-soft" aria-labelledby="lib-title">
+  <div class="wrap">
+    <p class="kicker">1b · Library only</p>
+    <h2 id="lib-title">The same checks in your own process, no service.</h2>
+    <p class="sub">If your agent is Python, onedoor can run in-process: <code>pip install onedoor</code>, no extras. It decides and reserves the budget; you do the action; then you report what happened. This is the shipped transfer rule, run against onedoor 0.10.2.</p>
+<pre>from pathlib import Path
+from uuid import uuid4
+from zoneinfo import ZoneInfo
+
+from onedoor.guardrail import policy_loader
+from onedoor.guardrail.decision import PermittedIntent, decide_and_reserve, report_result
+from onedoor.guardrail.executor import EngineConfig
+from onedoor.guardrail.models import ActionRequest, Outcome, Source
+from onedoor.store.clock import now_utc
+from onedoor.store.db import Database
+
+db = Database("onedoor.db")
+db.init()
+conn = db.connect()
+policy_loader.load_file(conn, Path("policies.yaml"))       <span class="c"># the file from step 2 of the quickstart</span>
+config = EngineConfig(approval_ttl_seconds=3600, connector_timeout_seconds=10.0, tz=ZoneInfo("UTC"))
+
+def pay(amount_eur, account):
+    now = now_utc()
+    request = ActionRequest(request_id=uuid4(), action_type="payments.transfer",
+        params={"amount_eur": amount_eur, "destination_account": account},
+        source=Source.LLM, rationale="pay supplier invoice", created_at=now)
+    outcome = decide_and_reserve(request, conn=conn, config=config, now=now)
+    if isinstance(outcome, PermittedIntent):
+        # ... move the money here ...
+        report_result(outcome, conn=conn, config=config, outcome=Outcome.SUCCESS,
+                      payload={"transfer_id": "tx-1001"}, error=None, now=now_utc())
+        return "paid"
+    d = outcome.decision
+    return f"{d.decision.value}: {d.reason_code.value}"
+
+print(pay("120.00", "acct-1"))
+print(pay("400.00", "acct-2"))</pre>
+<pre class="od-out"><span class="p">paid</span>
+<span class="f">denied: budget_exhausted</span></pre>
+    <p class="sub">A <code>PermittedIntent</code> is an obligation: call <code>report_result</code> exactly once, whatever happened, with <code>Outcome.SUCCESS</code>, <code>FAILURE</code>, <code>TIMEOUT</code> or <code>NOT_ATTEMPTED</code>, as in the table in section 3. Anything else (denied, proposed, dry-run) carries its reason code and needs no report. The library call is also the one surface that issues a signed permit, where the action type asks for one. Guide: <a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-library.md">integration-library.md</a>.</p>
+  </div>
+</section>
+
+<section id="config" aria-labelledby="cfg-title">
+  <div class="wrap">
+    <p class="kicker">1c · Configuration</p>
+    <h2 id="cfg-title">The decision service is set by its environment.</h2>
+    <p class="sub">Set these in the environment you start the service from.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Variable</th><th scope="col">What it sets</th><th scope="col">If unset</th></tr></thead>
+        <tbody>
+          <tr><td><code>ONEDOOR_DECIDE_KEYS</code></td><td>Keys that can call <code>/v1/decide</code> and <code>/v1/report</code>, comma-separated.</td><td>Every decide and report call is refused (403).</td></tr>
+          <tr><td><code>ONEDOOR_ADMIN_KEYS</code></td><td>Keys that can list, approve and deny approvals and throw the kill switch. A key in both lists stops the service from starting.</td><td>Every approval and kill-switch call is refused (403).</td></tr>
+          <tr><td><code>ONEDOOR_POLICIES</code></td><td>The policy file, loaded and checked at start-up.</td><td><code>config/policies.yaml</code></td></tr>
+          <tr><td><code>ONEDOOR_DB</code></td><td>The SQLite store: the ledger, budgets and approvals. The Studio's <code>--db</code> must name the same file.</td><td><code>onedoor-service.db</code></td></tr>
+          <tr><td><code>ONEDOOR_ISSUER</code></td><td>A name for this deployment. Turns on decision references (section 6).</td><td>No references are returned.</td></tr>
+          <tr><td><code>ONEDOOR_TZ</code></td><td>The time zone that day and month cap windows follow.</td><td><code>UTC</code></td></tr>
+          <tr><td><code>ONEDOOR_APPROVAL_TTL</code></td><td>Seconds a proposal waits for a person.</td><td><code>3600</code></td></tr>
+          <tr><td><code>ONEDOOR_APPROVAL_WEBHOOK</code></td><td>A URL that each tier-3 proposal is posted to (Slack-compatible).</td><td>No notification.</td></tr>
+          <tr><td><code>ONEDOOR_KEY_FINGERPRINT_SECRET</code></td><td>The secret behind the keyed fingerprint recorded for each caller.</td><td>Generated once into a file beside the store; keep it out of version control.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sub" style="margin-top:18px">Operating it: one process, one SQLite writer. It serves plain HTTP on the address you give uvicorn, so put TLS in front of it anywhere but your own machine. <code>GET /v1/health</code> answers with the kill switch and the number of pending intents. Approvals and the kill switch are in section 4; the Studio, to write and ratify policy, in section 5; the ledger export and receipts in section 7. Guide: <a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-service.md">integration-service.md</a>.</p>
   </div>
 </section>
 
@@ -226,7 +298,8 @@ python -m onedoor.studio --db onedoor.db --studio-db studio.db
     <p class="kicker">6 · With onetrace (optional)</p>
     <h2 id="ot-title">Each gated step cites the decision that allowed it.</h2>
     <p class="sub">Set <code>ONEDOOR_ISSUER</code> to a name for your deployment and each decision that permits, denies or proposes carries a <code>decision_ref</code> (dry-runs and tier-0 reads carry none). Pass it to <code>ot.decision()</code> inside a step you declared as gated. Requires onetrace 0.5.0 or later; this was run with 0.7.0.</p>
-<pre>export ONEDOOR_ISSUER=https://payments.example/onedoor     <span class="c"># before starting the service</span></pre>
+<pre>pip install onetrace                                         <span class="c"># in the same environment as onedoor; brings onetrace-verify</span>
+export ONEDOOR_ISSUER=https://payments.example/onedoor     <span class="c"># before starting the service</span></pre>
 <pre>import json, uuid, urllib.request
 import onetrace as ot
 
@@ -307,7 +380,7 @@ pip install "onedoor[signed]"                                              <span
         </tbody>
       </table>
     </div>
-    <p class="sub" style="margin-top:18px">Every surface hands back the decision reference, and a <code>bound_permit</code> field beside it (<code>last_decision_ref</code> and <code>last_bound_permit</code> on the LangChain middleware and the MCP proxy). In 0.10.2 only the library call issues a permit into it. A request that presents a permit must carry an <code>Idempotency-Key</code> equal to the permit's <code>jti</code>, or the recipient refuses it: a change in 0.9.0 that breaks a presenter sending any other key.</p>
+    <p class="sub" style="margin-top:18px">Every surface hands back the decision reference, and a <code>bound_permit</code> field beside it (<code>last_decision_ref</code> and <code>last_bound_permit</code> on the LangChain middleware and the MCP proxy). In 0.10.2 only the library call issues a permit into it; the other surfaces deny an action whose policy asks for one. A request that presents a permit must carry an <code>Idempotency-Key</code> equal to the permit's <code>jti</code>, or the recipient refuses it: a change in 0.9.0 that breaks a presenter sending any other key.</p>
     <p class="sub" style="margin-top:18px">Next: <a href="/onedoor/how-it-works.html">how it works</a>, the check order and what each record proves.</p>
   </div>
 </section>
