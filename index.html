@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>onetrace — your AI changed. Find the first difference.</title>
-<meta name="description" content="onetrace records every step of your AI pipeline as a receipt anyone can check, and shows you exactly which step changed when an answer changes. Open source. Try the live demo.">
+<title>onetrace: find the first step that changed your AI's answer</title>
+<meta name="description" content="onetrace records each step of your AI pipeline as a receipt anyone can check, and points at the first step whose output differs between two runs. Open source, runs on your machine.">
 <link rel="canonical" href="https://oneproof.dev/">
-<meta property="og:title" content="onetrace — know which step changed your AI's answer">
-<meta property="og:description" content="A checkable record of every step your AI pipeline takes, and the step-by-step comparison that finds what changed.">
+<meta property="og:title" content="onetrace: find the first step that changed your AI's answer">
+<meta property="og:description" content="onetrace records each step of your AI pipeline as a receipt anyone can check, and points at the first step whose output differs between two runs. Open source, runs on your machine.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://oneproof.dev/">
 <meta property="og:image" content="https://oneproof.dev/og.png">
@@ -15,437 +15,112 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site-v2.css">
 <script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-<style>.frame-dark{background:#0b1626}.frame-dark img{display:block}</style>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-
-<header class="nav">
-  <div class="wrap">
-    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
-      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
-      onetrace <small>by oneproof</small>
-    </a>
-    <nav class="nav-links" aria-label="Main">
-      <a href="/" aria-current="page">Product</a>
-      <a href="/developers.html">Developers</a>
-      <a href="/how-it-works.html">How it works</a>
-      <a href="/onetrace/">Docs</a>
-      <a href="/learn.html">Learn</a>
-      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
-    </nav>
-  </div>
-</header>
-
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html">Developers</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
 <main id="main">
-
-<section class="hero" aria-labelledby="hero-title">
+<section class="hero">
   <div class="wrap hero-grid">
-    <div>
-      <a class="eyebrow" href="/whats-new.html" style="text-decoration:none"><b>New</b> onetrace 0.7.0: every run says whether it finished, and a library call can record itself &rarr;</a>
-      <h1 id="hero-title">Your AI changed. Find the <em>first difference</em>.</h1>
-      <p class="lede">Compare two runs of your pipeline. onetrace shows the first step whose output differs, what was recorded there, and every step that changed after it. Each run's record is one receipt per step, checkable by anyone.</p>
-      <div class="cta-row">
-        <a class="btn btn-primary" href="https://demo.oneproof.dev">Try the live demo</a>
-        <a class="btn btn-ghost" href="/get-started.html">Add it to your pipeline</a>
+    <div class="stack-lg">
+      <span class="eyebrow">onetrace · open source · runs on your machine</span>
+      <h1>Your AI changed. Find the first step that did.</h1>
+      <p class="lede">onetrace records each step of your pipeline as a receipt anyone can check. Compare two runs and it points at the first step whose output differs, and what was recorded there.</p>
+      <div class="row">
+        <a class="btn btn-primary" href="/developers.html">Get started</a>
+        <a class="btn btn-ghost" href="https://demo.oneproof.dev">Open the live demo</a>
       </div>
-      <p class="cta-note">Free and open source (Apache-2.0) · runs on your machine · no account · <code>pip install onetrace</code></p>
+      <div class="code"><div class="label"><span>Install</span><button class="copy" type="button">Copy</button></div><pre>pip install onetrace onetrace-console onetrace-explain</pre></div>
     </div>
-    <div class="cmp" id="cmp">
-      <div class="cmp-head"><b>p3-23-t-1-rules1 → p3-27-t-1-rules2</b><span>The live demo's ticket triage</span></div>
-      <ul class="cmp-rows" aria-label="The five steps of the comparison. Choose one to see what was recorded there.">
-        <li><button class="cmp-row" type="button" data-step="intake" aria-pressed="false" aria-controls="cmp-detail"><span class="n">01</span><span class="s">intake</span><span class="v">Same</span></button></li>
-        <li><button class="cmp-row first" type="button" data-step="classify" aria-pressed="true" aria-controls="cmp-detail"><span class="n">02</span><span class="s">classify</span><span class="v">● First difference</span></button></li>
-        <li><button class="cmp-row" type="button" data-step="lookup_account" aria-pressed="false" aria-controls="cmp-detail"><span class="n">03</span><span class="s">lookup_account</span><span class="v">Same</span></button></li>
-        <li><button class="cmp-row" type="button" data-step="draft_reply" aria-pressed="false" aria-controls="cmp-detail"><span class="n">04</span><span class="s">draft_reply</span><span class="v">Changed after it</span></button></li>
-        <li><button class="cmp-row" type="button" data-step="route" aria-pressed="false" aria-controls="cmp-detail"><span class="n">05</span><span class="s">route</span><span class="v">Changed after it</span></button></li>
-      </ul>
-      <div class="cmp-detail" id="cmp-detail" aria-live="polite">
-        <div data-for="intake" hidden><h3>intake · Same</h3><p>Its recorded output is the same in both runs, byte for byte.</p></div>
-        <div data-for="classify"><h3>classify · First difference</h3>
-          <p>A recorded setting differs: <code>rules</code> <del>1</del> → <ins>2</ins>. Same tool, <code>keyword-rules 1.0.0</code>; its configuration digest differs as well.</p>
-          <p>Its output <code>class.json</code>: <span class="mono">"class": <del>"billing"</del> <ins>"technical"</ins>, "matched": <del>"charged"</del> <ins>"app"</ins></span></p></div>
-        <div data-for="lookup_account" hidden><h3>lookup_account · Same</h3><p>Its recorded output is the same in both runs.</p></div>
-        <div data-for="draft_reply" hidden><h3>draft_reply · Changed after it</h3>
-          <p>It read <code>class.json</code>, which differs. No setting of its own changed.</p>
-          <p>Its reply: <span class="mono">"Thanks for <del>telling us about</del> <ins>reporting</ins> a <del>billing</del> <ins>technical</ins> problem. Our <del>billing desk</del> <ins>support team</ins> will <del>check your account</del> <ins>look into it</ins> and reply within one working day."</span></p></div>
-        <div data-for="route" hidden><h3>route · Changed after it</h3>
-          <p>It read <code>reply.json</code>, which differs. No setting of its own changed.</p>
-          <p>Its output <code>route.json</code>: <span class="mono">"queue": <del>"billing-desk"</del> <ins>"tech-support"</ins></span></p></div>
-      </div>
-      <p class="cmp-foot">Recorded values from the live demo's example pipelines. A first difference narrows the investigation; it doesn't by itself say why the output changed. <a href="https://demo.oneproof.dev">Open the demo</a></p>
-    </div>
+    <figure style="margin:0">
+      <div class="shot"><img src="/assets/img/shot-compare-top.webp" width="1600" height="1000" alt="A comparison on the live demo: five steps, with classify marked First difference, the two steps after it marked Changed after it, and a table of what differed at each step."></div>
+      <figcaption class="cap">A comparison on the live demo. The first difference is at <code>classify</code>, where a rule setting changed.</figcaption>
+    </figure>
   </div>
-  <script>(function(){var r=document.querySelectorAll('#cmp .cmp-row'),d=document.querySelectorAll('#cmp-detail [data-for]');r.forEach(function(b){b.addEventListener('click',function(){var k=b.getAttribute('data-step');r.forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});d.forEach(function(x){x.hidden=x.getAttribute('data-for')!==k})})})})();</script>
 </section>
 
-<div class="wrap"><div class="stack"><span>Examples for your stack</span><a href="/onetrace/adapters/plain-python.html">Python</a><a href="/onetrace/adapters/langchain.html">LangChain</a><a href="/onetrace/manual.html#9-framework-integrations-langchain-llamaindex-langflow">LangGraph</a><a href="/whats-new.html#v040">OpenTelemetry export</a></div></div>
-
-<section aria-labelledby="problem-title">
+<section class="band band-alt">
   <div class="wrap">
-    <p class="kicker">The problem</p>
-    <h2 id="problem-title">"Why did the answer change?" shouldn't take a week.</h2>
-    <p class="sub">An AI pipeline is a chain of steps: retrieve, rank, build a prompt, call a model, act. Any of them can change quietly: a data refresh, a library upgrade, a new model behind the same name. When the answer moves, your team is left reading two piles of logs and hoping they line up.</p>
-    <div class="versus">
-      <div class="card">
-        <h3>Logs <span class="tag tag-grey">what your system says</span></h3>
-        <ul class="clean">
-          <li>Written by the system you're investigating, in whatever shape it chose</li>
-          <li>Hard to compare run against run</li>
-          <li>Nobody outside your team can check them</li>
-        </ul>
-      </div>
-      <div class="card good">
-        <h3>onetrace <span class="tag tag-amber">what someone else can check</span></h3>
-        <ul class="clean">
-          <li>One small receipt per step: what it read, what it produced, which tool and settings</li>
-          <li>Two runs compared step by step, with the first difference named</li>
-          <li>Checkable by anyone, with no network calls, by an independent verifier</li>
-        </ul>
-      </div>
+    <div class="band-head">
+      <span class="eyebrow">What it does</span>
+      <h2>Record, compare, prove.</h2>
+    </div>
+    <div class="grid g3">
+      <div class="card"><div class="ico ico-a">01</div><h3>Record every step</h3><p>One receipt per step: what went in, what came out, the tool and its settings. Add it with your coding agent, with no code change, or step by step.</p></div>
+      <div class="card"><div class="ico ico-b">02</div><h3>Find the first difference</h3><p>Open two runs in the console. It names the first step whose output differs, the settings that changed there, and the exact text.</p></div>
+      <div class="card"><div class="ico ico-g">03</div><h3>Check without trusting the code</h3><p>A separate verifier reads only the bytes on disk. Change a receipt after the run and it says which one.</p></div>
     </div>
   </div>
 </section>
 
-<section class="section-soft" aria-labelledby="value-title">
+<section class="band" id="explain">
+  <div class="wrap split">
+    <div class="stack-lg">
+      <span class="eyebrow">Explain</span>
+      <h2>Facts first. Then a model's reading, labelled as one.</h2>
+      <p class="sub">onetrace-explain takes the two runs and separates what the record shows from what a model suggests.</p>
+      <div class="stack">
+        <div class="row"><span class="tag tag-det">recorded</span><span class="muted">What changed and the evidence. No model, no network calls.</span></div>
+        <div class="row"><span class="tag tag-ai">AI-generated</span><span class="muted">What may have happened. Only with a model you configure, and every claim must cite the record or it's dropped.</span></div>
+      </div>
+      <a href="/developers.html#explain">How explain works →</a>
+    </div>
+    <div class="shot"><img src="/assets/img/shot-explain.webp" width="1280" height="1060" loading="lazy" alt="The live demo's split comparison: the short answer at the top, then the kept explanation, labelled as written by a model."></div>
+  </div>
+</section>
+
+<section class="band band-alt">
   <div class="wrap">
-    <p class="kicker">What you get</p>
-    <h2 id="value-title">Answers you can trace. Changes you can locate.</h2>
-    <p class="sub">Three things your team gets on day one, without changing how your pipeline works.</p>
-    <div class="grid-3">
-      <div class="card">
-        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
-        <h3>Find the step that changed</h3>
-        <p>Compare any two runs. Every step is marked same, first difference or changed after it, so you start at the first step that differs, not at the symptom.</p>
-      </div>
-      <div class="card">
-        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div>
-        <h3>Prove what ran</h3>
-        <p>Each run leaves a chained record. Change, delete or reorder anything afterwards and an independent check says so. Sign it with your key if you need to.</p>
-      </div>
-      <div class="card">
-        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3M7 9h4M7 13h10"/></svg></div>
-        <h3>See it all in one place</h3>
-        <p>The onetrace console turns run records into pages anyone on the team can read: what was checked, what held, and what needs attention first.</p>
-      </div>
+    <div class="band-head">
+      <span class="eyebrow">Add it to your code</span>
+      <h2>Three ways in. Pick the one that fits today.</h2>
+    </div>
+    <div class="grid g3">
+      <a class="card" href="/developers.html#agent"><span class="tag">fastest</span><h3>Ask your coding agent</h3><p>Paste one prompt into Claude Code, Cursor, Copilot or another agent. It adds the recording, asks what only you know, and reports back.</p><span class="go">Use the prompt →</span></a>
+      <a class="card" href="/developers.html#auto"><span class="tag">no code change</span><h3>Zero-config</h3><p>Start your app with <code>onetrace-run</code>. Calls through httpx, requests and the openai client are recorded as steps.</p><span class="go">Turn it on →</span></a>
+      <a class="card" href="/developers.html#stages"><span class="tag">most control</span><h3>Step by step</h3><p>Two decorators on the functions you already have. You name each step and what it records.</p><span class="go">Add decorators →</span></a>
     </div>
   </div>
 </section>
 
-<section aria-labelledby="tour-title">
+<section class="band">
   <div class="wrap">
-    <p class="kicker">Product tour</p>
-    <h2 id="tour-title">The console, on real demo runs.</h2>
-    <p class="sub">Screenshots of the live demo, taken from its own pages. Open the demo to click through the same screens; nothing can be changed there.</p>
-    <p class="sub" style="margin-top:8px"><a href="/industries/">See it on pipelines like yours: examples by industry →</a></p>
-    <div class="tour">
-      <div class="tour-row">
-        <div class="tour-text">
-          <span class="step-no">01 · Overview</span>
-          <h3>Every run, and what the evidence says about it</h3>
-          <p>Each pipeline with its runs, and how many of their records agree. Then the runs that need attention first, each with what its own page reads, and counts you can click through to the exact runs behind them.</p>
-        </div>
-        <div class="shot"><img src="/assets/img/shot-overview.webp" width="1280" height="800" loading="lazy" alt="The live demo's Overview. It starts with a pipeline whose records agree, P3 ticket triage: its five stages, and 6 of 6 records agree. Then, under Then see what onetrace catches, the runs broken on purpose when the demo was built: what was done to each, and what its own page reads, such as Contradicts its record or Not checked."></div>
-      </div>
-      <div class="tour-row flip">
-        <div class="tour-text">
-          <span class="step-no">02 · One run</span>
-          <h3>A run, step by step, with its checks</h3>
-          <p>A clear verdict at the top, then one question at a time: do the records agree, was it signed, is any step missing. Each answer says exactly what was and wasn't checked.</p>
-        </div>
-        <div class="shot"><img src="/assets/img/shot-run.webp" width="1280" height="800" loading="lazy" alt="One run's page on the live demo: p3-27-t-1-rules2 in pipeline P3, marked Changed vs p3-23-t-1-rules1, first difference at classify. 5 of 5 declared stages, recorded in format stage-receipt-chain/0.3. Records agree: Yes. Ran as approved: Yes. Signed by a known recorder: Yes. Committed by a known time: Not anchored. Below, the case, the check's summary, and what the evidence establishes: 143 checks made, all hold."></div>
-      </div>
-      <div class="tour-row">
-        <div class="tour-text">
-          <span class="step-no">03 · Two runs</span>
-          <h3>Where two runs part ways, and the text that changed</h3>
-          <p>The comparison's graph marks the first step that differs and everything after it. Its text diff shows, line by line, the output text that changed, each side checked against its receipt first.</p>
-          <p style="margin-top:18px"><a class="btn btn-dark" href="https://demo.oneproof.dev">Open the live demo</a></p>
-        </div>
-        <div class="shot"><img src="/assets/img/shot-textdiff.webp" width="1280" height="800" loading="lazy" alt="The text diff page for classify on the live demo. Settings: rules 1 to 2. In classify's class.json, class changes from billing to technical and matched from charged to app. In draft_reply's reply.json, the class and the reply text change from a billing reply to a technical one, and route's route.json begins below. Each output is marked verified against its receipt in both runs."></div>
-      </div>
+    <div class="band-head">
+      <span class="eyebrow">How it stays honest</span>
+      <h2>Local, checkable, and clear about its limits.</h2>
+    </div>
+    <div class="grid g4">
+      <div class="card"><h3>No account</h3><p>Runs are folders on your disk. Nothing is sent anywhere unless you ask: Explain with a model you configure, or an outside timestamp.</p></div>
+      <div class="card"><h3>Independent check</h3><p><code>onetrace-verify</code> uses the Python standard library only and trusts none of the code that wrote the record.</p></div>
+      <div class="card"><h3>Ready for CI</h3><p><code>onetrace diff</code> exits 0 when two runs match and 1 when they diverge, so a job can gate on it.</p></div>
+      <div class="card"><h3>Stated limits</h3><p>A faithfully recorded wrong answer still verifies. <a href="/how-it-works.html#limits">What it doesn't prove</a>.</p></div>
     </div>
   </div>
 </section>
 
-<section class="section-soft" id="explain" aria-labelledby="explain-title">
-  <div class="wrap">
-    <p class="kicker">Suggested explanations</p>
-    <h2 id="explain-title">An explanation you can check.</h2>
-    <p class="sub">onetrace-explain asks a model you configure where to look, then holds every claim to the record. If a claim can't be tied to it, you never see it.</p>
-    <div class="tour-row">
-      <div class="tour-text">
-        <ul style="color:var(--ink-2);line-height:1.7;margin:0 0 20px 20px;padding:0">
-          <li><b>Labelled, every time.</b> Each explanation says it is AI-generated and may be wrong, and names the model that wrote it.</li>
-          <li><b>Every claim cites the record.</b> It names the items in the comparison it rests on, linked where the page can show them. Claims that misquote the record are dropped before anyone reads them, and the page says how many.</li>
-          <li><b>Checks you can run.</b> It suggests onetrace commands, each once; on your own console, the ones it can run get a Run button and every other a Copy button. A lead is confirmed or ruled out only by what those checks report.</li>
-          <li><b>It leaves a record too.</b> Each explanation is recorded as a onetrace run of its own, and checked like any other.</li>
-          <li><b>You choose what's sent.</b> To a model you configure, only when you press Explain. Before it first sends a kind of item to an endpoint, it names those kinds and waits for Send, and "Show the packet" shows the exact bytes.</li>
-        </ul>
-<pre>pip install onetrace-explain</pre>
-        <p style="color:var(--ink-2);margin-top:12px"><a href="/whats-new.html#explain">How it works</a> · <a href="/onetrace/explain-format.html">What it reads, sends, checks and writes</a></p>
-      </div>
-      <div class="shot"><a href="/assets/img/shot-explain.webp"><img src="/assets/img/shot-explain.webp" width="1280" height="1060" loading="lazy" alt="The live demo's split comparison in onetrace-console 0.3.2. At the top, The short answer: The runs first differ at split, where chunk_size went from 1024 to 512. Every stage before it is the same, all 3 stages after it differ; a strip of the five stages with split marked First difference. Directly under it, What may have happened, AI-generated, may be wrong, model anthropic:claude-sonnet-4-6: one card, Lead (possible culprit), saying the first difference originates in the split node where the chunk_size constant changed from 1024 to 512, with four cites as chips, two of them checked; then three onetrace commands under Checks, and the line 5 claims checked against the record, 4 left out."></a></div>
+<section class="band band-alt">
+  <div class="wrap split">
+    <div class="stack">
+      <h2>See it on real runs first.</h2>
+      <p class="sub">The live demo holds 58 runs of 11 example pipelines, some broken on purpose. Or run the same demo locally with one command.</p>
     </div>
-    <p class="sub" style="font-size:14px;margin-top:20px">Shown: the live demo's split comparison as onetrace-console 0.3.2 drew it; the live demo now serves the same comparison in 0.5.1: the short answer first, then the kept explanation, written once by claude-sonnet-4-6 and served as a file. The live demo shows four kept explanations and makes no network calls. <a href="https://demo.oneproof.dev/diff/85dc0852a57737a69d71b9e12c697b77e69ab92d30b5c358ca9f8fb7cfc7dd1b.html">See the split comparison's explanation on the live demo</a></p>
-  </div>
-</section>
-
-<section aria-labelledby="harness-title">
-  <div class="wrap">
-    <p class="kicker">The deterministic harness</p>
-    <h2 id="harness-title">Your model is non-deterministic. Your record of it shouldn't be.</h2>
-    <p class="sub">onetrace wraps every step of an AI pipeline or agentic flow, model calls included, in a fixed, byte-exact record. The model still behaves like a model. Everything around it becomes something you can check, compare and audit.</p>
-
-    <div class="dh" role="img" aria-label="Diagram: a request enters the onetrace harness. Inside it, the model's inputs are pinned (data, prompt, model, version and settings), the model itself stays non-deterministic, and every output is recorded by digest. Every stage is receipted and hash-chained, with an optional signature. Comparing two runs gives the first difference. The result then passes your release gate.">
-      <div class="dh-node dh-req"><h3>request</h3></div>
-      <div class="dh-arrow" aria-hidden="true"><span>→</span></div>
-      <div class="dh-box">
-        <div class="dh-top">every stage receipted · hash-chained · signature optional</div>
-        <div class="dh-row">
-          <div class="dh-node"><h3>pinned in</h3><p>data · prompt<br>model · version · settings</p></div>
-          <div class="dh-arrow" aria-hidden="true"><span>→</span></div>
-          <div class="dh-llm"><b>LLM</b><span>non-deterministic</span></div>
-          <div class="dh-arrow" aria-hidden="true"><span>→</span></div>
-          <div class="dh-node"><h3>recorded out</h3><p>digest of every output</p></div>
-        </div>
-        <div class="dh-bottom">compare two runs → <b>the first difference</b></div>
-      </div>
-      <div class="dh-arrow" aria-hidden="true"><span>→</span></div>
-      <div class="dh-node dh-gate"><h3>your release gate</h3><p>ship only what matches, review what changed</p></div>
-    </div>
-    <div class="grid-3 dh-cards">
-      <div class="dh-card a"><h3>Variation is allowed</h3><p>The model can stay probabilistic.</p></div>
-      <div class="dh-card"><h3>Variation is caught</h3><p>Any change shows up as a different digest.</p></div>
-      <div class="dh-card"><h3>Variation is located</h3><p>The first difference, named, and checkable in your CI.</p></div>
-    </div>
-    <p class="dh-note">The model itself is not made deterministic. What is deterministic is the record around it.</p>
-
-    <h3 style="margin-top:56px;font-size:24px">Deterministic where it can be. Honest where it can't.</h3>
-    <div class="grid-3 trio" style="margin-top:20px">
-      <div class="card">
-        <div class="mini" aria-hidden="true"><i>retrieve</i><b>→</b><i>re-run from recorded inputs</i><b>→</b><i class="ok">same output ✓</i></div>
-        <h3>Re-run and checked</h3>
-        <p>Retrieval, ranking and prompt building can be re-run from their recorded inputs, and onetrace tells you which ones reproduce.</p>
-      </div>
-      <div class="card">
-        <div class="mini" aria-hidden="true"><i class="am">model call</i><b>→</b><i>kept byte for byte</i><b>→</b><i class="am">not re-runnable</i></div>
-        <h3>Recorded, never faked</h3>
-        <p>A model call is kept exactly as it happened and marked as not re-runnable. It's reported as "could not check", never quietly passed.</p>
-      </div>
-      <div class="card">
-        <div class="mini" aria-hidden="true"><i>run A</i><b>vs</b><i>run B</i><b>→</b><i class="rd">first difference: rank</i></div>
-        <h3>Pinned to the step</h3>
-        <p>When two runs disagree, the change is pinned to the step where it happened, so you know whether the data, the prompt or only the model moved.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section-soft" aria-labelledby="gov-title">
-  <div class="wrap">
-    <p class="kicker">Auditable and governable</p>
-    <h2 id="gov-title">From evidence to a decision you can defend.</h2>
-    <p class="sub">Every agentic run leaves a record an auditor can check on their own. Every change can be held against an approved baseline before it ships, with the step that changed named for the reviewer.</p>
-    <div class="flow" role="img" aria-label="Diagram: a run writes a receipt per step; the verifier checks the record with no network calls; onetrace diff compares it with the approved baseline; identical means ship, diverged means review the named step, and refused or could not check means stop.">
-      <div class="f-box"><h3>1 · Run</h3><p>Your pipeline or agent runs. Every step writes a receipt.</p></div>
-      <div class="f-arrow" aria-hidden="true">→</div>
-      <div class="f-box"><h3>2 · Verify</h3><p><code>onetrace-verify</code> checks the record with no network calls, trusting none of your code.</p></div>
-      <div class="f-arrow" aria-hidden="true">→</div>
-      <div class="f-box"><h3>3 · Compare</h3><p><code>onetrace diff</code> against the approved baseline: one verdict per step.</p></div>
-      <div class="f-arrow" aria-hidden="true">→</div>
-      <div class="outcomes">
-        <div class="oc"><span class="tag tag-green">identical</span><span>Ship it. Nothing changed.</span></div>
-        <div class="oc"><span class="tag tag-amber">diverged</span><span>Review, with the changed step named.</span></div>
-        <div class="oc"><span class="tag tag-red">refused · could not check</span><span>Stop. A gap never passes.</span></div>
-      </div>
-    </div>
-    <div class="next"><span class="tag">Coming next</span> Approving each action before it runs, using the same receipts. Today onetrace gives you the evidence and the gate; it doesn't yet approve or block individual actions.</div>
-  </div>
-</section>
-
-<section aria-labelledby="agent-title">
-  <div class="wrap">
-    <div class="band">
-      <div>
-        <h2 id="agent-title">Your coding agent can help you start.</h2>
-        <p>Hand it the integration recipe. It adds onetrace to your pipeline, asks you what only you can answer, and reports back with test, verify and diff results for you to review.</p>
-      </div>
-      <div class="cta-row">
-        <a class="btn btn-primary" href="/onetrace/agents/instrument.html">Read the recipe</a>
-        <a class="btn btn-ghost" href="/developers.html">For developers</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section-soft" aria-labelledby="onedoor-title">
-  <div class="wrap">
-    <div class="tour-row">
-      <div class="tour-text">
-        <p class="kicker">Optional · onedoor</p>
-        <h2 id="onedoor-title">Add policy to what your agents do.</h2>
-        <p class="sub">onedoor is a separate, open-source policy engine. Every action an agent proposes is checked against your policy before it runs: permitted within limits, held for a person, or refused with a reason, and written to an append-only ledger. It works on its own; beside onetrace, each gated step cites the decision that allowed it, and the verifier checks it.</p>
-        <p style="margin-top:18px"><a class="btn btn-dark" href="/onedoor/">Meet onedoor</a> <a class="btn btn-line" href="/onedoor/developers.html">Developers</a></p>
-      </div>
-      <div class="shot"><a href="/onedoor/"><img src="/assets/img/onedoor/studio-policies.webp" width="1600" height="875" loading="lazy" alt="onedoor's Policy Studio, Policies page: six actions from the shipped payments examples, each with its tier, caps, bounds and effects, for example payments.transfer allowed AUTO_CAPPED at EUR 500 per day and EUR 5000 per month."></a></div>
-    </div>
-  </div>
-</section>
-
-<section aria-labelledby="paths-title">
-  <div class="wrap">
-    <p class="kicker">Go deeper</p>
-    <h2 id="paths-title">Pick your level of detail.</h2>
-    <p class="sub">The same product, explained three ways. Each page stands on the one after it.</p>
-    <div class="paths">
-      <a class="path here" href="/" aria-current="page">
-        <span class="who-for">For decision makers</span>
-        <h3>What it does for you</h3>
-        <p>The problem, the value and the product. You're here.</p>
-        <span class="go">This page</span>
-      </a>
-      <a class="path" href="/developers.html">
-        <span class="who-for">For developers</span>
-        <h3>Add it and run it</h3>
-        <p>Install, add two decorators, run, verify, compare, and open the console on your own runs.</p>
-        <span class="go">Developer guide →</span>
-      </a>
-      <a class="path" href="/how-it-works.html">
-        <span class="who-for">For researchers and reviewers</span>
-        <h3>How it works underneath</h3>
-        <p>Receipts, the hash chain, the verifier, the five comparison verdicts and the published format.</p>
-        <span class="go">The mechanism →</span>
-      </a>
-    </div>
-  </div>
-</section>
-
-<section class="section-soft" aria-labelledby="new-title">
-  <div class="wrap">
-    <p class="kicker">New in 0.4</p>
-    <h2 id="new-title">Read your runs where you already look.</h2>
-    <p class="sub">Three new views of the same record. None of them changes a verdict.</p>
-    <div class="grid-3">
-      <div class="card">
-        <h3>In your tracing tools</h3>
-        <p><code>onetrace export otel</code> turns a run into one OpenTelemetry trace, a span per step. The trace is a view; the record stays the evidence.</p>
-      </div>
-      <div class="card">
-        <h3>Across many runs</h3>
-        <p><code>onetrace drift</code> lines up a series of runs and compares each with the first or the one before, with each step's time beside it.</p>
-      </div>
-      <div class="card">
-        <h3>With a suggested explanation</h3>
-        <p><code>onetrace-explain</code> asks a model you choose where to look, then checks every claim against the record. Labelled AI-generated, and it may be wrong.</p>
-      </div>
-    </div>
-    <p class="sub"><a href="/whats-new.html">Everything new, release by release →</a></p>
-  </div>
-</section>
-
-<section class="who" aria-labelledby="who-title">
-  <div class="wrap">
-    <p class="kicker">Who it's for</p>
-    <h2 id="who-title">Built for the people who get asked "why?"</h2>
-    <div class="grid-3" style="margin-top:32px">
-      <div class="card">
-        <span class="tag tag-amber">AI product teams</span>
-        <h3>Ship changes with confidence</h3>
-        <p>Upgrade a model, a retriever or a prompt, then compare before and after, step by step.</p>
-        <p class="outcome">From "something changed" to "this step changed" in one command.</p>
-      </div>
-      <div class="card">
-        <span class="tag tag-green">Risk and compliance</span>
-        <h3>Hand over a record, not a story</h3>
-        <p>Give reviewers the run folder. They check it themselves, with no network calls, using a verifier that doesn't trust your code.</p>
-        <p class="outcome">Evidence a third party can verify on their own.</p>
-      </div>
-      <div class="card">
-        <span class="tag tag-grey">Platform and ML engineers</span>
-        <h3>Add it in minutes, remove it in seconds</h3>
-        <p>Two decorators on the code you already have. Plain Python, LangChain, LlamaIndex and Langflow examples included.</p>
-        <p class="outcome">No platform, no account, no data leaves your machine.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="honest" aria-labelledby="honest-title">
-  <div class="wrap">
-    <p class="kicker" style="color:var(--amber)">Honest by design</p>
-    <h2 id="honest-title">We tell you what it doesn't prove, too.</h2>
-    <p class="sub">A record you can trust has to be clear about its limits. onetrace says these out loud, in the product and in the docs.</p>
-    <div class="grid-3">
-      <div class="card"><h3>It doesn't judge truth</h3><p>A pipeline that faithfully records a wrong answer still verifies. onetrace shows what ran, not whether the answer was right.</p></div>
-      <div class="card"><h3>"Same" means same output</h3><p>A step marked same produced identical output. If its tool or settings changed, that's flagged separately, never hidden.</p></div>
-      <div class="card"><h3>Not checked is not passed</h3><p>When something couldn't be checked, onetrace says so plainly. It never reports a gap as a pass.</p></div>
-    </div>
-    <p style="margin-top:28px"><a href="/onetrace/non-claims.html" style="color:#fff">Read the full list of what onetrace does not claim →</a></p>
-  </div>
-</section>
-
-<section style="padding-top:0" aria-labelledby="cta-title">
-  <div class="wrap">
-    <div class="band">
-      <div>
-        <h2 id="cta-title">See it on real runs in one click.</h2>
-        <p>The live demo is the real console, read-only. Or install it and point it at your own pipeline.</p>
-      </div>
-      <div class="cta-row">
-        <a class="btn btn-primary" href="https://demo.oneproof.dev">Try the live demo</a>
-        <a class="btn btn-ghost" href="/developers.html">Install onetrace</a>
-      </div>
+    <div class="stack">
+      <div class="row"><a class="btn btn-primary" href="https://demo.oneproof.dev">Open the live demo</a><a class="btn btn-ghost" href="/developers.html">Read the guide</a></div>
+      <div class="code"><div class="label"><span>Run the demo locally</span><button class="copy" type="button">Copy</button></div><pre>onetrace-console demo --open</pre></div>
     </div>
   </div>
 </section>
 
 </main>
-
-<footer>
-  <div class="wrap">
-    <div class="foot-grid">
-      <div>
-        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
-        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
-        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
-      </div>
-      <div>
-        <h4>Product</h4>
-        <ul>
-          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
-          <li><a href="/industries/">Examples by industry</a></li>
-          <li><a href="/developers.html">Developers</a></li>
-          <li><a href="/how-it-works.html">How it works</a></li>
-          <li><a href="/onetrace/">Documentation</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Packages</h4>
-        <ul>
-          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>More from oneproof</h4>
-        <ul>
-          <li><a href="/oneground/">oneground</a></li>
-          <li><a href="/onedoor/">onedoor</a></li>
-          <li><a href="/where-it-fits.html">Where it fits</a></li>
-          <li><a href="/answer-lineage.html">A forensic report</a></li>
-          <li><a href="/building.html">What we're building</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one. Screens show the public demo's sample runs, not customer data.</div>
-  </div>
-</footer>
+<footer><div class="wrap stack-lg"><div class="foot">
+<div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
+<div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>More from oneproof</h4><ul><li><a href="/oneground/">oneground</a></li><li><a href="/onedoor/">onedoor</a></li><li><a href="/where-it-fits.html">Where it fits</a></li><li><a href="/building.html">What we're building</a></li></ul></div>
+</div><div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one. Screens show the public demo's sample runs, not customer data.</div></div></footer>
+<script src="/assets/site-v2.js"></script>
 </body>
 </html>

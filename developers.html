@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>onetrace for developers — find where two runs split</title>
-<meta name="description" content="When two runs of your AI pipeline give different answers, onetrace shows the first step where they split, the settings that changed there, and the exact text that changed, in your browser.">
+<title>Developer guide · onetrace</title>
+<meta name="description" content="Install onetrace, explore the built-in examples, explain a difference, then instrument your own code: with your coding agent, zero-config, or step by step.">
 <link rel="canonical" href="https://oneproof.dev/developers.html">
-<meta property="og:title" content="onetrace for developers">
-<meta property="og:description" content="Find the step where two runs split, in your browser. Two decorators on the code you already have.">
+<meta property="og:title" content="Developer guide · onetrace">
+<meta property="og:description" content="Install onetrace, explore the built-in examples, explain a difference, then instrument your own code: with your coding agent, zero-config, or step by step.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://oneproof.dev/developers.html">
 <meta property="og:image" content="https://oneproof.dev/og.png">
@@ -15,311 +15,240 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site-v2.css">
 <script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-
-<header class="nav">
-  <div class="wrap">
-    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
-      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
-      onetrace <small>by oneproof</small>
-    </a>
-    <nav class="nav-links" aria-label="Main">
-      <a href="/">Product</a>
-      <a href="/developers.html" aria-current="page">Developers</a>
-      <a href="/how-it-works.html">How it works</a>
-      <a href="/onetrace/">Docs</a>
-      <a href="/learn.html">Learn</a>
-      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
-    </nav>
-  </div>
-</header>
-
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html" aria-current=page>Developers</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
 <main id="main">
-
-<div class="page-hero">
-  <div class="wrap">
-    <span class="eyebrow"><b>For developers</b> layer 2 of 3</span>
-    <h1>Two runs, two different answers. See the step where they split.</h1>
-    <p class="lede">Record your pipeline's steps with two decorators. When an answer changes, open both runs in your browser: the first step that differs, the settings that changed there, and the exact text that changed. Then put the same check in CI. No platform, no account, and nothing sent anywhere.</p>
-    <div class="crumbs">
-      <a href="#debug">Debug two runs</a>
-      <a href="#install">Record your runs</a>
-      <a href="#agent">With your coding agent</a>
-      <a href="#verify">Command line and CI</a>
-      <a href="#frameworks">Guides for your setup</a>
+<section class="hero" style="padding-bottom:28px">
+  <div class="wrap stack-lg">
+    <span class="eyebrow">Developer guide</span>
+    <h1>From install to your own runs in the console.</h1>
+    <p class="lede">Install the tools, look around the built-in examples, read an explanation, then record your own code. Each step takes a few minutes, and nothing is sent anywhere unless you ask.</p>
+    <div class="flow">
+      <div><b>1 · Install</b><span>The recorder, the console and explain, in one environment.</span></div>
+      <div><b>2 · Explore</b><span>The built-in examples, and an explanation of what changed.</span></div>
+      <div><b>3 · Instrument</b><span>Your agent, zero-config, or step by step. Then compare and check.</span></div>
     </div>
   </div>
-</div>
+</section>
 
-<section id="debug" aria-labelledby="debug-title">
-  <div class="wrap">
-    <div class="tour-row">
-      <div class="tour-text">
-        <p class="kicker">Debug two runs</p>
-        <h2 id="debug-title">Open both runs. The page points at the split.</h2>
-        <ul style="color:var(--ink-2);line-height:1.7;margin:0 0 20px 20px;padding:0">
-          <li><b>The first difference:</b> the first step, in order, whose output differs. Everything after it is marked as changed after it.</li>
-          <li><b>What changed there:</b> the settings each step recorded, by name, with both values.</li>
-          <li><b>The text that changed,</b> line by line. Each side is checked against its receipt before it is shown.</li>
-          <li><b>Past a model that varies:</b> when a hosted model's output differs and nothing recorded about it changed, the page also names the first later step with a recorded change.</li>
+<div class="wrap guide" style="padding-bottom:40px">
+  <nav class="rail" aria-label="Guide steps">
+    <a href="#install"><span class="n">1</span>Install</a>
+    <a href="#examples"><span class="n">2</span>Explore the examples</a>
+    <a href="#explain"><span class="n">3</span>Explain a difference</a>
+    <a href="#instrument"><span class="n">4</span>Instrument your code</a>
+    <a class="sub-l" href="#agent">With your coding agent</a>
+    <a class="sub-l" href="#auto">Zero-config</a>
+    <a class="sub-l" href="#stages">Step by step</a>
+    <a href="#check"><span class="n">5</span>Compare and check</a>
+    <a href="#next"><span class="n">6</span>Next</a>
+  </nav>
+
+  <div>
+    <!-- 1 -->
+    <section class="step" id="install" aria-labelledby="t-install">
+      <div class="step-head"><div class="step-n">1</div><div class="stack"><h2 id="t-install">Install the complete toolkit</h2><p class="sub">One virtual environment with Python 3.12 or later. It holds everything you need to record runs, look at them and explain them.</p></div></div>
+      <div class="grid g3">
+        <div class="card"><code>onetrace</code><p>Records each step of a run as a receipt. Brings <code>onetrace-verify</code>, the independent checker.</p></div>
+        <div class="card"><code>onetrace-console</code><p>Shows your runs in the browser, on your machine. Includes the example pipelines.</p></div>
+        <div class="card"><code>onetrace-explain</code><p>Reads two runs and says what changed, with the evidence. A model's reading is optional.</p></div>
+      </div>
+      <div class="tabs" data-tabs>
+        <div class="tablist" role="tablist" aria-label="Your system">
+          <button role="tab" id="tab-unix" aria-controls="p-unix" aria-selected="true" type="button">macOS or Linux</button>
+          <button role="tab" id="tab-win" aria-controls="p-win" aria-selected="false" type="button">Windows (PowerShell)</button>
+        </div>
+        <div id="p-unix" role="tabpanel" aria-labelledby="tab-unix"><div class="code"><div class="label"><span>Terminal</span><button class="copy" type="button">Copy</button></div><pre>python3 -m venv .venv
+source .venv/bin/activate
+pip install onetrace onetrace-console onetrace-explain
+onetrace doctor</pre></div></div>
+        <div id="p-win" role="tabpanel" aria-labelledby="tab-win" hidden><div class="code"><div class="label"><span>PowerShell</span><button class="copy" type="button">Copy</button></div><pre>py -3.12 -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install onetrace onetrace-console onetrace-explain
+onetrace doctor</pre></div></div>
+      </div>
+      <p class="muted" style="font-size:15px"><code>onetrace doctor</code> checks your setup. Your prompt starts with <code>(.venv)</code> while the environment is active.</p>
+      <details><summary>New to Python or virtual environments?</summary><div class="in">
+        <p>A virtual environment keeps what you install here apart from the rest of your computer. Come back to it later with <code>cd</code> into the folder and the activate line again.</p>
+        <p>If <code>onetrace-console --version</code> shows <code>0.0.0</code>, an older install answered first: make a fresh environment and install there.</p>
+      </div></details>
+    </section>
+
+    <!-- 2 -->
+    <span class="anchor" id="debug"></span>
+    <section class="step" id="examples" aria-labelledby="t-examples">
+      <div class="step-head"><div class="step-n">2</div><div class="stack"><h2 id="t-examples">Explore the built-in examples</h2><p class="sub">The console ships with example pipelines and runs, some broken on purpose. Start here to see what a comparison shows before you record anything yourself.</p></div></div>
+      <div class="code"><div class="label"><span>Terminal</span><button class="copy" type="button">Copy</button></div><pre>onetrace-console demo --open   <span class="c"># Ctrl+C stops it</span></pre></div>
+      <div class="split" style="align-items:start">
+        <ol class="stack" style="margin:0;padding-left:20px;color:var(--ink-2)">
+          <li><b style="color:var(--ink)">Overview.</b> Pick a pipeline whose records agree, then the runs broken on purpose, each with what was done to it.</li>
+          <li><b style="color:var(--ink)">A comparison.</b> The first step whose output differs is marked; everything after it is marked as changed after it.</li>
+          <li><b style="color:var(--ink)">The text diff.</b> What the step wrote in each run, line by line, checked against its receipt first.</li>
+          <li><b style="color:var(--ink)">Proof.</b> Every check behind the page, and the command that repeats it in a terminal.</li>
+        </ol>
+        <div class="shot"><img src="/assets/img/shot-overview.webp" width="1600" height="1000" loading="lazy" alt="The demo's Overview: a pipeline whose records agree, then the runs broken on purpose and what each one's page reads."></div>
+      </div>
+      <p class="muted" style="font-size:15px">No install yet? The same demo is online at <a href="https://demo.oneproof.dev">demo.oneproof.dev</a>.</p>
+    </section>
+
+    <!-- 3 -->
+    <section class="step" id="explain" aria-labelledby="t-explain">
+      <div class="step-head"><div class="step-n">3</div><div class="stack"><h2 id="t-explain">Explain a difference</h2><p class="sub"><code>onetrace-explain</code> gives two kinds of answer and keeps them apart. The first is always there. The second is the probabilistic part, and only appears when you ask for it.</p></div></div>
+      <div class="grid g2">
+        <div class="card"><span class="tag tag-det">recorded · always</span><h3>What changed, and the evidence</h3><p>The first difference from the record, then read-only probes over runs you already have: how often the step varies across repeat runs, and whether the difference survives masking. No model and no network calls.</p></div>
+        <div class="card"><span class="tag tag-ai">AI-generated · optional</span><h3>What may have happened</h3><p>A model you configure suggests what may have happened. It's labelled AI-generated and may be wrong. Each claim must cite a probe or a record item, or it's dropped and counted. You see what will be sent before anything goes.</p></div>
+      </div>
+      <div class="tabs" data-tabs>
+        <div class="tablist" role="tablist" aria-label="Where to run it">
+          <button role="tab" id="tab-ex-cli" aria-controls="p-ex-cli" aria-selected="true" type="button">In the terminal</button>
+          <button role="tab" id="tab-ex-con" aria-controls="p-ex-con" aria-selected="false" type="button">In the console</button>
+        </div>
+        <div id="p-ex-cli" role="tabpanel" aria-labelledby="tab-ex-cli"><div class="code"><div class="label"><span>Terminal</span><button class="copy" type="button">Copy</button></div><pre><span class="c"># the recorded part only: sends nothing</span>
+onetrace-explain runs/&lt;run A&gt; runs/&lt;run B&gt; --no-model</pre></div></div>
+        <div id="p-ex-con" role="tabpanel" aria-labelledby="tab-ex-con" hidden><div class="note">Open a comparison and press <b>Explain</b>. The first time it would send a kind of item to your model, it names those kinds and waits for <b>Send</b>; <b>Show the packet</b> shows the exact bytes.</div></div>
+      </div>
+      <div class="split" style="align-items:start">
+        <ul class="ticks">
+          <li>The exit code is <code>onetrace diff</code>'s, whatever the model says.</li>
+          <li>Suggested checks are marked "runnable here" or "needs a runner you name", and never run for you.</li>
+          <li>Each explanation is saved as a run of its own: every probe, and what was sent.</li>
         </ul>
-<pre>pip install onetrace-console
-onetrace-console runs --open
-onetrace-console runs --compare A B</pre>
-        <p style="color:var(--ink-2);margin-top:16px">Try it first on the <a href="https://demo.oneproof.dev">live demo</a>, or locally with <code>onetrace-console demo --open</code>. The page shows where two runs differ and what was recorded there. It does not say why.</p>
+        <div class="shot"><img src="/assets/img/shot-explain.webp" width="1280" height="1060" loading="lazy" alt="A comparison with the short answer first, then a kept explanation labelled as written by a model."></div>
       </div>
-      <div class="shot"><img src="/assets/img/shot-compare-top.webp" width="1280" height="800" loading="lazy" alt="A comparison page on the live demo. Both runs' records agree. A is the baseline p3-23-t-1-rules1 and B is the candidate p3-27-t-1-rules2. In the graph, intake and lookup_account are marked Same, classify is marked First difference, with its configuration digest and its rules constant differing, and draft_reply and route are marked Changed after it. Below, a table of the five steps."></div>
-    </div>
-    <div class="tour-row flip" style="margin-top:56px">
-      <div class="tour-text">
-        <h3 style="margin-top:0">Down to the exact text.</h3>
-        <p style="color:var(--ink-2)">At the first difference, the text diff shows what the step wrote in each run, line by line and word by word. Open it on a page of its own when it's long.</p>
-        <p style="color:var(--ink-2)">The console runs on your machine, listens on <code>127.0.0.1</code> only, and makes no network calls of its own; only Explain, if you install it and press it, sends to the model endpoint you configure. It watches your runs folder, so a new run appears on its own a few seconds after it has finished writing. Every page also gives the command that repeats its check, for the terminal or for CI.</p>
-      </div>
-      <div class="shot"><img src="/assets/img/shot-textdiff.webp" width="1280" height="800" loading="lazy" alt="The text diff page for classify on the live demo. Settings: rules 1 to 2. In classify's class.json, class changes from billing to technical and matched from charged to app. In draft_reply's reply.json, the class and the reply text change from a billing reply to a technical one, and route's route.json begins below. Each output is marked verified against its receipt in both runs."></div>
-    </div>
-  </div>
-</section>
+      <p class="muted" style="font-size:15px">Setting up a model, and exactly what is read, sent and kept: <a href="/onetrace/explain-format.html">the explain reference</a>.</p>
+    </section>
 
-<section id="install" class="section-soft" aria-labelledby="install-title">
-  <div class="wrap">
-    <p class="kicker">Record your runs</p>
-    <h2 id="install-title">Two decorators on the code you already have.</h2>
-    <p class="sub">This follows the <a href="/onetrace/quickstart.html">quickstart</a>: a two-step pipeline, a retriever and an answer. New to Python, or to onetrace? <a href="/get-started.html">Get started</a> walks through every step, from installing Python to your runs in the console.</p>
-    <div class="steps">
-      <div class="stepx">
-        <div>
-          <h3>Install</h3>
-          <p>The verifier, <code>onetrace-verify</code>, comes with it.</p>
-<pre>pip install onetrace</pre>
-        </div>
+    <!-- 4 -->
+    <section class="step" id="instrument" aria-labelledby="t-instrument">
+      <div class="step-head"><div class="step-n">4</div><div class="stack"><h2 id="t-instrument">Instrument your own code</h2><p class="sub">Three ways in, from least effort to most control. They mix: start with one and refine with another.</p></div></div>
+      <div class="chooser">
+        <a href="#agent"><span class="when">fastest</span><b>4a · With your coding agent</b><small>Paste a prompt. The agent adds decorators and asks what only you know.</small></a>
+        <a href="#auto"><span class="when">no code change</span><b>4b · Zero-config</b><small>Start your app with <code>onetrace-run</code>. Library calls become steps.</small></a>
+        <a href="#stages"><span class="when">most control</span><b>4c · Step by step</b><small>Two decorators. You name each step and its settings.</small></a>
       </div>
-      <div class="stepx">
-        <div>
-          <h3>Decorate your steps</h3>
-          <p><code>@ot.stage</code> on each step, naming the tool that does the work. <code>@ot.run</code> on the function that does the whole job once. Change nothing else. Or let <a href="#agent">your coding agent</a> add them.</p>
-<pre><span class="k">import</span> onetrace <span class="k">as</span> ot
 
-<span class="k">@ot.stage</span>(<span class="s">"retrieve"</span>, instrument=ot.pkg(<span class="s">"word-overlap"</span>, <span class="s">"onetrace"</span>,
-                                         kind=<span class="s">"retriever"</span>, config={<span class="s">"top_k"</span>: 2}))
-<span class="k">def</span> retrieve(question):
-    ...
-
-<span class="k">@ot.stage</span>(<span class="s">"answer"</span>, instrument=ot.pkg(<span class="s">"first-passage"</span>, <span class="s">"onetrace"</span>, kind=<span class="s">"model-call"</span>))
-<span class="k">def</span> answer(question, passages):
-    ...
-
-<span class="k">@ot.run</span>(stages=[<span class="s">"retrieve"</span>, <span class="s">"answer"</span>])
-<span class="k">def</span> main():
-    ...</pre>
-        </div>
-      </div>
-      <div class="stepx">
-        <div>
-          <h3>Run it as usual</h3>
-          <p>The run writes a folder under <code>runs/</code>, named by its run id, and prints the command that checks it. <code>onetrace doctor</code> checks your setup.</p>
-<pre>python app.py
-onetrace doctor</pre>
-        </div>
-      </div>
-      <div class="stepx">
-        <div>
-          <h3>Switch it off, or take it out</h3>
-          <p><code>ONETRACE_DISABLE=1</code> makes both decorators pass straight through and nothing is written. To remove it, delete the import and the decorator lines; your code runs as before.</p>
-<pre>ONETRACE_DISABLE=1 python app.py</pre>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="agent" aria-labelledby="agent-title">
-  <div class="wrap">
-    <p class="kicker">With your coding agent</p>
-    <h2 id="agent-title">Let your coding agent add onetrace for you.</h2>
-    <p class="sub">The <a href="/onetrace/agents/instrument.html">agent recipe</a> is written for the agent, not for you. You hand it over; the agent follows it, asks you what only you can answer, and reports back with test, verify and diff results.</p>
-    <div class="grid-2" style="margin-top:28px">
-      <div class="card"><h3>1. Open your project in the agent</h3><p>Claude Code, Cursor, GitHub Copilot, Windsurf, Cline, Codex or any agent that can edit your repository.</p></div>
-      <div class="card"><h3>2. Paste this prompt</h3><p>Or install the kit's file for your tool, below, and run it as a command.</p></div>
-      <div class="card"><h3>3. Answer its questions</h3><p>What one run is, how to treat an external index, the trust fields it leaves unset on purpose, and signing. Then read its report.</p></div>
-      <div class="card"><h3>4. Open your runs in the console</h3><p>Every run your program makes from now on lands in a <code>runs</code> folder. See them in your browser with the commands below.</p></div>
-    </div>
-<pre style="margin-top:24px">Instrument this repository's Python pipeline with onetrace.
+      <div class="mini" id="agent">
+        <div class="mini-head"><span class="n">4a</span><h3>With your coding agent</h3><span class="tag">Claude Code · Cursor · Copilot · Windsurf · Cline · Codex</span></div>
+        <p class="sub">Open your project in the agent and paste this. The agent follows a recipe written for it, stops to ask you where the recipe says to, and finishes with a report and the commands to see your runs.</p>
+        <div class="code"><div class="label"><span>Prompt</span><button class="copy" type="button">Copy</button></div><pre style="white-space:pre-wrap">Instrument this repository's Python pipeline with onetrace.
 Read the recipe in full first: https://oneproof.dev/onetrace/agents/instrument.md
 (the raw file, not a summary). Follow sections 0 to 7 in order. Add recording only:
 results must stay exactly the same. Stop and ask me wherever the recipe says to ask.
 Never put a secret in a decorator or config. Finish with the report from section 7,
-and tell me the exact commands to run my program and open its runs in onetrace-console.</pre>
-    <div class="table-wrap" style="margin-top:24px">
-      <table>
-        <thead><tr><th scope="col">Tool</th><th scope="col">Kit file to copy into your project</th><th scope="col">Then</th></tr></thead>
-        <tbody>
-          <tr><td>Claude Code</td><td><code>.claude/commands/onetrace-instrument.md</code></td><td>Type <code>/onetrace-instrument</code></td></tr>
-          <tr><td>Cursor</td><td><code>.cursor/rules/onetrace-instrument.mdc</code></td><td>In Agent chat: follow <code>@onetrace-instrument</code></td></tr>
-          <tr><td>GitHub Copilot (VS Code, agent mode)</td><td><code>.github/prompts/onetrace-instrument.prompt.md</code></td><td>Type <code>/onetrace-instrument</code></td></tr>
-          <tr><td>Windsurf</td><td><code>.windsurf/rules/onetrace-instrument.md</code></td><td>In Cascade: <code>@onetrace-instrument</code></td></tr>
-          <tr><td>Cline</td><td><code>.clinerules/onetrace-instrument.md</code></td><td>Ask it to instrument the repository with onetrace</td></tr>
-          <tr><td>Codex and other agents that read <code>AGENTS.md</code></td><td><code>AGENTS.md</code> (merge the section into yours)</td><td>Ask it to instrument the repository with onetrace</td></tr>
-          <tr><td>Any other agent</td><td><code>PROMPT.txt</code></td><td>Paste it as your message</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="cta-row" style="margin-top:24px">
-      <a class="btn btn-primary" href="/assets/kit/onetrace-agent-kit.zip" download>Download the agent kit (.zip)</a>
-      <a class="btn btn-line" href="/onetrace/agents/instrument.html">Read the recipe</a>
-    </div>
-    <p style="color:var(--ink-2);margin-top:16px">If your agent can't fetch web pages, save <a href="/onetrace/agents/instrument.md">instrument.md</a> in your project as <code>docs/onetrace/instrument.md</code>; every kit file tells the agent to look there. Keep the <code>AGENTS.md</code> or <code>CLAUDE.md</code> section afterwards: it keeps later agent edits consistent with the instrumentation.</p>
-    <h3 style="margin-top:40px">See your own runs in the console</h3>
-    <p style="color:var(--ink-2)">Once onetrace is in your code, each run of your program writes a folder under <code>runs</code>, in the folder you start it from. In the same environment you run your program in:</p>
-<pre>pip install onetrace-console
-onetrace-console --version          # must say 0.1.1 or later
-onetrace-console runs --open</pre>
-    <div class="shot" style="margin-top:20px;max-width:980px"><img src="/assets/img/illus-local.webp" width="1280" height="800" loading="lazy" alt="After setup: a terminal runs the program twice, then onetrace-console runs --open; the browser shows the console's Overview at 127.0.0.1:8080, watching the runs folder, with 4 runs of one pipeline, all verified, and one marked First difference at classify."></div>
-    <ul style="color:var(--ink-2);line-height:1.7;margin:12px 0 0 20px;padding:0">
-      <li><code>runs</code> is the folder that holds your run folders; a full path works too, for example <code>onetrace-console "C:\Users\you\my-app\runs" --open</code>. Every run folder in it is loaded and listed on the Overview.</li>
-      <li>To compare two runs, add their folder names: <code>--compare &lt;first&gt; &lt;second&gt;</code>. Tip: name runs as you record them, with <code>ONETRACE_RUN_ID=before</code> (PowerShell: <code>$env:ONETRACE_RUN_ID = "before"</code>), so you can write <code>--compare before after</code>.</li>
-      <li>Leave it running: the console watches the folder, and each new run appears on the Overview a few seconds after your program has finished writing it. A run still being written waits until it's complete. No restart needed.</li>
-      <li>Port 8080 already in use? Add <code>--port 8091</code>. If <code>--version</code> shows 0.0.0, or the console prints commands such as <code>admin create</code>, an older install answered first: make a fresh virtual environment and install there, as in <a href="/get-started.html#setup">Get started</a>.</li>
-    </ul>
-  </div>
-</section>
+and tell me the exact commands to run my program and open its runs in onetrace-console.</pre></div>
+        <details><summary>Use it as a command in your tool instead</summary><div class="in">
+          <div class="tbl"><table>
+            <thead><tr><th>Tool</th><th>Kit file to copy into your project</th><th>Then</th></tr></thead>
+            <tbody>
+              <tr><td>Claude Code</td><td><code>.claude/commands/onetrace-instrument.md</code></td><td>Type <code>/onetrace-instrument</code></td></tr>
+              <tr><td>Cursor</td><td><code>.cursor/rules/onetrace-instrument.mdc</code></td><td>In Agent chat: follow <code>@onetrace-instrument</code></td></tr>
+              <tr><td>GitHub Copilot (agent mode)</td><td><code>.github/prompts/onetrace-instrument.prompt.md</code></td><td>Type <code>/onetrace-instrument</code></td></tr>
+              <tr><td>Windsurf</td><td><code>.windsurf/rules/onetrace-instrument.md</code></td><td>In Cascade: <code>@onetrace-instrument</code></td></tr>
+              <tr><td>Cline</td><td><code>.clinerules/onetrace-instrument.md</code></td><td>Ask it to instrument the repository with onetrace</td></tr>
+              <tr><td>Codex and AGENTS.md readers</td><td><code>AGENTS.md</code> (merge the section)</td><td>Ask it to instrument the repository with onetrace</td></tr>
+            </tbody>
+          </table></div>
+          <p><a href="/assets/kit/onetrace-agent-kit.zip">Download the agent kit</a> · <a href="/onetrace/agents/instrument.md">Read the recipe</a>. If your agent can't fetch web pages, save the recipe as <code>docs/onetrace/instrument.md</code> in your project.</p>
+        </div></details>
+      </div>
 
-<section id="verify" class="section-soft" aria-labelledby="verify-title">
-  <div class="wrap">
-    <p class="kicker">Command line and CI</p>
-    <h2 id="verify-title">Check a run without trusting the code that wrote it.</h2>
-    <p class="sub"><code>onetrace-verify</code> uses only the Python standard library and needs no network. It prints one row per check, <code>PASS</code>, <code>FAIL</code> or <code>NOT-RUN</code>, then a result. With <code>--require-artifacts</code> it also checks every output file.</p>
-<pre>onetrace-verify --require-artifacts runs/&lt;run id&gt;</pre>
-    <div class="table-wrap" style="margin-top:24px">
-      <table>
-        <thead><tr><th scope="col">Exit code</th><th scope="col">Meaning</th></tr></thead>
-        <tbody>
-          <tr><td><code>0</code></td><td>PASS: every check that ran held.</td></tr>
-          <tr><td><code>1</code></td><td>FAIL: something in the record doesn't match, and the row says where.</td></tr>
-          <tr><td><code>2</code></td><td>NOT VERIFIED or refused: for example a format version the verifier doesn't implement, or an unreadable manifest. Nothing is reported as passing.</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p style="margin-top:20px;color:var(--ink-2)">Runs can also be signed with an Ed25519 key you hold, or anchored with an outside timestamp. Both sit beside the record and change none of its bytes. See the <a href="/onetrace/manual.html">manual</a>.</p>
-  </div>
-</section>
-
-<section id="compare" class="section-soft" aria-labelledby="compare-title" style="padding-top:0">
-  <div class="wrap">
-        <h2 id="compare-title">The same comparison in the terminal: one verdict per step.</h2>
-    <p class="sub"><code>diff</code> verifies both runs first, then walks them step by step. <code>localize</code> names the first point of divergence and what was recorded there. <code>--text</code> shows the output text that changed.</p>
-<pre>onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt;
-onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt; --text
-onetrace localize runs/&lt;run A&gt; runs/&lt;run B&gt;</pre>
-    <div class="grid-2" style="margin-top:28px">
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th scope="col">Step verdict</th><th scope="col">Meaning</th></tr></thead>
+      <div class="mini" id="auto">
+        <div class="mini-head"><span class="n">4b</span><h3>Zero-config</h3><span class="tag">onetrace-auto</span></div>
+        <p class="sub">Run your app as you do today, started through <code>onetrace-run</code>. Each call it makes through a supported library becomes a recorded step. Your code doesn't change.</p>
+        <div class="note warn"><b>Today, zero-config runs open in the terminal, not the console.</b> onetrace-auto 0.7.0 needs onetrace 0.7.0 and writes record format 0.4; the console reads formats up to 0.3. Install onetrace-auto in your app's own environment, and compare its runs there with <code>onetrace diff</code> and <code>onetrace-verify</code>. The console reads them from its next release.</div>
+        <div class="code"><div class="label"><span>In your app's environment</span><button class="copy" type="button">Copy</button></div><pre>pip install onetrace-auto
+onetrace-run python app.py        <span class="c"># or: ONETRACE_AUTO=1 python app.py</span>
+onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt;</pre></div>
+        <div class="tbl"><table>
+          <thead><tr><th>Library</th><th>Versions</th><th>Each call records</th></tr></thead>
           <tbody>
-            <tr><td><code>same</code></td><td>The step's output digest matches.</td></tr>
-            <tr><td><code>FIRST DIFFERENCE</code></td><td>The first step, in order, whose output differs.</td></tr>
-            <tr><td><code>downstream</code></td><td>Still different after the first difference.</td></tr>
-            <tr><td><code>reconverged</code></td><td>Different work upstream, same output here.</td></tr>
-            <tr><td><code>COULD NOT CHECK</code></td><td>Can't be evaluated. Never read as a pass.</td></tr>
+            <tr><td><code>openai</code></td><td>1.40 to below 4</td><td>The request, the response, and a model-call record</td></tr>
+            <tr><td><code>requests</code></td><td>2.28 to below 3</td><td>The request body, the status and the response body</td></tr>
+            <tr><td><code>httpx</code></td><td>0.24 to below 1</td><td>The request body, the status and the response body</td></tr>
           </tbody>
-        </table>
+        </table></div>
+        <ul class="ticks">
+          <li>Runs go to <code>./runs</code>, or to <code>ONETRACE_RUNS</code>. A process with no supported call leaves no folder.</li>
+          <li>By default a run keeps digests only. <code>ONETRACE_AUTO_KEEP=outputs,inputs</code> keeps the bodies too.</li>
+          <li>Recording never changes what your app gets back. A call it can't record is a gap that says so.</li>
+          <li>Steps in your own code are seen only through these libraries. Name them with 4c's decorators.</li>
+        </ul>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th scope="col"><code>diff</code> result</th><th scope="col">Exit code</th></tr></thead>
-          <tbody>
-            <tr><td>identical</td><td><code>0</code></td></tr>
-            <tr><td>diverged</td><td><code>1</code></td></tr>
-            <tr><td>not comparable</td><td><code>2</code></td></tr>
-            <tr><td>refused</td><td><code>3</code></td></tr>
-            <tr><td>could not check</td><td><code>4</code></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <p style="margin-top:20px;color:var(--ink-2)">The exit codes make it easy to gate a CI job on a comparison against a known-good baseline run.</p>
-  </div>
-</section>
 
-<section id="frameworks" aria-labelledby="fw-title">
-  <div class="wrap">
-    <p class="kicker">Guides for your setup</p>
-    <h2 id="fw-title">Pick the page that matches your project.</h2>
-    <p class="sub">You don't need any of these to start: <a href="/get-started.html">Get started</a> is enough. Open one when it matches your situation. The four "worked examples" are the same small question-answering pipeline, built four ways, each recorded with onetrace, so you can see where the decorators go in code like yours.</p>
-    <div class="grid-3" style="margin-top:28px">
-      <a class="path" href="/onetrace/adapters/plain-python.html"><span class="who-for">Worked example</span><h3>Plain Python</h3><p>The pipeline written with no framework at all: read documents, split them, find the relevant parts, write an answer. <b>Read this if</b> your code is ordinary Python functions. It is also the reference the other three are compared with.</p><span class="go">Read →</span></a>
-      <a class="path" href="/onetrace/adapters/langchain.html"><span class="who-for">Worked example</span><h3>LangChain</h3><p>The same pipeline built with LangChain's loaders, splitters and chains, with each step recorded as a stage. <b>Read this if</b> your project uses LangChain.</p><span class="go">Read →</span></a>
-      <a class="path" href="/onetrace/adapters/llamaindex.html"><span class="who-for">Worked example</span><h3>LlamaIndex</h3><p>The same pipeline built with LlamaIndex's readers, index and retriever. It shows which steps LlamaIndex covers and which stay plain Python. <b>Read this if</b> your project uses LlamaIndex.</p><span class="go">Read →</span></a>
-      <a class="path" href="/onetrace/adapters/langflow.html"><span class="who-for">Worked example</span><h3>Langflow</h3><p>The same pipeline with its steps run as Langflow components, and the record saying which steps Langflow ran. <b>Read this if</b> you build flows in Langflow.</p><span class="go">Read →</span></a>
-      <a class="path" href="/onetrace/agents/instrument.html"><span class="who-for">For your coding agent</span><h3>Agent recipe</h3><p>Step-by-step instructions written for an AI coding tool, not for you to follow. Your agent reads it and adds onetrace to your code. <b>Use it</b> through the agent kit, higher up this page.</p><span class="go">Read →</span></a>
-      <a class="path" href="/onetrace/errors.html"><span class="who-for">When something stops</span><h3>Errors and fixes</h3><p>Every message onetrace can stop with, what caused it, and a one-line fix. <b>Open it when</b> a run or a check prints an error you don't understand.</p><span class="go">Read →</span></a>
-    </div>
-  </div>
-</section>
+      <div class="mini" id="stages">
+        <div class="mini-head"><span class="n">4c</span><h3>Step by step</h3><span class="tag">@ot.stage · @ot.run</span></div>
+        <p class="sub"><code>@ot.stage</code> on each step, naming the tool that does the work. <code>@ot.run</code> on the function that does the whole job once. Change nothing else.</p>
+        <div class="code"><div class="label"><span>app.py</span><button class="copy" type="button">Copy</button></div><pre><span class="k">import</span> onetrace <span class="k">as</span> ot
 
-<section style="padding-top:0" aria-labelledby="next-title">
-  <div class="wrap">
-    <div class="band">
-      <div>
-        <h2 id="next-title">Want to know exactly what's in a receipt?</h2>
-        <p>The next layer down: the record format, the hash chain, how the verifier decides, and what each verdict does and doesn't mean.</p>
+@ot.stage("retrieve", instrument=ot.pkg("word-overlap", "onetrace",
+                                         kind="retriever", config={"top_k": 2}))
+<span class="k">def</span> retrieve(question):
+    ...
+
+@ot.stage("answer", instrument=ot.pkg("first-passage", "onetrace", kind="model-call"))
+<span class="k">def</span> answer(question, passages):
+    ...
+
+@ot.run(stages=["retrieve", "answer"])
+<span class="k">def</span> main():
+    ...</pre></div>
+        <div class="grid g2">
+          <div class="code"><div class="label"><span>Run it as usual</span><button class="copy" type="button">Copy</button></div><pre>python app.py</pre></div>
+          <div class="code"><div class="label"><span>Switch it off</span><button class="copy" type="button">Copy</button></div><pre>ONETRACE_DISABLE=1 python app.py</pre></div>
+        </div>
+        <p class="muted" style="font-size:15px">Each run writes a folder under <code>runs/</code> and prints the command that checks it. To remove onetrace, delete the import and the decorator lines.</p>
       </div>
-      <div class="cta-row">
-        <a class="btn btn-primary" href="/how-it-works.html">How it works</a>
-        <a class="btn btn-ghost" href="/onetrace/manual.html">Full manual</a>
+    </section>
+
+    <!-- 5 -->
+    <span class="anchor" id="verify"></span><span class="anchor" id="compare"></span>
+    <section class="step" id="check" aria-labelledby="t-check">
+      <div class="step-head"><div class="step-n">5</div><div class="stack"><h2 id="t-check">Compare and check your runs</h2><p class="sub">Open your runs folder in the console, then use the same checks in a terminal or CI.</p></div></div>
+      <div class="code"><div class="label"><span>Terminal</span><button class="copy" type="button">Copy</button></div><pre>onetrace-console runs --open                  <span class="c"># watches the folder: new runs appear by themselves</span>
+onetrace-console runs --compare before after  <span class="c"># name runs with ONETRACE_RUN_ID=before</span>
+onetrace-verify --require-artifacts runs/&lt;run id&gt;
+onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt; --text</pre></div>
+      <div class="grid g2">
+        <div class="tbl"><table><thead><tr><th>onetrace-verify</th><th>Exit</th></tr></thead><tbody>
+          <tr><td>PASS: every check that ran held</td><td>0</td></tr>
+          <tr><td>FAIL: the row says where</td><td>1</td></tr>
+          <tr><td>Not verified or refused</td><td>2</td></tr></tbody></table></div>
+        <div class="tbl"><table><thead><tr><th>onetrace diff</th><th>Exit</th></tr></thead><tbody>
+          <tr><td>identical</td><td>0</td></tr>
+          <tr><td>diverged</td><td>1</td></tr>
+          <tr><td>not comparable · refused · could not check</td><td>2 · 3 · 4</td></tr></tbody></table></div>
       </div>
-    </div>
+      <p class="muted" style="font-size:15px">Port 8080 in use? Add <code>--port 8091</code>. The console listens on 127.0.0.1 only.</p>
+    </section>
+
+    <!-- 6 -->
+    <span class="anchor" id="frameworks"></span>
+    <section class="step" id="next" aria-labelledby="t-next">
+      <div class="step-head"><div class="step-n">6</div><div class="stack"><h2 id="t-next">Next</h2><p class="sub">Open one when it matches your project.</p></div></div>
+      <div class="grid g3">
+        <a class="card" href="/onetrace/adapters/plain-python.html"><h3>Plain Python</h3><p>The reference pipeline, with no framework.</p><span class="go">Read →</span></a>
+        <a class="card" href="/onetrace/adapters/langchain.html"><h3>LangChain</h3><p>Loaders, splitters and chains, each step a stage.</p><span class="go">Read →</span></a>
+        <a class="card" href="/onetrace/adapters/llamaindex.html"><h3>LlamaIndex</h3><p>Readers, index and retriever.</p><span class="go">Read →</span></a>
+        <a class="card" href="/onetrace/adapters/langflow.html"><h3>Langflow</h3><p>Steps run as Langflow components.</p><span class="go">Read →</span></a>
+        <a class="card" href="/onetrace/errors.html"><h3>Errors and fixes</h3><p>Every message, and a one-line fix.</p><span class="go">Read →</span></a>
+        <a class="card" href="/onetrace/manual.html"><h3>The manual</h3><p>Every command and option.</p><span class="go">Read →</span></a>
+      </div>
+    </section>
   </div>
-</section>
+</div>
 
 </main>
-
-<footer>
-  <div class="wrap">
-    <div class="foot-grid">
-      <div>
-        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
-        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
-        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
-      </div>
-      <div>
-        <h4>Product</h4>
-        <ul>
-          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
-          <li><a href="/industries/">Examples by industry</a></li>
-          <li><a href="/developers.html">Developers</a></li>
-          <li><a href="/how-it-works.html">How it works</a></li>
-          <li><a href="/onetrace/">Documentation</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Packages</h4>
-        <ul>
-          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>More from oneproof</h4>
-        <ul>
-          <li><a href="/oneground/">oneground</a></li>
-          <li><a href="/onedoor/">onedoor</a></li>
-          <li><a href="/where-it-fits.html">Where it fits</a></li>
-          <li><a href="/answer-lineage.html">A forensic report</a></li>
-          <li><a href="/building.html">What we're building</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
-  </div>
-</footer>
+<footer><div class="wrap stack-lg"><div class="foot">
+<div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
+<div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>More from oneproof</h4><ul><li><a href="/oneground/">oneground</a></li><li><a href="/onedoor/">onedoor</a></li><li><a href="/where-it-fits.html">Where it fits</a></li><li><a href="/building.html">What we're building</a></li></ul></div>
+</div><div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one. Screens show the public demo's sample runs, not customer data.</div></div></footer>
+<script src="/assets/site-v2.js"></script>
 </body>
 </html>

@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>What's new: onetrace 0.7, onetrace-console 0.5 · oneproof</title>
-<meta name="description" content="onetrace 0.7.0: every run ends with a close receipt, onetrace-auto records library calls with no code change, and a re-run stops before a step recorded as write or unknown. onetrace-console 0.5.1: read a console store from your own program, and each model-call record linked from its run, on onetrace 0.6.1. onetrace-explain 0.2.0: give it two runs for what changed, read-only evidence, and checks to run. onetrace-console 0.5.0: model-call records, a verdict that names its reference, and compare any two runs on the live demo. onetrace 0.6.1: a patch, the record format unchanged. onetrace 0.6.0: verdicts against a sealed reference run, variation across repeat runs, a run sink, and the model-call record. onetrace-console 0.4.0: gated steps with the decisions they cite and the verifier's rows beside them, each step's span, runs inside runs, and What changed? on every run, on the live demo. onetrace 0.5.0: decisions from onedoor recorded with the step they gate, the span context of each step, and nested runs that a comparison descends into. onetrace-console 0.3.2: a short answer at the top of every comparison, the explanation redrawn under it, a setup page for Explain. 0.3.1: a Compare button, a faster store, two more example pipelines, and kept explanations on the live demo. onetrace 0.4.0: export a run to OpenTelemetry, compare many runs at once with drift, and a suggested explanation that is checked against the record.">
+<title>What's new · onetrace</title>
+<meta name="description" content="onetrace releases, latest first: onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
 <link rel="canonical" href="https://oneproof.dev/whats-new.html">
-<meta property="og:title" content="What's new: onetrace 0.7, onetrace-console 0.5">
-<meta property="og:description" content="onetrace 0.7.0: every run ends with a close receipt, and onetrace-auto records library calls with no code change. Model-call records and compare any two runs on the live demo; verdicts against a run you trust, variation across repeat runs, and the record of a model call; decisions recorded with the step they gate and shown on the live demo, the span context of each step, and nested runs a comparison descends into.">
+<meta property="og:title" content="What's new · onetrace">
+<meta property="og:description" content="onetrace releases, latest first: onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://oneproof.dev/whats-new.html">
 <meta property="og:image" content="https://oneproof.dev/og.png">
@@ -15,537 +15,96 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site-v2.css">
 <script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-
-<header class="nav">
-  <div class="wrap">
-    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
-      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
-      onetrace <small>by oneproof</small>
-    </a>
-    <nav class="nav-links" aria-label="Main">
-      <a href="/">Product</a>
-      <a href="/developers.html">Developers</a>
-      <a href="/how-it-works.html">How it works</a>
-      <a href="/onetrace/">Docs</a>
-      <a href="/learn.html">Learn</a>
-      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
-    </nav>
-  </div>
-</header>
-
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html">Developers</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html" aria-current=page>What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
 <main id="main">
-
-<div class="page-hero">
-  <div class="wrap">
-    <span class="eyebrow"><b>What's new</b> onetrace 0.7.0 · onetrace-console 0.5.1 · onetrace-explain 0.2.0</span>
-    <h1>Every run says whether it finished, a library call records itself, and a re-run stops before a step recorded as write or unknown.</h1>
-    <p class="lede">onetrace 0.7.0 is on PyPI with onetrace-verify 0.7.0 and the new onetrace-auto: every run ends with a close receipt, an app's calls through httpx, requests and openai are recorded with no code change, and <code>onetrace reproduce</code> stops before a step recorded as write or unknown. onetrace-console 0.5.1 is on PyPI and runs the live demo, on onetrace 0.6.1: it shows model-call records, names the reference each verdict was judged against, and lets anyone compare two runs of a pipeline. onetrace-explain 0.2.0 installs beside it, takes two runs and prints what changed, the evidence and checks you can run. With onetrace 0.6.0, read a run against a sealed record of one you trust and get one verdict word per step; record repeat runs and see how often each step varies; and let a model call leave a record of what it ran on, beside the step's receipt. The record stays what it was: one receipt per step, checked by a verifier that doesn't trust your code.</p>
-    <div class="crumbs">
-      <a href="#v070">In 0.7.0</a>
-      <a href="#console051">Console 0.5.1</a>
-      <a href="#explain020">Explain 0.2.0</a>
-      <a href="#console050">Console 0.5.0</a>
-      <a href="#v061">In 0.6.1</a>
-      <a href="#v060">In 0.6.0</a>
-      <a href="#console040">Console 0.4.0</a>
-      <a href="#v050">In 0.5.0</a>
-      <a href="#console032">Console 0.3.2</a>
-      <a href="#console031">Console 0.3.1</a>
-      <a href="#console030">Console 0.3.0</a>
-      <a href="#v040">In 0.4.0</a>
-      <a href="#explain">Suggested explanations</a>
-      <a href="#v031">In 0.3.1</a>
-      <a href="#v030">In 0.3.0</a>
-      <a href="#upgrade">Upgrading</a>
-    </div>
-  </div>
-</div>
-
-<section id="v070" aria-labelledby="v070-title">
-  <div class="wrap">
-    <p class="kicker">onetrace 0.7.0</p>
-    <h2 id="v070-title">Every run says whether it finished, and a library call can record itself.</h2>
-    <p class="sub">With onetrace-verify 0.7.0 and a new package, onetrace-auto 0.7.0. The record format moves to 0.4: a run written now is never byte-identical to a 0.6.1 run of the same pipeline, and a gate that checks the newer records should read them with onetrace-verify 0.7.</p>
-    <div class="grid-3">
-      <div class="card">
-        <h3>A close receipt ends every run</h3>
-        <p>When a run closes, onetrace writes one last receipt, before the manifest and any signature, so a run that finished and one cut short no longer read alike. A run killed before it closed holds no close receipt, and <code>onetrace sign</code> signs only a closed run unless told otherwise.</p>
-      </div>
-      <div class="card">
-        <h3>Recording with no code change</h3>
-        <p>onetrace-auto records an app's calls through httpx, requests and the openai client, one receipt per call: <code>onetrace-run python app.py</code>, or <code>ONETRACE_AUTO=1</code>. A library is hooked only inside its supported versions, and the run lists which were. A hook never changes what the app gets back, and a call it could not record is a gap that says so. By default the run holds digests only.</p>
-      </div>
-      <div class="card">
-        <h3>A re-run stops before a write</h3>
-        <p><code>@ot.stage(effect="read")</code> or <code>effect="write"</code> labels a step. <code>onetrace reproduce</code> now stops before a step recorded as write or unknown, such as an HTTP <code>POST</code>, and names it first; <code>--allow-writes</code> runs it. A re-run's records carry a mark, and a re-run is never made a reference.</p>
-      </div>
-    </div>
-    <div class="grid-3" style="margin-top:18px">
-      <div class="card">
-        <h3>One claim, checked and recorded</h3>
-        <p><code>onetrace check</code> checks one claim about a run or a pair of runs (<code>reproduce</code>, <code>localize</code>, <code>diff-text</code> or <code>match</code>) and records the check as a run of its own. It ends "confirmed by a check", "not supported by its check", or "the check did not run" with its reason.</p>
-      </div>
-      <div class="card">
-        <h3>A twin, and one value put in</h3>
-        <p>With <code>keep_config=True</code> a step keeps its configuration. <code>onetrace reproduce RUN --config-of OTHER</code>, given a runner file, runs RUN's kept inputs with OTHER's configuration and names the first difference; <code>--substitute STEP --from B</code> puts B's kept output in at one step and runs each later step recorded as a read. Each shows what happens today, with today's tools and services, and a counterfactual does not show that the step made a difference.</p>
-      </div>
-      <div class="card">
-        <h3>Expectations, and vLLM's tokens</h3>
-        <p>Step expectations (<code>ot.expect.range</code>, <code>unit</code>, <code>relation</code>, <code>member</code>) are declared in code and recorded with the run; one that holds shows the declared rule held, not that the output was right. Self-hosted vLLM capture at L1, L2 and L3 writes the model-call record 1.1 and a steps file per request; L3 has not been run on a GPU.</p>
-      </div>
-    </div>
-<pre>pip install -U "onetrace[crypto]"
-pip install onetrace-auto</pre>
-    <p class="sub">onetrace-console 0.5.1 pins onetrace 0.6.1: run where the console is installed, these lines replace 0.6.1 and break the console's pins, so install 0.7.0 in an environment of its own until a console release runs on it. onetrace-explain 0.2.0 accepts onetrace 0.7. The full list is in the changelog inside onetrace's source distribution, <a href="https://pypi.org/project/onetrace/0.7.0/">onetrace 0.7.0 on PyPI</a>.</p>
+<section class="hero" style="padding-bottom:16px">
+  <div class="wrap stack-lg">
+    <span class="eyebrow">What's new</span>
+    <h1>Releases</h1>
+    <p class="lede">The latest first. Each package's full list of changes is in its changelog.</p>
   </div>
 </section>
 
-<section id="console051" class="section-soft" aria-labelledby="console051-title">
+<section class="band" style="padding-top:24px">
   <div class="wrap">
-    <p class="kicker">onetrace-console 0.5.1</p>
-    <h2 id="console051-title">Read a console store from your own program, and each model-call record linked from its run.</h2>
-    <p class="sub">It installs onetrace 0.6.1 and onetrace-verify 0.6.1, and onetrace-explain 0.2.0 now installs beside it in one environment. The live demo runs it now: 58 runs of 11 example pipelines.</p>
-    <div class="grid-3">
-      <div class="card">
-        <h3>A read interface over the store</h3>
-        <p><code>onetrace_console.store_read</code> answers three questions for a program outside the console: the runs whose stage records exactly a configuration digest, the runs whose model-call records name the same model files, and a run's neighbours by input where the <code>[neighbours]</code> extra is on. It only reads, and a store whose run index is another format is refused with the reason. One page of docs: <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/blob/v0.5.1/docs/store_read.md">store_read</a>.</p>
+    <span class="anchor" id="upgrade"></span>
+    <article class="rel" id="v070">
+      <div class="ver">onetrace 0.7.0<small>with onetrace-verify 0.7.0 and onetrace-auto 0.7.0</small></div>
+      <div class="stack">
+        <h2 style="font-size:1.5rem">Every run says whether it finished, and a library call can record itself.</h2>
+        <div class="grid g3">
+          <div class="card"><h3>A close receipt</h3><p>Every run ends with one, so a finished run and one cut short read differently.</p></div>
+          <div class="card"><h3>Zero-config recording</h3><p><code>onetrace-run</code> records calls through httpx, requests and openai, with no code change.</p></div>
+          <div class="card"><h3>Re-runs stop before a recorded write</h3><p><code>onetrace reproduce</code> stops before a step recorded as write or unknown; <code>--allow-writes</code> runs it.</p></div>
+        </div>
+        <details><summary>Also in 0.7.0</summary><div class="in">
+          <p><b><code>onetrace check</code></b> checks one claim about a run or a pair of runs, and records the check as a run of its own.</p>
+          <p><b>A twin and a counterfactual:</b> re-run with another run's configuration, or put one step's output in from another run.</p>
+          <p><b>Step expectations</b> declared in code and recorded with the run. One that holds shows the rule held, not that the output was right.</p>
+          <p><b>Self-hosted vLLM capture</b> at L1, L2 and L3 writes the model-call record 1.1. L3 has not been run on a GPU.</p>
+          <p class="note warn"><b>Upgrading:</b> the record format moves to 0.4. onetrace-console 0.5.1 pins onetrace 0.6.1, so install 0.7.0 in an environment of its own until a console release runs on it.</p>
+        </div></details>
+        <div class="code"><div class="label"><span>Install</span><button class="copy" type="button">Copy</button></div><pre>pip install -U "onetrace[crypto]"
+pip install onetrace-auto</pre></div>
       </div>
-      <div class="card">
-        <h3>Each model-call record, linked from its run</h3>
-        <p>On a run's page, under "What came out", an output that is a model-call record links to its section on the step's page, as the step page's own list does. Other outputs are listed as they were.</p>
-      </div>
-      <div class="card">
-        <h3>An earlier comparison points to the newer one</h3>
-        <p>Where the same two runs have been compared again under the onetrace build the console runs, the earlier page says so and links to the newer one, and both are kept. On the live demo, P1's split comparison has a new address under 0.5.1, and the earlier links to it lead there.</p>
-      </div>
-    </div>
-<pre>pip install --upgrade onetrace-console
-pip install --upgrade onetrace-explain</pre>
-    <p class="sub">The run index is now format 0.2: a local console writes it again when it draws its pages, and a public console built before 0.5.1 is to be built again with 0.5.1; until then its search says so. The record format is unchanged. The full list is in the <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.5.1">release notes</a>.</p>
-  </div>
-</section>
+    </article>
 
-<section id="explain020" aria-labelledby="explain020-title">
-  <div class="wrap">
-    <p class="kicker">onetrace-explain 0.2.0</p>
-    <h2 id="explain020-title">Give it two runs: what changed, the evidence, and checks you can run.</h2>
-    <p class="sub">A separate package, released on its own. onetrace itself is unchanged: no change to the record, and none to onetrace's own commands. The 0.1 form, <code>onetrace-explain REPORT_DIR</code>, is unchanged.</p>
-    <div class="grid-3">
-      <div class="card">
-        <h3>What changed, and the evidence</h3>
-        <p><code>onetrace-explain RUN_A RUN_B</code> compares the two runs itself. First, what changed, from <code>onetrace diff</code>'s report, printed always, with no model and no network calls. Then the evidence of read-only probes over runs already recorded, each stating its sample: how often the step varies across the baseline's repeat runs, whether the difference vanishes under the mask <code>onetrace mask suggest</code> proposes, and the model-call comparator at a model step. A fixed playbook picks them, with no model.</p>
+    <article class="rel" id="console051">
+      <div class="ver">onetrace-console 0.5.1<small>on onetrace 0.6.1</small></div>
+      <div class="stack">
+        <h2 style="font-size:1.5rem">Read a console store from your own program.</h2>
+        <ul class="ticks">
+          <li><code>store_read</code> answers which runs share a configuration, which name the same model files, and a run's neighbours.</li>
+          <li>Each model-call record is linked from its run's page.</li>
+          <li>An earlier comparison points to the newer one of the same two runs.</li>
+        </ul>
       </div>
-      <div class="card">
-        <h3>What may have happened, checked</h3>
-        <p>AI-generated, may be wrong, and asked only when you have configured a model and agreed to what is sent. Each claim cites a probe that ran or a record item, or it is dropped and counted. A model may propose more probes once, from the same list only; a proposal naming a command, a path, a host or a URL is refused and counted. At most 8 probes run.</p>
-      </div>
-      <div class="card">
-        <h3>Checks a human could run</h3>
-        <p>Each check is marked "runnable here" or "needs a runner you name", with a step's replay-safety label where its record carries one, and is never run for you. The exit code is <code>onetrace diff</code>'s, whatever the model says. Each explanation is a run of its own, holding every probe, its arguments and result digest, and what was sent.</p>
-      </div>
-    </div>
-<pre><span class="c"># Windows: in place of source, run</span>
-<span class="c"># explain-env\Scripts\Activate.ps1</span>
-python -m venv explain-env
-source explain-env/bin/activate
-pip install onetrace-explain
-onetrace-explain runs/a runs/b --no-model</pre>
-    <p class="sub">onetrace-explain 0.2.0 needs onetrace 0.6.1 or a later 0.6 or 0.7 release, and onetrace-console 0.5.1 runs on onetrace 0.6.1, so the two install in one environment; the block above makes one of its own, and either works. <code>--no-model</code> prints what changed, the evidence and the checks, and sends nothing. Not in this release: the probes that read a console store, and those that wait for console 0.6.0 or onetrace 0.7; each reads <code>not run</code> and names what it waits for. The format page on this site still describes the 0.1 form. The full list is in the package's changelog at the tag.</p>
-  </div>
-</section>
+    </article>
 
-<section id="console050" class="section-soft" aria-labelledby="console050-title">
-  <div class="wrap">
-    <p class="kicker">onetrace-console 0.5.0</p>
-    <h2 id="console050-title">Model-call records, a verdict against a named reference, and compare any two runs.</h2>
-    <p class="sub">It installs onetrace 0.6.0 and onetrace-verify 0.6.0, and shows what 0.6.0 records. The live demo ran it with 58 runs of 11 example pipelines.</p>
-    <div class="grid-3">
-      <div class="card">
-        <h3>Model-call records</h3>
-        <p>A step's <code>model-call-record/1.0</code> records are read and checked by the installed onetrace, and shown in the format's own groups, each field with its description. Where a record names a per-step capture, a token timeline shows the token ids per step; it never decodes them to text. On a comparison, onetrace's own comparator says for each step whether the two runs' records are the same, diverged, or could not be compared. Runs that share model files are listed and linked.</p>
+    <article class="rel" id="explain020">
+      <div class="ver">onetrace-explain 0.2.0</div>
+      <div class="stack">
+        <h2 style="font-size:1.5rem">Give it two runs: what changed, the evidence, and checks you can run.</h2>
+        <ul class="ticks">
+          <li>What changed and the evidence come with no model and no network calls.</li>
+          <li>A model's reading is optional, labelled AI-generated, and each claim must cite the record.</li>
+          <li>Checks are marked "runnable here" or "needs a runner you name", and never run for you.</li>
+        </ul>
       </div>
-      <div class="card">
-        <h3>A verdict, and the reference it was judged against</h3>
-        <p>Each verdict names its reference. A run whose own records could not be checked gets no verdict. The "Action authorized, effect confirmed" row now reads onetrace-verify's decision rows, with their counts, each failing row by name, and a link to the run's Gated steps section. On a local console, verdict counts per pipeline as runs arrive: counts only, no alerts.</p>
-      </div>
-      <div class="card">
-        <h3>Compare any two runs, search, benchmarks</h3>
-        <p>On the live demo, a pipeline's page has a picker for any two of its runs, with per-minute, concurrency, queue and time limits; every other write is refused. A search box on the Runs page and each run's page searches the runs' recorded fields and runs nothing. On a local console you can mark a run as a benchmark: "What changed?" compares against it first, and the badge never says a run is correct.</p>
-      </div>
-    </div>
-<pre>pip install --upgrade onetrace-console
-onetrace-console demo --open</pre>
-    <p class="sub">Comparison names now include the SDK build: comparisons you already made keep their pages, and old addresses on the live demo lead to a "has moved" page. Incident page addresses changed. Neighbours by input similarity is optional, off by default, and needs the <code>[neighbours]</code> extra. The full list is in the <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.5.0">release notes</a>.</p>
-  </div>
-</section>
+    </article>
 
-<section id="v061" aria-labelledby="v061-title">
-  <div class="wrap">
-    <p class="kicker">onetrace 0.6.1</p>
-    <h2 id="v061-title">A patch of four items, the record format unchanged.</h2>
-    <p class="sub">With onetrace-verify 0.6.1, which changes only its version. No receipt or manifest member is added, removed or changed, and a 0.6.0 verifier reads a 0.6.1 run as it reads a 0.6.0 run.</p>
-    <div class="grid-3">
-      <div class="card">
-        <h3>A refused start leaves no run folder</h3>
-        <p>A run refused at its start (a malformed <code>TRACEPARENT</code>, a <code>repeat_of</code> that is not a run id) used to leave a run folder holding only a lock and an empty <code>receipts/</code>, and a retry with the same id was refused. Everything that can refuse a run is now checked before the folder is made. A folder that holds a receipt is never removed.</p>
-      </div>
-      <div class="card">
-        <h3>The model-call schema ships in the wheel</h3>
-        <p>The model-call record's schema is package data, byte-identical to the one in the docs. Validation is unchanged.</p>
-      </div>
-      <div class="card">
-        <h3>Nesting, corrected; the adapter's tests, added</h3>
-        <p>The nesting page now says which shapes get the "inside" line, with the stage-inside-stage example and its real output. The transformers adapter's tests, named in 0.6.0 but missing, are added, and a CPU-torch CI job runs them and fails if any skips.</p>
-      </div>
-    </div>
-<pre>pip install --upgrade "onetrace[crypto]"</pre>
-    <p class="sub">onetrace-console 0.5.1 runs on onetrace 0.6.1, so <code>pip install onetrace-console</code> installs 0.6.1. onetrace-explain 0.1.1 accepts onetrace from 0.4 up to, not including, 0.7. The full list is in the package's changelog at the tag.</p>
-  </div>
-</section>
-
-<section id="v060" class="section-soft" aria-labelledby="v060-title">
-  <div class="wrap">
-    <p class="kicker">onetrace 0.6.0</p>
-    <h2 id="v060-title">A verdict against a known-good run, and what a model call ran on.</h2>
-    <p class="sub">With onetrace-verify 0.6.0. The record format stays 0.3: every new member is optional, a 0.5.0 verifier reads a 0.6.0 receipt unchanged, and a run that uses none of this writes the same receipts as 0.5.0, apart from the onetrace version they name.</p>
-    <div class="grid-3">
-      <div class="card">
-        <h3>References and verdicts</h3>
-        <p><code>onetrace reference make</code> writes a sealed record of a run you trust, in a file of its own, never a receipt. <code>onetrace verdict RUN --reference FILE</code>, or onetrace-verify with <code>--reference</code>, reads a finished run against it: one word for the run (<code>identical</code>, <code>diverged</code>, <code>refused</code>, <code>could not check</code>, with the usual exit codes) and one for each step (<code>same output</code>, <code>output differs</code>, <code>setting differs</code>, <code>input differs</code>, <code>slower than its range</code>, <code>could not check</code>). Each word rests on a named item of the record.</p>
-      </div>
-      <div class="card">
-        <h3>Variation across repeat runs</h3>
-        <p>Record several runs of one input as a set (<code>@ot.run(repeat_of=RUN_ID)</code>, or <code>onetrace repeat -n N --runs-root DIR</code> around a command), mark a step whose output may differ with <code>may_vary=True</code>, and <code>onetrace profile</code> shows, per step, how often its output differs across the set, and whether a setting, an input, or nothing changed when it did. <code>--before</code> and <code>--after</code> show whether a fix holds, and name the setting that changed between the sets. Counts only, no score.</p>
-      </div>
-      <div class="card">
-        <h3>The model-call record</h3>
-        <p>Behind the optional <code>onetrace[model-call]</code> extra: one record per model call, beside the step's receipt, giving each field one of five states (observed; declared, not observed; declared, contradicted; not observed; not applicable) and where it came from. Adapters for vLLM and transformers, and for hosted APIs that answer in the OpenAI chat-completions shape; your engine stays your own version. A per-step token capture is a separate file marked as model output, and the record holds no token id or text. A comparator gives <code>same</code>, <code>diverged</code> or <code>could not compare</code>, and says what it rested on.</p>
-      </div>
-    </div>
-    <div class="grid-3" style="margin-top:16px">
-      <div class="card">
-        <h3>Runs kept in a bucket</h3>
-        <p>With <code>ONETRACE_RUNS=s3://bucket/prefix</code> and the optional <code>onetrace[s3]</code> extra, a sealed run is uploaded to any S3-compatible storage, the manifest last, each object with its sha256. <code>onetrace sink verify</code> fetches a run and checks it; <code>onetrace sink retry</code> sends one that failed. A bucket verifies nothing: the reader verifies on every read.</p>
-      </div>
-      <div class="card">
-        <h3>Receipts as they are written</h3>
-        <p><code>stream_to</code>, or <code>ONETRACE_STREAM_TO</code>, sends each receipt as the step finishes, so a console can show a run filling in while it is still going. Streaming shares the record as it grows; it is not the record, and it changes no receipt and adds nothing to the chain.</p>
-      </div>
-      <div class="card">
-        <h3>The step you are in</h3>
-        <p><code>ot.current_stage()</code> gives the running step, or <code>None</code> outside one, so a helper several calls deep can write an output to the step it runs in.</p>
-      </div>
-    </div>
-<pre>pip install --upgrade "onetrace[crypto]"
-onetrace reference make runs/known-good --out reference.json
-onetrace verdict runs/today --reference reference.json</pre>
-    <p class="sub">onetrace-console 0.5.0 shows verdicts and model-call records (above). The full list is in the package's changelog at the tag; the new pages (references, variation, streaming, storage, the model-call record) and the extended verdicts page are in the source package.</p>
-  </div>
-</section>
-
-<section id="console040" aria-labelledby="console040-title">
-  <div class="wrap">
-    <p class="kicker">onetrace-console 0.4.0</p>
-    <h2 id="console040-title">The console reads what onetrace 0.5.0 records.</h2>
-    <p class="sub">It installs onetrace 0.5.0 and onetrace-verify 0.5.0, and shows decisions, spans and nested runs as the record holds them. The live demo ran it until 0.5.0.</p>
-    <div class="grid-3">
-      <div class="card">
-        <h3>Gated steps, with the decisions they cite</h3>
-        <p>A run that declares gated steps shows each one with the decisions it cites, as recorded: the verdict, the request, the reference's format, issuer and digest, and what the permit itself states (issuer, subject, the action's digest, its validity). Below them, onetrace-verify's own <code>decisions:</code> rows, each with its result. On the live demo, pipeline P8 pays an invoice through a gated step, and two runs are broken on purpose: one paid after a deny, one with a permit for another amount. Each fails on its own row.</p>
-      </div>
-      <div class="card">
-        <h3>Spans, and runs inside runs</h3>
-        <p>Each step's trace and span ids, as the run recorded them, with a link to your tracing tool if you set one. Beside a comparison's first difference, the app's own spans for that step, labelled as the app's report and not checked by onetrace. A step's child steps sit under it in call order; a run a step started is a row under that step. A comparison that descends into an inner run says where the runs part: on the live demo, P10's agent differs "inside <code>agent_step</code>", in its sub-agent's run, at <code>settle</code>.</p>
-      </div>
-      <div class="card">
-        <h3>"What changed?" on every run</h3>
-        <p>Each run's page names the comparison to open first, by a stated rule: the nearest earlier run with the same recorded inputs, else the latest earlier run whose output differs, else the latest earlier run. The page says which rule it used. Every count that adds up (checks made, stages compared) has an "i" that says which of the verifier's rows make it up. A step's model-call records are shown as written, in a draft format that may change, and never compared.</p>
-      </div>
-    </div>
-<pre>pip install --upgrade onetrace-console
-onetrace-console demo --open</pre>
-    <p class="sub">The kept explanations on the live demo were made again on the new records, by the same model, once, and are served as files. onetrace-explain 0.1.1 installs beside onetrace 0.5.0: it accepts onetrace from 0.4 up to, not including, 0.7. The full list is in the <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.4.0">release notes</a>.</p>
-  </div>
-</section>
-
-<section id="v050" class="section-soft" aria-labelledby="v050-title">
-  <div class="wrap">
-    <p class="kicker">onetrace 0.5.0</p>
-    <h2 id="v050-title">What a step was allowed to do, where it ran, and what it called.</h2>
-    <p class="sub">Three optional blocks in the receipt. A 0.4.0 verifier reads a 0.5.0 record unchanged, and a run that records none of them writes receipts byte-identical to 0.4.0.</p>
-    <div class="grid-3">
-      <div class="card">
-        <h3>Decisions, recorded with the step they gate</h3>
-        <p><code>@ot.run(..., gated_stages=[...])</code> declares which steps must be gated. Inside such a step, <code>ot.decision(ref, permit=None, action=None)</code> records the onedoor decision it cites, the bound permit's compact JWS, and the action's digest. onetrace-verify 0.5.0 adds five rows for them, read with <code>--decisions</code> and <code>--permit-issuers</code>: every gated step cites a decision, each reference is well formed, a step that acted cites a permitting decision, the permit covers the recorded action, and the decision is in the export. onetrace never imports onedoor; the checks are vendored, standard-library code tested against onedoor's published vectors.</p>
-      </div>
-      <div class="card">
-        <h3>The span context</h3>
-        <p>A step that runs inside an active OpenTelemetry span records that span's trace id and span id; the run's manifest records its <code>traceparent</code>, read from the active span or from the <code>TRACEPARENT</code> environment variable. No OpenTelemetry package is required. A malformed <code>TRACEPARENT</code> is refused and named, never recorded. The trace is a view; the record stays the evidence.</p>
-      </div>
-      <div class="card">
-        <h3>Nested runs</h3>
-        <p>A step called while another runs records its parent, and the caller lists its children in call order. A run started inside another run's step records which run and step started it, and the outer step records the inner run as an input whose digest is the inner chain head. A call nested past 32 levels is refused and named. A comparison descends into a step's children and, with <code>--nested-run</code>, into a nested run, naming the first differing child: "inside <code>plan</code>, at <code>price_lookup</code>". onetrace-verify checks that each nested run's chain head is the one the outer step recorded.</p>
-      </div>
-    </div>
-<pre>pip install --upgrade "onetrace[crypto]"
-onetrace-verify runs/&lt;run&gt; --decisions decisions.jsonl --permit-issuers permit-issuers.json
-onetrace localize runs/a runs/b --nested-run runs/a-inner --nested-run runs/b-inner</pre>
-    <p class="sub">The full list is in the package's changelog at the tag. The documentation pages on this site describe 0.4.0 and still apply; the three new pages are in the source package and at the tag.</p>
-  </div>
-</section>
-
-<section id="console032" aria-labelledby="console032-title">
-  <div class="wrap">
-    <p class="kicker">onetrace-console 0.3.2</p>
-    <h2 id="console032-title">A short answer at the top of every comparison.</h2>
-    <p class="sub">From the comparison's own records and no model, so it is the same every time. The sections below it are unchanged.</p>
-    <div class="grid-3">
-      <div class="card">
-        <h3>The short answer</h3>
-        <p>One sentence says where the two runs first differ and what differs there: a setting by its recorded name with both values ("The runs first differ at <code>split</code>, where <code>chunk_size</code> went from 1024 to 512."), an input, a configuration, or the step's output. A line under it says the stages before it are the same and counts what came after. A strip shows each stage in order with its result, the first difference marked. Runs whose outputs all agree say so, and name a setting that differs anyway.</p>
-      </div>
-      <div class="card">
-        <h3>The explanation, redrawn and moved up</h3>
-        <p>It sits directly under the short answer, with one heading, "What may have happened", and "AI-generated, may be wrong" with its model on every explanation. Each kept claim is a card: its kind, its text, and its cites as chips naming the stage and the item, with both values where the records hold them. Each suggested check is listed once; on your own console, the ones it can run get a Run button and every other a Copy button, and the live demo lists them as text. A footer counts the claims checked against the record and those left out. The kept explanations on the live demo are drawn in this layout from the same records.</p>
-      </div>
-      <div class="card">
-        <h3>A setup page for Explain</h3>
-        <p>On your own console, <code>/explain/setup</code> is a guide in three steps, and changes nothing: the model your configuration names, an OpenAI-compatible model on your machine as a choice, what always stays with you and what is sent, the two flags that add text or hold a value back, and the three promises. It has no button, and never shows the key, its variable, the endpoint or the request. The live demo has no setup page.</p>
-      </div>
-    </div>
-<div class="shot" style="margin-top:28px;max-width:980px"><a href="/assets/img/shot-explain.webp"><img src="/assets/img/shot-explain.webp" width="1280" height="1060" loading="lazy" alt="The live demo's split comparison in onetrace-console 0.3.2: The short answer at the top, saying the runs first differ at split where chunk_size went from 1024 to 512, with a strip of the five stages; directly under it, What may have happened, AI-generated, may be wrong, with one Lead card, its cites as chips, three suggested checks, and the line 5 claims checked against the record, 4 left out."></a></div>
-<pre>pip install --upgrade onetrace-console
-onetrace-console demo --open</pre>
-    <p class="sub">The full list is in the <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.3.2">release notes</a>.</p>
-  </div>
-</section>
-
-<section id="console031" class="section-soft" aria-labelledby="console031-title">
-  <div class="wrap">
-    <p class="kicker">onetrace-console 0.3.1</p>
-    <h2 id="console031-title">A Compare button, a faster store, and two more pipelines.</h2>
-    <div class="grid-3">
-      <div class="card">
-        <h3>Compare with one press</h3>
-        <p>On your own console, each pair not compared yet has a Compare button beside its request. A Compare press, a drawing of the pages and the public build each read the store once; every page is the same, byte for byte, as before. On one Windows PC, measured side by side, a Compare press went from 73.8 s to 9.1 s and the public build from 796 s to 309 s.</p>
-      </div>
-      <div class="card">
-        <h3>Invoice match and wheel-bolt torque</h3>
-        <p>Two more example pipelines in the demo: a supplier's invoice matched against its purchase order and goods receipt, with a price tolerance, to paying or holding it; and a tightening tool's five bolt torques against a window, to passing the wheel or sending it to rework. Both use invented example data. See the <a href="/industries/procurement.html">procurement</a> and <a href="/industries/automotive.html">automotive</a> pages.</p>
-      </div>
-      <div class="card">
-        <h3>Kept explanations on a public console</h3>
-        <p>A public console runs no command and makes no network calls. It now shows the explanations its build kept, made once and served as files: on the comparison's page, each with its model, its claims with their cites, the checks it names, and the claims dropped with the reason. The live demo has shown four since, and every other comparison there says none is kept.</p>
-      </div>
-    </div>
-    <p class="sub">The full list is in the <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.3.1">release notes</a>.</p>
-  </div>
-</section>
-
-<section id="console030" aria-labelledby="console030-title">
-  <div class="wrap">
-    <p class="kicker">onetrace-console 0.3.0</p>
-    <h2 id="console030-title">The console moves to onetrace 0.4.0.</h2>
-    <p class="sub">It runs on onetrace 0.4.0 and onetrace-verify 0.4.0, and reads runs recorded in format 0.3 beside runs in the earlier formats, which read as before. Every verdict it shows is still the check's own.</p>
-    <div class="grid-3">
-      <div class="card">
-        <h3>A drift page for each pipeline</h3>
-        <p>The console runs <code>onetrace drift</code> over a pipeline's stored runs, in the order it received them, and shows what it reports: each run against the run it was compared with, then each step's verdict, linked to that comparison, or to choosing it where none is held. It names the command and its exit, and computes no verdict of its own.</p>
-      </div>
-      <div class="card">
-        <h3>A suggested explanation, on the comparison page</h3>
-        <p>Where <code>onetrace-explain</code> is installed, a comparison page has a Suggested explanation section below the verdicts. Explain is pressed per comparison, and each explanation is labelled AI-generated and may be wrong. Its claims link into the record, and the claims it dropped are counted, with the reason; their text is never shown. Before it first sends a kind of item to an endpoint, it names those kinds and waits for Send; "Show the packet" shows the exact bytes and sends nothing. The console does not depend on it.</p>
-      </div>
-      <div class="card">
-        <h3>What format 0.3 adds, in the check's words</h3>
-        <p>Where a run leaves out stages it declares optional, holds a step back before it runs, or keeps no output files, the run's page quotes the check's own row for it. Where a run keeps no output files, the page says the check did not look at them, and does not say the records agree.</p>
-      </div>
-    </div>
-<div class="shot" style="margin-top:28px;max-width:980px"><img src="/assets/img/shot-drift.webp" width="1280" height="800" loading="lazy" alt="The drift page for pipeline P3, ticket triage, on the live demo: 6 runs, oldest first, each compared with the first, as onetrace drift reports it, with its command and exit. Run 5, p3-27-t-1-rules2, diverged with its first difference at classify; the others at intake. Below, each node's verdict in each comparison."></div>
-<pre>pip install --upgrade onetrace-console
-onetrace-console demo --open</pre>
-    <p class="sub"><b>On Windows,</b> Explain needs a store folder of 140 characters or fewer with long paths off, and 195 or fewer with them on. Where the folder is longer, the comparison's page says so in one line, and Explain does not run.</p>
-    <p class="sub">The full list is in the <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.3.0">release notes</a>.</p>
-  </div>
-</section>
-
-<section id="v040" class="section-soft" aria-labelledby="v040-title">
-  <div class="wrap">
-    <p class="kicker">In 0.4.0</p>
-    <h2 id="v040-title">Three new ways to read your runs.</h2>
-    <p class="sub">Each one is a view of the record. None of them changes a verdict.</p>
-    <div class="grid-3">
-      <div class="card">
-        <h3>Send a run to your tracing tools</h3>
-        <p><code>onetrace export otel RUN</code> writes a run as one OpenTelemetry trace in OTLP/JSON: a span per step, linked where one step read another's output. The same run exports the same bytes. It makes no network calls and needs no OpenTelemetry package, and values, exception text and paths are never exported. The trace is a view; the record stays the evidence.</p>
-      </div>
-      <div class="card">
-        <h3>Many runs, side by side</h3>
-        <p><code>onetrace drift</code> compares a series of runs, each with the first run or with the one before, and every comparison is a <code>diff</code> of its own. Add <code>--durations</code> to see each step's time from its receipts, with a note on the steps that got slower. Timing is shown, never judged.</p>
-      </div>
-      <div class="card">
-        <h3>A suggested explanation, checked</h3>
-        <p><code>onetrace-explain</code> asks a model you configure where to look in a comparison, then checks every claim against the record. Claims that cite nothing, misquote the record or claim to know why something differs are dropped. Everything it shows is labelled AI-generated and may be wrong. <a href="#explain">More below</a>.</p>
-      </div>
-    </div>
-<pre>pip install --upgrade onetrace
-onetrace export otel runs/&lt;run&gt; --out trace.json
-onetrace drift runs/run-1 runs/run-2 runs/run-3 --against first --durations</pre>
-  </div>
-</section>
-
-<section aria-labelledby="format-title">
-  <div class="wrap">
-    <p class="kicker">Also in 0.4.0</p>
-    <h2 id="format-title">Records that say more, and pipelines that run in parallel.</h2>
-    <div class="grid-3">
-      <div class="card">
-        <h3>Record format 0.3</h3>
-        <p>A stage can be declared optional, and a run that skips it still reads complete. A step a plan held back before it ran keeps the link it attempted. A run can declare that it keeps no output files. An earlier verifier reads each of these the same way or more strictly, never more loosely.</p>
-      </div>
-      <div class="card">
-        <h3>Concurrent stages, named</h3>
-        <p><code>ot.map</code> (threads) and <code>ot.gather</code> (asyncio) run a stage over many items and name each call by its item, never by the order calls finished in. <code>ot.pool</code> and <code>ot.carry</code> carry the run into threads you start yourself.</p>
-      </div>
-      <div class="card">
-        <h3>Inside your framework</h3>
-        <p><code>onetrace.langchain</code> records messages and prompt values without their per-call ids. <code>onetrace.langgraph</code> records which node wrote each key of a graph's state, so a comparison can follow a value back to the node that wrote it.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="explain" class="section-soft" aria-labelledby="explain-title">
-  <div class="wrap">
-    <p class="kicker">onetrace-explain 0.1.0</p>
-    <h2 id="explain-title">A suggestion about a record, never a reading of it.</h2>
-    <p class="sub">A separate package. onetrace, onetrace-verify and the console neither depend on it nor import it, and nothing they report changes with it.</p>
-    <div class="grid-3">
-      <div class="card">
-        <h3>You choose what's sent</h3>
-        <p>It sends a fixed evidence packet to the model you configure: an OpenAI-compatible endpoint or the Anthropic Messages API. Your machine's paths, your environment and the model key are never in it. Kept text goes only with <code>--include-text</code>, and <code>--dry-run</code> shows the exact packet first.</p>
-      </div>
-      <div class="card">
-        <h3>Claims are checked before you see them</h3>
-        <p>Every claim has to cite the record and quote it correctly. Claims that don't are dropped, without asking any model, and so is any claim to know why something differs. What it suggests next is a onetrace command you can run.</p>
-      </div>
-      <div class="card">
-        <h3>It leaves a record too</h3>
-        <p>Each explanation is recorded as a onetrace run of its own, so you can check later what was sent and what came back.</p>
-      </div>
-    </div>
-<div class="shot" style="margin-top:28px;max-width:980px"><img src="/assets/img/shot-explain.webp" width="1280" height="1060" loading="lazy" alt="The live demo's split comparison as onetrace-console 0.3.2 draws it: the short answer, then the kept explanation, AI-generated, may be wrong, with its one claim, its cites as chips, and the checks it suggests."></div>
-<p class="sub" style="font-size:14px">A real explanation of the demo's split comparison, written by claude-sonnet-4-6 on the local console 0.3.0.</p>
-<pre>pip install onetrace-explain
-onetrace localize runs/A runs/B --out report
-onetrace-explain report --dry-run</pre>
-    <p class="sub"><a href="/onetrace/explain-format.html">What it reads, sends, checks and writes</a></p>
-  </div>
-</section>
-
-<section id="v031" aria-labelledby="v031-title">
-  <div class="wrap">
-    <p class="kicker">In 0.3.1</p>
-    <h2 id="v031-title">Fewer false alarms, and comparisons that fit a pull request.</h2>
-    <div class="grid-3">
-      <div class="card">
-        <h3>Follow the output you care about</h3>
-        <p><code>onetrace localize A B --for &lt;stage&gt;</code> starts from one output and walks back to where its change began.</p>
-      </div>
-      <div class="card">
-        <h3>Name the noise you expect</h3>
-        <p><code>--mask FILE</code> on <code>diff</code> and <code>localize</code> sets aside the differences you expect between releases, and every step a mask changes says so. <code>onetrace mask suggest A B</code> drafts a mask from two runs.</p>
-      </div>
-      <div class="card">
-        <h3>A summary for your pull request</h3>
-        <p><code>onetrace summary</code> prints a short Markdown summary of a comparison, and of the verifier's result, for a pull request comment. <code>onetrace match</code> finds the earlier runs that were called with the same inputs.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="v030" class="section-soft" aria-labelledby="v030-title">
-  <div class="wrap">
-    <p class="kicker">In 0.3.0</p>
-    <h2 id="v030-title">Gates for your CI.</h2>
-    <p class="sub">onetrace-verify 0.3.0 added three opt-in gates. <code>--require-signature</code> fails a run with no valid signature. <code>--require-trusted</code> fails one not signed by a key you trust. <code>--require-complete</code> fails one whose declared stages didn't all run. The <a href="https://github.com/shamiksaharcciit-oss/onetrace-action">onetrace GitHub Action</a> runs the verifier and the comparison on every pull request, and posts the summary there.</p>
-  </div>
-</section>
-
-<section id="upgrade" aria-labelledby="upgrade-title">
-  <div class="wrap">
-    <p class="kicker">Upgrading</p>
-    <h2 id="upgrade-title">One command, and your old runs still verify.</h2>
-<pre>pip install --upgrade onetrace onetrace-console</pre>
-    <p class="sub">onetrace-verify comes with it and reads every earlier record. onetrace-console 0.5.1 runs on onetrace 0.6.1, so an environment that holds the console keeps 0.6.1, while one without it takes 0.7.0.</p>
-    <p class="sub">The full list of changes is in the <a href="/onetrace/manual.html">manual</a> and in each package's changelog.</p>
-  </div>
-</section>
-
-<section style="padding-top:0" aria-labelledby="next-title">
-  <div class="wrap">
-    <div class="band">
-      <div>
-        <h2 id="next-title">New to onetrace?</h2>
-        <p>Start with two decorators on the code you already have, then compare two runs in your browser.</p>
-      </div>
-      <div class="cta-row">
-        <a class="btn btn-primary" href="/get-started.html">Get started</a>
-        <a class="btn btn-ghost" href="/developers.html">For developers</a>
-      </div>
-    </div>
+    <details style="margin-top:28px" id="earlier" open><summary>Earlier releases</summary><div class="in">
+      <div class="tbl"><table><thead><tr><th>Release</th><th>In one line</th></tr></thead><tbody>
+        <tr id="console050"><td>onetrace-console 0.5.0</td><td>Model-call records, a verdict against a named reference, and compare any two runs.</td></tr>
+        <tr id="v061"><td>onetrace 0.6.1</td><td>A patch of four items, the record format unchanged.</td></tr>
+        <tr id="v060"><td>onetrace 0.6.0</td><td>A verdict against a known-good run, and what a model call ran on.</td></tr>
+        <tr id="console040"><td>onetrace-console 0.4.0</td><td>The console reads what onetrace 0.5.0 records.</td></tr>
+        <tr id="v050"><td>onetrace 0.5.0</td><td>What a step was allowed to do, where it ran, and what it called.</td></tr>
+        <tr id="console032"><td>onetrace-console 0.3.2</td><td>A short answer at the top of every comparison.</td></tr>
+        <tr id="console031"><td>onetrace-console 0.3.1</td><td>A Compare button, a faster store, and two more pipelines.</td></tr>
+        <tr id="console030"><td>onetrace-console 0.3.0</td><td>The console moves to onetrace 0.4.0.</td></tr>
+        <tr id="v040"><td>onetrace 0.4.0</td><td>Three new ways to read your runs.</td></tr>
+        <tr id="explain"><td>onetrace-explain 0.1.0</td><td>A suggestion about a record, never a reading of it.</td></tr>
+        <tr id="v031"><td>onetrace 0.3.1</td><td>Fewer false alarms, and comparisons that fit a pull request.</td></tr>
+        <tr id="v030"><td>onetrace 0.3.0</td><td>Gates for your CI.</td></tr>
+      </tbody></table></div>
+    </div></details>
   </div>
 </section>
 
 </main>
-
-<footer>
-  <div class="wrap">
-    <div class="foot-grid">
-      <div>
-        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
-        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
-        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
-      </div>
-      <div>
-        <h4>Product</h4>
-        <ul>
-          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
-          <li><a href="/industries/">Examples by industry</a></li>
-          <li><a href="/developers.html">Developers</a></li>
-          <li><a href="/how-it-works.html">How it works</a></li>
-          <li><a href="/onetrace/">Documentation</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Packages</h4>
-        <ul>
-          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>More from oneproof</h4>
-        <ul>
-          <li><a href="/oneground/">oneground</a></li>
-          <li><a href="/onedoor/">onedoor</a></li>
-          <li><a href="/where-it-fits.html">Where it fits</a></li>
-          <li><a href="/answer-lineage.html">A forensic report</a></li>
-          <li><a href="/building.html">What we're building</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
-  </div>
-</footer>
+<footer><div class="wrap stack-lg"><div class="foot">
+<div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
+<div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>More from oneproof</h4><ul><li><a href="/oneground/">oneground</a></li><li><a href="/onedoor/">onedoor</a></li><li><a href="/where-it-fits.html">Where it fits</a></li><li><a href="/building.html">What we're building</a></li></ul></div>
+</div><div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one. Screens show the public demo's sample runs, not customer data.</div></div></footer>
+<script src="/assets/site-v2.js"></script>
 </body>
 </html>
