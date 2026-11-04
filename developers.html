@@ -41,6 +41,7 @@
     <a href="#install"><span class="n">1</span>Install</a>
     <a href="#examples"><span class="n">2</span>Explore the examples</a>
     <a href="#explain"><span class="n">3</span>Explain a difference</a>
+    <a class="sub-l" href="#model">Set up a model</a>
     <a href="#instrument"><span class="n">4</span>Instrument your code</a>
     <a class="sub-l" href="#agent">With your coding agent</a>
     <a class="sub-l" href="#auto">Zero-config</a>
@@ -120,7 +121,49 @@ onetrace-explain runs/&lt;run A&gt; runs/&lt;run B&gt; --no-model</pre></div></d
         </ul>
         <div class="shot"><img src="/assets/img/shot-explain.webp" width="1280" height="1060" loading="lazy" alt="A comparison with the short answer first, then a kept explanation labelled as written by a model."></div>
       </div>
-      <p class="muted" style="font-size:15px">Setting up a model, and exactly what is read, sent and kept: <a href="/onetrace/explain-format.html">the explain reference</a>.</p>
+      <div class="mini" id="model">
+        <div class="mini-head"><span class="n">3b</span><h3>Set up a model (optional)</h3><span class="tag tag-ai">for the AI-generated part</span></div>
+        <p class="sub">One small file names the model. The key never goes in it: the file names the environment variable that holds the key. The terminal command and the console's Explain button read the same file.</p>
+        <p class="muted" style="font-size:15px">The file: <code>~/.config/onetrace/explain.toml</code> on macOS and Linux, <code>C:\Users\&lt;you&gt;\.config\onetrace\explain.toml</code> on Windows, or the path in <code>ONETRACE_EXPLAIN_CONFIG</code>.</p>
+        <div class="tabs" data-tabs>
+          <div class="tablist" role="tablist" aria-label="Model provider">
+            <button role="tab" id="tab-m-an" aria-controls="p-m-an" aria-selected="true" type="button">Anthropic</button>
+            <button role="tab" id="tab-m-oa" aria-controls="p-m-oa" aria-selected="false" type="button">OpenAI</button>
+            <button role="tab" id="tab-m-lo" aria-controls="p-m-lo" aria-selected="false" type="button">A local server</button>
+          </div>
+          <div id="p-m-an" role="tabpanel" aria-labelledby="tab-m-an"><div class="code"><div class="label"><span>explain.toml</span><button class="copy" type="button">Copy</button></div><pre>[model]
+provider = "anthropic"
+name = "&lt;model name&gt;"
+key_env = "ANTHROPIC_API_KEY"</pre></div></div>
+          <div id="p-m-oa" role="tabpanel" aria-labelledby="tab-m-oa" hidden><div class="code"><div class="label"><span>explain.toml</span><button class="copy" type="button">Copy</button></div><pre>[model]
+provider = "openai"
+name = "&lt;model name&gt;"
+base_url = "https://api.openai.com/v1"
+key_env = "OPENAI_API_KEY"</pre></div></div>
+          <div id="p-m-lo" role="tabpanel" aria-labelledby="tab-m-lo" hidden><div class="code"><div class="label"><span>explain.toml</span><button class="copy" type="button">Copy</button></div><pre>[model]
+provider = "openai"            <span class="c"># any OpenAI-compatible server</span>
+name = "&lt;model name&gt;"
+base_url = "http://localhost:8000/v1"
+<span class="c"># key_env only if your server wants a key</span></pre></div></div>
+        </div>
+        <div class="tabs" data-tabs>
+          <div class="tablist" role="tablist" aria-label="Your system">
+            <button role="tab" id="tab-k-unix" aria-controls="p-k-unix" aria-selected="true" type="button">macOS or Linux</button>
+            <button role="tab" id="tab-k-win" aria-controls="p-k-win" aria-selected="false" type="button">Windows (PowerShell)</button>
+          </div>
+          <div id="p-k-unix" role="tabpanel" aria-labelledby="tab-k-unix"><div class="code"><div class="label"><span>Set the key, then explain</span><button class="copy" type="button">Copy</button></div><pre>export ANTHROPIC_API_KEY=&lt;your key&gt;   <span class="c"># the name key_env gives</span>
+onetrace-explain runs/&lt;run A&gt; runs/&lt;run B&gt;</pre></div></div>
+          <div id="p-k-win" role="tabpanel" aria-labelledby="tab-k-win" hidden><div class="code"><div class="label"><span>Set the key, then explain</span><button class="copy" type="button">Copy</button></div><pre>$env:ANTHROPIC_API_KEY = "&lt;your key&gt;"   <span class="c"># the name key_env gives</span>
+onetrace-explain runs/&lt;run A&gt; runs/&lt;run B&gt;</pre></div></div>
+        </div>
+        <ul class="ticks">
+          <li>The first time a kind of item would go to a model, it names those kinds and asks first. <code>--yes</code> is for scripts.</li>
+          <li>To see the exact bytes before anything is sent: <code>onetrace localize runs/&lt;run A&gt; runs/&lt;run B&gt; --for &lt;step&gt; --out report</code>, then <code>onetrace-explain report --dry-run</code>.</li>
+          <li>Set the key in the terminal you start the console from, so its Explain button can use it. A local console's <b>Set up Explain</b> page shows the configured model, never the key.</li>
+          <li>Never put the key in the file, in your code, or in a decorator's settings.</li>
+        </ul>
+      </div>
+      <p class="muted" style="font-size:15px">Exactly what is read, sent and kept: <a href="/onetrace/explain-format.html">the explain reference</a>.</p>
     </section>
 
     <!-- 4 -->
@@ -150,7 +193,7 @@ and tell me the exact commands to run my program and open its runs in onetrace-c
               <tr><td>GitHub Copilot (VS Code, agent mode)</td><td><code>.github/prompts/onetrace-instrument.prompt.md</code></td><td>Type <code>/onetrace-instrument</code></td></tr>
               <tr><td>Windsurf</td><td><code>.windsurf/rules/onetrace-instrument.md</code></td><td>In Cascade: <code>@onetrace-instrument</code></td></tr>
               <tr><td>Cline</td><td><code>.clinerules/onetrace-instrument.md</code></td><td>Ask it to instrument the repository with onetrace</td></tr>
-              <tr><td>Codex and other agents that read AGENTS.md</td><td><code>AGENTS.md</code> (merge the section into yours)</td><td>Ask it to instrument the repository with onetrace</td></tr>
+              <tr><td>Codex and other agents that read <code>AGENTS.md</code></td><td><code>AGENTS.md</code> (merge the section into yours)</td><td>Ask it to instrument the repository with onetrace</td></tr>
               <tr><td>Any other agent</td><td><code>PROMPT.txt</code></td><td>Paste it as your message</td></tr>
             </tbody>
           </table></div>
@@ -175,7 +218,7 @@ onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt;</pre></div>
         </table></div>
         <ul class="ticks">
           <li>Runs go to <code>./runs</code>, or to <code>ONETRACE_RUNS</code>. A process with no supported call leaves no folder.</li>
-          <li>By default a run keeps digests only. <code>ONETRACE_AUTO_KEEP=outputs,inputs</code> keeps the bodies too, within the limits in the README.</li>
+          <li>By default a run keeps digests only. <code>ONETRACE_AUTO_KEEP=outputs,inputs</code> keeps the bodies too, within the limits in <a href="https://pypi.org/project/onetrace-auto/">onetrace-auto's README</a>.</li>
           <li>Recording never changes what your app gets back. A call it can't record is a gap that says so.</li>
           <li>Steps in your own code are seen only through these libraries. Name them with 4c's decorators.</li>
         </ul>

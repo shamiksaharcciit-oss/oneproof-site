@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>What's new · onetrace</title>
-<meta name="description" content="onetrace releases, latest first: onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
+<meta name="description" content="onetrace releases, latest first: onetrace-console 0.6.0, onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
 <link rel="canonical" href="https://oneproof.dev/whats-new.html">
 <meta property="og:title" content="What's new · onetrace">
-<meta property="og:description" content="onetrace releases, latest first: onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
+<meta property="og:description" content="onetrace releases, latest first: onetrace-console 0.6.0, onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://oneproof.dev/whats-new.html">
 <meta property="og:image" content="https://oneproof.dev/og.png">
@@ -34,6 +34,28 @@
 <section class="band" style="padding-top:24px">
   <div class="wrap">
     <span class="anchor" id="upgrade"></span>
+    <article class="rel" id="console060">
+      <div class="ver">onetrace-console 0.6.0<small>on onetrace 0.6.1</small></div>
+      <div class="stack">
+        <h2 style="font-size:1.5rem">What kind of difference, when a pipeline left its reference, and your app's own traces.</h2>
+        <div class="grid g3">
+          <div class="card"><h3>The kind of first difference</h3><p>One line at the first difference says what kind of thing differs there: the step's inputs, a model call on equal inputs, a decision, or an output that was not kept.</p></div>
+          <div class="card"><h3>The first run to leave the reference</h3><p>A pipeline's runs in recorded order, each read against its reference, and the first run that departs, by step or after a time.</p></div>
+          <div class="card"><h3>Your app's spans</h3><p>Give the console your app's OpenTelemetry export, and a step shows the spans it ran, joined by the trace context onetrace recorded.</p></div>
+        </div>
+        <details><summary>Also in 0.6.0</summary><div class="in">
+          <p><b>A JSON output's members that differ, by path,</b> each number as written, never a float.</p>
+          <p><b>The app's spans at the first difference, ranked,</b> as facts from the app's traces. No verdict changes.</p>
+          <p><b>A run's configuration against its pipeline's reference run,</b> step by step. An item a record lacks reads "not recorded", never "same".</p>
+          <p><b>A model step's token as text, on a local console,</b> only where the tokenizer files you name hash to the record's digest. A public console decodes nothing.</p>
+          <p><b>The demo's app traces,</b> labelled as example data.</p>
+          <p class="note warn"><b>Known issue:</b> just after Explain is pressed, the page that follows its progress can show an error naming the explanations folder once; reloading it reads correctly. A fix is planned for 0.6.1. The console reads records up to format 0.3, so runs from onetrace 0.7 are not read yet.</p>
+        </div></details>
+        <div class="code"><div class="label"><span>Install</span><button class="copy" type="button">Copy</button></div><pre>pip install --upgrade onetrace-console</pre></div>
+        <p class="muted" style="font-size:15px"><a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.6.0">Release notes</a> · <a href="https://demo.oneproof.dev/bisect-p10.html">The first run to leave the reference, on the live demo</a></p>
+      </div>
+    </article>
+
     <article class="rel" id="v070">
       <div class="ver">onetrace 0.7.0<small>with onetrace-verify 0.7.0 and onetrace-auto 0.7.0</small></div>
       <div class="stack">
@@ -48,7 +70,7 @@
           <p><b>A twin and a counterfactual:</b> re-run with another run's configuration, or put one step's output in from another run. A counterfactual does not show that the step made a difference.</p>
           <p><b>Step expectations</b> declared in code and recorded with the run. One that holds shows the rule held, not that the output was right.</p>
           <p><b>Self-hosted vLLM capture</b> at L1, L2 and L3 writes the model-call record 1.1. L3 has not been run on a GPU.</p>
-          <p class="note warn"><b>Upgrading:</b> the record format moves to 0.4. onetrace-console 0.5.1 pins onetrace 0.6.1, so install 0.7.0 in an environment of its own until a console release runs on it.</p>
+          <p class="note warn"><b>Upgrading:</b> the record format moves to 0.4. onetrace-console 0.5.1 and 0.6.0 pin onetrace 0.6.1, so install 0.7.0 in an environment of its own until a console release runs on it.</p>
         </div></details>
         <div class="code"><div class="label"><span>Install</span><button class="copy" type="button">Copy</button></div><pre>pip install -U "onetrace[crypto]"
 pip install onetrace-auto</pre></div>
