@@ -21,7 +21,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html" aria-current=page>Developers</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html" aria-current=page>Developers</a><a href="/debugging.html">Debug an agent</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
 <main id="main">
 <section class="hero" style="padding-bottom:28px">
   <div class="wrap stack-lg">
@@ -74,7 +74,7 @@ onetrace doctor</pre></div></div>
 pip install onetrace "onetrace-console[neighbours]" onetrace-explain
 onetrace doctor</pre></div></div>
       </div>
-      <p class="muted" style="font-size:15px"><code>onetrace doctor</code> checks your setup. Your prompt starts with <code>(.venv)</code> while the environment is active. <code>[neighbours]</code> adds what finding similar runs needs (onnxruntime, tokenizers and numpy, about 170 MB on disk); no model is downloaded until you turn the feature on (step 5b). For a smaller install, leave it out: <code>pip install onetrace onetrace-console onetrace-explain</code>.</p>
+      <p class="muted" style="font-size:15px"><code>onetrace doctor</code> checks your setup. Your prompt starts with <code>(.venv)</code> while the environment is active. <code>[neighbours]</code> adds what finding similar runs needs (onnxruntime, tokenizers and numpy, about 140 to 170 MB on disk, by system); no model is downloaded until you turn the feature on (step 5b). For a smaller install, leave it out: <code>pip install onetrace onetrace-console onetrace-explain</code>.</p>
       <details><summary>New to Python or virtual environments?</summary><div class="in">
         <p>A virtual environment keeps what you install here apart from the rest of your computer. Come back to it later with <code>cd</code> into the folder and the activate line again.</p>
         <p>If <code>onetrace-console --version</code> shows <code>0.0.0</code>, an older install answered first: make a fresh environment and install there.</p>
@@ -274,7 +274,7 @@ onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt; --text</pre></div>
         <div class="mini-head"><span class="n">5b</span><h3>Find runs with similar inputs (optional)</h3><span class="tag tag-ai">an embedding model</span></div>
         <p class="sub">On a local console, a run's page can list other runs of the same configuration whose kept inputs are near its own, each with a Compare button. Compare two of them and a nearness ladder sits beside the exact one. It is off until you turn it on.</p>
         <div class="grid g2">
-          <div class="code"><div class="label"><span>1 · Installed by step 1; otherwise add it</span><button class="copy" type="button">Copy</button></div><pre class="wrap-line">pip install "onetrace-console[neighbours]"</pre></div>
+          <div class="code"><div class="label"><span>1 · Installed by step 1; otherwise add it</span><button class="copy" type="button">Copy</button></div><pre class="wrap-line">pip install <span style="white-space:nowrap">"onetrace-console[neighbours]"</span></pre></div>
           <div class="code"><div class="label"><span>2 · Keep the inputs it reads</span><button class="copy" type="button">Copy</button></div><pre>@ot.stage("answer", instrument=...,
           keep_inputs=["question"])</pre></div>
         </div>

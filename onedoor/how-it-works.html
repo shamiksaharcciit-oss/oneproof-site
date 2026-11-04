@@ -194,7 +194,7 @@
         <li><b>Bound to the request.</b> When a policy asks for one, onedoor issues a permit naming the exact action by digest, the key that must sign the request, a short lifetime and a one-time id; the request must carry its body's digest, and an <code>Idempotency-Key</code> equal to that id. The library call issues it. The decision service, the MCP proxy and the LangChain middleware return the field empty for now, and deny an action whose policy asks for a permit (next: each issues one).</li>
         <li><b>Checked in a fixed order by the recipient.</b> <code>onedoor.permit</code> holds the recipient's check: thirteen steps, stopping at the first failure. The last step only reserves the permit's id; the recipient completes the reservation once it has attempted the effect, so a refused request never uses the permit up.</li>
         <li><b>A signed confirmation back (0.10.0).</b> The recipient signs which permit and which request it acted on, and whether the effect happened, was refused or is unknown. The presenter checks it against what its own step recorded. A confirmation shows the recipient said it acted, not that the effect happened in the world.</li>
-        <li><b>In a onetrace record (next).</b> A onetrace step records the confirmation, so a run can show an action authorized and its effect confirmed, and check both.</li>
+        <li><b>In a onetrace record (later).</b> A onetrace step records the confirmation, so a run can show an action authorized and its effect confirmed, and check both.</li>
       </ul>
     </div>
     <p class="sub" style="margin-top:22px">Back to the <a href="/onedoor/">overview</a>, or start on the <a href="/onedoor/developers.html">Developers page</a>.</p>

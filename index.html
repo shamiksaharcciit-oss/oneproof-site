@@ -21,7 +21,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html">Developers</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html">Developers</a><a href="/debugging.html">Debug an agent</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
 <main id="main">
 <section class="hero">
   <div class="wrap hero-grid">
@@ -33,7 +33,7 @@
         <a class="btn btn-primary" href="/developers.html">Get started</a>
         <a class="btn btn-ghost" href="https://demo.oneproof.dev">Open the live demo</a>
       </div>
-      <div class="code"><div class="label"><span>Install</span><button class="copy" type="button">Copy</button></div><pre class="wrap-line">pip install onetrace "onetrace-console[neighbours]" onetrace-explain</pre></div>
+      <div class="code"><div class="label"><span>Install</span><button class="copy" type="button">Copy</button></div><pre class="wrap-line">pip install onetrace <span style="white-space:nowrap">"onetrace-console[neighbours]"</span> onetrace-explain</pre></div>
     </div>
     <figure style="margin:0">
       <div class="shot"><img src="/assets/img/shot-compare-top.webp" width="1600" height="1000" alt="A comparison on the live demo: five steps, with classify marked First difference, the two steps after it marked Changed after it, and a table of what differed at each step."></div>
@@ -52,6 +52,23 @@
       <div class="card"><div class="ico ico-a">01</div><h3>Record every step</h3><p>One receipt per step: what went in, what came out, the tool and its settings. Add it with your coding agent, with no code change, or step by step.</p></div>
       <div class="card"><div class="ico ico-b">02</div><h3>Find the first difference</h3><p>Open two runs in the console. It names the first step whose output differs, the settings that changed there, and the exact text.</p></div>
       <div class="card"><div class="ico ico-g">03</div><h3>Check without trusting the code</h3><p>A separate verifier reads only the bytes on disk. Change a receipt after the run and it says which one.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="debugging">
+  <div class="wrap split">
+    <div class="stack-lg">
+      <span class="eyebrow">Debugging an agent</span>
+      <h2>Your invoice agent paid &euro;4,000 on a &euro;40 invoice. Where do you start?</h2>
+      <p class="sub">Check it was recorded. Read the bad run. Compare it with a good one. Find runs like it. Ask what changed, and whether it's just noise. Re-run it without paying twice. Check who allowed it. Ask for an explanation you can check. Nine avenues, one record they all read from.</p>
+      <a class="btn btn-ghost" href="/debugging.html" style="justify-self:start">Walk through the nine avenues &rarr;</a>
+      <p class="muted" style="font-size:14px">An illustrative example, not a real event.</p>
+    </div>
+    <div class="stack">
+      <div class="pipe"><span class="lab">yesterday</span><span class="node">intake</span><span class="arr">&rarr;</span><span class="node">extract</span><span class="arr">&rarr;</span><span class="node">lookup</span><span class="arr">&rarr;</span><span class="node">approve</span><span class="arr">&rarr;</span><span class="node">pay</span></div>
+      <div class="pipe"><span class="lab">today</span><span class="node">intake</span><span class="arr">&rarr;</span><span class="node bad">extract</span><span class="arr">&rarr;</span><span class="node">lookup</span><span class="arr">&rarr;</span><span class="node">approve</span><span class="arr">&rarr;</span><span class="node bad">pay</span></div>
+      <p class="muted" style="font-size:14px">The wrong payment shows at <code>pay</code>. onetrace points at <code>extract</code>, the first step whose output differs.</p>
     </div>
   </div>
 </section>

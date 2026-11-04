@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Debugging an agent · onetrace</title>
+<meta name="description" content="One run went wrong. The nine places a developer looks, what tools give today, and how onetrace makes each one shorter, with what is available now and what comes next.">
+<link rel="canonical" href="https://oneproof.dev/debugging.html">
+<meta property="og:title" content="Debugging an agent · onetrace">
+<meta property="og:description" content="One run went wrong. The nine places a developer looks, what tools give today, and how onetrace makes each one shorter, with what is available now and what comes next.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneproof.dev/debugging.html">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site-v2.css">
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html">Developers</a><a href="/debugging.html" aria-current=page>Debug an agent</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
+<main id="main">
+<section class="hero" style="padding-bottom:28px">
+  <div class="wrap stack-lg">
+    <span class="eyebrow">Debugging an agent</span>
+    <h1>One run went wrong. Where do you start?</h1>
+    <p class="lede">The nine places a developer looks when an agent does something it shouldn't, what tools give you today, and how onetrace makes each one shorter.</p>
+    <div class="row"><span class="st st-now">Available</span><span class="muted">you can use it today</span> <span class="st st-next">Next</span><span class="muted">the next release</span> <span class="st st-later">Later</span><span class="muted">planned after that</span></div>
+  </div>
+</section>
+
+<section class="band band-alt">
+  <div class="wrap split">
+    <div class="stack-lg">
+      <span class="eyebrow">The incident</span>
+      <h2>An invoice agent paid €4,000 on an invoice for €40.</h2>
+      <p class="sub">Yesterday the same pipeline handled the same supplier correctly. Nobody changed the code. The pipeline has five steps, two model calls and a payments tool behind a policy check.</p>
+      <div class="note">You have logs, a tracing tool, the model provider's console and the payment record. None of them was built to answer the question you have.</div>
+      <p class="muted" style="font-size:14px">An illustrative example, not a real event.</p>
+    </div>
+    <div class="stack">
+      <div class="stack" style="gap:8px"><div class="pipe"><span class="lab">yesterday</span><span class="node">intake</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">extract</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">lookup</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">approve</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">pay</span></div><div class="pipe"><span class="lab">today</span><span class="node">intake</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">extract</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">lookup</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">approve</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node bad">pay</span></div></div>
+      <p class="muted" style="font-size:14px">The wrong effect shows at the last step. Where it started is the question.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap stack-lg">
+    <div class="band-head">
+      <span class="eyebrow">The debug cycle</span>
+      <h2>Most of the hours go into one box: <span style="color:var(--amber-ink)">Investigate</span>.</h2>
+      <p class="sub">Faced with one bad run, you reach for whatever narrows it down: read the run, find one that worked, look for runs like it, ask what changed, rule out noise, re-run it, check who allowed it, ask an assistant. Each is partly covered by some tool today, and each has a gap that turns minutes into days.</p>
+    </div>
+    <div class="cycle" aria-label="Notice, Investigate, Hypothesis, Test, Fix, Confirm">
+      <span class="node">Notice</span><span class="arr">→</span><span class="node hi">Investigate</span><span class="arr">→</span><span class="node">Hypothesis</span><span class="arr">→</span><span class="node">Test</span><span class="arr">→</span><span class="node">Fix</span><span class="arr">→</span><span class="node">Confirm</span>
+    </div>
+    <h3 style="margin-top:12px">Nine avenues from one bad run</h3>
+    <div class="avgrid"><a href="#recorded"><span class="n">AVENUE 0</span><b>Was it recorded?</b><span>There&#x27;s nothing useful in the logs for that request.</span></a><a href="#read"><span class="n">AVENUE 1</span><b>Read the bad run</b><span>Show me exactly what each step saw and did.</span></a><a href="#compare"><span class="n">AVENUE 2</span><b>Compare with a good run</b><span>It worked yesterday. Where did today&#x27;s run part ways?</span></a><a href="#like"><span class="n">AVENUE 3</span><b>Find runs like it</b><span>Is it this supplier, or everyone?</span></a><a href="#changed"><span class="n">AVENUE 4</span><b>What changed, and when</b><span>Nobody deployed anything. What moved?</span></a><a href="#noise"><span class="n">AVENUE 5</span><b>Is it just noise?</b><span>If I re-run it, will it even do that again?</span></a><a href="#rerun"><span class="n">AVENUE 6</span><b>Re-run it safely</b><span>Can I try it again, without paying the invoice twice?</span></a><a href="#allowed"><span class="n">AVENUE 7</span><b>Who allowed it</b><span>The agent paid. Which rule let that through?</span></a><a href="#explain"><span class="n">AVENUE 8</span><b>Ask for an explanation</b><span>Just tell me what probably happened.</span></a></div>
+  </div>
+</section>
+
+<section class="band band-alt">
+  <div class="wrap stack-lg">
+    
+    <section class="av" id="recorded" aria-labelledby="t-recorded">
+      <span class="eyebrow">Avenue 0 · Was it recorded?</span>
+      <h3 class="av-q" id="t-recorded">"There&#x27;s nothing useful in the logs for that request."</h3>
+      <div class="stack" style="gap:8px"><div class="pipe"><span class="node">your app, unchanged</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node hi">onetrace-run python app.py</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">a receipt per step</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node ok">close receipt</span></div></div>
+      <div class="av-cols">
+        <div class="av-today"><h4>Today, across tools</h4><ul><li>Logs and traces, if someone added them on this path.</li><li>A run that crashed looks the same as one that finished early.</li><li>Anyone with access can edit what was kept.</li></ul></div>
+        <div class="av-with"><h4>With onetrace</h4><div class="it"><span class="st st-now">Available</span><b>Receipts per step</b><p>Each step's inputs, outputs, tool and settings, fingerprinted and chained; onetrace-verify checks them with no network calls and no account.</p></div><div class="it"><span class="st st-now">Available</span><b>Zero-config recording (onetrace 0.7.0)</b><p><code>onetrace-run python app.py</code> records calls through the OpenAI client, requests and httpx, with no code change.</p></div><div class="it"><span class="st st-now">Available</span><b>The close receipt (onetrace 0.7.0)</b><p>Every run ends with one, so a run that was cut short reads "not closed", never "finished".</p></div><div class="it"><span class="st st-next">Next</span><b>The console reads onetrace 0.7 runs</b><p>Today's console reads runs up to onetrace 0.6.1; zero-config runs and the close receipt open in the next console release.</p></div></div>
+      </div>
+      <p class="try"><b>Try it:</b> In an environment of its own (the console's environment keeps onetrace 0.6.1 until the next console release): <code>pip install onetrace-auto</code>, which brings onetrace 0.7.0, then <code>onetrace-run python app.py</code>. <a href="/developers.html#auto">Zero-config →</a></p>
+    </section>
+    <section class="av" id="read" aria-labelledby="t-read">
+      <span class="eyebrow">Avenue 1 · Read the bad run</span>
+      <h3 class="av-q" id="t-read">"Show me exactly what each step saw and did."</h3>
+      <div class="stack" style="gap:8px"><div class="pipe"><span class="node">intake</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">extract</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">lookup</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">approve</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">pay</span></div></div><p class="muted" style="font-size:13px;margin:6px 0 0">inputs and outputs by fingerprint · the model call as recorded · the tool result · the decision · signed and chained</p>
+      <div class="av-cols">
+        <div class="av-today"><h4>Today, across tools</h4><ul><li>Trace waterfalls: timing, status, attributes.</li><li>Prompt and response viewers.</li><li>Which model build answered, with which settings: often missing.</li></ul></div>
+        <div class="av-with"><h4>With onetrace</h4><div class="it"><span class="st st-now">Available</span><b>The run record</b><p>A run's page in the console: every step, its receipt, and the verifier's result.</p></div><div class="it"><span class="st st-now">Available</span><b>The model-call record</b><p>The model's identity, sampler settings and usage, as the call ran, not as it was configured.</p></div><div class="it"><span class="st st-now">Available</span><b>Your app's spans beside each step (console 0.6.0)</b><p>Give the console your app's OpenTelemetry export and a step shows its spans: model, tool and HTTP calls, retries, tokens.</p></div><div class="it"><span class="st st-now">Available</span><b>A token as text (console 0.6.0)</b><p>On your own console, where the tokenizer files you name hash to the record's.</p></div></div>
+      </div>
+      <p class="try"><b>Try it:</b> <code>onetrace-console runs --open</code>, then open a run. <a href="/developers.html#check">Compare and check →</a></p>
+    </section>
+    <section class="av" id="compare" aria-labelledby="t-compare">
+      <span class="eyebrow">Avenue 2 · Compare with a good run</span>
+      <h3 class="av-q" id="t-compare">"It worked yesterday. Where did today&#x27;s run part ways?"</h3>
+      <div class="stack" style="gap:8px"><div class="pipe"><span class="lab">good</span><span class="node">intake</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">extract</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">lookup</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">approve</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">pay</span></div><div class="pipe"><span class="lab">bad</span><span class="node">intake</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node bad">extract</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">lookup</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">approve</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">pay</span></div></div><p class="muted" style="font-size:13px;margin:6px 0 0">first difference: <b style="color:#ffb4ab">extract</b></p>
+      <div class="av-cols">
+        <div class="av-today"><h4>Today, across tools</h4><ul><li>Side-by-side trace or prompt comparison, in some tools.</li><li>Diffing exported logs by hand.</li><li>Nothing says &quot;same inputs, different output&quot; at a step.</li></ul></div>
+        <div class="av-with"><h4>With onetrace</h4><div class="it"><span class="st st-now">Available</span><b>The first difference</b><p>Two runs step by step: the first step whose output differs, the setting that changed there, then the exact text and each JSON field by path.</p></div><div class="it"><span class="st st-now">Available</span><b>"What changed?"</b><p>From a run's page, the console picks an earlier run to compare with, a marked benchmark first.</p></div><div class="it"><span class="st st-now">Available</span><b>Configuration against the reference (console 0.6.0)</b><p>When no twin run exists: this run's settings, code and model step by step against the known-good run's.</p></div><div class="it"><span class="st st-now">Available</span><b>A twin (onetrace 0.7.0)</b><p>Re-run these inputs with another run's configuration, from the command line.</p></div><div class="it"><span class="st st-later">Later</span><b>Inside a nested step</b><p>Name the step inside a step where the difference starts.</p></div></div>
+      </div>
+      <p class="try"><b>Try it:</b> <code>onetrace-console runs --compare good bad --open</code>. <a href="https://demo.oneproof.dev">See one on the live demo →</a></p>
+    </section>
+    <section class="av" id="like" aria-labelledby="t-like">
+      <span class="eyebrow">Avenue 3 · Find runs like it</span>
+      <h3 class="av-q" id="t-like">"Is it this supplier, or everyone?"</h3>
+      <div class="stack" style="gap:8px"><div class="pipe"><span class="node bad">today&#x27;s run</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node ok">same input · yesterday</span></div><div class="pipe"><span class="node bad">today&#x27;s run</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node hi">near input · 0.97</span></div></div><p class="muted" style="font-size:13px;margin:6px 0 0">exact, by fingerprint · by meaning, with an embedding model you choose (illustrative number)</p>
+      <div class="av-cols">
+        <div class="av-today"><h4>Today, across tools</h4><ul><li>Filtering traces by tags and metadata.</li><li>Text search over prompts, in some tools.</li><li>No notion of &quot;the same configuration&quot; or &quot;the same model files&quot;.</li></ul></div>
+        <div class="av-with"><h4>With onetrace</h4><div class="it"><span class="st st-now">Available</span><b>Search runs by what they recorded</b><p><code>inputs:same-as:</code>, <code>setting:</code>, <code>first_diff:</code>, <code>model:</code> and more: exact matches, nothing guessed.</p></div><div class="it"><span class="st st-now">Available</span><b>A known-good run, marked</b><p>Mark a run as a benchmark; comparisons and verdicts read against it.</p></div><div class="it"><span class="st st-now">Available</span><b>Runs with near inputs (console 0.6.0)</b><p>Opt-in, on your own console: runs of the same configuration whose kept inputs are near this one's, from a local model or your own endpoint.</p></div><div class="it"><span class="st st-now">Available</span><b>Runs that used the same model files</b><p>Listed from each model-call record.</p></div><div class="it"><span class="st st-later">Later</span><b>Runs with near outputs</b><p>"Which runs answered like this one?"</p></div></div>
+      </div>
+      <p class="try"><b>Try it:</b> Turn it on at <code>/neighbours/setup</code> on your console. <a href="/developers.html#neighbours">Find similar runs →</a></p>
+    </section>
+    <section class="av" id="changed" aria-labelledby="t-changed">
+      <span class="eyebrow">Avenue 4 · What changed, and when</span>
+      <h3 class="av-q" id="t-changed">"Nobody deployed anything. What moved?"</h3>
+      <div class="pipe" aria-label="runs in recorded order; the first run to leave the reference is marked"><span class="node ok" style="padding:8px">&nbsp;</span><span class="node ok" style="padding:8px">&nbsp;</span><span class="node ok" style="padding:8px">&nbsp;</span><span class="node ok" style="padding:8px">&nbsp;</span><span class="node ok" style="padding:8px">&nbsp;</span><span class="node ok" style="padding:8px">&nbsp;</span><span class="node ok" style="padding:8px">&nbsp;</span><span class="node ok" style="padding:8px">&nbsp;</span><span class="node bad" style="padding:8px">&nbsp;</span><span class="node bad" style="padding:8px;opacity:.6">&nbsp;</span><span class="node bad" style="padding:8px;opacity:.6">&nbsp;</span><span class="node bad" style="padding:8px;opacity:.6">&nbsp;</span></div><p class="muted" style="font-size:13px;margin:6px 0 0">runs in recorded order · the first run to leave the reference</p>
+      <div class="av-cols">
+        <div class="av-today"><h4>Today, across tools</h4><ul><li>Deploy logs, git history, feature-flag audits.</li><li>Provider changelogs, where the provider publishes one.</li><li>A hosted model can change behind the same name.</li></ul></div>
+        <div class="av-with"><h4>With onetrace</h4><div class="it"><span class="st st-now">Available</span><b>The kind of difference (console 0.6.0)</b><p>One line at the top of a comparison: the step's inputs, a model call on equal inputs, a decision, or an output that wasn't kept.</p></div><div class="it"><span class="st st-now">Available</span><b>The first run to leave the reference (console 0.6.0)</b><p>A pipeline's runs in recorded order, and the first one that departs, by step.</p></div><div class="it"><span class="st st-now">Available</span><b>The model call, compared on equal inputs</b><p>Identity, engine and sampling settings, field by field.</p></div><div class="it"><span class="st st-now">Available</span><b>Step expectations (onetrace 0.7.0)</b><p>Declare what a step's output must look like; the verifier checks it after the run.</p></div><div class="it"><span class="st st-next">Next</span><b>Expectations on the run's page</b><p>Each one held, broken or not run, in the console.</p></div><div class="it"><span class="st st-later">Later</span><b>Expectations checked during the run</b><p>Opt-in: record each result as the step returns, or stop before the next step.</p></div></div>
+      </div>
+      <p class="try"><b>Try it:</b> Open a pipeline in the console and choose <b>First run to leave the reference</b>.</p>
+    </section>
+    <section class="av" id="noise" aria-labelledby="t-noise">
+      <span class="eyebrow">Avenue 5 · Is it just noise?</span>
+      <h3 class="av-q" id="t-noise">"If I re-run it, will it even do that again?"</h3>
+      <div class="pipe"><span class="node ok" style="padding:6px 7px">&nbsp;</span><span class="node ok" style="padding:13px 7px">&nbsp;</span><span class="node ok" style="padding:9px 7px">&nbsp;</span><span class="node ok" style="padding:16px 7px">&nbsp;</span><span class="node ok" style="padding:12px 7px">&nbsp;</span><span class="node ok" style="padding:8px 7px">&nbsp;</span><span class="node ok" style="padding:15px 7px">&nbsp;</span><span class="node ok" style="padding:11px 7px">&nbsp;</span><span class="node ok" style="padding:7px 7px">&nbsp;</span><span class="node ok" style="padding:14px 7px">&nbsp;</span><span class="arr">·</span><span class="node bad" style="padding:20px 7px">&nbsp;</span></div><p class="muted" style="font-size:13px;margin:6px 0 0">a known-good run repeated · the bad run, outside the range the step shows on its own</p>
+      <div class="av-cols">
+        <div class="av-today"><h4>Today, across tools</h4><ul><li>Re-run it a few times and eyeball it.</li><li>Eval averages, which hide one bad run.</li><li>Per-token log probabilities from some providers, if requested.</li></ul></div>
+        <div class="av-with"><h4>With onetrace</h4><div class="it"><span class="st st-now">Available</span><b>Repeat sets and the variation profile</b><p>Declare what is allowed to vary, then read a run against a benchmark's range.</p></div><div class="it"><span class="st st-now">Available</span><b>The first token where outputs part (L1)</b><p>From the record, the decode step where two outputs first differ.</p></div><div class="it"><span class="st st-now">Available</span><b>L1 to L3 capture for vLLM (onetrace 0.7.0)</b><p>Token ids, top candidates and per-step digests for self-hosted models.</p></div><div class="it"><span class="st st-next">Next</span><b>Was it a near-tie? (L2 in the console)</b><p>At the first differing token: was run B's token among run A's top candidates, and at what rank.</p></div></div>
+      </div>
+      <p class="try"><b>Try it:</b> <a href="/how-it-works.html">How the record handles repeats →</a></p>
+    </section>
+    <section class="av" id="rerun" aria-labelledby="t-rerun">
+      <span class="eyebrow">Avenue 6 · Re-run it safely</span>
+      <h3 class="av-q" id="t-rerun">"Can I try it again, without paying the invoice twice?"</h3>
+      <div class="stack" style="gap:8px"><div class="pipe"><span class="node">intake</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node bad">extract</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">lookup</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">approve</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">pay</span></div><div class="pipe"><span class="node">intake</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node ok">good output</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">lookup</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">approve</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">pay</span></div></div>
+      <div class="av-cols">
+        <div class="av-today"><h4>Today, across tools</h4><ul><li>Notebook re-runs with hand-made mocks.</li><li>Replay tools that stub recorded responses, built per project.</li><li>Nothing stops a re-run from calling the payment tool.</li></ul></div>
+        <div class="av-with"><h4>With onetrace</h4><div class="it"><span class="st st-now">Available</span><b>onetrace reproduce</b><p>Re-run from the record and the kept inputs.</p></div><div class="it"><span class="st st-now">Available</span><b>Re-runs stop before a write (onetrace 0.7.0)</b><p>Mark the stage <code>effect="write"</code> (onetrace-auto labels the calls it records); a re-run stops before a write, or a step it cannot classify, unless you pass <code>--allow-writes</code>. A step with no label still runs, and is named before the re-run starts.</p></div><div class="it"><span class="st st-now">Available</span><b>A counterfactual (onetrace 0.7.0)</b><p>Put the good run's output in at one step and see if the rest recovers.</p></div><div class="it"><span class="st st-now">Available</span><b>onetrace check (onetrace 0.7.0)</b><p>Check one claim about a run or a pair, recorded as a run of its own.</p></div><div class="it"><span class="st st-next">Next</span><b>"Prove it" from the comparison</b><p>Run the suggested check from the console's comparison page.</p></div></div>
+      </div>
+      <p class="try"><b>Try it:</b> <code>onetrace reproduce runs/&lt;run&gt;</code>, with onetrace 0.7.0 for the stop before a write (in an environment of its own until the next console release; onetrace 0.6.1 stops before nothing).</p>
+    </section>
+    <section class="av" id="allowed" aria-labelledby="t-allowed">
+      <span class="eyebrow">Avenue 7 · Who allowed it</span>
+      <h3 class="av-q" id="t-allowed">"The agent paid. Which rule let that through?"</h3>
+      <div class="stack" style="gap:8px"><div class="pipe"><span class="node">agent proposes</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node ok">policy decides</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node ok">permit issued</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">request sent</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node ok">recipient confirms</span></div></div><p class="muted" style="font-size:13px;margin:6px 0 0">green: signed by the party that did it</p>
+      <div class="av-cols">
+        <div class="av-today"><h4>Today, across tools</h4><ul><li>Policy-engine and audit logs.</li><li>The payment provider&#x27;s own record.</li><li>Each held by the party with the most at stake.</li></ul></div>
+        <div class="av-with"><h4>With onetrace</h4><div class="it"><span class="st st-now">Available</span><b>Decisions on gated steps</b><p>With onedoor, a gated step cites the decision that allowed it; onetrace-verify fails a step that acted on a deny.</p></div><div class="it"><span class="st st-now">Available</span><b>The recipient's signed confirmation (onedoor 0.10)</b><p>The receiving system signs which permit and request it acted on, and the outcome.</p></div><div class="it"><span class="st st-later">Later</span><b>The confirmation in the run's record</b><p>A onetrace step records it, so a run shows an action authorized and its effect confirmed, and checks both.</p></div><div class="it"><span class="st st-later">Later</span><b>The authorization page</b><p>Proposal, decision, permit, request and confirmation on one page.</p></div></div>
+      </div>
+      <p class="try"><b>Try it:</b> <a href="/onedoor/">onedoor, on its own or with onetrace →</a></p>
+    </section>
+    <section class="av" id="explain" aria-labelledby="t-explain">
+      <span class="eyebrow">Avenue 8 · Ask for an explanation</span>
+      <h3 class="av-q" id="t-explain">"Just tell me what probably happened."</h3>
+      <div class="stack" style="gap:8px"><div class="pipe"><span class="node">checked facts</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node ok">read-only probes</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node hi">AI reading, cited</span><span class="arr" aria-hidden="true">&rarr;</span><span class="node">checks to run</span></div></div>
+      <div class="av-cols">
+        <div class="av-today"><h4>Today, across tools</h4><ul><li>Pasting logs into a chat assistant.</li><li>AI summaries inside observability tools.</li><li>Plausible answers with nothing to check them against.</li></ul></div>
+        <div class="av-with"><h4>With onetrace</h4><div class="it"><span class="st st-now">Available</span><b>onetrace-explain 0.2</b><p>What changed and the evidence first, with no model and no network calls. Then, if you ask, a model's reading, labelled AI-generated: a claim that cites nothing is dropped.</p></div><div class="it"><span class="st st-now">Available</span><b>Read-only probes</b><p>Variation, masking ids and times, and the model-call record, before the model writes anything. Nothing is re-run.</p></div><div class="it"><span class="st st-now">Available</span><b>The Explain button</b><p>On a comparison page in the console, with your own model and key.</p></div><div class="it"><span class="st st-next">Next</span><b>More evidence in the console</b><p>The first run to leave the reference, configuration against the reference, the kind of difference, a near-tie, and your app's spans, as probes.</p></div><div class="it"><span class="st st-next">Next</span><b>Set up the model in the console</b><p>The model's settings in a form, the key in your system's keychain.</p></div></div>
+      </div>
+      <p class="try"><b>Try it:</b> <code>onetrace-explain runs/good runs/bad</code>. <a href="/developers.html#explain">Explain a difference →</a></p>
+    </section>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap split">
+    <div class="stack-lg">
+      <span class="eyebrow">Put together</span>
+      <h2>One command reads the record for you.</h2>
+      <p class="sub"><code>onetrace-explain</code> takes the good run and the bad one. It prints what changed and the evidence from read-only probes, with no model and no network calls. If you configure a model, it adds a reading labelled as AI-generated, where every claim cites the record or is dropped. Checks that would run something are listed for you, never run.</p>
+      <p class="muted" style="font-size:14px">Illustrative output for the invoice example. The four parts and their headings are the ones onetrace-explain 0.2 prints.</p>
+    </div>
+    <div class="code"><div class="label"><span>Terminal</span></div><pre>onetrace-explain runs/yesterday runs/today
+
+<span class="k">What changed (checked from the records)</span>
+  First difference at extract; 3 changed after it, 0 the same again
+<span class="k">Evidence (read-only, no re-runs)</span>
+  P1 variation   outside the benchmark's range (12 runs)
+  P3 model_call  model build differs on equal inputs
+<span class="k">What may have happened (AI-generated, may be wrong)</span>
+  1. the provider's model build changed     cites P3
+<span class="k">Checks a human could run (not run)</span>
+  onetrace reproduce runs/today extract --runner &lt;your runner&gt;</pre></div>
+  </div>
+</section>
+
+<section class="band band-alt">
+  <div class="wrap stack-lg">
+    <div class="band-head"><span class="eyebrow">At a glance</span><h2>The avenues, and where each one stands.</h2></div>
+    <div class="tbl"><table><thead><tr><th>Avenue</th><th><span class="st st-now">Available</span></th><th><span class="st st-next">Next</span></th><th><span class="st st-later">Later</span></th></tr></thead><tbody><tr><td><b>0 Recorded?</b></td><td>receipts, verify, zero-config, close receipt</td><td>the console reads 0.7 runs</td><td>—</td></tr><tr><td><b>1 Read the run</b></td><td>run record, model-call record, app spans, token as text</td><td>—</td><td>—</td></tr><tr><td><b>2 Compare</b></td><td>first difference, text and JSON diff, &quot;What changed?&quot;, configuration vs reference, twin</td><td>—</td><td>nested steps</td></tr><tr><td><b>3 Runs like it</b></td><td>search, benchmarks, near inputs, same model files</td><td>—</td><td>near outputs</td></tr><tr><td><b>4 What changed</b></td><td>kind of difference, first run to leave the reference, expectations</td><td>expectations in the console</td><td>checked during the run</td></tr><tr><td><b>5 Noise?</b></td><td>repeat sets, variation, L1, vLLM capture</td><td>near-tie (L2) in the console</td><td>—</td></tr><tr><td><b>6 Re-run</b></td><td>reproduce, stop before a write, counterfactual, check</td><td>&quot;Prove it&quot;</td><td>—</td></tr><tr><td><b>7 Who allowed</b></td><td>decisions on gated steps, the recipient&#x27;s confirmation (onedoor)</td><td>—</td><td>confirmation in the record, authorization page</td></tr><tr><td><b>8 Explain</b></td><td>onetrace-explain 0.2, probes, the Explain button</td><td>more evidence, setup in the console</td><td>—</td></tr></tbody></table></div>
+    <p class="muted" style="font-size:14px">No dates: each release ships when its checks pass, and planned items can change. Today's console reads runs recorded with onetrace up to 0.6.1, and the install line above gives onetrace 0.6.1. The items marked onetrace 0.7.0 need onetrace 0.7.0 in an environment of its own until the next console release: <code>pip install onetrace-auto</code> there brings it. Runs recorded with it open in the console from that release.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap stack-lg" style="max-width:820px">
+    <span class="eyebrow">Try it</span>
+    <h2>Nine avenues. One record they all read from.</h2>
+    <p class="sub">Recorded once and checkable by anyone, so a bad run becomes a short list of evidence, not a week of guessing.</p>
+    <div class="code"><div class="label"><span>Install</span><button class="copy" type="button">Copy</button></div><pre class="wrap-line">pip install onetrace <span style="white-space:nowrap">"onetrace-console[neighbours]"</span> onetrace-explain</pre></div>
+    <div class="row"><a class="btn btn-primary" href="/developers.html">Open the developer guide</a><a class="btn btn-ghost" href="https://demo.oneproof.dev">Open the live demo</a></div>
+  </div>
+</section>
+
+</main>
+<footer><div class="wrap stack-lg"><div class="foot">
+<div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
+<div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>More from oneproof</h4><ul><li><a href="/oneground/">oneground</a></li><li><a href="/onedoor/">onedoor</a></li><li><a href="/where-it-fits.html">Where it fits</a></li><li><a href="/building.html">What we're building</a></li></ul></div>
+</div><div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one. Screens show the public demo's sample runs, not customer data.</div></div></footer>
+<script src="/assets/site-v2.js"></script>
+</body>
+</html>
