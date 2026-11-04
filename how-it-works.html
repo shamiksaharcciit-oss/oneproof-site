@@ -44,7 +44,7 @@
     <div class="grid g2" id="checks">
       <div class="card"><div class="ico ico-a">1</div><h3>The receipt</h3><p>Each step writes one receipt in canonical JSON: its inputs and outputs by digest, the tool and its settings, and how it ended. The same content always gives the same bytes.</p></div>
       <div class="card"><div class="ico ico-b">2</div><h3>The chain</h3><p>Each receipt names the digest of the one before. The manifest ends in a chain head. Change, remove or reorder a receipt and the links stop matching. Since onetrace 0.7 every run ends with a close receipt, so a finished run and one cut short read differently.</p></div>
-      <div class="card"><div class="ico ico-g">3</div><h3>The verifier</h3><p><code>onetrace-verify</code> reads bytes alone, with the Python standard library and no network. It checks canonical form, every link, and with <code>--require-artifacts</code> every output file. Each check prints PASS, FAIL or NOT-RUN.</p></div>
+      <div class="card"><div class="ico ico-g">3</div><h3>The verifier</h3><p><code>onetrace-verify</code> reads bytes alone, with the Python standard library, and makes no network calls. It checks canonical form, every link, and with <code>--require-artifacts</code> every output file. Each check prints PASS, FAIL or NOT-RUN.</p></div>
       <div class="card"><div class="ico ico-v">4</div><h3>The verdicts</h3><p>A comparison gives each step one verdict about its output: same, FIRST DIFFERENCE, downstream, reconverged, or COULD NOT CHECK, which is never read as a pass.</p></div>
     </div>
     <details><summary>Signatures and anchors</summary><div class="in">

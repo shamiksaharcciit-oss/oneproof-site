@@ -27,7 +27,7 @@
   <div class="wrap stack-lg">
     <span class="eyebrow">What's new</span>
     <h1>Releases</h1>
-    <p class="lede">The latest first. Each package's full list of changes is in its changelog.</p>
+    <p class="lede">The latest first. onetrace's full list of changes is in the changelog inside its source distribution.</p>
   </div>
 </section>
 
@@ -45,7 +45,7 @@
         </div>
         <details><summary>Also in 0.7.0</summary><div class="in">
           <p><b><code>onetrace check</code></b> checks one claim about a run or a pair of runs, and records the check as a run of its own.</p>
-          <p><b>A twin and a counterfactual:</b> re-run with another run's configuration, or put one step's output in from another run.</p>
+          <p><b>A twin and a counterfactual:</b> re-run with another run's configuration, or put one step's output in from another run. A counterfactual does not show that the step made a difference.</p>
           <p><b>Step expectations</b> declared in code and recorded with the run. One that holds shows the rule held, not that the output was right.</p>
           <p><b>Self-hosted vLLM capture</b> at L1, L2 and L3 writes the model-call record 1.1. L3 has not been run on a GPU.</p>
           <p class="note warn"><b>Upgrading:</b> the record format moves to 0.4. onetrace-console 0.5.1 pins onetrace 0.6.1, so install 0.7.0 in an environment of its own until a console release runs on it.</p>

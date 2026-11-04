@@ -30,17 +30,16 @@ function select(el) {
   var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
 }
 (function () {
-  var links = document.querySelectorAll('.rail a[href^="#"]');
-  if (!links.length || !('IntersectionObserver' in window)) return;
-  var map = {};
-  links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
-  var io = new IntersectionObserver(function (es) {
-    es.forEach(function (e) {
-      if (e.isIntersecting && map[e.target.id]) {
-        links.forEach(function (a) { a.classList.remove('on'); });
-        map[e.target.id].classList.add('on');
-      }
-    });
-  }, { rootMargin: '-30% 0px -60% 0px' });
-  Object.keys(map).forEach(function (id) { var el = document.getElementById(id); if (el) io.observe(el); });
+  var links = Array.from(document.querySelectorAll('.rail a[href^="#"]'));
+  if (!links.length) return;
+  var targets = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); });
+  var ticking = false;
+  function mark() {
+    ticking = false;
+    var line = window.innerHeight * 0.3, cur = 0;
+    targets.forEach(function (t, i) { if (t && t.getBoundingClientRect().top <= line) cur = i; });
+    links.forEach(function (a, i) { a.classList.toggle('on', i === cur); });
+  }
+  window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(mark); } }, { passive: true });
+  mark();
 })();

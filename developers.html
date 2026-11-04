@@ -147,10 +147,11 @@ and tell me the exact commands to run my program and open its runs in onetrace-c
             <tbody>
               <tr><td>Claude Code</td><td><code>.claude/commands/onetrace-instrument.md</code></td><td>Type <code>/onetrace-instrument</code></td></tr>
               <tr><td>Cursor</td><td><code>.cursor/rules/onetrace-instrument.mdc</code></td><td>In Agent chat: follow <code>@onetrace-instrument</code></td></tr>
-              <tr><td>GitHub Copilot (agent mode)</td><td><code>.github/prompts/onetrace-instrument.prompt.md</code></td><td>Type <code>/onetrace-instrument</code></td></tr>
+              <tr><td>GitHub Copilot (VS Code, agent mode)</td><td><code>.github/prompts/onetrace-instrument.prompt.md</code></td><td>Type <code>/onetrace-instrument</code></td></tr>
               <tr><td>Windsurf</td><td><code>.windsurf/rules/onetrace-instrument.md</code></td><td>In Cascade: <code>@onetrace-instrument</code></td></tr>
               <tr><td>Cline</td><td><code>.clinerules/onetrace-instrument.md</code></td><td>Ask it to instrument the repository with onetrace</td></tr>
-              <tr><td>Codex and AGENTS.md readers</td><td><code>AGENTS.md</code> (merge the section)</td><td>Ask it to instrument the repository with onetrace</td></tr>
+              <tr><td>Codex and other agents that read AGENTS.md</td><td><code>AGENTS.md</code> (merge the section into yours)</td><td>Ask it to instrument the repository with onetrace</td></tr>
+              <tr><td>Any other agent</td><td><code>PROMPT.txt</code></td><td>Paste it as your message</td></tr>
             </tbody>
           </table></div>
           <p><a href="/assets/kit/onetrace-agent-kit.zip">Download the agent kit</a> · <a href="/onetrace/agents/instrument.md">Read the recipe</a>. If your agent can't fetch web pages, save the recipe as <code>docs/onetrace/instrument.md</code> in your project.</p>
@@ -160,21 +161,21 @@ and tell me the exact commands to run my program and open its runs in onetrace-c
       <div class="mini" id="auto">
         <div class="mini-head"><span class="n">4b</span><h3>Zero-config</h3><span class="tag">onetrace-auto</span></div>
         <p class="sub">Run your app as you do today, started through <code>onetrace-run</code>. Each call it makes through a supported library becomes a recorded step. Your code doesn't change.</p>
-        <div class="note warn"><b>Today, zero-config runs open in the terminal, not the console.</b> onetrace-auto 0.7.0 needs onetrace 0.7.0 and writes record format 0.4; the console reads formats up to 0.3. Install onetrace-auto in your app's own environment, and compare its runs there with <code>onetrace diff</code> and <code>onetrace-verify</code>. The console reads them from its next release.</div>
+        <div class="note warn"><b>Today, zero-config runs open in the terminal, not the console.</b> onetrace-auto 0.7.0 needs onetrace 0.7.0 and writes record format 0.4; the console reads formats up to 0.3. Install onetrace-auto in your app's own environment, not in step 1's: there it moves onetrace to 0.7.0 and breaks the console's pins. Compare those runs with <code>onetrace diff</code> and <code>onetrace-verify</code> until a console release reads format 0.4.</div>
         <div class="code"><div class="label"><span>In your app's environment</span><button class="copy" type="button">Copy</button></div><pre>pip install onetrace-auto
 onetrace-run python app.py        <span class="c"># or: ONETRACE_AUTO=1 python app.py</span>
 onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt;</pre></div>
         <div class="tbl"><table>
           <thead><tr><th>Library</th><th>Versions</th><th>Each call records</th></tr></thead>
           <tbody>
-            <tr><td><code>openai</code></td><td>1.40 to below 4</td><td>The request, the response, and a model-call record</td></tr>
+            <tr><td><code>openai</code></td><td>1.40 to below 4</td><td>The request and the response, and a model-call record where the hook saw the call (not for embeddings)</td></tr>
             <tr><td><code>requests</code></td><td>2.28 to below 3</td><td>The request body, the status and the response body</td></tr>
             <tr><td><code>httpx</code></td><td>0.24 to below 1</td><td>The request body, the status and the response body</td></tr>
           </tbody>
         </table></div>
         <ul class="ticks">
           <li>Runs go to <code>./runs</code>, or to <code>ONETRACE_RUNS</code>. A process with no supported call leaves no folder.</li>
-          <li>By default a run keeps digests only. <code>ONETRACE_AUTO_KEEP=outputs,inputs</code> keeps the bodies too.</li>
+          <li>By default a run keeps digests only. <code>ONETRACE_AUTO_KEEP=outputs,inputs</code> keeps the bodies too, within the limits in the README.</li>
           <li>Recording never changes what your app gets back. A call it can't record is a gap that says so.</li>
           <li>Steps in your own code are seen only through these libraries. Name them with 4c's decorators.</li>
         </ul>
