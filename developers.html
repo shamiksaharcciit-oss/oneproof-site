@@ -47,6 +47,7 @@
     <a class="sub-l" href="#auto">Zero-config</a>
     <a class="sub-l" href="#stages">Step by step</a>
     <a href="#check"><span class="n">5</span>Compare and check</a>
+    <a class="sub-l" href="#neighbours">Similar inputs</a>
     <a href="#next"><span class="n">6</span>Next</a>
   </nav>
 
@@ -157,7 +158,7 @@ onetrace-explain runs/&lt;run A&gt; runs/&lt;run B&gt;</pre></div></div>
 onetrace-explain runs/&lt;run A&gt; runs/&lt;run B&gt;</pre></div></div>
         </div>
         <ul class="ticks">
-          <li>The first time a kind of item would go to a model, it names those kinds and asks first. <code>--yes</code> is for scripts.</li>
+          <li>The first time a kind of item would go to a model's address, it names those kinds and asks first. <code>--yes</code> is for scripts.</li>
           <li>To see the exact bytes before anything is sent: <code>onetrace localize runs/&lt;run A&gt; runs/&lt;run B&gt; --for &lt;step&gt; --out report</code>, then <code>onetrace-explain report --dry-run</code>.</li>
           <li>Set the key in the terminal you start the console from, so its Explain button can use it. A local console's <b>Set up Explain</b> page shows the configured model, never the key.</li>
           <li>Never put the key in the file, in your code, or in a decorator's settings.</li>
@@ -268,6 +269,56 @@ onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt; --text</pre></div>
           <tr><td>not comparable · refused · could not check</td><td>2 · 3 · 4</td></tr></tbody></table></div>
       </div>
       <p class="muted" style="font-size:15px">Port 8080 in use? Add <code>--port 8091</code>. The console listens on 127.0.0.1 only.</p>
+
+      <div class="mini" id="neighbours">
+        <div class="mini-head"><span class="n">5b</span><h3>Find runs with similar inputs (optional)</h3><span class="tag tag-ai">an embedding model</span></div>
+        <p class="sub">On a local console, a run's page can list other runs of the same configuration whose kept inputs are near its own, each with a Compare button. Compare two of them and a nearness ladder sits beside the exact one. It is off until you turn it on.</p>
+        <div class="grid g2">
+          <div class="code"><div class="label"><span>1 · Install the extra</span><button class="copy" type="button">Copy</button></div><pre class="wrap-line">pip install "onetrace-console[neighbours]"</pre></div>
+          <div class="code"><div class="label"><span>2 · Keep the inputs it reads</span><button class="copy" type="button">Copy</button></div><pre>@ot.stage("answer", instrument=...,
+          keep_inputs=["question"])</pre></div>
+        </div>
+        <p class="muted" style="font-size:15px">Only kept inputs, and the kept outputs of a run that keeps inputs, are read. A run that kept nothing has no neighbours.</p>
+        <p class="sub"><b>3 · Choose the embedding model.</b> Start the console as above and open <code style="overflow-wrap:anywhere">http://127.0.0.1:8080/neighbours/setup</code>.</p>
+        <div class="tabs" data-tabs>
+          <div class="tablist" role="tablist" aria-label="Embedding model">
+            <button role="tab" id="tab-nb-in" aria-controls="p-nb-in" aria-selected="true" type="button">Built-in local model</button>
+            <button role="tab" id="tab-nb-ol" aria-controls="p-nb-ol" aria-selected="false" type="button">A local server (Ollama)</button>
+            <button role="tab" id="tab-nb-ep" aria-controls="p-nb-ep" aria-selected="false" type="button">Your own endpoint</button>
+          </div>
+          <div id="p-nb-in" role="tabpanel" aria-labelledby="tab-nb-in">
+            <ol class="nums">
+              <li>Pick <b>The default</b> (all-MiniLM-L6-v2, about 90 MB) or <b>The alternate</b> (bge-small-en-v1.5, about 133 MB), then <b>Continue</b>.</li>
+              <li>Read the confirmation and press <b>Confirm and turn on</b>. The model's files are fetched once from huggingface.co at a pinned revision, each checked by its sha256, into the store's <code>neighbours/models/</code> folder.</li>
+              <li>After that, embedding runs on your CPU with onnxruntime and makes no network calls. No text leaves the machine.</li>
+            </ol>
+          </div>
+          <div id="p-nb-ol" role="tabpanel" aria-labelledby="tab-nb-ol" hidden>
+            <div class="code"><div class="label"><span>Terminal</span><button class="copy" type="button">Copy</button></div><pre>ollama pull nomic-embed-text   <span class="c"># an embedding model</span>
+ollama serve                   <span class="c"># if it is not already running</span></pre></div>
+            <ol class="nums">
+              <li>On the setup page, choose <b>Or name an OpenAI-compatible embedding endpoint of your own</b>.</li>
+              <li>Endpoint <code>http://localhost:11434/v1</code>, Model <code>nomic-embed-text</code>, then <b>Continue</b> and <b>Confirm and turn on</b>.</li>
+              <li>The console fetches nothing. Kept inputs and outputs go to your Ollama server, on your machine.</li>
+            </ol>
+          </div>
+          <div id="p-nb-ep" role="tabpanel" aria-labelledby="tab-nb-ep" hidden>
+            <ol class="nums">
+              <li>Any OpenAI-compatible server that answers <code>POST &lt;endpoint&gt;/embeddings</code> with <code>{"model", "input"}</code>, such as vLLM or llama.cpp's server running an embedding model.</li>
+              <li>On the setup page, choose the endpoint option, enter its address (for example <code>http://127.0.0.1:8000/v1</code>) and the model name, then <b>Continue</b> and <b>Confirm and turn on</b>.</li>
+              <li>Kept inputs and kept outputs are sent to that address. No key is sent, and none can be set.</li>
+            </ol>
+          </div>
+        </div>
+        <ul class="ticks">
+          <li><b>On a run's page:</b> "Runs with near inputs (same configuration)", each with its nearness and a Compare button.</li>
+          <li><b>On a comparison of two of them:</b> "Nearness ladder: the embedder's view", per step, for inputs and outputs, with the largest drop marked. "1.00 by the record" means the digests are equal and nothing was embedded.</li>
+          <li>Nearness is the embedding model's reading. The exact comparison, the short answer and every verdict are unchanged.</li>
+          <li>"Same configuration" means what the record states: the plan, and each step's instrument, kind, version and configuration.</li>
+          <li>Local consoles only: it never runs on a public console, the hosted demo among them. Each embedding batch is recorded as a run of its own.</li>
+          <li>To stop, press <b>Turn neighbours off</b> on the same page.</li>
+        </ul>
+      </div>
     </section>
 
     <!-- 6 -->
