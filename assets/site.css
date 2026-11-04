@@ -175,12 +175,13 @@ footer{background:#08111e;color:var(--on-navy-2);padding:64px 0 40px;font-size:1
 footer a{color:var(--on-navy);text-decoration:none}
 footer a:hover{color:#fff;text-decoration:underline}
 .foot-grid{display:grid;grid-template-columns:minmax(0,2fr) repeat(3,minmax(0,1fr));gap:32px}
+.foot-grid.foot-3{grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr))}
 .foot-grid h4{color:#fff;font-size:14px;margin:0 0 12px;font-weight:600;letter-spacing:.02em}
 .foot-grid ul{list-style:none;padding:0;margin:0;display:grid;gap:8px}
 .fine{font-size:13px;color:#7d8ba0;margin-top:40px;border-top:1px solid rgba(255,255,255,.08);padding-top:20px;line-height:1.6}
 
 @media (max-width:900px){
-  .grid-3,.paths,.foot-grid{grid-template-columns:minmax(0,1fr)}
+  .grid-3,.paths,.foot-grid,.foot-grid.foot-3{grid-template-columns:minmax(0,1fr)}
   .grid-2,.versus{grid-template-columns:minmax(0,1fr)}
   .tour-row,.tour-row.flip{grid-template-columns:minmax(0,1fr);gap:24px}
   .tour-row.flip .tour-text{order:0}
