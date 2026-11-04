@@ -165,7 +165,7 @@ print(pay("120.00", "acct-1"))
 print(pay("400.00", "acct-2"))</pre>
 <pre class="od-out"><span class="p">paid</span>
 <span class="f">denied: budget_exhausted</span></pre>
-    <p class="sub">A <code>PermittedIntent</code> is an obligation: call <code>report_result</code> exactly once, whatever happened, with <code>Outcome.SUCCESS</code>, <code>FAILURE</code>, <code>TIMEOUT</code> or <code>NOT_ATTEMPTED</code>, as in the table in section 3. Anything else (denied, proposed, dry-run) carries its reason code and needs no report. The library call is also the one surface that issues a signed permit, where the action type asks for one. Guide: <a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-library.md">integration-library.md</a>.</p>
+    <p class="sub">A <code>PermittedIntent</code> is an obligation: call <code>report_result</code> exactly once, whatever happened, with <code>Outcome.SUCCESS</code>, <code>FAILURE</code>, <code>TIMEOUT</code> or <code>NOT_ATTEMPTED</code>, as in the table in section 3. Anything else (denied, proposed, dry-run) carries its reason code and needs no report. The library call is also the one surface that issues a signed permit, where the action type asks for one and the request names the key it will sign with; otherwise the action is denied. Guide: <a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-library.md">integration-library.md</a>.</p>
   </div>
 </section>
 
