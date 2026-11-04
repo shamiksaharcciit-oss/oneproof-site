@@ -159,7 +159,7 @@
   <div class="wrap">
     <p class="kicker">Product tour</p>
     <h2 id="tour-title">The Policy Studio, on the shipped payments examples.</h2>
-    <p class="sub"><span class="od-real">Real screens</span>Screenshots of onedoor 0.8.1's own Studio and receipt page, run on this site's machine with the payments example policies and a handful of sample requests. The Studio binds to your own machine only: nothing it shows leaves it.</p>
+    <p class="sub"><span class="od-real">Real screens</span>Screenshots of onedoor 0.10.2's own Studio and receipt page, run on this site's machine with the payments example policies and a handful of sample requests. The Studio binds to your own machine only: nothing it shows leaves it.</p>
     <div class="tour">
       <div class="tour-row">
         <div class="tour-text">
@@ -167,7 +167,7 @@
           <h3>What is allowed, and under what limits</h3>
           <p>Every policy in force, with its tier, caps, bounds and effects. The page says plainly what it is not: a list of what is blocked. Nothing needs to be listed to be blocked.</p>
         </div>
-        <div class="shot"><img src="/assets/img/onedoor/studio-policies.webp" width="1600" height="875" loading="lazy" alt="The Studio's Policies page. Header: in force 0c12ff2d…5bab, never ratified, 6 policies, 2 effects, loopback only, nothing leaves this machine. A table of six actions: ledger.read review OBSERVE; payments.reverse allowed AUTO; payments.transfer allowed AUTO_CAPPED, EUR 500/day, EUR 5000/month, amount_eur 0.01 to 2000, effect money.egress; payouts.schedule review CONFIRM; refunds.issue allowed AUTO_CAPPED EUR 300/day; webhooks.post allowed AUTO_CAPPED. Each marked covered."></div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-policies.webp" width="1600" height="880" loading="lazy" alt="The Studio's Policies page. Header: in force 0c12ff2d…5bab, never ratified, 6 policies, 2 effects, loopback only, nothing leaves this machine. A table of six actions: ledger.read review OBSERVE; payments.reverse allowed AUTO; payments.transfer allowed AUTO_CAPPED, EUR 500/day, EUR 5000/month, amount_eur 0.01 to 2000, effect money.egress; payouts.schedule review CONFIRM; refunds.issue allowed AUTO_CAPPED EUR 300/day; webhooks.post allowed AUTO_CAPPED. Each marked covered."></div>
       </div>
       <div class="tour-row flip">
         <div class="tour-text">
@@ -175,15 +175,15 @@
           <h3>Upload a file; see what the loader would refuse</h3>
           <p>A policy file becomes a draft, even one the engine would refuse at start-up. The draft shows each refusal from the engine's own loader, in its own words: here, two auto-running actions that name no way to undo them.</p>
         </div>
-        <div class="shot"><img src="/assets/img/onedoor/studio-draft-refused.webp" width="1600" height="1269" loading="lazy" alt="A draft uploaded from a file, bad.yaml, with two rules: crm.update_contact at AUTO and invoices.pay at AUTO_CAPPED. Changes: this draft cannot be previewed, it would be refused at load. Validation lists two problems: each is an auto-executing tier with no compensating_command, so it cannot auto-execute."></div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-draft-refused.webp" width="1600" height="1390" loading="lazy" alt="A draft uploaded from a file, bad.yaml. The loader would refuse it, and gives its reasons: crm.update_contact is Tier 1 and invoices.pay is Tier 2, each auto-executing with no compensating_command, so neither can auto-execute; each refusal names its line and column. The draft holds the two rules, crm.update_contact at AUTO and invoices.pay at AUTO_CAPPED, and was written by hand, with no model involved."></div>
       </div>
       <div class="tour-row">
         <div class="tour-text">
           <span class="step-no">03 · The editor</span>
           <h3>A guided form and the raw rule, never out of step</h3>
-          <p>Both panes are drawn from one parsed rule, so they cannot disagree. Validation runs on the engine's own loader as you type. The rules in force are not touched by anything on this page. (Its note that a numeric bound refuses a decimal-string amount is out of date: 0.8.1's engine accepts them.)</p>
+          <p>Both panes are drawn from one parsed rule, so they cannot disagree. Validation runs on the engine's own loader as you type. The rules in force are not touched by anything on this page.</p>
         </div>
-        <div class="shot"><img src="/assets/img/onedoor/studio-editor.webp" width="1600" height="1080" loading="lazy" alt="Editing refunds.issue inside the draft raise the refund ceiling. Left, the guided pane: action type, tier AUTO_CAPPED (2), dry run off, compensating command payments.reverse, cost parameter amount_eur, cap EUR per day 400 and per month 2000. Right, the rule as JSON with bounds, caps and the compensating command."></div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-editor.webp" width="1600" height="1420" loading="lazy" alt="Editing refunds.issue inside the draft raise the refund ceiling. Left, the guided pane: action type, tier AUTO_CAPPED (2), dry run off, compensating command payments.reverse, cost parameter amount_eur, cap EUR per day 400 and per month 2000. Right, the rule as JSON with bounds, caps and the compensating command."></div>
       </div>
       <div class="tour-row flip">
         <div class="tour-text">
@@ -191,7 +191,7 @@
           <h3>What changes, in sentences, before you ratify</h3>
           <p>Each changed rule is described as it was and as it would become. Ratifying is a deliberate step with a name on it, and it seals a receipt for the new version. There is no un-ratify: going back is a new version, and nothing already decided is rewritten.</p>
         </div>
-        <div class="shot"><img src="/assets/img/onedoor/studio-draft-changes.webp" width="1600" height="1350" loading="lazy" alt="The draft raise the refund ceiling. Changes: refunds.issue modified. Was: capped at EUR 300/day, EUR 2000/month. Would become: capped at EUR 400/day, EUR 2000/month, otherwise the same bounds, effect money.egress, undoable by payments.reverse within 900 seconds. Validation: the validator found no problems."></div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-draft-changes.webp" width="1600" height="1630" loading="lazy" alt="The draft raise the refund ceiling. Changes: refunds.issue modified. Was: capped at EUR 300/day, EUR 2000/month. Would become: capped at EUR 400/day, EUR 2000/month, otherwise the same bounds, effect money.egress, undoable by payments.reverse within 900 seconds. Validation: the validator found no problems."></div>
       </div>
       <div class="tour-row">
         <div class="tour-text">
@@ -199,23 +199,23 @@
           <h3>A new version in force, and its receipt</h3>
           <p>The version in force is a digest of the policy set. The receipt records what it replaced, when, under which name, and the kill switch's state at that moment. Each ratification can be checked again later on the Verify page.</p>
         </div>
-        <div class="shot"><img src="/assets/img/onedoor/studio-ratified.webp" width="1600" height="688" loading="lazy" alt="Ratified. In force: 0d38f505061f47a2e22a34246e4506e812957f0e3219fbbeaf98d146a52b0e86. Replaced 0c12ff2d…5bab, receipt 38cbe77c…ac52, ratified by session operator on duty, kill switch not engaged."></div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-ratified.webp" width="1600" height="690" loading="lazy" alt="Ratified. In force: 0d38f505061f47a2e22a34246e4506e812957f0e3219fbbeaf98d146a52b0e86. Replaced 0c12ff2d…5bab, receipt 75ed3ad6…7d3f, ratified by session operator on duty, kill switch not engaged."></div>
       </div>
       <div class="tour-row flip">
         <div class="tour-text">
           <span class="step-no">06 · Live state</span>
           <h3>The kill switch, every budget, every pending approval</h3>
-          <p>How much of each action's cap is consumed, reserved and free; open reservations; approvals and when they expire. The Studio only shows the kill switch. Throwing it lives on the decision service, behind its own admin key.</p><p>One thing this screen gets wrong: the shipped policies cap the <code>money.egress</code> effect at €750 a day and €6000 a month, and 0.8.1's Studio shows that effect's limit as "none declared". The engine enforces the cap; the display is a known defect, reported to onedoor.</p>
+          <p>How much of each action's cap is consumed, reserved and free; open reservations; approvals and when they expire. The Studio only shows the kill switch. Throwing it lives on the decision service, behind its own admin key. While it holds, every acting tier is denied outright, not queued for approval.</p>
         </div>
-        <div class="shot"><img src="/assets/img/onedoor/studio-live-state.webp" width="1600" height="1400" loading="lazy" alt="The Live state page. Kill switch: not engaged, with a note that it outranks everything including granted approvals. Budgets: effect money.egress consumed 165, its limit shown as none declared (a display defect: the policies cap it at 750 a day and 6000 a month); payments.transfer EUR per day consumed 120 of 500; per month 120 of 5000; refunds.issue 45 of 300 per day and 45 of 2000 per month, each with a bar."></div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-live-state.webp" width="1600" height="1885" loading="lazy" alt="The Live state page. Kill switch: not engaged, with a note that it outranks everything including granted approvals, and that while it holds every acting tier but reads is denied outright. Budgets: effect money.egress 165 of 750 a day and 165 of 6000 a month; payments.transfer 120 of 500 a day and 120 of 5000 a month; refunds.issue 45 of 300 a day and 45 of 2000 a month; effect net.egress 0 of 500 actions a day, each with a bar. No open reservations; one pending approval for payouts.schedule."></div>
       </div>
       <div class="tour-row">
         <div class="tour-text">
           <span class="step-no">07 · History</span>
           <h3>Every decision, by action, verdict and version</h3>
-          <p>Filter the ledger by action, verdict, policy version, origin or date. The Studio's note on this page that no caller identity is recorded is out of date: 0.8.1's decision service writes a keyed fingerprint of the decide key to the rows it permits. Rows from in-process callers carry none.</p>
+          <p>Filter the ledger by action, verdict, policy version, origin or date. The decision service records who asked, as a keyed fingerprint of the decide key, never the key itself; the page offers no filter on it. Rows from in-process callers carry none.</p>
         </div>
-        <div class="shot"><img src="/assets/img/onedoor/studio-history.webp" width="1600" height="812" loading="lazy" alt="The History page with filters for action, verdict, policy version, request origin and dates. Five decisions: payments.transfer denied budget_exhausted; ledger.read executed observe; payouts.schedule proposed tier_confirm; payments.transfer denied bounds; wire.anywhere denied default_deny. Each under policy version 0c12ff2d…5bab, origin llm."></div>
+        <div class="shot"><img src="/assets/img/onedoor/studio-history.webp" width="1600" height="830" loading="lazy" alt="The History page with filters for action, verdict, policy version, request origin and dates. Five decisions: payments.transfer denied budget_exhausted; ledger.read executed observe; payouts.schedule proposed tier_confirm; payments.transfer denied bounds; wire.anywhere denied default_deny. Each under policy version 0c12ff2d…5bab, origin llm. A note says the decision service records a keyed fingerprint of the bearer key, and the page offers no filter on it."></div>
       </div>
       <div class="tour-row flip">
         <div class="tour-text">
@@ -224,7 +224,7 @@
           <p>A static, read-only page built from the ledger: the verdict, the frozen parameters, the budget at the moment of decision and the policy version. Every value on it is read from a verified artifact; if the evidence does not check out, it shows the failure and none of the values.</p>
           <p style="margin-top:18px"><a class="btn btn-dark" href="/onedoor/developers.html">Try it on your machine</a></p>
         </div>
-        <div class="shot"><img src="/assets/img/onedoor/decision-receipt.webp" width="1600" height="1488" loading="lazy" alt="The onedoor decision receipt page: payments.transfer, denied. DENY budget_exhausted: a value cap was reached for this effect; the reservation was refused and nothing executed. Request id, source llm, frozen params amount_eur 400.00 to acct-2, tier nominal 2 effective 2, budget at decision: payments.transfer.eur_day, limit 500, consumed 120, remaining 380, and the policy version digest."></div>
+        <div class="shot"><img src="/assets/img/onedoor/decision-receipt.webp" width="1600" height="1445" loading="lazy" alt="The onedoor decision receipt page: payments.transfer, denied. DENY budget_exhausted: a value cap was reached for this effect; the reservation was refused and nothing executed. Request id, source llm, frozen params amount_eur 400.00 to acct-2, tier nominal 2 effective 2, budget at decision: payments.transfer.eur_day, limit 500, consumed 120, remaining 380, and the policy version digest."></div>
       </div>
     </div>
   </div>
@@ -240,13 +240,13 @@
       <div class="card"><h3>onetrace alone</h3><p>A checkable record of each run and the comparison that finds the first difference. No policy engine needed.</p></div>
       <div class="card"><h3>Together</h3><p>A step marked as gated must cite a onedoor decision. The verifier fails a step that acted on a deny, or cited nothing, and matches each reference to a row of onedoor's export.</p></div>
     </div>
-    <p style="margin-top:24px;color:var(--ink-2)">From a real run of onetrace 0.6.0 against onedoor 0.8.1's decision service, checked with <code>onetrace-verify --decisions</code>:</p>
+    <p style="margin-top:24px;color:var(--ink-2)">From a real run of onetrace 0.7.0 against onedoor 0.10.2's decision service, checked with <code>onetrace-verify --decisions</code>:</p>
 <pre class="od-out"><span class="p">[PASS   ]</span> decisions: gated steps cite a decision -- 1 gated step(s), each citing a decision
 <span class="p">[PASS   ]</span> decisions: references are well formed -- 1 reference(s), each a well-formed onedoor-decision-ref/1
 <span class="p">[PASS   ]</span> decisions: a step that acted cites a permitting decision -- 1 acting step(s), each citing a permitting decision
 <span class="n">[NOT-RUN]</span> decisions: the permit covers the recorded action -- no permit recorded
 <span class="p">[PASS   ]</span> decisions: the decision is in the export -- 1 reference(s), each matching a row in the export by digest</pre>
-    <p style="color:var(--ink-2)">The <code>NOT-RUN</code> row is honest: onedoor 0.8.1's decision service does not hand a signed permit to the caller yet (see <a href="#next">Coming next</a>). The code for this run is on the <a href="/onedoor/developers.html#onetrace">Developers page</a>.</p>
+    <p style="color:var(--ink-2)">The <code>NOT-RUN</code> row is honest: onedoor 0.10.2's decision service returns a <code>bound_permit</code> field, but does not issue a permit into it yet; the library call does (see <a href="#next">What's new, and next</a>). The code for this run is on the <a href="/onedoor/developers.html#onetrace">Developers page</a>.</p>
   </div>
 </section>
 
@@ -281,15 +281,19 @@
 
 <section id="next" aria-labelledby="next-title">
   <div class="wrap">
-    <p class="kicker">Coming next</p>
+    <p class="kicker">What's new, and next</p>
     <h2 id="next-title">From "allowed" to "done, and confirmed".</h2>
-    <div class="od-next">
-      <p style="margin:0 0 12px">What 0.8.1 does not do yet. Built in the open, described here so you know where it is going; no dates.</p>
-      <ul class="clean">
-        <li><b>Signed permits on every surface.</b> 0.8.1 can already issue a short-lived signed permit, bound to the exact action, the sender's key and the request body and usable once, and its library includes the receiving system's own check. The decision service does not hand that permit to its caller yet; next, every surface will.</li>
-        <li><b>The recipient's signed confirmation.</b> The system that acted signs what it did with which permit, so a record can show the action was authorized and its effect confirmed.</li>
-        <li><b>Decision references on every surface.</b> Today the decision service and the library return them, and the MCP proxy builds one without passing it on; next, the MCP proxy, the gateway adapter and the LangChain middleware return them too.</li>
-      </ul>
+    <div class="grid-2" style="margin-top:22px">
+      <div class="card"><h3>New in 0.9 and 0.10</h3><ul class="clean">
+        <li><b>Decision references on every surface.</b> The library call, the decision service, the LangChain middleware and the MCP proxy each hand back the decision reference, and a <code>bound_permit</code> field beside it.</li>
+        <li><b>Signed permits from the library.</b> Where an action type asks for one and the request names the key it will sign with, the library call issues a short-lived signed permit, bound to the exact action and usable once.</li>
+        <li><b>The recipient's signed confirmation.</b> The system that acted signs which permit and which request it acted on, and whether the effect happened, was refused or is unknown. The presenter, or anyone auditing later, checks it with onedoor alone.</li>
+        <li><b>One key per attempt.</b> A request presenting a permit must carry an <code>Idempotency-Key</code> equal to the permit's own id, or the recipient refuses it.</li>
+      </ul></div>
+      <div class="od-next" style="margin-top:0"><h3>Coming next</h3><ul class="clean">
+        <li><b>Permits from every surface.</b> Today the decision service, the MCP proxy and the LangChain middleware return the <code>bound_permit</code> field empty. Next, each issues one.</li>
+        <li><b>The confirmation in a onetrace record.</b> onedoor signs and checks the confirmation today. Next, a onetrace step records it, so a run can show an action authorized and its effect confirmed, and check both.</li>
+      </ul><p style="margin:12px 0 0;color:var(--muted);font-size:14px">Built in the open; no dates.</p></div>
     </div>
   </div>
 </section>

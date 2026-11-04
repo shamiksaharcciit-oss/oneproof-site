@@ -78,7 +78,7 @@
   <div class="wrap">
     <span class="eyebrow"><b>For researchers and reviewers</b> layer 3 of 3</span>
     <h1>The mechanism: one ordered check, two phases, a ledger that is never edited.</h1>
-    <p class="lede">What onedoor checks, in which order, when the budget is spent, how a policy version comes into force, and what its records can and cannot show. Described for onedoor 0.8.1.</p>
+    <p class="lede">What onedoor checks, in which order, when the budget is spent, how a policy version comes into force, and what its records can and cannot show. Described for onedoor 0.10.2.</p>
     <div class="crumbs">
       <a href="#order">The check order</a>
       <a href="#phases">Two phases</a>
@@ -87,7 +87,7 @@
       <a href="#ledger">The ledger</a>
       <a href="#refs">With onetrace</a>
       <a href="#limits">The limits</a>
-      <a href="#next">Coming next</a>
+      <a href="#next">Permits and confirmations</a>
     </div>
   </div>
 </div>
@@ -137,7 +137,7 @@
       <div class="card"><h3>A receipt per ratification</h3><p>Each ratification seals a receipt: the version, the one it replaced, the time, the name given, and the kill switch's state. The Verify page re-checks it, with the receipt and the policy snapshot downloadable.</p></div>
       <div class="card"><h3>No un-ratify</h3><p>To go back, you ratify again: a new version and a new receipt. Nothing decided under an earlier version is changed. The name given is what the store knows, not an authenticated identity.</p></div>
     </div>
-    <figure class="od-fig"><div class="od-shot"><img src="/assets/img/onedoor/studio-ratified.webp" width="1600" height="688" loading="lazy" alt="Ratified: the new version's full digest in force, the version it replaced, the receipt digest, the time, the session name operator on duty, and the kill switch not engaged at ratification."></div>
+    <figure class="od-fig"><div class="od-shot"><img src="/assets/img/onedoor/studio-ratified.webp" width="1600" height="690" loading="lazy" alt="Ratified: the new version's full digest in force, the version it replaced, the receipt digest, the time, the session name operator on duty, and the kill switch not engaged at ratification."></div>
       <figcaption><span class="od-real">Real screen</span>A ratification, from the shipped payments examples.</figcaption></figure>
   </div>
 </section>
@@ -179,21 +179,22 @@
       <div class="card"><h3>Parameters, not intent</h3><p>Rules match parameters. A command assembled indirectly carries nothing to match; a URL pattern matches text unless you opt into the URL block, which matches the canonical target. Use an egress control that fails closed for anything that matters.</p></div>
       <div class="card"><h3>Who times the action</h3><p>The in-process executor puts a hard timeout on the act. Behind the HTTP service, onedoor never sees the act itself: your enforcement point owns its timeout, and reports <code>timeout</code> when it cannot tell what happened.</p></div>
       <div class="card"><h3>The documented deployment</h3><p>One process, one SQLite writer behind an internal lock. Several writers on one store, without that, can see a window between checking a cap and consuming it.</p></div>
-      <div class="card"><h3>One obligation</h3><p>onedoor implements one obligation, <code>present_bound</code>: the permit may be used only at the audience it names. In 0.8.1 the in-process executor and the MCP proxy refuse to act on any permit that carries it, since neither presents to an audience; the LangChain middleware does not check it.</p></div>
+      <div class="card"><h3>One obligation</h3><p>onedoor implements one obligation, <code>present_bound</code>: the permit may be used only at the audience it names. In 0.10.2 the in-process executor and the MCP proxy refuse to act on any permit that carries it, since neither presents to an audience; the LangChain middleware does not check it.</p></div>
     </div>
   </div>
 </section>
 
 <section id="next" aria-labelledby="next-title">
   <div class="wrap">
-    <p class="kicker">8 · Coming next</p>
-    <h2 id="next-title">The permit in every caller's hands, and the recipient's signed reply.</h2>
+    <p class="kicker">8 · Permits and confirmations</p>
+    <h2 id="next-title">The permit in the caller's hands, and the recipient's signed reply.</h2>
     <div class="od-next">
-      <p style="margin:0 0 12px">Part of this is in 0.8.1 already; no dates for the rest. The receiving system checks a signed permit on its own, without calling onedoor, and next signs back what it did:</p>
+      <p style="margin:0 0 12px">The receiving system checks a signed permit on its own, without calling onedoor, and signs back what it did. Most of this is in 0.10.2; the rest is marked.</p>
       <ul class="clean">
-        <li><b>Bound to the request (in 0.8.1).</b> When a policy asks for one, onedoor issues a permit naming the exact action by digest, the key that must sign the request, a short lifetime and a one-time id; the request must carry its body's digest. The library returns it; the decision service does not hand it to its caller yet. Next: every surface does.</li>
-        <li><b>Checked in a fixed order by the recipient (in 0.8.1).</b> <code>onedoor.permit</code> holds the recipient's check: thirteen steps, stopping at the first failure, with the permit used up only at the last one, so a refused request never burns it.</li>
-        <li><b>A signed confirmation back (next; not built yet).</b> The recipient signs which permit and which request it acted on, and whether the effect happened, was refused or is unknown. A onetrace record can then show an action authorized and its effect confirmed, and check both.</li>
+        <li><b>Bound to the request.</b> When a policy asks for one, onedoor issues a permit naming the exact action by digest, the key that must sign the request, a short lifetime and a one-time id; the request must carry its body's digest, and an <code>Idempotency-Key</code> equal to that id. The library call issues it. The decision service, the MCP proxy and the LangChain middleware return the field empty for now (next: each issues one).</li>
+        <li><b>Checked in a fixed order by the recipient.</b> <code>onedoor.permit</code> holds the recipient's check: thirteen steps, stopping at the first failure. The last step only reserves the permit's id; the recipient completes the reservation once it has attempted the effect, so a refused request never uses the permit up.</li>
+        <li><b>A signed confirmation back (0.10.0).</b> The recipient signs which permit and which request it acted on, and whether the effect happened, was refused or is unknown. The presenter checks it against what its own step recorded. A confirmation shows the recipient said it acted, not that the effect happened in the world.</li>
+        <li><b>In a onetrace record (next).</b> A onetrace step records the confirmation, so a run can show an action authorized and its effect confirmed, and check both.</li>
       </ul>
     </div>
     <p class="sub" style="margin-top:22px">Back to the <a href="/onedoor/">overview</a>, or start on the <a href="/onedoor/developers.html">Developers page</a>.</p>

@@ -78,7 +78,7 @@
   <div class="wrap">
     <span class="eyebrow"><b>onedoor for developers</b> layer 2 of 3</span>
     <h1>Put one door between your agent and its tools.</h1>
-    <p class="lede">Install from PyPI, copy a policy, start the decision service, and every action goes decide, act, report. Everything below was run against onedoor 0.8.1 as published; the outputs are what it printed.</p>
+    <p class="lede">Install from PyPI, copy a policy, start the decision service, and every action goes decide, act, report. Everything below was run against onedoor 0.10.2 as published; the outputs are what it printed.</p>
     <div class="crumbs">
       <a href="#quickstart">Quickstart</a>
       <a href="#policy">A policy</a>
@@ -215,7 +215,7 @@ python -m onedoor.studio --db onedoor.db --studio-db studio.db
       <div class="card"><h3>Drafts from a model, if you want</h3><p>Off by default and absent when off. Point it at your own endpoint and a description becomes a draft that goes through the same loader and the same ratification as anything you type.</p></div>
     </div>
     <figure class="od-fig">
-      <div class="od-shot"><img src="/assets/img/onedoor/studio-draft-refused.webp" width="1600" height="1269" loading="lazy" alt="A draft uploaded from a file with two rules the loader would refuse: crm.update_contact and invoices.pay, each an auto-executing tier with no compensating_command."></div>
+      <div class="od-shot"><img src="/assets/img/onedoor/studio-draft-refused.webp" width="1600" height="1390" loading="lazy" alt="A draft uploaded from a file with two rules the loader would refuse: crm.update_contact and invoices.pay, each an auto-executing tier with no compensating_command."></div>
       <figcaption><span class="od-real">Real screen</span>An uploaded file still becomes a draft. You get the reasons, not your file handed back.</figcaption>
     </figure>
   </div>
@@ -225,7 +225,7 @@ python -m onedoor.studio --db onedoor.db --studio-db studio.db
   <div class="wrap">
     <p class="kicker">6 · With onetrace (optional)</p>
     <h2 id="ot-title">Each gated step cites the decision that allowed it.</h2>
-    <p class="sub">Set <code>ONEDOOR_ISSUER</code> to a name for your deployment and each decision that permits, denies or proposes carries a <code>decision_ref</code> (dry-runs and tier-0 reads carry none). Pass it to <code>ot.decision()</code> inside a step you declared as gated. Requires onetrace 0.5.0 or later; this was run with 0.6.0.</p>
+    <p class="sub">Set <code>ONEDOOR_ISSUER</code> to a name for your deployment and each decision that permits, denies or proposes carries a <code>decision_ref</code> (dry-runs and tier-0 reads carry none). Pass it to <code>ot.decision()</code> inside a step you declared as gated. Requires onetrace 0.5.0 or later; this was run with 0.7.0.</p>
 <pre>export ONEDOOR_ISSUER=https://payments.example/onedoor     <span class="c"># before starting the service</span></pre>
 <pre>import json, uuid, urllib.request
 import onetrace as ot
@@ -266,7 +266,8 @@ onetrace-verify --require-artifacts --decisions decisions.jsonl runs/&lt;run id&
 <span class="n">[NOT-RUN]</span> decisions: the permit covers the recorded action -- no permit recorded
 <span class="p">[PASS   ]</span> decisions: the decision is in the export -- 1 reference(s), each matching a row in the export by digest
 
-59 pass, 0 fail, 3 not-run  -&gt;  PASS</pre>
+84 pass, 0 fail, 4 not-run  -&gt;  PASS</pre>
+    <p class="sub">The permit row reads <code>NOT-RUN</code> here: the decision service returns a <code>bound_permit</code> field but does not issue a permit into it yet. A step that records a permit from the library call, with <code>ot.decision(ref, permit=..., action=...)</code>, gets that row checked too, with <code>--permit-issuers</code> naming the issuer's key: the permit's signature, its lifetime at the step's time, and the action it covers against the one the step recorded.</p>
     <p class="sub">A step that acts on a deny, or a gated step that cites nothing, fails its row by name. A reference can also be checked on its own, with onedoor alone: <code>python -m onedoor.decision_ref check --export decisions.jsonl --ref ref.json</code> answers matches, digest mismatch, not in export, malformed ref or export damaged, each with its own exit code.</p>
   </div>
 </section>
@@ -300,10 +301,13 @@ pip install "onedoor[signed]"                                              <span
           <tr><td>LangChain / LangGraph middleware</td><td><code>onedoor[langchain]</code></td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-langgraph.md">integration-langgraph.md</a></td></tr>
           <tr><td>LiteLLM guardrail (experimental example, in the repository's <code>examples/</code>, not in the package)</td><td><code>onedoor[litellm]</code> for its dependencies</td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/integration-litellm.md">integration-litellm.md</a></td></tr>
           <tr><td>OpenTelemetry spans and counters</td><td><code>onedoor[otel]</code></td><td>No code changes once installed.</td></tr>
+          <tr><td>Bound permits: what onedoor issues and the recipient's thirteen-step check (<code>onedoor.permit.recipient</code>)</td><td><code>onedoor</code></td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/bound-permits.md">bound-permits.md</a></td></tr>
+          <tr><td>The recipient's signed confirmation: <code>build</code> on the recipient side, <code>check</code> on the presenter's (<code>onedoor.permit.confirmation</code>)</td><td><code>onedoor</code></td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/confirmation.md">confirmation.md</a></td></tr>
           <tr><td>The full policy reference</td><td></td><td><a href="https://github.com/shamiksaharcciit-oss/onedoor/blob/main/docs/policy-reference.md">policy-reference.md</a></td></tr>
         </tbody>
       </table>
     </div>
+    <p class="sub" style="margin-top:18px">Every surface hands back the decision reference, and a <code>bound_permit</code> field beside it (<code>last_decision_ref</code> and <code>last_bound_permit</code> on the LangChain middleware and the MCP proxy). In 0.10.2 only the library call issues a permit into it. A request that presents a permit must carry an <code>Idempotency-Key</code> equal to the permit's <code>jti</code>, or the recipient refuses it: a change in 0.9.0 that breaks a presenter sending any other key.</p>
     <p class="sub" style="margin-top:18px">Next: <a href="/onedoor/how-it-works.html">how it works</a>, the check order and what each record proves.</p>
   </div>
 </section>
