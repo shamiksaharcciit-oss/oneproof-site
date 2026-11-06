@@ -8,28 +8,14 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site-v2.css">
 <link rel="stylesheet" href="/onetrace/assets/docs.css">
 </head>
 <body>
 <a class="skip" href="#content">Skip to the content</a>
-<header class="nav">
-  <div class="wrap">
-    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
-      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
-      onetrace <small>by oneproof</small>
-    </a>
-    <nav class="nav-links" aria-label="Main">
-      <a href="/">Product</a>
-      <a href="/developers.html">Developers</a>
-      <a href="/how-it-works.html">How it works</a>
-      <a href="/onetrace/" aria-current="page">Docs</a>
-      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
-    </nav>
-  </div>
-</header>
-<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html" aria-current="page">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / When something fails</p>
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html">Developers</a><a href="/debugging.html">Debug an agent</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/" aria-current="page">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
+<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li><li><a href="/onetrace/references.html">References</a></li><li><a href="/onetrace/variation.html">Variation across repeat runs</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html" aria-current="page">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>6</i>Record features</div><ul><li><a href="/onetrace/decisions.html">onedoor decisions</a></li><li><a href="/onetrace/span-context.html">The span context</a></li><li><a href="/onetrace/nesting.html">Nesting</a></li><li><a href="/onetrace/streaming.html">Streaming the record</a></li><li><a href="/onetrace/storage.html">Storage in a bucket</a></li><li><a href="/onetrace/model-call-record.html">The model-call record</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / When something fails</p>
 <h1 id="onetrace-errors">onetrace errors</h1>
 <p>Every refusal from onetrace ends with a <code>fix:</code> line and a <code>see:</code> line naming one of the
 sections below. Each section says what the refusal means and what to do about it.</p>
@@ -58,12 +44,33 @@ sections below. Each section says what the refusal means and what to do about it
 <h2 id="no-stage-context">no-stage-context</h2>
 <p>Something that belongs to a stage (<code>ot.constant</code>, <code>ot.assertion</code>, the stage context) was used where no stage is running.</p>
 <p><strong>Fix:</strong> Call it inside the decorated stage whose output it describes.</p>
+<h2 id="decision">decision</h2>
+<p>A step cited an onedoor decision with <code>ctx.decision</code>, but what it passed is not a decision-reference object, or the permit it passed is not a compact JWS string.</p>
+<p><strong>Fix:</strong> Pass the <code>onedoor-decision-ref/1</code> object as <code>ref</code>; pass the bound permit's compact JWS (a string) as <code>permit</code> where one was issued; pass the action object the step is about to send as <code>action</code>.</p>
+<h2 id="verify-nested">verify-nested</h2>
+<p>A nested run does not match the head the outer run recorded for it: the inner run's own chain head differs from what the outer run recorded as that run's input, or an inner run's folder was given but its manifest cannot be read.</p>
+<p><strong>Fix:</strong> Give each nested run's folder with --nested-run; restore the outer and inner records as they were written, so the inner run's chain head equals the head the outer run recorded.</p>
+<h2 id="nesting-depth">nesting-depth</h2>
+<p>A stage was called more deeply nested than the limit onetrace records (NEST_DEPTH_LIMIT). A call past the limit is refused and named, never recorded as a silent gap, so a runaway recursion cannot fill a run folder.</p>
+<p><strong>Fix:</strong> Reduce the nesting depth, or flatten the recursion into declared stages; the limit is stated in docs/nesting.md.</p>
+<h2 id="traceparent">traceparent</h2>
+<p>The <code>TRACEPARENT</code> environment variable is set to something that is not a W3C traceparent, so the run or a step could not record the trace context it ran in. A trace is a view, not evidence, and a broken one is never recorded.</p>
+<p><strong>Fix:</strong> Set TRACEPARENT to <code>00-&lt;32 hex trace id&gt;-&lt;16 hex span id&gt;-&lt;2 hex flags&gt;</code> (neither id all zero), or unset it; a run with no active span and no TRACEPARENT records no trace context.</p>
 <h2 id="keep-inputs">keep-inputs</h2>
 <p><code>keep_inputs</code> names something that is not a parameter of the function, or <code>keep_inputs_cap</code> is not a whole number of bytes from 1 to 65536. Checked when the stage is decorated.</p>
 <p><strong>Fix:</strong> Name the function's own parameters, spelled as in its signature, and give the cap in bytes (default 4096).</p>
 <h2 id="reserved-constant">reserved-constant</h2>
 <p>A constant's name starts with <code>onetrace.</code>, which only onetrace's own constants use (<code>onetrace.kept_inputs</code>, <code>onetrace.inputs_not_kept</code>, <code>onetrace.links</code>), whether it was set with <code>ctx.constant</code> or straight into <code>ctx.constants</code>.</p>
 <p><strong>Fix:</strong> Rename the constant without the <code>onetrace.</code> prefix.</p>
+<h2 id="reserved-stage">reserved-stage</h2>
+<p>A stage is named <code>onetrace.close</code>, the name every run's close receipt is recorded under (format 0.4), or <code>onetrace.check</code>, the name a check's run is recorded under. onetrace writes both itself, and no stage of a team's may take either.</p>
+<p><strong>Fix:</strong> Rename the stage.</p>
+<h2 id="run-close">run-close</h2>
+<p><code>close(ended_by=...)</code> was given a value that is not one of the ways a run ends: <code>exit</code>, <code>SIGTERM</code>, <code>unhandled exception: </code> followed by the exception's class, or a re-run's stop, <code>re-run stopped before &lt;node&gt;: effect &lt;value&gt; (&lt;basis&gt;)</code> or <code>...: effect not recorded</code>.</p>
+<p><strong>Fix:</strong> Pass <code>exit</code> for a run that ended in the ordinary way, or leave <code>ended_by</code> out.</p>
+<h2 id="not-closed">not-closed</h2>
+<p>The run holds no close receipt: its record ends at its last step, and nothing in it says the run finished. The run was killed, or ended without closing, or it was written before format 0.4. A signature over it would cover a record that may be cut short, so it is not signed by default.</p>
+<p><strong>Fix:</strong> Sign it anyway with <code>onetrace sign --not-closed</code> (or <code>sign_run(..., not_closed=True)</code>): the signed statement then says the run is not closed, inside the signed bytes.</p>
 <h2 id="constant-name">constant-name</h2>
 <p>A stage's constants can't be read as a dict, a constant's name is not a str, or two names read as the same characters (a <code>str</code> subclass, such as a <code>StrEnum</code> member, is read as its characters; the constants themselves as <code>dict()</code> reads them, as 0.3.0 did).</p>
 <p><strong>Fix:</strong> Add constants with <code>ctx.constant(name, value)</code> or by a <code>str</code> key in <code>ctx.constants</code>, and give each constant its own name.</p>
@@ -100,6 +107,24 @@ sections below. Each section says what the refusal means and what to do about it
 <h2 id="stage-function">stage-function</h2>
 <p><code>@ot.stage</code> was put on something with no single return value to record: a generator, an async generator, or a lambda.</p>
 <p><strong>Fix:</strong> Decorate a plain or async function that returns its result.</p>
+<h2 id="hooks-off">hooks-off</h2>
+<p><code>@ot.stage(hooks=...)</code> was given a value that is not <code>on</code> or <code>off</code>. <code>hooks=&quot;off&quot;</code> turns the automatic library hooks off inside the stage, so a hooked call there records no step of its own.</p>
+<p><strong>Fix:</strong> Pass hooks=&quot;off&quot; to turn the hooks off inside the stage, or leave it unset (the default, &quot;on&quot;).</p>
+<h2 id="stage-effect">stage-effect</h2>
+<p><code>@ot.stage(effect=...)</code> or <code>Recorder.stage(effect=...)</code> was given a value that is not <code>read</code> or <code>write</code>. The value is written as the receipt's <code>effect_label</code>, basis <code>declared on the stage</code>: whether running the stage again acts on the world outside the run.</p>
+<p><strong>Fix:</strong> Pass effect=&quot;write&quot; for a stage that acts on the world outside the run (sends, writes, orders), effect=&quot;read&quot; for one that does not, or leave it unset to record no label.</p>
+<h2 id="keep-config">keep-config</h2>
+<p><code>keep_config=</code> (on <code>@ot.stage</code>, <code>@ot.run</code> or <code>Recorder</code>) was given a value that is not <code>True</code> or <code>False</code>, or <code>keep_config_except=</code> is not a list of configuration keys. With <code>keep_config=True</code> a step's instrument configuration is kept as <code>config/&lt;receipt stem&gt;/config.json</code>, named by the receipt's <code>config_kept</code>; a key in <code>keep_config_except</code> is written as <code>not kept</code>.</p>
+<p><strong>Fix:</strong> Pass keep_config=True to keep the configuration, or leave it unset; name the keys never to keep, as keep_config_except=[&quot;api_key&quot;].</p>
+<h2 id="rerun-plan">rerun-plan</h2>
+<p>The process was given a re-run plan in <code>ONETRACE_RERUN_PLAN</code> that can't be read, or that is not as this build writes it. <code>onetrace reproduce</code> writes the plan and hands it to the pipeline it re-runs, so the produced run carries the re-run mark; a run is not recorded without the mark it was asked for.</p>
+<p><strong>Fix:</strong> Leave ONETRACE_RERUN_PLAN unset when you run the pipeline yourself; <code>onetrace reproduce</code> sets it for the re-run it starts.</p>
+<h2 id="check-runner">check-runner</h2>
+<p><code>onetrace check</code> was given a runner it does not run. In 0.7 that is a JSON runner (<code>--runner FILE</code>) holding an <code>{input:&lt;name&gt;}</code> placeholder: <code>onetrace reproduce</code> fills it from the run's kept input, and a check does not. A check with a <code>onetrace-runner/0.3</code> runner that uses only <code>config.*</code> params, or neither, runs.</p>
+<p><strong>Fix:</strong> Write the input file's path in the runner's argv in place of its {input:...} placeholder, or re-run with onetrace reproduce, which fills it.</p>
+<h2 id="expectation">expectation</h2>
+<p>An expectation given to a stage's <code>expect=</code> can't be recorded: it was not made by <code>ot.expect.range</code>, <code>unit</code>, <code>relation</code> or <code>member</code>; a bound (<code>lo</code>, <code>hi</code>, <code>within</code>) is not a decimal string; its target or <code>of=</code> names no member or JSON Pointer; or two expectations of one step share a name.</p>
+<p><strong>Fix:</strong> Build each with <code>ot.expect.range</code>, <code>ot.expect.unit</code>, <code>ot.expect.relation</code> or <code>ot.expect.member</code>; give every bound as a decimal string, as <code>&quot;0&quot;</code> or <code>&quot;0.01&quot;</code>; give two expectations of one step two names with <code>name=</code>.</p>
 <h2 id="meaning-fields">meaning-fields</h2>
 <p>A meaning field was given without the one it explains: <code>note=</code> explains a stated <code>rederivable=</code>; or <code>rederivable=</code> and <code>note=</code> were given to a run function that has no arguments to describe.</p>
 <p><strong>Fix:</strong> Pass <code>rederivable=</code> with <code>note=</code>, or drop <code>note=</code>. Meaning fields are a person's answer: leave them out rather than guess.</p>
@@ -172,6 +197,9 @@ sections below. Each section says what the refusal means and what to do about it
 <h2 id="corpus-link">corpus-link</h2>
 <p><code>ot.corpus_from</code> can't link this query run to its ingest run: no run at the place given, a run that doesn't verify, no such index stage, or stages that aren't the run's own.</p>
 <p><strong>Fix:</strong> Pass the ingest run's folder (or its chain head) and the stages of this run that read the corpus; link only a run that verifies.</p>
+<h2 id="model-link">model-link</h2>
+<p><code>ot.model_from</code> can't link this run to its provisioning run: no run at the place given, a run that doesn't verify, no such serve stage, or stages that aren't the run's own.</p>
+<p><strong>Fix:</strong> Pass the provisioning run's folder (or its chain head) and the model steps of this run; link only a run that verifies.</p>
 <h2 id="anchor-run">anchor-run</h2>
 <p><code>onetrace anchor</code> can't read the run's chain head: there is no run folder at the path given (or it is a file), the run has no MANIFEST.json (it isn't finished), or the manifest can't be read, is over its size or depth cap, or names a chain head of the wrong form.</p>
 <p><strong>Fix:</strong> Anchor a finished run, by its folder, and check that onetrace-verify reads the run as intact first.</p>
@@ -208,60 +236,55 @@ sections below. Each section says what the refusal means and what to do about it
 <h2 id="verify-artifacts">verify-artifacts</h2>
 <p>An output file a receipt names is missing from the run's artifacts/ folder, unreadable, or not the file whose digest the receipt records.</p>
 <p><strong>Fix:</strong> Restore the run's artifacts/ folder as it was written, or verify without <code>--require-artifacts</code> when the outputs were deliberately not kept.</p>
+<h2 id="verify-model-call">verify-model-call</h2>
+<p>A model-call record an output names fails its check: it doesn't parse or isn't canonical, names a format this verifier doesn't implement, is missing or has a malformed field, holds a value where it is not observed, or carries a string shaped like an authorization header. A model-call-record/1.1 record also fails when its steps.* members are not in their states and values, its steps digest names no output of the step, its steps file is not lined up with steps.count, or, at L3, its runner, engine core, executor, sampling members or ending are not as L3 writes them. Each FAIL row names the record and the check.</p>
+<p><strong>Fix:</strong> Restore the record as it was written; a record is never edited. If the writer wrote it so, record the run again with a writer that writes the field, and write no credential into any recorded field.</p>
 <h2 id="verify-anchor">verify-anchor</h2>
 <p>A record beside the chain (an anchor in anchors/) fails its check, or the file you passed to check it (<code>--headers</code>, <code>--tsa-cert</code>) can't be read.</p>
 <p><strong>Fix:</strong> Restore the record as it was written, or anchor the run again with <code>onetrace anchor</code>; pass the header or certificate files in the form <code>onetrace-verify --help</code> names.</p>
 <h2 id="verify-signature">verify-signature</h2>
 <p>A record in signatures/ fails its check: it is malformed, has an unknown member or the format name before 0.2.0, carries a key_id that isn't its key's fingerprint, covers another chain head, or doesn't verify; or signatures/ holds a file that isn't a <code>&lt;n&gt;.json</code> record, or is a link. Or the trust file you passed (<code>--trust</code>) can't be read.</p>
 <p><strong>Fix:</strong> Sign the run again with <code>onetrace sign</code>; a signature is never edited. Pass the trust file in the form <code>onetrace-verify --help</code> names. For a record in the format name before 0.2.0, <code>onetrace-signature/0.1</code>: move the record out of signatures/ (a development build before 0.2.0 wrote it, and no release writes that format), then sign the run again with onetrace sign.</p>
+<h2 id="verify-close">verify-close</h2>
+<p>The run's close receipt is not as format 0.4 writes it: it is not the chain's last receipt, there is a second one, its onetrace.steps doesn't count the receipts before it, its onetrace.ended_by is outside its five forms, a constant is missing, or onetrace.close is not the last declared stage. Or you passed --require-closed and the run holds no close receipt.</p>
+<p><strong>Fix:</strong> Restore the receipts as they were written; a close receipt is written by the recorder, last, and a record is never edited. For a run with no close receipt, record it again and let it close (<code>Recorder.close()</code>, or a decorated run that returns); a run killed before it closed can't gain one.</p>
+<h2 id="verify-auto">verify-auto</h2>
+<p>An auto-recorded step or run is not as format 0.4 gives it: an auto block with a member outside the format, a declared other than &quot;false&quot;, a target of the wrong shape, no effect_label, an effect label outside its three values and six bases or not what the producer documents for the library, an onetrace. constant or value the format doesn't give, an HTTP step without its status output, a thread context other than its one value; a receipt's declared stages that drop or reorder an earlier receipt's, or add a stage of no auto step; or the run has no manifest auto block, or no open boundary.</p>
+<p><strong>Fix:</strong> Restore the receipts and the manifest as they were written; an auto-recorded run is written by onetrace-auto, and a record is never edited. Record the run again with this release's onetrace-auto.</p>
+<h2 id="verify-rerun">verify-rerun</h2>
+<p>A re-run's mark is not as format 0.4 gives it: the receipts disagree on it, the manifest's copy disagrees with them, its kind is outside the four, it lacks a member its kind requires or holds one it may not, or a counterfactual's substituted step does not hold the output its mark names.</p>
+<p><strong>Fix:</strong> Restore the receipts and the manifest as they were written; a re-run's mark is written by the re-run itself, in every receipt, and a record is never edited.</p>
+<h2 id="verify-receipt-0-4">verify-receipt-0-4</h2>
+<p>A step's format 0.4 member fails: it is labelled read and records an external effect; its config_kept.digest is not instrument.config_digest with no partial, its partial is other than &quot;true&quot;, or its kept file is not that digest; an expectation it declared, or one an expectations file declares after the run, does not hold, or its declaration_digest does not recompute; the expectations file's seal does not recompute over its content, or it names a step the run does not record, or gives two entries the same name for one step; or an output's empty is other than &quot;true&quot; or &quot;false&quot;.</p>
+<p><strong>Fix:</strong> Restore the receipt and the files beside it as they were written; a record is never edited. For an expectation that does not hold, fix the step's output or the expectation, and record the run again.</p>
+<h2 id="verify-embedding">verify-embedding</h2>
+<p>An embedding record an output names fails its check: it does not parse, its identity.digest does not recompute over the fields the format names, or its rows do not number batch.size with positions 0 to n-1 and output.count equal to it.</p>
+<p><strong>Fix:</strong> Restore the record as it was written; a record is never edited. If the writer wrote it so, record the call again with a writer that computes it.</p>
 <h2 id="verify-plan">verify-plan</h2>
 <p>The run's edges don't match its approved plan (<code>declared_edges</code>), or the manifest's edges aren't the ones its receipts record.</p>
 <p><strong>Fix:</strong> Record the run again on the approved plan, or approve the plan it ran; restore the manifest if it was edited.</p>
+<h2 id="verify-decision">verify-decision</h2>
+<p>An onedoor decision row fails: a declared gated step cited no decision, a reference is not an onedoor-decision-ref/1 object, a step acted on a denied or proposed decision, a permit does not cover the action the step recorded (signature, action digest or lifetime), or a cited decision is not in the export you passed. Or the --decisions or --permit-issuers file can't be read.</p>
+<p><strong>Fix:</strong> Record a decision in every declared gated step (ctx.decision), cite a permitting decision for a step that acts, and record the action a permit covers; pass the decision export as --decisions and the issuer keys as --permit-issuers, in the form onetrace-verify --help names.</p>
 <h2 id="unknown-command">unknown-command</h2>
 <p><code>onetrace</code> was given a subcommand it doesn't have. Verifying a run is a separate command, <code>onetrace-verify</code>.</p>
 <p><strong>Fix:</strong> Run <code>onetrace --help</code> for the subcommands; to verify a run, <code>onetrace-verify &lt;run folder&gt;</code>.</p>
-<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/textdiff-format.html"><span>← Previous</span>Text-diff format</a><a class="next" href="/onetrace/manual.html"><span>Next →</span>The full manual</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#run-declaration">run-declaration</a><a href="#run-bytes-cap">run-bytes-cap</a><a href="#run-folder-used">run-folder-used</a><a href="#run-folder-locked">run-folder-locked</a><a href="#run-manifest">run-manifest</a><a href="#folder-name">folder-name</a><a href="#intake-name">intake-name</a><a href="#no-stage-context">no-stage-context</a><a href="#keep-inputs">keep-inputs</a><a href="#reserved-constant">reserved-constant</a><a href="#constant-name">constant-name</a><a href="#stage-undeclared">stage-undeclared</a><a href="#stage-order">stage-order</a><a href="#node-repeated">node-repeated</a><a href="#repeated-call">repeated-call</a><a href="#instance-name">instance-name</a><a href="#no-run-in-thread">no-run-in-thread</a><a href="#fan-out-key">fan-out-key</a><a href="#run-closed">run-closed</a><a href="#export-unreadable">export-unreadable</a><a href="#child-process">child-process</a><a href="#stage-function">stage-function</a><a href="#meaning-fields">meaning-fields</a><a href="#clock-backwards">clock-backwards</a><a href="#value-unencodable">value-unencodable</a><a href="#encoder">encoder</a><a href="#instrument">instrument</a><a href="#instrument-declaration">instrument-declaration</a><a href="#trust-class">trust-class</a><a href="#secret-input">secret-input</a><a href="#input-unidentified">input-unidentified</a><a href="#input-changed">input-changed</a><a href="#input-name-clash">input-name-clash</a><a href="#output-name">output-name</a><a href="#output-name-repeated">output-name-repeated</a><a href="#receipt-read">receipt-read</a><a href="#json-output">json-output</a><a href="#assertion-constants">assertion-constants</a><a href="#boundary">boundary</a><a href="#gap">gap</a><a href="#edges">edges</a><a href="#receipt-write">receipt-write</a><a href="#anchor-heads">anchor-heads</a><a href="#chunk-index">chunk-index</a><a href="#corpus-manifest">corpus-manifest</a><a href="#corpus-link">corpus-link</a><a href="#anchor-run">anchor-run</a><a href="#anchor-record">anchor-record</a><a href="#anchor-folder">anchor-folder</a><a href="#anchor-tsa">anchor-tsa</a><a href="#anchor-calendar">anchor-calendar</a><a href="#anchor-headers">anchor-headers</a><a href="#signature-folder">signature-folder</a><a href="#signing-key">signing-key</a><a href="#signing-store">signing-store</a><a href="#verify-receipt">verify-receipt</a><a href="#verify-chain">verify-chain</a><a href="#verify-artifacts">verify-artifacts</a><a href="#verify-anchor">verify-anchor</a><a href="#verify-signature">verify-signature</a><a href="#verify-plan">verify-plan</a><a href="#unknown-command">unknown-command</a></aside></div>
-<footer>
-  <div class="wrap">
-    <div class="foot-grid">
-      <div>
-        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
-        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
-        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
-      </div>
-      <div>
-        <h4>Product</h4>
-        <ul>
-          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
-          <li><a href="/developers.html">Developers</a></li>
-          <li><a href="/how-it-works.html">How it works</a></li>
-          <li><a href="/onetrace/">Documentation</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Packages</h4>
-        <ul>
-          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>More from oneproof</h4>
-        <ul>
-          <li><a href="/oneground/">oneground</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
-          <li><a href="/where-it-fits.html">Where it fits</a></li>
-          <li><a href="/answer-lineage.html">A forensic report</a></li>
-          <li><a href="/building.html">What we're building</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
-  </div>
-</footer>
+<h2 id="s3-extra">s3-extra</h2>
+<p>A run destination or a sink command names an <code>s3://</code> bucket, but the S3 client the sink needs is not installed. onetrace records no credential and no endpoint; the client reads those from its own environment and credential files.</p>
+<p><strong>Fix:</strong> Install the extra: <code>pip install 'onetrace[s3]'</code> (hash-locked in requirements-s3.txt), or give a local run destination instead of an <code>s3://</code> URL.</p>
+<h2 id="s3-url">s3-url</h2>
+<p>An <code>s3://</code> value is not a bucket and prefix: it must read <code>s3://bucket/prefix</code>, with a non-empty bucket and an optional prefix path.</p>
+<p><strong>Fix:</strong> Write the destination as <code>s3://bucket</code> or <code>s3://bucket/prefix</code>.</p>
+<h2 id="sink">sink</h2>
+<p>A finished run could not be uploaded to its <code>s3://</code> destination, or a sink command could not reach it: the bucket was unreachable, refused the write or the read, or an object's checksum did not match on the way back. The local run folder is kept.</p>
+<p><strong>Fix:</strong> Check the bucket and the client's own credentials, then <code>onetrace sink retry &lt;run folder&gt;</code>; the run is already recorded locally and loses nothing by a failed upload.</p>
+<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/variation.html"><span>← Previous</span>Variation across repeat runs</a><a class="next" href="/onetrace/manual.html"><span>Next →</span>The full manual</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#run-declaration">run-declaration</a><a href="#run-bytes-cap">run-bytes-cap</a><a href="#run-folder-used">run-folder-used</a><a href="#run-folder-locked">run-folder-locked</a><a href="#run-manifest">run-manifest</a><a href="#folder-name">folder-name</a><a href="#intake-name">intake-name</a><a href="#no-stage-context">no-stage-context</a><a href="#decision">decision</a><a href="#verify-nested">verify-nested</a><a href="#nesting-depth">nesting-depth</a><a href="#traceparent">traceparent</a><a href="#keep-inputs">keep-inputs</a><a href="#reserved-constant">reserved-constant</a><a href="#reserved-stage">reserved-stage</a><a href="#run-close">run-close</a><a href="#not-closed">not-closed</a><a href="#constant-name">constant-name</a><a href="#stage-undeclared">stage-undeclared</a><a href="#stage-order">stage-order</a><a href="#node-repeated">node-repeated</a><a href="#repeated-call">repeated-call</a><a href="#instance-name">instance-name</a><a href="#no-run-in-thread">no-run-in-thread</a><a href="#fan-out-key">fan-out-key</a><a href="#run-closed">run-closed</a><a href="#export-unreadable">export-unreadable</a><a href="#child-process">child-process</a><a href="#stage-function">stage-function</a><a href="#hooks-off">hooks-off</a><a href="#stage-effect">stage-effect</a><a href="#keep-config">keep-config</a><a href="#rerun-plan">rerun-plan</a><a href="#check-runner">check-runner</a><a href="#expectation">expectation</a><a href="#meaning-fields">meaning-fields</a><a href="#clock-backwards">clock-backwards</a><a href="#value-unencodable">value-unencodable</a><a href="#encoder">encoder</a><a href="#instrument">instrument</a><a href="#instrument-declaration">instrument-declaration</a><a href="#trust-class">trust-class</a><a href="#secret-input">secret-input</a><a href="#input-unidentified">input-unidentified</a><a href="#input-changed">input-changed</a><a href="#input-name-clash">input-name-clash</a><a href="#output-name">output-name</a><a href="#output-name-repeated">output-name-repeated</a><a href="#receipt-read">receipt-read</a><a href="#json-output">json-output</a><a href="#assertion-constants">assertion-constants</a><a href="#boundary">boundary</a><a href="#gap">gap</a><a href="#edges">edges</a><a href="#receipt-write">receipt-write</a><a href="#anchor-heads">anchor-heads</a><a href="#chunk-index">chunk-index</a><a href="#corpus-manifest">corpus-manifest</a><a href="#corpus-link">corpus-link</a><a href="#model-link">model-link</a><a href="#anchor-run">anchor-run</a><a href="#anchor-record">anchor-record</a><a href="#anchor-folder">anchor-folder</a><a href="#anchor-tsa">anchor-tsa</a><a href="#anchor-calendar">anchor-calendar</a><a href="#anchor-headers">anchor-headers</a><a href="#signature-folder">signature-folder</a><a href="#signing-key">signing-key</a><a href="#signing-store">signing-store</a><a href="#verify-receipt">verify-receipt</a><a href="#verify-chain">verify-chain</a><a href="#verify-artifacts">verify-artifacts</a><a href="#verify-model-call">verify-model-call</a><a href="#verify-anchor">verify-anchor</a><a href="#verify-signature">verify-signature</a><a href="#verify-close">verify-close</a><a href="#verify-auto">verify-auto</a><a href="#verify-rerun">verify-rerun</a><a href="#verify-receipt-0-4">verify-receipt-0-4</a><a href="#verify-embedding">verify-embedding</a><a href="#verify-plan">verify-plan</a><a href="#verify-decision">verify-decision</a><a href="#unknown-command">unknown-command</a><a href="#s3-extra">s3-extra</a><a href="#s3-url">s3-url</a><a href="#sink">sink</a></aside></div>
+<footer><div class="wrap stack-lg"><div class="foot">
+<div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
+<div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/debugging.html">Debug an agent</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>Also from oneproof</h4><ul><li><a href="/onedoor/">onedoor</a><br><span class="muted" style="font-size:13px">decide what an agent is allowed to do, before it does</span></li></ul></div>
+</div><div class="fine">© 2026 oneproof · Apache-2.0. onetrace itself reports to no one.</div></div></footer>
 <script src="/onetrace/assets/copy.js" defer></script>
 <script>if(window.matchMedia&&matchMedia("(max-width:760px)").matches){var d=document.querySelector(".docs-side details");if(d)d.removeAttribute("open")}</script>
 </body>

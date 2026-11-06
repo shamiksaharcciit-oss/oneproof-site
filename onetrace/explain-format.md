@@ -4,7 +4,8 @@
 comparison. **An explanation is a suggestion about a record, never a reading of it.** onetrace's
 verdicts, exit codes and `onetrace summary` are what they are without it; the deterministic tools
 never call a model and never read an explanation back. This page fixes the formats a reader of an
-explanation (the console, a script) can rely on. Version 1, `0.1`.
+explanation (the console, a script) can rely on. Version 2, `0.2`: the two-run form below; the
+report-folder form and its packet, `0.1`, are unchanged.
 
 ## The command
 
@@ -17,6 +18,135 @@ own and say nothing about the runs: 0 an explanation or a dry run was written; 2
 comparison that can't be explained (no report, a refused or could-not-check verdict, a run whose
 chain head is not the one the report checked); 3 the model couldn't be reached, or replied with no
 usable JSON. Never use it as a CI gate.
+
+## Two runs: `onetrace-explain RUN_A RUN_B` (0.2)
+
+```
+onetrace-explain RUN_A RUN_B [--no-model] [--json] [--probes NAME,...] [--max-probes N] [--runs-root DIR]
+                 [--mask FILE] [--model PROVIDER:NAME] [--yes] [--include-text] [--redact NAME]... [--out DIR]
+```
+
+It compares the two runs itself (`onetrace diff`, in this process) and prints four parts, in order.
+Its exit code is `onetrace diff`'s for the two runs, whatever the model says, or whether one is
+asked. It is `onetrace-explain RUN_A RUN_B`, not `onetrace explain`: onetrace's CLI takes no verb it
+doesn't define, and onetrace is not changed. With one folder, `onetrace-explain REPORT_DIR`, it is
+the 0.1 command below, unchanged.
+
+1. **What changed (checked from the records).** The headline and the stage strip, from `onetrace
+   diff`'s JSON report, in the console's words: Same, First difference, Changed after it, Same
+   again, Couldn't check. Printed always, with no model and no network call.
+2. **Evidence (read-only, no re-runs).** Probes: questions answered from records already written.
+   A probe never re-runs a pipeline, calls a tool, changes a file or a setting, or reaches a host.
+   Each one that ran states its sample: how many runs it read, and which. A probe whose needs are
+   missing reads `not run: <what is missing>`, never skipped silently.
+3. **What may have happened (AI-generated, may be wrong).** The model's claims. Each must cite a
+   probe that ran (`probe/P1`, ...) or an item of the record, and the post-check below drops the
+   rest and counts them. A claim citing a probe that did not run is dropped. Asked only when a
+   model is configured and the kinds sent are consented to.
+4. **Checks a human could run (not run).** Never run here. Each is marked "runnable here" or
+   "needs a runner you name". A check that re-runs a step names that step's replay-safety label,
+   `effect_label` (format 0.4), its `value` and its `basis`. A step labelled `write` or `unknown` is
+   named as one whose re-run may change state outside the record, and `unknown` is read as `write`.
+   A receipt with no label reads `effect not recorded`, never `unknown`: every record written
+   before format 0.4 reads so.
+
+### The probes
+
+| Probe | Question | Needs | 0.2 |
+|---|---|---|---|
+| `variation` | Is the difference inside the range the baseline's repeat set shows at the step? | a repeat set under `--runs-root` (`repeat_of`, onetrace 0.6) | runs |
+| `mask` | Does the difference vanish under the mask `onetrace mask suggest` proposes? | the two runs | runs |
+| `model_call` | At a model step: what does the model-call comparator read? | a model-call record in both runs, its file kept | runs |
+| `same_config`, `same_model_files`, `neighbours` | across a console's stored runs | a console store | `not run: no console store given`; `--store` is refused |
+| `config_vs_reference`, `bisect`, `kind_of_change`, `close_call` | | console 0.6.0 | `not run`, naming it |
+| `expectations`, `fallback` | | onetrace 0.7 | `not run`, naming it |
+
+**The playbook** picks the probes from the first difference's kind, with no model, `mask` first:
+
+- configuration changed (an instrument or a constant at the first difference): `mask`,
+  `config_vs_reference`, `same_config`, `bisect`;
+- same inputs, different model output (a model-call record at the first difference): `mask`,
+  `variation`, `close_call`, `model_call`, `same_model_files`;
+- inputs changed (the runs were given different recorded inputs): `mask`, `neighbours`;
+- otherwise (the output differs only): `mask`, `variation`.
+
+`--probes a,b` runs exactly those instead. At most `--max-probes` probes run (default 8); past the
+bound, a probe reads `not run: past the bound of N probes`.
+
+**A model may propose more,** once, from the same list only, beside its claims:
+`{"probes": [{"probe": "<name>", "step": "<a node in the packet>", "run": "<a run id in the
+packet>"}]}`. A proposal naming anything else (a command, a path, a host, a URL, another argument,
+a step or run the evidence doesn't hold, a probe off the list) is refused and counted. So is one
+past the bound, or one made after the first round. When a proposal runs, the model is asked once
+more with the probe's result, and its second reply's claims are the ones checked.
+
+### What is sent: `onetrace-explain-evidence/0.2`
+
+The 0.1 packet below, built from the comparison's report, with each probe that ran as an item of
+kind `probe` (`probe/P1`: the probe, its arguments, its one-line result, its result and its sample).
+`not_run` lists the probes that did not run, with why, and they may not be cited. A probe's result
+names runs by run id, never by a path of this machine. With `--no-model`, nothing is sent.
+
+### What it writes
+
+Under `OUT` (default `./onetrace-explain`): `compare/`, `onetrace diff`'s report; `probes/`, the
+probes' own working files (a suggested mask, its masked comparison); and `explain/<run id>/`, the
+explanation as a run of its own, with these stages:
+
+- **`evidence`**: the report, and both runs' manifests and receipts in, by digest; what changed out;
+- **`probe#P1`, `probe#P2`, ...**: one node per probe, its name, arguments, status and result
+  digest as constants, and its result out;
+- **`model#1`** (and **`model#2`** after a round of proposals): what was sent out, `sent.json`, then
+  the raw reply, `reply.txt`, `model-generated`;
+- **`post_check`**: what was kept and dropped.
+
+Beside the run are `explain/<run id>.explanation.json`, the four parts as `--json` prints them, and
+`explain/<run id>.explanation.txt`, as the command printed it.
+
+### A worked pair
+
+**Fixture data**, written by `tests/explain_fixtures.py` (`worked_pair`), with no model and no
+network. A baseline with two repeats, and a candidate whose model step answered differently. The
+model is a fake one, which replies with a fixed file, `reply.json`. Its third claim uses a causal
+word, and the post-check drops it. `tests/test_explain_02.py` runs this and compares it with the output below,
+line by line, the record's run id apart:
+
+<!-- explain: worked pair, fixture data -->
+```
+$ onetrace-explain runs/base runs/cand --model fake:reply.json --out out
+What changed (checked from the records)
+  First difference at answer
+    load                     Same
+    answer                   First difference
+
+Evidence (read-only, no re-runs)
+  P1 mask  nothing to mask: the differences are not ids, times or folders onetrace masks   [2 runs: base, cand]
+  P2 variation  at answer: 1 of 3 runs in the repeat set of base differ from its common output; the candidate's output is among the outputs the set recorded (2 distinct)   [3 runs: base, rep1, rep2]
+  P3 not run: close_call (not in explain 0.2: it waits for console 0.6.0's near-tie reading (L2))
+  P4 model_call  at answer: the model-call comparator reads could not compare: batch context not observed: batch.size, batch.padded_width, batch.position, batch.members, batch.fillers, batch.batch_invariant   [2 runs: base, cand]
+  P5 not run: same_model_files (no console store given)
+
+What may have happened (AI-generated, may be wrong)
+  model: fake:reply.json
+  - note: The repeat set already varies at answer: `1` of `3` runs differ from its common output, and the candidate's output is among the outputs it recorded.
+    shown by: probe/P2
+  - possible culprit: The answer step's output differs with its inputs the same; the model-call record is the place to look.
+    shown by: node/answer, probe/P4
+  dropped: 1 says what caused a difference
+
+Checks a human could run (not run)
+  onetrace diff runs/base runs/cand --text --stage answer
+      runnable here
+  onetrace localize runs/base runs/cand --for answer
+      runnable here
+  onetrace reproduce runs/cand answer --runner <your runner>
+      needs a runner you name; effect not recorded
+recorded: out/explain/<run id>
+```
+
+The exit code is 1, `onetrace diff`'s for a pair that diverged. `--no-model` prints the first, second
+and fourth parts, and sends nothing. `--json` prints the same four parts as one JSON object, in four
+keys: `what_changed`, `evidence`, `what_may_have_happened`, `checks`.
 
 ## The evidence packet, `onetrace-explain-evidence/0.1`
 

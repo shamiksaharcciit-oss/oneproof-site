@@ -4,7 +4,7 @@
 
 Key facts for a coding agent:
 
-- Python 3.10+. The console (`onetrace-console`) needs Python 3.12+, so start with 3.12 to use both. Install: `pip install onetrace` (SDK and verifier). This needs onetrace 0.2.0 or later: check with `python -c "import onetrace, onetrace_verify; print(onetrace.__version__, onetrace.__file__)"`, and if it prints an older version or a path outside the project's environment, use a fresh virtual environment. Signature and anchor checks: `pip install "onetrace-verify[crypto]"`.
+- Python 3.10+. The console (`onetrace-console`) needs Python 3.12+ and goes in an environment of its own until console 0.7.0: today it reads runs from onetrace 0.6.x (record formats up to 0.3), and onetrace 0.7 beside it breaks the console's pins. Install: `pip install onetrace` (SDK and verifier). This needs onetrace 0.2.0 or later: check with `python -c "import onetrace, onetrace_verify; print(onetrace.__version__, onetrace.__file__)"`, and if it prints an older version or a path outside the project's environment, use a fresh virtual environment. Signature and anchor checks: `pip install "onetrace-verify[crypto]"`.
 - Instrument existing code with two decorators: `@ot.run` on the function that is one run, and `@ot.stage(name, ...)` on each step. Nothing else in the code changes. Called outside a run, a decorated stage is a plain function, so tests keep working.
 - What a run folder holds: each stage's outputs (which can include documents, prompts and answers), and fingerprints (SHA-256 digests) of its inputs. Treat run folders like logs that may contain sensitive data. onetrace sends no telemetry and makes no network call during a run.
 - See what changed: `onetrace diff runs/A runs/B --text` shows the first stage that differs and the text that changed in its outputs, checked against the receipts first.
@@ -34,7 +34,15 @@ Key facts for a coding agent:
 ## Checking and comparing runs
 
 - [Verifying a run](https://oneproof.dev/onetrace/manual.md#8-verifying-a-run): `onetrace-verify`, exit codes, `--require-artifacts`, `--trust`
-- [diff and localize](https://oneproof.dev/onetrace/verdicts.md): the five verdicts (`same`, `FIRST DIFFERENCE`, `downstream`, `reconverged`, `COULD NOT CHECK`) and what each means
+- [diff and localize](https://oneproof.dev/onetrace/verdicts.md): the five verdicts (`same`, `FIRST DIFFERENCE`, `downstream`, `reconverged`, `COULD NOT CHECK`) and what each means; and a run's verdict against a reference — `same output`, `output differs`, `setting differs`, `input differs`, `slower than its range`, `could not check` — from onetrace verdict and onetrace-verify --reference
+- [References](https://oneproof.dev/onetrace/references.md): a sealed record of a known-good run a later run is compared against — per step the output digests, settings, data inputs and a timing range, with the rule; made with onetrace reference make, shown with onetrace reference show
+- [Variation across repeat runs](https://oneproof.dev/onetrace/variation.md): `repeat_of`, `may_vary`, onetrace repeat, and onetrace profile — how often each step's output differs across a set, and whether a fix holds
+- [Streaming the record](https://oneproof.dev/onetrace/streaming.md): `@ot.run(stream_to=URL)` / `ONETRACE_STREAM_TO` sends each receipt as it is written; it changes no receipt and adds nothing to the chain
+- [Storage: a run in a bucket](https://oneproof.dev/onetrace/storage.md): ONETRACE_RUNS=s3://bucket/prefix uploads a sealed run to an S3-compatible bucket behind the optional onetrace[s3] extra; the index object, onetrace sink retry and onetrace sink verify; a bucket verifies nothing, the reader verifies on every read
+- [onedoor decisions](https://oneproof.dev/onetrace/decisions.md): `gated_stages`, `ot.decision`, the receipt's `authorization` block, and the five verifier rows (`--decisions`, `--permit-issuers`). onetrace never imports onedoor
+- [The span context](https://oneproof.dev/onetrace/span-context.md): a step's W3C trace id and span id, and the run's `traceparent`, read from an active OpenTelemetry span or `TRACEPARENT`; no OpenTelemetry package required
+- [Nesting](https://oneproof.dev/onetrace/nesting.md): `parent`/`children` on a stage, `parent_run`/`parent_stage` on a nested run, the depth limit, the comparison's descent, and the `--nested-run` verifier row
+- [The model-call record](https://oneproof.dev/onetrace/model-call-record.md): one canonical record per model call, beside the stage receipt, behind the optional `onetrace[model-call]` extra — the five states and what each field observed or declared, the per-step capture as a separate model-generated output the record names by digest, the comparator's three results, the verifier's rows, `ot.model_from`, and what it does not claim
 - [What onetrace does not claim](https://oneproof.dev/onetrace/non-claims.md)
 - [Suggested explanations](https://oneproof.dev/onetrace/explain-format.md): `onetrace-explain`, a separate package: what it sends to the model you configure, how each claim is checked against the record before it is shown, and what it writes. A suggestion about a record, never a reading of it
 

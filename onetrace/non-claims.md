@@ -109,3 +109,111 @@ doesn't.
 
 - **`diff --text` never shows an input's content.** Inputs are fingerprinted, not stored, so a
   changed input is named, with its trust class and digests, and nothing more.
+
+## onetrace 0.5: onedoor decisions, span context, nesting
+
+- **A citation shows that the run names an existing, unaltered decision.** It does not show that
+  every action was gated, only that every declared gated step cited one.
+
+- **A permit check shows the decision covered the action object the step recorded.** It does not
+  show that the receiving system received exactly that object; that is the recipient's own check.
+
+- **Nothing here says a decision was right.** onetrace records which onedoor decision allowed an
+  action and lets anyone re-check it offline; it does not judge the policy, the decision or the
+  action.
+
+- **A trace is a view, not evidence.** It may be sampled, dropped, rewritten or re-timed by a
+  collector. The span context a receipt records (a W3C trace id and span id) and the run's
+  `traceparent` say which trace the run and its steps ran in; only the record proves the step's
+  inputs and outputs.
+
+- **Nesting is recorded for calls through decorated stages only.** A call that bypasses the
+  decorator is not in the record, as today. `parent`, `children`, `parent_run` and `parent_stage`
+  name the calls that went through `@ot.stage` and `@ot.run`, and nothing else.
+
+- **A 0.5 receipt is not a new format.** onetrace 0.5 stays in format 0.3: a 0.4.0 verifier reads a
+  0.5 receipt unchanged, ignoring the `authorization`, span-context and nesting blocks it does not
+  know, and a run that records none of them is byte-identical to 0.4.0.
+
+## onetrace 0.6: references and verdicts, variation, streaming
+
+- **A verdict is derived from the record and a declared rule.** The rules are declared per step —
+  exact digest by default, a mask where one is given — never inferred. A verdict names where a run
+  parts from its reference; it does not say why, or that either run was right.
+
+- **A step matching its reference shows it did what the known-good run did, not that either was
+  right.** A reference is a statement that a run is the one to compare against, not that it is
+  correct.
+
+- **Timing is a view, never part of a verdict.** A step slower than its range is reported, but it is
+  never a divergence and never fails a verdict.
+
+- **A profile describes the repeats recorded, not every future run.** Matching in N repeats does not
+  prove a step is deterministic. A step declared `may_vary` is shown as declared; the declaration is
+  never used to hide a difference.
+
+- **A before/after profile names the setting that changed between the sets; it does not say the
+  change made the difference.** It is a comparison, as the others are.
+
+- **Streaming shares the record as it grows; it is not the record.** Only the written run folder,
+  read and verified, is the record; a receipt that reached a console is provisional until the run
+  closes and its whole chain verifies. A failed stream changes no receipt.
+
+- **A 0.6 record is not a new format.** onetrace 0.6 stays in format 0.3: a 0.5.0 verifier reads a
+  0.6 run unchanged, ignoring the `repeat_of` and `stream` members in the manifest and the
+  `may_vary` member on a receipt, and a run that records none of them is byte-identical to 0.5.0. A
+  reference is its own file (`onetrace-reference/1`), sealed and signed as a run is, never a
+  receipt.
+
+## onetrace 0.6: the run sink
+
+- **A bucket verifies nothing; the reader verifies on every read.** Storage location does not change
+  what a record proves. A tampered object is caught when a reader verifies the run, not at rest.
+
+- **A delivered run is the same record as the local one.** The sink uploads the sealed folder and
+  changes no receipt; the only addition is the manifest's optional `sink` member, which names no
+  endpoint and no credential.
+
+- **An object's checksum guards the transfer, not the record.** The chain, the digests and the
+  signature are what prove the run; the per-object sha256 only catches an object damaged in the
+  bucket, on the way back.
+
+## onetrace 0.6: the model-call record
+
+The [model-call record](model-call-record.md) is evidence beside a stage receipt; it never changes the
+reading of a run's receipts — its own verifier rows read as every other row does, and a FAIL on one
+fails the run like any other FAIL. What it does not claim:
+
+- **A record is not a correctness claim.** It holds no hidden reasoning, and does not check whether an
+  answer is semantically correct. A differing value names no cause, and `same` covers only the
+  compared fields. Record equivalence is not correctness.
+
+- **A record does not reproduce across machines.** It claims no reproducibility across GPUs, versions
+  or engines, and says nothing about a hosted provider's internals, which are `not observed`.
+
+- **A digest is not a commitment.** A digest in the record names a value; it does not bind the writer
+  to anything, and is not a proof of what was served. In particular, `model.files_digest` is the
+  digest of the directory given to the adapter, not read from the engine: it does not show that the
+  served weights are the hashed ones.
+
+- **The comparator's not-repeatable condition rests on one measurement** and fits no tolerance. vLLM
+  with batch-invariant mode not observed on, at a submitted batch size over 1, is not compared; the
+  reason claims no property of such a configuration.
+
+- **The tolerant fingerprint is not a detector of small numeric changes.** It is built to miss them; a
+  small numeric change can leave it unchanged. The exact form is the full row for a transformers
+  prefill, and the top 16 unrounded for a vLLM call — not the full vLLM distribution.
+
+- **The companion result was measured at one arrangement.** That a filler request changed a target's
+  answer was measured at batch 4 only, with the target first, companions no longer than the target,
+  and no fillers beyond the companions; it is not a claim about other batch sizes or arrangements.
+
+- **The per-step capture holds the model's token ids.** It is `model-generated`, kept in a separate
+  output (`model_call.<n>.steps.json`), and the record names only its digest — the record itself
+  holds no token id and no text at any level. A prefix-digest chain over token ids reveals the tokens
+  to anyone with the vocabulary; it hides nothing. The cost of taking L1 or L2 is not measured, and L3
+  is not measured.
+
+- **The verifier does not check that a record's `steps` digest names the steps output.** The steps
+  file is an ordinary model-generated output the chain covers; a verifier does not add a row checking
+  that the record's `steps` digest is that output's digest.

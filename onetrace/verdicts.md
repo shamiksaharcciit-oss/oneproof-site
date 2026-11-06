@@ -45,3 +45,50 @@ answer "if I re-run this stage's own code right now, does it produce what the re
 produced," not "do two already-recorded runs match." `rederivable` is measured by actually
 re-executing the stage, never declared; a stage that isn't rederivable keeps its originally
 recorded outputs rather than being treated as broken.
+
+## A run's verdict against a reference (onetrace 0.6)
+
+A [reference](references.md) is a sealed record of a known-good run. `onetrace verdict RUN
+--reference FILE` reads a finished run against one and gives each step one word, and the run its
+own. A verdict is derived from the record and the reference's declared rule; nothing is inferred.
+
+A re-run is never counted (0.7). On a run whose receipts carry the re-run mark `rerun`, the verdict's
+first line says so, `re-run: reproduce of <run id>; not counted`, and the words below it are the same
+words as for any run. The verdict JSON keeps the mark as `rerun`.
+
+**The run's word** is one of four, with the same exit codes the other verbs use:
+
+| word | means | exit |
+|---|---|---|
+| `identical` | every step matched | 0 |
+| `diverged` | a step's output, setting or input differs from the reference; the verdict names the first such step | 1 |
+| `refused` | the run is refused (it does not verify, or a step was held) | 3 |
+| `could not check` | the verifier could not check the run, or the reference names a step the run does not record | 4 |
+
+**Each step's word** is one of seven, each with the record item it rests on:
+
+- **same output** — the step's output digests match the reference.
+- **output differs** — they do not.
+- **setting differs** — the instrument's configuration digest, or a constant the rule counts,
+  differs.
+- **input differs** — a data input's digest differs.
+- **slower than its range** — the step matched on output, setting and input but ran longer than the
+  reference's timing range. Timing is a **view**: a step slower than its range is never a divergence
+  and never fails a verdict.
+- **no output recorded** — the step records no outputs, in the run and in the reference alike, so
+  there was no output to compare; its settings and inputs matched. A decorated run's `intake` step,
+  whose arguments are inputs, reads this. It never makes a run diverge. A step with outputs on one
+  side and none on the other reads **output differs**, naming the side that records none.
+- **could not check** — the reference names this step; the run does not record it.
+
+Among the first three differences the order is output, then setting, then input: a step reads the
+first that holds. The run `diverged`s at the first step that reads output, setting or input differs.
+
+**onetrace-verify** gains the same verdict over a run and a reference, as rows beside its others:
+`--reference FILE` adds one row per step — PASS (same output, or slower than its range), FAIL
+(output, setting or input differs), or NOT-RUN (could not check) — and a row for the reference's
+seal and, where it carries one, its signature. A nested run is checked against its own reference
+with `--nested-reference FILE`, given its folder with `--nested-run`; with no reference for it, the
+nested run reads NOT-RUN with the reason. A run verified without `--reference` reads exactly as
+before. The verifier reads the reference with its own canonicalizer and imports nothing from the
+SDK.

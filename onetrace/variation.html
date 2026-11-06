@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Variation: repeat runs and the profile · onetrace docs</title>
+<meta name="description" content="onetrace documentation: Variation across repeat runs">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site-v2.css">
+<link rel="stylesheet" href="/onetrace/assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html">Developers</a><a href="/debugging.html">Debug an agent</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/" aria-current="page">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
+<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li><li><a href="/onetrace/references.html">References</a></li><li><a href="/onetrace/variation.html" aria-current="page">Variation across repeat runs</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>6</i>Record features</div><ul><li><a href="/onetrace/decisions.html">onedoor decisions</a></li><li><a href="/onetrace/span-context.html">The span context</a></li><li><a href="/onetrace/nesting.html">Nesting</a></li><li><a href="/onetrace/streaming.html">Streaming the record</a></li><li><a href="/onetrace/storage.html">Storage in a bucket</a></li><li><a href="/onetrace/model-call-record.html">The model-call record</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Check and compare</p>
+<h1 id="variation-repeat-runs-and-the-profile">Variation: repeat runs and the profile</h1>
+<p>Monitoring shows where runs depart; it does not make a step repeatable. These two things help a
+team see where variation enters, and whether a fix holds.</p>
+<h2 id="repeat-run-sets">Repeat-run sets</h2>
+<p>Record several runs of the same input as a set, so they can be read together:</p>
+<div class="code"><pre><code class="language-python">@ot.run(repeat_of=RUN_ID)          # this run repeats RUN_ID; Recorder(repeat_of=…) does the same
+def main():
+    ...
+</code></pre></div>
+<p>or run a command N times and link the runs it writes:</p>
+<div class="code"><pre><code>onetrace repeat -n N --runs-root DIR -- CMD…
+</code></pre></div>
+<p>The first run is the set's anchor; runs 2…N are started with <code>ONETRACE_REPEAT_OF</code> set to the
+anchor's id, so each records the manifest member <code>repeat_of</code>. A run that repeats another records
+<code>repeat_of</code>; a run that repeats nothing records nothing new, and is byte-identical to before.</p>
+<h2 id="a-step-that-may-vary">A step that may vary</h2>
+<p>A step may declare that its output is expected to differ between runs:</p>
+<div class="code"><pre><code class="language-python">@ot.stage(&quot;plan&quot;, instrument=…, may_vary=True)
+def plan(…):
+    ...
+</code></pre></div>
+<p>The declaration is recorded on the receipt (<code>may_vary</code>) and shown by the profile. It is never used
+to hide a difference: a <code>may_vary</code> step that differs is still counted and still named.</p>
+<h2 id="the-profile">The profile</h2>
+<div class="code"><pre><code>onetrace profile RUN…
+</code></pre></div>
+<p>reads a set of two or more runs and shows, per step, how often its output differs across the set
+and of what kind:</p>
+<ul>
+<li>the runs are grouped by their output digests; the largest group is the set's common output, and a
+run outside it is one whose output differs;</li>
+<li>each differing run is classified against the common group: its <strong>setting differs</strong>, its <strong>input
+differs</strong>, or neither — <strong>output only</strong>, which the step is then marked <strong>&quot;varies on its own&quot;</strong>
+for (the question &quot;does it differ even when nothing changed?&quot;).</li>
+</ul>
+<p>Counts only; no score or grade.</p>
+<h2 id="whether-a-fix-holds">Whether a fix holds</h2>
+<p>After a change meant to make a step repeatable (a pinned seed, temperature 0, a fixed prompt, a
+cached tool result), re-run the set and read the two profiles side by side:</p>
+<div class="code"><pre><code>onetrace profile --before SET… --after SET…
+</code></pre></div>
+<p>It shows, per step, how often the output differed before and after (for example, <code>plan</code>: 4 of 5
+before, 0 of 5 after), and <strong>names the setting that changed between the sets</strong>. It does so as a
+comparison does: it names the setting; it does not say the change made the difference.</p>
+<p>A step that now matches across its repeats can be given an exact-match rule in a
+<a href="references.html">reference</a>; one that still varies keeps a mask, declared, never guessed.</p>
+<h2 id="what-a-profile-does-not-claim">What a profile does not claim</h2>
+<ul>
+<li>A profile describes the repeats recorded, not every future run.</li>
+<li>Matching in N repeats does not prove a step is deterministic.</li>
+</ul>
+<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/references.html"><span>← Previous</span>References</a><a class="next" href="/onetrace/errors.html"><span>Next →</span>Errors and fixes</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#repeat-run-sets">Repeat-run sets</a><a href="#a-step-that-may-vary">A step that may vary</a><a href="#the-profile">The profile</a><a href="#whether-a-fix-holds">Whether a fix holds</a><a href="#what-a-profile-does-not-claim">What a profile does not claim</a></aside></div>
+<footer><div class="wrap stack-lg"><div class="foot">
+<div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
+<div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/debugging.html">Debug an agent</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>Also from oneproof</h4><ul><li><a href="/onedoor/">onedoor</a><br><span class="muted" style="font-size:13px">decide what an agent is allowed to do, before it does</span></li></ul></div>
+</div><div class="fine">© 2026 oneproof · Apache-2.0. onetrace itself reports to no one.</div></div></footer>
+<script src="/onetrace/assets/copy.js" defer></script>
+<script>if(window.matchMedia&&matchMedia("(max-width:760px)").matches){var d=document.querySelector(".docs-side details");if(d)d.removeAttribute("open")}</script>
+</body>
+</html>

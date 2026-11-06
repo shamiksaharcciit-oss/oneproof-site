@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>References: a sealed record of a known-good run · onetrace docs</title>
+<meta name="description" content="onetrace documentation: References">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site-v2.css">
+<link rel="stylesheet" href="/onetrace/assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html">Developers</a><a href="/debugging.html">Debug an agent</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/" aria-current="page">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
+<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li><li><a href="/onetrace/references.html" aria-current="page">References</a></li><li><a href="/onetrace/variation.html">Variation across repeat runs</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>6</i>Record features</div><ul><li><a href="/onetrace/decisions.html">onedoor decisions</a></li><li><a href="/onetrace/span-context.html">The span context</a></li><li><a href="/onetrace/nesting.html">Nesting</a></li><li><a href="/onetrace/streaming.html">Streaming the record</a></li><li><a href="/onetrace/storage.html">Storage in a bucket</a></li><li><a href="/onetrace/model-call-record.html">The model-call record</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Check and compare</p>
+<h1 id="references-a-sealed-record-of-a-known-good-run">References: a sealed record of a known-good run</h1>
+<p>A <strong>reference</strong> is a sealed record of a run you vouch for, or of selected steps of it: per step,
+the output digests, the settings, the data inputs and a timing range, with the rule for the step.
+A later run is checked against it with <a href="verdicts.html"><code>onetrace verdict</code></a>, which gives each step one
+word and the run its own. A reference is its own file, format <code>onetrace-reference/1</code>; it is never a
+receipt and never part of a run's chain.</p>
+<h2 id="making-one">Making one</h2>
+<div class="code"><pre><code>onetrace reference make RUN… --out FILE [--steps NODE …] [--mask FILE] [--sign FILE | --sign-env NAME]
+</code></pre></div>
+<ul>
+<li><code>RUN…</code> is one or more finished runs that verify. A run that is refused, or that the verifier
+could not check, is not a known-good run: making a reference from it is refused, naming it.</li>
+<li>A re-run is not an original run (0.7). A run whose receipts carry the re-run mark <code>rerun</code>, such as
+the run <code>onetrace reproduce</code> produces, is refused, naming it: <code>&lt;RUN&gt; is a re-run (reproduce of &lt;run id&gt;): a reference is made from an original run</code>. The manifest's copy of the mark alone marks
+nothing. onetrace 0.6.1's <code>reference make</code> accepted a marked run.</li>
+<li>The output digests, the settings and the data inputs are taken from the first run; the <strong>timing
+range</strong> is taken across every run given (a range needs more than one run — a single run gives a
+point, not a range, so a reference made from one run carries no timing).</li>
+<li><code>--steps NODE</code> keeps only the named steps (by node id, <code>name</code> or <code>name#instance</code>); the default is
+every step of the first run.</li>
+<li>The reference is <strong>sealed</strong> as a receipt is: its <code>seal</code> is the SHA-256 content digest over its
+canonical bytes. <code>--sign FILE</code> or <code>--sign-env NAME</code> signs the seal with an Ed25519 key, the way a
+run's chain head is signed; a reader checks the signature as they check a run's.</li>
+</ul>
+<div class="code"><pre><code>onetrace reference show FILE
+</code></pre></div>
+<p>prints a reference as text: its seal, its signature, the runs it was made from, and per step the
+outputs, inputs, settings and timing range.</p>
+<h2 id="what-a-step-holds">What a step holds</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>field</th>
+<th>what it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>outputs</code></td>
+<td>the step's output digests, by name</td>
+</tr>
+<tr>
+<td><code>inputs</code></td>
+<td>the step's <strong>data</strong> inputs by digest (not the <code>receipt:</code> links to earlier steps, which are the run's structure)</td>
+</tr>
+<tr>
+<td><code>settings</code></td>
+<td>the instrument's configuration digest and the stage's own constants (onetrace's own <code>onetrace.*</code> constants are not settings)</td>
+</tr>
+<tr>
+<td><code>timing_ms</code></td>
+<td>the range <code>{min, max}</code> across the runs given, when more than one gave a readable time</td>
+</tr>
+<tr>
+<td><code>rule</code></td>
+<td><code>exact</code> (the default), or a mask</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="the-rule">The rule</h2>
+<p>The default rule is <strong>exact</strong>: a step's output digests, its settings and its data inputs must match
+the reference. <code>--mask FILE</code> (an <a href="verbs.html"><code>onetrace-mask/0.1</code></a> file) names settings not to count
+as a difference; the reference records the rule in full, so a reader sees exactly what was not
+counted. Outputs are always compared by digest — a reference holds digests, which a value mask has
+nothing to act on — so a tolerance on a numeric output waits for the per-step values a later
+release records, not this one.</p>
+<h2 id="a-pipeline-may-hold-several">A pipeline may hold several</h2>
+<p>A pipeline's golden set is its references — one per release, say. Each is a separate file; a run is
+checked against whichever one you name.</p>
+<h2 id="what-a-reference-does-not-claim">What a reference does not claim</h2>
+<ul>
+<li>A step matching its reference shows it did what the known-good run did, not that either was right.</li>
+<li>A reference is a statement that this run is the one to compare against, not that it is correct.</li>
+<li>The seal shows the reference was not changed after it was made; the signature shows who made it,
+under the trust the reader places in the key. Neither shows the run it was made from was correct.</li>
+</ul>
+<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/textdiff-format.html"><span>← Previous</span>Text-diff format</a><a class="next" href="/onetrace/variation.html"><span>Next →</span>Variation across repeat runs</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#making-one">Making one</a><a href="#what-a-step-holds">What a step holds</a><a href="#the-rule">The rule</a><a href="#a-pipeline-may-hold-several">A pipeline may hold several</a><a href="#what-a-reference-does-not-claim">What a reference does not claim</a></aside></div>
+<footer><div class="wrap stack-lg"><div class="foot">
+<div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
+<div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/debugging.html">Debug an agent</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>Also from oneproof</h4><ul><li><a href="/onedoor/">onedoor</a><br><span class="muted" style="font-size:13px">decide what an agent is allowed to do, before it does</span></li></ul></div>
+</div><div class="fine">© 2026 oneproof · Apache-2.0. onetrace itself reports to no one.</div></div></footer>
+<script src="/onetrace/assets/copy.js" defer></script>
+<script>if(window.matchMedia&&matchMedia("(max-width:760px)").matches){var d=document.querySelector(".docs-side details");if(d)d.removeAttribute("open")}</script>
+</body>
+</html>

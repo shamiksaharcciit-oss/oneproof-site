@@ -8,28 +8,14 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site-v2.css">
 <link rel="stylesheet" href="/onetrace/assets/docs.css">
 </head>
 <body>
 <a class="skip" href="#content">Skip to the content</a>
-<header class="nav">
-  <div class="wrap">
-    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
-      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
-      onetrace <small>by oneproof</small>
-    </a>
-    <nav class="nav-links" aria-label="Main">
-      <a href="/">Product</a>
-      <a href="/developers.html">Developers</a>
-      <a href="/how-it-works.html">How it works</a>
-      <a href="/onetrace/" aria-current="page">Docs</a>
-      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
-    </nav>
-  </div>
-</header>
-<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html" aria-current="page">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Check and compare</p>
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html">Developers</a><a href="/debugging.html">Debug an agent</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/" aria-current="page">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
+<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html" aria-current="page">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li><li><a href="/onetrace/references.html">References</a></li><li><a href="/onetrace/variation.html">Variation across repeat runs</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>6</i>Record features</div><ul><li><a href="/onetrace/decisions.html">onedoor decisions</a></li><li><a href="/onetrace/span-context.html">The span context</a></li><li><a href="/onetrace/nesting.html">Nesting</a></li><li><a href="/onetrace/streaming.html">Streaming the record</a></li><li><a href="/onetrace/storage.html">Storage in a bucket</a></li><li><a href="/onetrace/model-call-record.html">The model-call record</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Check and compare</p>
 <h1 id="compare-runs-diff-localize-reproduce">Compare runs: diff, localize, reproduce</h1>
 <p>Every verb calls the reference verifier first (via the installed <code>onetrace-verify</code> package,
 resolved automatically — see the <a href="quickstart.html">quickstart</a>). A
@@ -77,7 +63,9 @@ for <code>diff</code>; with <code>--durations</code>, every time slower than the
 inputs as <code>RUN</code>, each checked by the verifier, newest first. <code>diff</code> and <code>localize</code> point to it when
 two runs were given different inputs. See <a href="manual.html#runs-on-the-same-input-onetrace-match">the manual</a>.</p>
 <h2 id="reproduce"><code>reproduce</code></h2>
-<div class="code"><pre><code>onetrace reproduce RUN [STAGE] --runner RUNNER.json --out OUT_DIR
+<div class="code"><pre><code>onetrace reproduce RUN [STAGE] --runner RUNNER.json --out OUT_DIR [--allow-writes]
+onetrace reproduce RUN --config-of REFERENCE_RUN --runner RUNNER.json --out OUT_DIR
+onetrace reproduce A --substitute STEP --from B --runner RUNNER.json --out OUT_DIR
 </code></pre></div>
 <p>Re-executes a recorded stage's own code, for real, and compares what comes out against what the
 receipt already claims. <code>RUNNER.json</code> names the command to run and how to fill in its
@@ -87,6 +75,25 @@ comes back <code>REPRODUCED</code>, <code>DIVERGED</code>, or <code>COULD NOT CH
 <p>With <code>STAGE</code> omitted, every stage in the run is attempted. A stage the runner declares
 non-rederivable (an LLM call with no fixed seed, say) reports <code>COULD NOT CHECK</code> with the reason
 named, and its originally recorded outputs are kept rather than treated as invalidated.</p>
+<p>A step the record labels <code>write</code> or <code>unknown</code> is not executed unless <code>--allow-writes</code> is given: the
+re-run stops before it, and it and every later step report <code>COULD NOT CHECK</code>, category <code>stopped</code>. A
+step with no label runs, as before 0.7, and a line before the run names it. The produced run is
+marked as a re-run. See <a href="manual.html#103-reproduce-re-run-and-compare">the manual</a>.</p>
+<p><code>RUNNER.json</code> is <code>onetrace-runner/0.1</code> to <code>0.3</code>. A <code>0.3</code> runner can name <code>{input:&lt;name&gt;}</code>, the path of a
+file holding the text of an input the run kept, and a param can read a kept configuration value,
+<code>&quot;field&quot;: &quot;config.&lt;key&gt;&quot;</code>.</p>
+<p>With <code>--config-of REFERENCE_RUN</code>, <code>reproduce</code> makes a twin: RUN's kept inputs run once through
+REFERENCE_RUN's code and kept configuration (<code>keep_config=True</code>), and the produced run, marked a twin,
+is compared with RUN stage by stage, naming the first difference and the configuration keys that
+differ there. A twin runs a step only where both records and the code label it <code>read</code>, and is never
+given <code>--allow-writes</code> or a stage. A refusal exits 3 and runs nothing. See
+<a href="manual.html#103-reproduce-re-run-and-compare">the manual</a>.</p>
+<p>With <code>--substitute STEP --from B</code>, <code>reproduce</code> makes a counterfactual: A's code runs once on A's kept
+inputs, with A's kept outputs put in place of each step before STEP and B's at STEP, and the steps after
+STEP run. The produced run, marked a counterfactual, is compared with B after STEP, naming the first
+difference. As for a twin, a step runs only where A's record and the code label it <code>read</code>, and a refusal
+exits 3 and runs nothing. A counterfactual of a decorated run exits 4 even where every step after STEP
+matches B: the run's intake reads <code>COULD NOT CHECK</code>, as in any whole-run <code>reproduce</code>.</p>
 <h2 id="anchor"><code>anchor</code></h2>
 <div class="code"><pre><code>onetrace anchor RUN --source rfc3161 --tsa-url URL --tsa-cert CERT --tsa-root ROOT
 onetrace anchor RUN --source opentimestamps --calendar URL [--calendar URL ...]
@@ -110,47 +117,12 @@ chain manifest); a <code>MANIFEST.json</code>-based run doesn't need it.</li>
 <li><code>--quiet</code> suppresses the text report; the JSON report is always written.</li>
 </ul>
 <nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/tool-using-agent.html"><span>← Previous</span>Tool-using agent</a><a class="next" href="/onetrace/verdicts.html"><span>Next →</span>The five verdicts</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#diff">diff</a><a href="#localize">localize</a><a href="#drift">drift</a><a href="#match">match</a><a href="#reproduce">reproduce</a><a href="#anchor">anchor</a><a href="#common-to-all-three">Common to all three</a></aside></div>
-<footer>
-  <div class="wrap">
-    <div class="foot-grid">
-      <div>
-        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
-        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
-        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
-      </div>
-      <div>
-        <h4>Product</h4>
-        <ul>
-          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
-          <li><a href="/developers.html">Developers</a></li>
-          <li><a href="/how-it-works.html">How it works</a></li>
-          <li><a href="/onetrace/">Documentation</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Packages</h4>
-        <ul>
-          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>More from oneproof</h4>
-        <ul>
-          <li><a href="/oneground/">oneground</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
-          <li><a href="/where-it-fits.html">Where it fits</a></li>
-          <li><a href="/answer-lineage.html">A forensic report</a></li>
-          <li><a href="/building.html">What we're building</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
-  </div>
-</footer>
+<footer><div class="wrap stack-lg"><div class="foot">
+<div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
+<div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/debugging.html">Debug an agent</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>Also from oneproof</h4><ul><li><a href="/onedoor/">onedoor</a><br><span class="muted" style="font-size:13px">decide what an agent is allowed to do, before it does</span></li></ul></div>
+</div><div class="fine">© 2026 oneproof · Apache-2.0. onetrace itself reports to no one.</div></div></footer>
 <script src="/onetrace/assets/copy.js" defer></script>
 <script>if(window.matchMedia&&matchMedia("(max-width:760px)").matches){var d=document.querySelector(".docs-side details");if(d)d.removeAttribute("open")}</script>
 </body>

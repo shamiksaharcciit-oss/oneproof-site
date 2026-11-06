@@ -69,7 +69,9 @@ two runs were given different inputs. See [the manual](manual.md#runs-on-the-sam
 ## `reproduce`
 
 ```
-onetrace reproduce RUN [STAGE] --runner RUNNER.json --out OUT_DIR
+onetrace reproduce RUN [STAGE] --runner RUNNER.json --out OUT_DIR [--allow-writes]
+onetrace reproduce RUN --config-of REFERENCE_RUN --runner RUNNER.json --out OUT_DIR
+onetrace reproduce A --substitute STEP --from B --runner RUNNER.json --out OUT_DIR
 ```
 
 Re-executes a recorded stage's own code, for real, and compares what comes out against what the
@@ -81,6 +83,29 @@ comes back `REPRODUCED`, `DIVERGED`, or `COULD NOT CHECK` — never a fourth thi
 With `STAGE` omitted, every stage in the run is attempted. A stage the runner declares
 non-rederivable (an LLM call with no fixed seed, say) reports `COULD NOT CHECK` with the reason
 named, and its originally recorded outputs are kept rather than treated as invalidated.
+
+A step the record labels `write` or `unknown` is not executed unless `--allow-writes` is given: the
+re-run stops before it, and it and every later step report `COULD NOT CHECK`, category `stopped`. A
+step with no label runs, as before 0.7, and a line before the run names it. The produced run is
+marked as a re-run. See [the manual](manual.md#103-reproduce-re-run-and-compare).
+
+`RUNNER.json` is `onetrace-runner/0.1` to `0.3`. A `0.3` runner can name `{input:<name>}`, the path of a
+file holding the text of an input the run kept, and a param can read a kept configuration value,
+`"field": "config.<key>"`.
+
+With `--config-of REFERENCE_RUN`, `reproduce` makes a twin: RUN's kept inputs run once through
+REFERENCE_RUN's code and kept configuration (`keep_config=True`), and the produced run, marked a twin,
+is compared with RUN stage by stage, naming the first difference and the configuration keys that
+differ there. A twin runs a step only where both records and the code label it `read`, and is never
+given `--allow-writes` or a stage. A refusal exits 3 and runs nothing. See
+[the manual](manual.md#103-reproduce-re-run-and-compare).
+
+With `--substitute STEP --from B`, `reproduce` makes a counterfactual: A's code runs once on A's kept
+inputs, with A's kept outputs put in place of each step before STEP and B's at STEP, and the steps after
+STEP run. The produced run, marked a counterfactual, is compared with B after STEP, naming the first
+difference. As for a twin, a step runs only where A's record and the code label it `read`, and a refusal
+exits 3 and runs nothing. A counterfactual of a decorated run exits 4 even where every step after STEP
+matches B: the run's intake reads `COULD NOT CHECK`, as in any whole-run `reproduce`.
 
 ## `anchor`
 

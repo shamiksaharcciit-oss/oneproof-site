@@ -8,28 +8,14 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site-v2.css">
 <link rel="stylesheet" href="/onetrace/assets/docs.css">
 </head>
 <body>
 <a class="skip" href="#content">Skip to the content</a>
-<header class="nav">
-  <div class="wrap">
-    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
-      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
-      onetrace <small>by oneproof</small>
-    </a>
-    <nav class="nav-links" aria-label="Main">
-      <a href="/">Product</a>
-      <a href="/developers.html">Developers</a>
-      <a href="/how-it-works.html">How it works</a>
-      <a href="/onetrace/" aria-current="page">Docs</a>
-      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
-    </nav>
-  </div>
-</header>
-<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html" aria-current="page">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Check and compare</p>
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html">Developers</a><a href="/debugging.html">Debug an agent</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/" aria-current="page">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
+<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html" aria-current="page">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li><li><a href="/onetrace/references.html">References</a></li><li><a href="/onetrace/variation.html">Variation across repeat runs</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>6</i>Record features</div><ul><li><a href="/onetrace/decisions.html">onedoor decisions</a></li><li><a href="/onetrace/span-context.html">The span context</a></li><li><a href="/onetrace/nesting.html">Nesting</a></li><li><a href="/onetrace/streaming.html">Streaming the record</a></li><li><a href="/onetrace/storage.html">Storage in a bucket</a></li><li><a href="/onetrace/model-call-record.html">The model-call record</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Check and compare</p>
 <h1 id="the-five-verdicts">The five verdicts</h1>
 <p>Every stage in a two-run comparison (<code>diff</code>, or <code>localize</code> given two runs) gets exactly one of
 five verdicts. There is no sixth.</p>
@@ -96,48 +82,77 @@ answer &quot;if I re-run this stage's own code right now, does it produce what t
 produced,&quot; not &quot;do two already-recorded runs match.&quot; <code>rederivable</code> is measured by actually
 re-executing the stage, never declared; a stage that isn't rederivable keeps its originally
 recorded outputs rather than being treated as broken.</p>
-<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/verbs.html"><span>← Previous</span>Compare runs: diff, localize, reproduce</a><a class="next" href="/onetrace/textdiff-format.html"><span>Next →</span>Text-diff format</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#what-a-verdict-is-about">What a verdict is about</a><a href="#the-overall-result-separately">The overall result, separately</a></aside></div>
-<footer>
-  <div class="wrap">
-    <div class="foot-grid">
-      <div>
-        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
-        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
-        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
-      </div>
-      <div>
-        <h4>Product</h4>
-        <ul>
-          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
-          <li><a href="/developers.html">Developers</a></li>
-          <li><a href="/how-it-works.html">How it works</a></li>
-          <li><a href="/onetrace/">Documentation</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Packages</h4>
-        <ul>
-          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>More from oneproof</h4>
-        <ul>
-          <li><a href="/oneground/">oneground</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
-          <li><a href="/where-it-fits.html">Where it fits</a></li>
-          <li><a href="/answer-lineage.html">A forensic report</a></li>
-          <li><a href="/building.html">What we're building</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
-  </div>
-</footer>
+<h2 id="a-runs-verdict-against-a-reference-onetrace-06">A run's verdict against a reference (onetrace 0.6)</h2>
+<p>A <a href="references.html">reference</a> is a sealed record of a known-good run. <code>onetrace verdict RUN --reference FILE</code> reads a finished run against one and gives each step one word, and the run its
+own. A verdict is derived from the record and the reference's declared rule; nothing is inferred.</p>
+<p>A re-run is never counted (0.7). On a run whose receipts carry the re-run mark <code>rerun</code>, the verdict's
+first line says so, <code>re-run: reproduce of &lt;run id&gt;; not counted</code>, and the words below it are the same
+words as for any run. The verdict JSON keeps the mark as <code>rerun</code>.</p>
+<p><strong>The run's word</strong> is one of four, with the same exit codes the other verbs use:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>word</th>
+<th>means</th>
+<th>exit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>identical</code></td>
+<td>every step matched</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>diverged</code></td>
+<td>a step's output, setting or input differs from the reference; the verdict names the first such step</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>refused</code></td>
+<td>the run is refused (it does not verify, or a step was held)</td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>could not check</code></td>
+<td>the verifier could not check the run, or the reference names a step the run does not record</td>
+<td>4</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Each step's word</strong> is one of seven, each with the record item it rests on:</p>
+<ul>
+<li><strong>same output</strong> — the step's output digests match the reference.</li>
+<li><strong>output differs</strong> — they do not.</li>
+<li><strong>setting differs</strong> — the instrument's configuration digest, or a constant the rule counts,
+differs.</li>
+<li><strong>input differs</strong> — a data input's digest differs.</li>
+<li><strong>slower than its range</strong> — the step matched on output, setting and input but ran longer than the
+reference's timing range. Timing is a <strong>view</strong>: a step slower than its range is never a divergence
+and never fails a verdict.</li>
+<li><strong>no output recorded</strong> — the step records no outputs, in the run and in the reference alike, so
+there was no output to compare; its settings and inputs matched. A decorated run's <code>intake</code> step,
+whose arguments are inputs, reads this. It never makes a run diverge. A step with outputs on one
+side and none on the other reads <strong>output differs</strong>, naming the side that records none.</li>
+<li><strong>could not check</strong> — the reference names this step; the run does not record it.</li>
+</ul>
+<p>Among the first three differences the order is output, then setting, then input: a step reads the
+first that holds. The run <code>diverged</code>s at the first step that reads output, setting or input differs.</p>
+<p><strong>onetrace-verify</strong> gains the same verdict over a run and a reference, as rows beside its others:
+<code>--reference FILE</code> adds one row per step — PASS (same output, or slower than its range), FAIL
+(output, setting or input differs), or NOT-RUN (could not check) — and a row for the reference's
+seal and, where it carries one, its signature. A nested run is checked against its own reference
+with <code>--nested-reference FILE</code>, given its folder with <code>--nested-run</code>; with no reference for it, the
+nested run reads NOT-RUN with the reason. A run verified without <code>--reference</code> reads exactly as
+before. The verifier reads the reference with its own canonicalizer and imports nothing from the
+SDK.</p>
+<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/verbs.html"><span>← Previous</span>Compare runs: diff, localize, reproduce</a><a class="next" href="/onetrace/textdiff-format.html"><span>Next →</span>Text-diff format</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#what-a-verdict-is-about">What a verdict is about</a><a href="#the-overall-result-separately">The overall result, separately</a><a href="#a-runs-verdict-against-a-reference-onetrace-06">A run's verdict against a reference (onetrace 0.6)</a></aside></div>
+<footer><div class="wrap stack-lg"><div class="foot">
+<div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
+<div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/debugging.html">Debug an agent</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>Also from oneproof</h4><ul><li><a href="/onedoor/">onedoor</a><br><span class="muted" style="font-size:13px">decide what an agent is allowed to do, before it does</span></li></ul></div>
+</div><div class="fine">© 2026 oneproof · Apache-2.0. onetrace itself reports to no one.</div></div></footer>
 <script src="/onetrace/assets/copy.js" defer></script>
 <script>if(window.matchMedia&&matchMedia("(max-width:760px)").matches){var d=document.querySelector(".docs-side details");if(d)d.removeAttribute("open")}</script>
 </body>

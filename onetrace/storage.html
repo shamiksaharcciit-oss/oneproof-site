@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Storage: a run in a bucket · onetrace docs</title>
+<meta name="description" content="onetrace documentation: Storage in a bucket">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site-v2.css">
+<link rel="stylesheet" href="/onetrace/assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html">Developers</a><a href="/debugging.html">Debug an agent</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/" aria-current="page">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
+<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li><li><a href="/onetrace/references.html">References</a></li><li><a href="/onetrace/variation.html">Variation across repeat runs</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>6</i>Record features</div><ul><li><a href="/onetrace/decisions.html">onedoor decisions</a></li><li><a href="/onetrace/span-context.html">The span context</a></li><li><a href="/onetrace/nesting.html">Nesting</a></li><li><a href="/onetrace/streaming.html">Streaming the record</a></li><li><a href="/onetrace/storage.html" aria-current="page">Storage in a bucket</a></li><li><a href="/onetrace/model-call-record.html">The model-call record</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Record features</p>
+<h1 id="storage-a-run-in-a-bucket">Storage: a run in a bucket</h1>
+<p>A run folder is immutable files whose integrity is in the files themselves — the chain, the
+digests, the signature. So a finished run can live in an S3-compatible bucket, apart from any
+console, and a reader verifies it on every read. The bucket <strong>verifies nothing; the reader does.</strong></p>
+<p>The client is the optional <code>onetrace[s3]</code> extra. Without it, an <code>s3://</code> destination is refused,
+naming the extra; a local destination needs none of it.</p>
+<h2 id="sending-a-run-to-a-bucket">Sending a run to a bucket</h2>
+<p>Name the destination with <code>ONETRACE_RUNS</code>, so a deployment turns it on without changing the code:</p>
+<div class="code"><pre><code>ONETRACE_RUNS=s3://my-bucket/runs  python pipeline.py
+</code></pre></div>
+<p>or on the run itself:</p>
+<div class="code"><pre><code class="language-python">@ot.run(runs=&quot;s3://my-bucket/runs&quot;)
+def main():
+    ...
+</code></pre></div>
+<p><code>Recorder(runs=…)</code> does the same. A local path there (or none) writes runs locally as always.</p>
+<p>The run is <strong>written and sealed locally first</strong>, exactly as a local run is. When it closes, the
+sealed folder is uploaded, <strong>the manifest last</strong>, so the last byte to reach the bucket is the one
+that names the chain head: a reader sees a whole run or no run, never half of one. Each object's
+checksum is set to the file's sha256 — the S3 checksum header where the endpoint stores one, else a
+<code>&lt;key&gt;.sha256</code> sidecar beside the object.</p>
+<p>The manifest gains a <code>sink</code> member saying whether the upload was delivered:</p>
+<div class="code"><pre><code class="language-json">&quot;sink&quot;: {&quot;delivered&quot;: &quot;true&quot;, &quot;objects&quot;: &quot;7&quot;}
+</code></pre></div>
+<p>The <strong>bucket, the endpoint and the credentials are never recorded.</strong> The client reads its
+credentials from its own environment and credential files (the standard ones the S3 client uses),
+never from onetrace's own configuration; onetrace records no credential and no endpoint in the run.</p>
+<p>A run with no sink writes the same bytes it always did: the <code>sink</code> member is absent, and the record
+format is unchanged.</p>
+<h2 id="the-index-object">The index object</h2>
+<p>Beside the runs, one small object per run — <code>&lt;prefix&gt;/_index/&lt;run id&gt;.json</code> — carries the run id,
+the pipeline, the chain head, the first step's instrument, the run's time, the verdict it recorded
+(when it recorded one) and the kept-files count. A console lists runs from these without fetching a
+whole folder.</p>
+<h2 id="when-the-upload-does-not-go-through">When the upload does not go through</h2>
+<p>A failed upload never loses the run: it is <strong>recorded, not silent.</strong> The failure is reported on
+stderr and in the manifest's <code>sink</code> member, and the local folder stays:</p>
+<div class="code"><pre><code class="language-json">&quot;sink&quot;: {&quot;delivered&quot;: &quot;false&quot;, &quot;objects&quot;: &quot;0&quot;, &quot;note&quot;: &quot;the run was not delivered&quot;,
+         &quot;reason&quot;: &quot;EndpointConnectionError&quot;}
+</code></pre></div>
+<p>Upload it later, from where it was recorded:</p>
+<div class="code"><pre><code>onetrace sink retry ./runs/&lt;run id&gt;
+</code></pre></div>
+<p><code>sink retry</code> reads the destination from a <code>.sink</code> file beside the folder (a local operational file,
+not part of the record and never uploaded), or takes <code>--to s3://bucket/prefix</code>. A delivered run's
+local copy stays unless <code>--sink-remove</code> is given.</p>
+<h2 id="reading-a-run-back">Reading a run back</h2>
+<p>Verify a run in the bucket as you would a local one:</p>
+<div class="code"><pre><code>onetrace sink verify s3://my-bucket/runs/&lt;run id&gt;
+</code></pre></div>
+<p>It fetches the run into a temporary folder, checks each object against its stored checksum or its
+<code>.sha256</code> sidecar, and runs the verifier over it, reporting as the verifier does. <code>onetrace-verify</code>
+itself stays file-only: it reads a folder, never a bucket.</p>
+<h2 id="streaming-into-the-same-bucket">Streaming into the same bucket</h2>
+<p>A run may stream its receipts to the same bucket as they are produced
+(<code>stream_to=&quot;s3://my-bucket/runs&quot;</code>, or <code>ONETRACE_STREAM_TO</code>), so a run interrupted partway still
+leaves its partial chain in storage. A streamed receipt is written under the run's own prefix,
+<strong>byte-identical to the one the sealed upload carries.</strong> See <a href="streaming.html">streaming</a>.</p>
+<h2 id="lifecycle-lives-in-the-bucket-not-in-onetrace">Lifecycle lives in the bucket, not in onetrace</h2>
+<p>The runs are plain objects, so the bucket's own lifecycle rules — not onetrace — move old runs to
+colder storage, or delete them, when a team decides. A team can keep the small receipts for years
+and let the larger kept inputs and outputs expire sooner, by prefix; the verifier reads a run whose
+kept files are gone as &quot;outputs not kept&quot;, a verdict it already knows. onetrace writes the runs and
+reads them; it does not manage the bucket.</p>
+<h2 id="what-the-sink-does-not-claim">What the sink does not claim</h2>
+<ul>
+<li><strong>A bucket verifies nothing; the reader verifies on every read.</strong> Storage location does not change
+what a record proves. A tampered object is caught when a reader verifies the run, not at rest.</li>
+<li><strong>A delivered run is the same record as the local one.</strong> The sink uploads the sealed folder and
+changes no receipt; the only addition is the manifest's optional <code>sink</code> member, which names no
+endpoint and no credential.</li>
+<li><strong>An object's checksum guards the transfer, not the record.</strong> The chain, the digests and the
+signature are what prove the run; the per-object sha256 only catches an object damaged in the
+bucket, on the way back.</li>
+</ul>
+<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/streaming.html"><span>← Previous</span>Streaming the record</a><a class="next" href="/onetrace/model-call-record.html"><span>Next →</span>The model-call record</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#sending-a-run-to-a-bucket">Sending a run to a bucket</a><a href="#the-index-object">The index object</a><a href="#when-the-upload-does-not-go-through">When the upload does not go through</a><a href="#reading-a-run-back">Reading a run back</a><a href="#streaming-into-the-same-bucket">Streaming into the same bucket</a><a href="#lifecycle-lives-in-the-bucket-not-in-onetrace">Lifecycle lives in the bucket, not in onetrace</a><a href="#what-the-sink-does-not-claim">What the sink does not claim</a></aside></div>
+<footer><div class="wrap stack-lg"><div class="foot">
+<div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
+<div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/debugging.html">Debug an agent</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>Also from oneproof</h4><ul><li><a href="/onedoor/">onedoor</a><br><span class="muted" style="font-size:13px">decide what an agent is allowed to do, before it does</span></li></ul></div>
+</div><div class="fine">© 2026 oneproof · Apache-2.0. onetrace itself reports to no one.</div></div></footer>
+<script src="/onetrace/assets/copy.js" defer></script>
+<script>if(window.matchMedia&&matchMedia("(max-width:760px)").matches){var d=document.querySelector(".docs-side details");if(d)d.removeAttribute("open")}</script>
+</body>
+</html>

@@ -8,31 +8,19 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site-v2.css">
 <link rel="stylesheet" href="/onetrace/assets/docs.css">
 </head>
 <body>
 <a class="skip" href="#content">Skip to the content</a>
-<header class="nav">
-  <div class="wrap">
-    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
-      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
-      onetrace <small>by oneproof</small>
-    </a>
-    <nav class="nav-links" aria-label="Main">
-      <a href="/">Product</a>
-      <a href="/developers.html">Developers</a>
-      <a href="/how-it-works.html">How it works</a>
-      <a href="/onetrace/" aria-current="page">Docs</a>
-      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
-    </nav>
-  </div>
-</header>
-<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html" aria-current="page">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Reference</p>
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html">Developers</a><a href="/debugging.html">Debug an agent</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/" aria-current="page">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
+<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li><li><a href="/onetrace/references.html">References</a></li><li><a href="/onetrace/variation.html">Variation across repeat runs</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>6</i>Record features</div><ul><li><a href="/onetrace/decisions.html">onedoor decisions</a></li><li><a href="/onetrace/span-context.html">The span context</a></li><li><a href="/onetrace/nesting.html">Nesting</a></li><li><a href="/onetrace/streaming.html">Streaming the record</a></li><li><a href="/onetrace/storage.html">Storage in a bucket</a></li><li><a href="/onetrace/model-call-record.html">The model-call record</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html" aria-current="page">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Reference</p>
 <h1 id="the-record-format-in-plain-words">The record format, in plain words</h1>
 <p>Full, normative detail is the Internet-Draft:
-<code>draft/draft-saha-stage-receipts-00.txt</code>. This page
+<code>draft/draft-saha-stage-receipts-02.txt</code>, which describes the members through format 0.4, the re-run
+mark, the step's effect label, step expectations, the kept configuration and the check run among them.
+Its earlier revision -01, beside it, is kept as it was, and revision -00 describes format 0.1. This page
 is an orientation, not a substitute for it.</p>
 <h2 id="a-receipt">A receipt</h2>
 <p>One JSON file per stage a pipeline ran. Every receipt carries thirteen required members:</p>
@@ -173,6 +161,11 @@ onetrace-verify 0.4, which fails it. Verify format 0.3 records with onetrace-ver
 <p>Format 0.3's rejection vectors are in tests/rejection_0_3/: eleven runs, each changed in one of these
 members and re-linked, each FAILed by onetrace-verify 0.4 on the row its INDEX.json names, with what
 onetrace-verify 0.3.0 reads of it.</p>
+<p>onetrace 0.5 stays in format 0.3: its optional blocks — <code>authorization</code> (onedoor decisions), the
+span context (<code>trace</code>, <code>traceparent</code>) and the nesting fields (<code>parent</code>, <code>children</code>, <code>parent_run</code>,
+<code>parent_stage</code>) — are optional members a 0.4.0 verifier reads unchanged, ignoring the blocks it does
+not know, so a 0.5 receipt verifies exactly as a 0.4.0 one does and a run that records none of them
+is byte-identical to 0.4.0.</p>
 <p>The path to 1.0:</p>
 <ol>
 <li><strong>0.3 is the last minor that adds a required behaviour.</strong> After it, a 0.x minor only adds
@@ -185,48 +178,613 @@ still read); the <code>receipts_root</code> / <code>outputs_root</code> naming s
 <li><strong>What 1.0 promises:</strong> every 1.x verifier reads every 0.x record it has ever been able to read;
 required members don't change within 1.x; a change that would change a reading is 2.0.</li>
 </ol>
-<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/manual.html"><span>← Previous</span>The full manual</a><a class="next" href="/onetrace/explain-format.html"><span>Next →</span>Explanation format</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#a-receipt">A receipt</a><a href="#trust-classes">Trust classes</a><a href="#a-chain">A chain</a><a href="#a-manifest">A manifest</a><a href="#two-roots-for-a-per-document-stage">Two roots, for a per-document stage</a><a href="#a-dag-not-just-a-chain">A DAG, not just a chain</a><a href="#format-03-and-the-path-to-10">Format 0.3, and the path to 1.0</a></aside></div>
-<footer>
-  <div class="wrap">
-    <div class="foot-grid">
-      <div>
-        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
-        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
-        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
-      </div>
-      <div>
-        <h4>Product</h4>
-        <ul>
-          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
-          <li><a href="/developers.html">Developers</a></li>
-          <li><a href="/how-it-works.html">How it works</a></li>
-          <li><a href="/onetrace/">Documentation</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Packages</h4>
-        <ul>
-          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>More from oneproof</h4>
-        <ul>
-          <li><a href="/oneground/">oneground</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
-          <li><a href="/where-it-fits.html">Where it fits</a></li>
-          <li><a href="/answer-lineage.html">A forensic report</a></li>
-          <li><a href="/building.html">What we're building</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
-  </div>
-</footer>
+<h2 id="format-04-every-run-ends-with-a-close-receipt">Format 0.4: every run ends with a close receipt</h2>
+<p>Format 0.4 is written by onetrace 0.7, and it is that release's one minor. Everything onetrace 0.7
+adds under it is optional members only: nothing removes a required member, changes a type or
+changes a canonical form.</p>
+<p><strong>What this build writes.</strong> Of the members below, this build writes:</p>
+<ul>
+<li>the close receipt, and the not-closed signature record;</li>
+<li>the model-call record 1.1 in its self-hosted form, with the members the table marks;</li>
+<li>with onetrace-auto, the members of an auto-recorded run that the table marks;</li>
+<li><code>effect_label</code> on a declared stage, and on a step a check or a counterfactual puts in place;</li>
+<li>the re-run mark of all four kinds, <code>reproduce</code>, <code>twin</code>, <code>counterfactual</code> and <code>check</code>, with
+<code>writes_allowed</code>, <code>config_of_*</code>, <code>substituted</code> and <code>from_stage</code> where the kind has them, and the two
+<code>re-run stopped</code> forms of <code>onetrace.ended_by</code>;</li>
+<li>a check's run (<code>onetrace.check</code>);</li>
+<li><code>config_kept</code>, the kept configuration;</li>
+<li>step expectations: <code>expectations</code> in a receipt, and the <code>onetrace-expectations/1</code> file
+<code>onetrace expect write</code> writes.</li>
+</ul>
+<p>The members the table below marks &quot;not yet&quot; are specified here and in the Internet-Draft's revision
+-02, and no onetrace build writes them yet. Each line names its row of the table, then what in it is
+not written:</p>
+<ul>
+<li>manifest, <code>auto</code>: <code>boundary</code> <code>request</code>, and <code>key</code>;</li>
+<li>receipt, <code>effect_label</code>: the value <code>unknown</code>, and the basis <code>not classified</code>;</li>
+<li>receipt, <code>outputs[].empty</code>: the member;</li>
+<li>receipt, <code>return_holds</code>: the member;</li>
+<li>reference, <code>steps.&lt;node&gt;.reads</code>: the member;</li>
+<li>reference, <code>steps.&lt;node&gt;.empty_outputs</code>: the member;</li>
+<li>model-call record 1.1, <code>steps.level</code>, <code>steps.method</code>: in a hosted record;</li>
+<li>model-call record 1.1, <code>steps.k_requested</code>, <code>steps.k_returned_min</code>, <code>steps.k_returned_max</code>, <code>steps.count</code>, <code>steps.logprobs</code>: in a hosted record, and <code>steps.logprobs</code> in a self-hosted one;</li>
+<li>model-call record 1.1, the steps file, hosted form: the file;</li>
+<li>model-call record 1.1, <code>identity.digest</code>, <code>call.kind</code>: <code>identity.digest</code>, and the call kind <code>endpoint</code>;</li>
+<li>embedding record 1.0, the members it shares with the model-call record: the record;</li>
+<li>embedding record 1.0, <code>embedding.*</code>: the members;</li>
+<li>embedding record 1.0, <code>output.*</code>, <code>usage.tokens</code>, <code>batch.size</code>, <code>rows</code>: the members;</li>
+<li>embedding record 1.0, <code>fingerprints[].quantity</code>: the member.</li>
+</ul>
+<h3 id="the-version-lines">The version lines</h3>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Version line</th>
+<th>Before</th>
+<th>Format 0.4</th>
+<th>Written by this build</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>receipt <code>format</code></td>
+<td><code>stage-receipt/0.3</code></td>
+<td><code>stage-receipt/0.4</code></td>
+<td>yes</td>
+</tr>
+<tr>
+<td>manifest <code>format</code></td>
+<td><code>stage-receipt-chain/0.3</code></td>
+<td><code>stage-receipt-chain/0.4</code></td>
+<td>yes</td>
+</tr>
+<tr>
+<td>signature record</td>
+<td><code>stage-receipt-signature/0.1</code></td>
+<td><code>0.1</code> kept for a closed run; <code>0.2</code>, written only for a run signed not closed</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>model-call record</td>
+<td><code>model-call-record/1.0</code></td>
+<td><code>model-call-record/1.1</code></td>
+<td>self-hosted: yes; hosted: not yet</td>
+</tr>
+<tr>
+<td>embedding record</td>
+<td>none</td>
+<td><code>embedding-call-record/1.0</code>, new</td>
+<td>not yet</td>
+</tr>
+<tr>
+<td>reference</td>
+<td><code>onetrace-reference/1</code></td>
+<td><code>onetrace-reference/1</code>, unchanged: optional members only</td>
+<td>not yet</td>
+</tr>
+<tr>
+<td>expectations file</td>
+<td>none</td>
+<td><code>onetrace-expectations/1</code>, new</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>runner</td>
+<td><code>onetrace-runner/0.2</code></td>
+<td><code>onetrace-runner/0.3</code>: <code>{input:&lt;name&gt;}</code> and <code>config.*</code> params</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>runner table</td>
+<td>none</td>
+<td><code>[[runner]]</code> in onetrace-explain's configuration file: <code>code</code>, <code>command</code> (<code>{stage}</code> and <code>{run}</code> only), <code>cwd</code>, <code>timeout_seconds</code>; read by the SDK on Python 3.11 and later</td>
+<td>yes, by <code>onetrace check</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>The receipt and manifest members below are all under <code>0.4</code>, and the model-call record's under <code>1.1</code>.
+The signature record, the model-call and embedding records, the reference and the runner are outside
+the Internet-Draft. The expectations file is specified in its revision -02, section 4.15.</p>
+<h3 id="the-close-receipt">The close receipt</h3>
+<p><strong>What it is for.</strong> A run killed before it closed (<code>SIGKILL</code>, <code>os._exit</code>, out of memory, power lost)
+leaves a folder whose chain verifies to the last receipt written, with a manifest that agrees with
+it. That is exactly the shape of a closed run with fewer steps, and nothing else in the record
+tells the two apart. onetrace-verify 0.6.1 reads such a run PASS.</p>
+<p><strong>What is written.</strong> When a run closes, before its final manifest, its verify hook and any
+signature, the recorder writes one more receipt, the <strong>close receipt</strong>:</p>
+<ul>
+<li>stage <code>onetrace.close</code>. Every run declares it as its last stage, after its own stages and any
+intake. The name is reserved: a stage of a team's may not take it, and the recorder refuses one
+that does;</li>
+<li>instrument <code>onetrace.close</code>, kind <code>close</code>, at onetrace's own version, <code>rederivable: &quot;false&quot;</code>;</li>
+<li>no inputs and no outputs, outcome <code>ok</code>;</li>
+<li>three constants, under the prefix onetrace keeps for its own: <code>onetrace.closed: &quot;true&quot;</code>,
+<code>onetrace.steps</code> (how many receipts come before it) and <code>onetrace.ended_by</code>:
+<code>exit</code>, <code>unhandled exception: &lt;class&gt;</code> (a decorated run whose function raised) or <code>SIGTERM</code>.
+Every reader leaves <code>onetrace.</code> constants out of a step's settings, and a team's constant of
+that form is refused. So a reference made from a closed run, read by onetrace 0.6.1's <code>verdict</code>
+or by onetrace-verify 0.6.1's <code>--reference</code>, doesn't fail a run that closed another way or after
+another number of steps;</li>
+<li>in a re-run, the re-run mark <code>rerun</code>, as every receipt of a re-run carries (below).</li>
+</ul>
+<p><code>onetrace.ended_by</code> has five forms in format 0.4. Beside the three above, a re-run stopped by the
+replay rule writes <code>re-run stopped before &lt;node&gt;: effect &lt;value&gt; (&lt;basis&gt;)</code> at a step with a label,
+or <code>re-run stopped before &lt;node&gt;: effect not recorded</code> at a step with none. This build writes all
+five: the last two in the run <code>onetrace reproduce</code> produces, where the replay rule stops it before a
+step, with a boundary of kind <code>re-run stopped</code> whose note holds the same words. An auto-recorded run that reaches its store bound closes with <code>exit</code> (below): that is
+not a sixth form, and there is none.</p>
+<p><strong><code>exit</code> says the interpreter exited normally.</strong> An app's own signal handler that ends the process
+through <code>sys.exit</code> writes <code>exit</code> too, so <code>exit</code> does not say the work ran to its end.</p>
+<p>Its digest is the chain head, so a signature, which is over the chain head, covers it.
+<code>onetrace.close</code> is declared, so no receipt before it can read <code>complete</code>, the last step included:
+<strong>only the close receipt can read <code>complete</code></strong>, and only when every declared stage emitted and no
+boundary stands. A run in which nothing happened writes no close receipt, as it writes no
+manifest. <code>max_run_bytes</code> bounds a run's steps: the close receipt counts toward it but is never
+refused by it, so a run that reached its bound still closes. A close receipt that cannot be written
+is recorded as a gap, like any other receipt, and the run then has no close receipt.</p>
+<p><strong>A run with no close receipt</strong> was killed, ended without closing, or was written before format
+0.4. Its chain verifies to its last receipt, and in a 0.4 run that last receipt reads <code>incomplete</code>.
+onetrace-verify 0.6.1 reads such a run as it reads any run, PASS when what was written is intact.
+This release's onetrace-verify gives every run a row of its own, <code>the close receipt</code>: PASS, <code>closed: by &lt;onetrace.ended_by&gt;</code>, for a run whose chain ends with its close receipt; NOT-RUN, <code>not closed: the record ends at &lt;last step&gt; and holds no close</code>, for a run with none, which <code>--require-closed</code> makes a FAIL; and
+FAIL for a close receipt that is not last, a second one, an <code>onetrace.steps</code> that does not count the
+receipts before it, an <code>onetrace.ended_by</code> outside its five forms, a constant missing, or
+<code>onetrace.close</code> not the last declared stage. The NOT-RUN row cannot tell a run stopped before its
+close from a run written before format 0.4, and says only that the record holds none.</p>
+<p><strong>The close receipt is optional for every reader,</strong> so the promise of the path to 1.0 above holds
+unchanged. A reader never fails a run for lacking one. Every run written before format 0.4 verifies
+exactly as it did. A writer from onetrace 0.7 always writes one, as its own choice, not as a
+requirement on any record a reader is given. Two reading rules keep it so:</p>
+<ol>
+<li><strong>A receipt is a close receipt only when its own <code>format</code> is <code>stage-receipt/0.4</code> or later and
+its instrument is <code>onetrace.close</code> of kind <code>close</code>.</strong> Before 0.4 the name was not reserved, so a
+run written then can hold an ordinary stage named <code>onetrace.close</code>, with any instrument. Such a
+receipt is read as the ordinary step it is.</li>
+<li><strong>Completeness is read off the last receipt, as before.</strong> The writer is what makes the close
+receipt the only one that can read <code>complete</code>, so a reader adds no rule, and a run written
+before 0.4 that reads <code>complete</code> still does.</li>
+</ol>
+<p><strong>How onetrace-verify 0.6.1 reads a 0.4 run.</strong> It accepts any minor of major 0, so it reads a 0.4
+run's close receipt as an ordinary receipt: a closed run reads PASS, and a killed 0.4 run reads
+PASS, as a killed 0.3 run does.</p>
+<p><strong>The verbs read the close receipt as what it is, not as a step.</strong> <code>onetrace diff</code>, <code>localize</code>
+and <code>reproduce</code> set it aside before they compare, so the steps they compare are the same with
+and without it, and the search for a first difference never lands on it. When one run closed and
+the other did not, or both closed with different endings, a comparison says so in a line of its
+own, before any step difference:</p>
+<div class="code"><pre><code>close: run A closed (exit); run B not closed, its record ends at answer
+</code></pre></div>
+<p>The line changes no verdict and no exit code. <code>onetrace reference make</code> leaves the close receipt
+out of a reference. Where a reference made earlier holds it as a step, <code>onetrace verdict</code> skips it
+and names it, under <code>set_aside</code>, as not a step. It skips a step only on both sides: the run set its
+close receipt aside, and the reference's entry has a close receipt's exact shape (no outputs, no
+data inputs, no constants of its own, and the empty configuration's digest). The same reading rule
+applies: a stage named <code>onetrace.close</code> in a run written before 0.4 is a step, and is compared as
+one.</p>
+<p><strong>A gap: an empty stage of that name is still skipped.</strong> A reference records neither the
+receipt's format nor its instrument's kind, so the verdict reads the entry's shape. A stage named
+<code>onetrace.close</code> in a run written before 0.4 with no outputs, no data inputs, no constants of its
+own and an empty configuration has exactly that shape, and against a closed run it is skipped, not
+compared. Recording both parts in a reference is not in this release.</p>
+<p><strong>Only a closed run is signed by default.</strong> <code>onetrace sign</code> refuses a run with no close receipt.
+<code>--not-closed</code> signs it anyway, in format <code>stage-receipt-signature/0.2</code>, with <code>closed: &quot;false&quot;</code>,
+over <code>stage-receipt-signature/0.2:not-closed:</code> followed by the chain head, so the statement can't
+be removed without the signature failing. A closed run's signature is unchanged:
+<code>stage-receipt-signature/0.1</code>, over the chain head, which is the close receipt's. onetrace-verify
+0.6.1 FAILs a 0.2 record (it names the member <code>closed</code>, which it does not know), the stricter
+reading: under no verifier does a signature make an interrupted run look finished. This release's
+onetrace-verify reads a 0.2 record: on a run that is not closed it is checked over its own statement,
+and its row says <code>signed as not closed</code>; on a closed run it FAILs, <code>a not-closed record on a closed run</code>.</p>
+<p><strong>Byte-identity with 0.6.1 ends at 0.7.</strong> A 0.7 run is never byte-identical to a 0.6.1 run of the
+same pipeline: its format strings say 0.4, every receipt declares <code>onetrace.close</code>, and its chain
+ends with the close receipt.</p>
+<h3 id="an-auto-recorded-step">An auto-recorded step</h3>
+<p><strong>Every HTTP step's <code>status</code> output.</strong> A step onetrace-auto records from an HTTP call
+(<code>httpx.send</code>, <code>requests.send</code>) has two outputs: <code>status</code>, the canonical JSON object
+<code>{&quot;status&quot;: &quot;&lt;code&gt;&quot;}</code>, and <code>response</code>, the response body's bytes. A <code>requests</code> call that followed
+redirects is one step: its <code>status</code> is the final response's, with the number of hops,
+<code>{&quot;redirects&quot;: &quot;&lt;n&gt;&quot;, &quot;status&quot;: &quot;&lt;code&gt;&quot;}</code>, and its <code>response</code> is the final body. An <code>httpx</code> step's
+<code>status</code> never carries <code>redirects</code>. A streamed response has <code>status</code> alone: its body is not read.
+So a status that differs is an output that differs, whatever the body.</p>
+<p><strong>A model step's <code>auto.target</code> is <code>{&quot;host&quot;: &quot;&lt;host&gt;&quot;}</code> alone:</strong> the host the client's request went
+to, read through the client's public <code>post</code> while the call runs. It has no <code>method</code>, <code>path_digest</code>,
+<code>path</code> or <code>query_names</code>. A model step whose hook did not see the client's request has no <code>target</code>.</p>
+<p><strong>The boundaries an auto-recorded run declares.</strong> When it opens, one boundary over its first
+declared stage, of <code>kind</code> <code>not observed</code> with the <code>note</code> <code>steps outside the hooked libraries</code>, so its
+coverage never reads <code>complete</code>. When it reaches its store bound, it declares the boundary of <code>kind</code>
+<code>store bound reached</code>, with the <code>note</code> <code>nothing after this point is recorded</code>, at the step that
+reached it, and closes, with <code>onetrace.ended_by</code> <code>exit</code>: the five forms above stand, with no sixth.
+That boundary's <code>name</code> is the step, its node id <code>&lt;stage&gt;#&lt;instance&gt;</code> (<code>httpx.send#2</code>): a boundary's
+<code>name</code> is a declared stage, or a step: the step that reached the store bound, or, for the <code>re-run stopped</code> boundary, the step the re-run stopped before. The step that reached the
+bound is recorded as a gap at its own index, the index its receipt would have had, in the next
+receipt written and in the manifest, as the draft's section 9 records an absence. Every later hooked
+call in that process goes ahead unrecorded. <strong>A decorated run's own auto step</strong> that reaches that run's
+store bound, a top-level auto step or a stage's child, records the same gap at its index and the same
+boundary naming it, and its call goes ahead; but the run is not closed. Recording goes on, and <code>@ot.run</code>
+closes the run at its end.</p>
+<p><strong>The constants an auto-recorded step carries.</strong> Each is under the <code>onetrace.</code> prefix, which
+onetrace keeps for its own, as the close receipt's are: every reader leaves <code>onetrace.</code> constants
+out of a step's settings, and a team's constant of that form is refused. So none of them ever reads
+as a setting that differs.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Value</th>
+<th>On</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>onetrace.http.body</code></td>
+<td><code>not observed: streamed</code></td>
+<td>an HTTP step whose response was streamed: it has no <code>response</code> output</td>
+</tr>
+<tr>
+<td><code>onetrace.http.request</code></td>
+<td><code>not observed: streamed</code></td>
+<td>an HTTP step whose request body was streamed (an iterator): it has no <code>request</code> input</td>
+</tr>
+<tr>
+<td><code>onetrace.http.request</code></td>
+<td><code>not observed: the text cannot be encoded as it will be sent</code></td>
+<td>a <code>requests</code> step whose text body the installed urllib3 would send as ISO-8859-1, and which that cannot encode: no digest is taken, and it has no <code>request</code> input</td>
+</tr>
+<tr>
+<td><code>onetrace.model_call</code></td>
+<td><code>not written: the hook did not see the client's request</code></td>
+<td>a model step on a client made before onetrace-auto's boot, or a model step whose call failed before it reached the client's <code>post</code>: no model-call record, no credential, no host</td>
+</tr>
+<tr>
+<td><code>onetrace.model_call</code></td>
+<td><code>not written: embeddings have no record format in this release</code></td>
+<td>an embeddings call: no model-call record</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>How this release's onetrace-verify reads an auto-recorded run.</strong> Each receipt with an <code>auto</code> block gets
+its rows: the block's members and its <code>target</code>'s shape (an HTTP step's, or a model step's <code>host</code> alone);
+<code>declared</code> is <code>&quot;false&quot;</code>; the step carries <code>effect_label</code>, its value one of the three and its basis one of
+the six, as the producer documents it for the library (the table below); an HTTP step's <code>status</code> output
+in its form, read where the output was kept; and its <code>onetrace.</code> constants, each one the format gives.
+A run onetrace-auto opened itself, the process run or a request run, gets two: the manifest's <code>auto</code> block,
+and the open boundary. A decorated <code>@ot.run</code> that holds auto steps gets neither: its auto steps get their
+rows, and the run keeps its own declared coverage, so its close may read <code>complete</code>. onetrace-verify knows
+a run onetrace-auto opened by the manifest's <code>auto</code> block or by the open boundary, in the manifest or in any
+receipt's coverage; it makes no claim about a process run rewritten without both and re-linked, which reads as a
+decorated run, nor about a decorated run whose team declares that exact boundary, which reads as one onetrace-auto
+opened. The summary line ends <code>auto-recorded: N steps, not declared</code>. An auto step's thread <code>context</code>, where present, is read: <code>thread without the run's context</code> is its one value, and any other FAILs. A run whose receipts declare stage lists that
+differ gets one row, <code>declared stages grow only by auto stages</code>: a later list may add only the stages of the chain's
+auto steps, every earlier name in its place, and a removal, a reorder or another added name FAILs. A run whose
+receipts all declare one list, a straight decorated run among them, gets no such row.</p>
+<p><strong>The effect labels the producer documents, by library.</strong> At minor 4 an <code>effect_label</code>'s basis is one of
+six: <code>declared on the stage</code>, <code>model call</code>, <code>model call stored by the provider</code>, <code>http method</code>, <code>not classified</code> and <code>substituted, not executed</code>. A record holding any other basis is outside the format, and
+its row FAILs, naming the basis. For an auto-recorded step, onetrace-verify reads the label against what
+the producer documents for the step's library:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Library</th>
+<th>Value</th>
+<th>Basis</th>
+<th>On</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>httpx</code>, <code>requests</code></td>
+<td><code>read</code></td>
+<td><code>http method</code></td>
+<td>a <code>GET</code> or <code>HEAD</code></td>
+</tr>
+<tr>
+<td><code>httpx</code>, <code>requests</code></td>
+<td><code>write</code></td>
+<td><code>http method</code></td>
+<td>any other method</td>
+</tr>
+<tr>
+<td><code>openai</code></td>
+<td><code>write</code></td>
+<td><code>model call stored by the provider</code></td>
+<td>a <code>responses.create</code> call without <code>store=False</code></td>
+</tr>
+<tr>
+<td><code>openai</code></td>
+<td><code>read</code></td>
+<td><code>model call</code></td>
+<td>any other call</td>
+</tr>
+<tr>
+<td>any</td>
+<td><code>unknown</code></td>
+<td><code>not classified</code></td>
+<td>a call the hook cannot classify</td>
+</tr>
+</tbody>
+</table></div>
+<p>A label outside its library's rows FAILs. On a <code>responses.create</code> step either <code>openai</code> label reads as
+documented: the receipt does not hold <code>store</code>. A library the producer does not document reads NOT-RUN,
+<code>&lt;library&gt;: no documented bases</code>; its value is still checked against the three, and its basis against
+the six. <code>onetrace.sdk_verify</code>, the SDK's own verifier, has none of the rows this release's
+onetrace-verify adds for format 0.4.</p>
+<h3 id="every-member-format-04-adds">Every member format 0.4 adds</h3>
+<p>Every scalar is a string, and every member is optional: a record that does not hold one reads as a
+record written before 0.4 does.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Record</th>
+<th>Member</th>
+<th>Values</th>
+<th>Written by this build</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>close receipt</td>
+<td><code>stage.name</code>, <code>instrument</code></td>
+<td><code>onetrace.close</code>, reserved; instrument <code>onetrace.close</code>, kind <code>close</code>, onetrace's version</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>close receipt</td>
+<td>constants <code>onetrace.closed</code>, <code>onetrace.steps</code>, <code>onetrace.ended_by</code></td>
+<td><code>true</code>; the number of receipts before it; the five forms above</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>signature record</td>
+<td><code>closed</code></td>
+<td><code>false</code>, in <code>stage-receipt-signature/0.2</code> only, inside the signed bytes; <code>--not-closed</code> is refused on a closed run</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>receipt</td>
+<td><code>auto</code></td>
+<td><code>declared</code> (<code>false</code>), <code>call</code>, <code>library</code>; for an HTTP call <code>target</code>: <code>host</code>, <code>method</code>, <code>query_names</code> and one of <code>path_digest</code> (the default) or <code>path</code> (only with <code>ONETRACE_AUTO_HTTP_PATH=plain</code>); for a model call <code>target</code>: <code>host</code> alone; and on a step recorded from a thread that did not carry the run's context, <code>context</code>: <code>thread without the run's context</code></td>
+<td>with onetrace-auto: yes</td>
+</tr>
+<tr>
+<td>manifest</td>
+<td><code>auto</code></td>
+<td><code>boundary</code> (<code>process</code>, <code>request</code>), <code>hooks</code> (each <code>library</code>, <code>status</code>, <code>version</code>), <code>key</code></td>
+<td>with onetrace-auto: <code>boundary</code> <code>process</code> and <code>hooks</code>; <code>request</code> and <code>key</code> not yet</td>
+</tr>
+<tr>
+<td>receipt</td>
+<td><code>rerun</code></td>
+<td><code>kind</code> (<code>twin</code>, <code>counterfactual</code>, <code>reproduce</code>, <code>check</code>), <code>of_run</code>, <code>of_chain_head</code>; a twin, and a check under the baseline's settings: <code>config_of_run</code>, <code>config_of_chain_head</code>; a counterfactual: <code>substituted</code>; a check: <code>from_stage</code>. In every receipt of a re-run, the intake and close receipts included</td>
+<td>kind <code>reproduce</code>, in the run <code>onetrace reproduce</code> produces, kind <code>twin</code>, in the run <code>onetrace reproduce --config-of</code> produces, kind <code>counterfactual</code>, in the run <code>onetrace reproduce --substitute</code> produces, and kind <code>check</code>, in the run a check of <code>reproduce</code> produces: yes</td>
+</tr>
+<tr>
+<td>receipt</td>
+<td><code>rerun.from_stage</code></td>
+<td>the node id a check started from: required for <code>check</code>, absent for every other kind</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>receipt</td>
+<td><code>rerun.writes_allowed</code></td>
+<td>plain <code>reproduce</code> only, and required there: <code>true</code> when <code>--allow-writes</code> was given, <code>false</code> otherwise</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>receipt</td>
+<td><code>rerun.substituted</code></td>
+<td><code>step</code>, <code>from_run</code>, <code>from_chain_head</code>, <code>from_receipt</code>, <code>output</code>, <code>output_digest</code></td>
+<td>yes</td>
+</tr>
+<tr>
+<td>manifest</td>
+<td><code>rerun</code></td>
+<td>a copy of the receipts' <code>rerun</code> (below)</td>
+<td>kinds <code>reproduce</code>, <code>twin</code>, <code>counterfactual</code> and <code>check</code>: yes</td>
+</tr>
+<tr>
+<td>check run</td>
+<td>stage <code>onetrace.check</code></td>
+<td>reserved; instrument <code>onetrace.check</code>, kind <code>check</code>. Its constants (<code>verb</code>, <code>argv</code>, <code>runner_digest</code>, <code>rerun_plan</code>, <code>timeout_seconds</code>, <code>baseline</code>, <code>candidate</code>, <code>stage</code>, <code>claim</code>, <code>predicted</code>) and assertions (<code>exit</code>, <code>result</code>, <code>came_back</code>: <code>as predicted</code>, <code>otherwise</code>, <code>did not run: &lt;reason&gt;</code>) are ordinary constants and assertions</td>
+<td>yes, by <code>onetrace check</code>; the constants <code>baseline</code> and <code>stage</code> only where the verb has them, and <code>runner_digest</code> and <code>rerun_plan</code> for <code>reproduce</code> only</td>
+</tr>
+<tr>
+<td>receipt</td>
+<td><code>effect_label</code></td>
+<td><code>value</code> (<code>read</code>, <code>write</code>, <code>unknown</code>) and <code>basis</code> (<code>declared on the stage</code>, <code>model call</code>, <code>model call stored by the provider</code>, <code>http method</code>, <code>not classified</code>, <code>substituted, not executed</code>). Required on a receipt with an <code>auto</code> block; absent on an unmarked declared stage and on the recorder's own receipts (intake, close)</td>
+<td>on a declared stage marked <code>effect=&quot;read&quot;</code> or <code>&quot;write&quot;</code>: yes, basis <code>declared on the stage</code>; with onetrace-auto: <code>read</code> and <code>write</code>, basis <code>http method</code>, <code>model call</code> and <code>model call stored by the provider</code>; on a step a check or a counterfactual puts in place: <code>read</code>, basis <code>substituted, not executed</code>: yes; the others not yet</td>
+</tr>
+<tr>
+<td>receipt</td>
+<td><code>config_kept</code></td>
+<td><code>name</code> (<code>config.json</code>), <code>digest</code> (equal to <code>instrument.config_digest</code>), <code>bytes</code>; the file under <code>config/&lt;receipt stem&gt;/</code>, the receipt stem being the receipt file's name without its <code>.json</code>, for example <code>03-answer</code>. Where keys were left out of the kept file, <code>partial</code>: <code>true</code>, and <code>digest</code> is the kept bytes' digest; the next verifier then reads the equality as NOT-RUN, <code>configuration kept in part</code>, never FAIL</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>receipt</td>
+<td><code>expectations</code></td>
+<td>each <code>name</code>, <code>kind</code> (<code>range</code>, <code>unit</code>, <code>relation</code>, <code>member</code>), <code>target</code>, <code>declaration</code>, <code>declaration_digest</code>, <code>declared</code> (<code>with the run</code>). A <code>relation</code>'s <code>declaration</code> is <code>op</code> (<code>difference</code>, <code>sum</code> or <code>ratio</code>), <code>of</code> (two JSON Pointers into the target's own output, joined by one space, as <code>/raw /offset</code>) and <code>within</code>: the target's value is within <code>within</code> of the first value less the second, the two added, or the first divided by the second. An expectation that holds shows the declared rule held, not that the output was right</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>expectations file</td>
+<td>entries</td>
+<td>as <code>expectations</code>, with <code>declared</code>: <code>after the run</code>; the file sealed as a reference is. An expectation declared after the run says nothing about what was expected when the run was made, and one that holds shows the declared rule held, not that the output was right</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>receipt</td>
+<td><code>outputs[].empty</code></td>
+<td><code>true</code>, <code>false</code></td>
+<td>not yet</td>
+</tr>
+<tr>
+<td>receipt</td>
+<td><code>return_holds</code></td>
+<td>each <code>at</code>, <code>child</code>, <code>child_at</code>, <code>digest</code>: a part of a child's return held, as the same object, in the caller's return</td>
+<td>not yet</td>
+</tr>
+<tr>
+<td>reference</td>
+<td><code>steps.&lt;node&gt;.reads</code></td>
+<td>stage names, sorted, unique; <code>[]</code> for none</td>
+<td>not yet</td>
+</tr>
+<tr>
+<td>reference</td>
+<td><code>steps.&lt;node&gt;.empty_outputs</code></td>
+<td>beside <code>outputs</code>, never inside an entry: the outputs the run marked empty, sorted, unique; <code>[]</code> for none; absent where any of the step's outputs carries no mark</td>
+<td>not yet</td>
+</tr>
+<tr>
+<td>model-call record 1.1</td>
+<td><code>steps.level</code>, <code>steps.method</code></td>
+<td><code>L1-hosted</code>, <code>L2-hosted</code>, and self-hosted <code>L1</code>, <code>L2</code>, <code>L3</code>; <code>provider-text</code>, and self-hosted <code>token-ids</code>, <code>top-k-ids</code>, <code>sha256-tree-512/v0</code></td>
+<td>self-hosted: yes; hosted: not yet</td>
+</tr>
+<tr>
+<td>model-call record 1.1</td>
+<td><code>steps.k_requested</code>, <code>steps.k_returned_min</code>, <code>steps.k_returned_max</code>, <code>steps.count</code>, <code>steps.logprobs</code></td>
+<td>decimal strings (<code>k_requested</code> <code>declared, not observed</code>, <code>k_returned_min</code> and <code>k_returned_max</code> and <code>steps.count</code> <code>observed</code>; all three k members <code>not applicable</code> at <code>L1-hosted</code>, as at self-hosted <code>L1</code>); <code>logprobs</code>: <code>none</code> (the default), <code>rounded-2</code>, <code>as-returned</code></td>
+<td>self-hosted, all but <code>steps.logprobs</code>: yes; hosted: not yet</td>
+</tr>
+<tr>
+<td>model-call record 1.1</td>
+<td>the steps file, hosted form</td>
+<td><code>level</code>, <code>method</code>, <code>steps[]</code>, each <code>{chosen, candidates}</code>, each token <code>{text, bytes, provider_token_id, logprob}</code>, the last three where present</td>
+<td>not yet</td>
+</tr>
+<tr>
+<td>model-call record 1.1</td>
+<td>the self-hosted members</td>
+<td>the steps file at L1, L2 and L3, <code>steps.surplus</code>, <code>engine.settings.model_runner</code>, the self-hosted <code>output.finish</code>, and the refusal at L3 with its <code>sampling.*</code> members and <code>engine.settings.logits_processors</code>: given once, in <code>docs/model-call-record.md</code>'s 1.1 section</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>model-call record 1.1</td>
+<td><code>identity.digest</code>, <code>call.kind</code></td>
+<td><code>sha256:&lt;hex&gt;</code>; <code>call.kind</code> adds <code>endpoint</code></td>
+<td>not yet</td>
+</tr>
+<tr>
+<td>embedding record 1.0</td>
+<td>the members it shares with the model-call record</td>
+<td><code>format</code>, <code>call.kind</code>, <code>call.api</code>, <code>credential</code>, <code>model.*</code>, <code>tokenizer.digest</code>, <code>engine.*</code>, <code>runtime.*</code>, <code>dtype</code>, <code>input.request_digest</code>, <code>input.token_ids_digest</code>, <code>engine.settings.*</code>, <code>identity.digest</code></td>
+<td>not yet</td>
+</tr>
+<tr>
+<td>embedding record 1.0</td>
+<td><code>embedding.*</code></td>
+<td><code>pooling</code> (<code>mean</code>, <code>cls</code>, <code>max</code>, <code>last-token</code>, or the module's own name), <code>normalize</code>, <code>max_length</code>, <code>truncation</code> (<code>end</code>, <code>start</code>, <code>none</code>, <code>error</code>), <code>dimensions</code>, <code>input_type</code>, <code>encoding</code> (<code>float</code>, <code>base64</code>, <code>int8</code>, <code>uint8</code>, <code>binary</code>, <code>ubinary</code>)</td>
+<td>not yet</td>
+</tr>
+<tr>
+<td>embedding record 1.0</td>
+<td><code>output.*</code>, <code>usage.tokens</code>, <code>batch.size</code>, <code>rows</code></td>
+<td><code>vectors_digest</code>, <code>vectors_form</code> (<code>raw-&lt;dtype&gt;-le</code>, <code>json-decimal</code>, <code>base64-bytes</code>), <code>count</code>, <code>dimensions</code>, <code>norms</code> (<code>unit</code>, <code>not unit</code>); tokens or <code>not observed</code>; the batch size; each row <code>{position, input_digest, vector_digest, tokens}</code></td>
+<td>not yet</td>
+</tr>
+<tr>
+<td>embedding record 1.0</td>
+<td><code>fingerprints[].quantity</code></td>
+<td>adds <code>embedding-vectors</code>, in the embedding record only</td>
+<td>not yet</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="reading-the-new-members">Reading the new members</h3>
+<ul>
+<li>
+<p><strong>Absent is not <code>unknown</code>.</strong> A missing <code>effect_label</code> says no label was recorded; <code>unknown</code> says
+a hook could not classify the call. Every reader's words for a missing label are <code>effect not recorded</code>, never <code>unknown</code>. The next verifier fails a receipt with an <code>auto</code> block and no
+<code>effect_label</code>. A substituted step's label is <code>read</code>, basis <code>substituted, not executed</code>: nothing
+ran.</p>
+</li>
+<li>
+<p><strong>The manifest's <code>rerun</code> copy marks nothing by itself.</strong> It is read only where every receipt
+carries the same mark, and a tool that reads the manifest alone does not take it as one. The intake
+and close receipts of a re-run carry the mark like every other receipt.</p>
+</li>
+<li>
+<p><strong><code>return_holds</code>:</strong> <code>[]</code> means checked, nothing held; absent means not checked. <code>digest</code> is the
+sha256 of the held part's canonical bytes, as an output's digest is.</p>
+</li>
+<li>
+<p><strong>A check's run may hold local paths and output.</strong> Its <code>argv</code> constant holds the filled <code>{run}</code>,
+and its outputs keep <code>stdout.txt</code> and a tail of stderr. The record's credential rule covers its
+constants and kept outputs like any other run's.</p>
+</li>
+<li>
+<p><strong><code>identity.digest</code></strong> hashes a field's <code>status</code> alone where the field has no value, so two
+<code>not observed</code> fields whose reasons differ give one identity.</p>
+</li>
+<li>
+<p><strong>Reserved names.</strong> A stage named <code>onetrace.close</code> or <code>onetrace.check</code> in a run written before
+0.4 is an ordinary step, in every reader. A receipt is a close or check receipt only when its own
+<code>format</code> is <code>stage-receipt/0.4</code> or later and its instrument is the reserved one of its kind.</p>
+</li>
+<li>
+<p><strong>The meanings of &quot;declared&quot;.</strong> The format uses the word in eight places:</p>
+<ul>
+<li><code>auto.declared: &quot;false&quot;</code>: the step was not declared in code;</li>
+<li><code>effect_label.basis: &quot;declared on the stage&quot;</code>: the label was declared in code;</li>
+<li><code>expectations[].declared</code>: <code>with the run</code> or <code>after the run</code>;</li>
+<li><code>coverage.declared_stages</code>: the stages the run declared;</li>
+<li><code>declared_edges</code>: the plan's edges, declared by the team;</li>
+<li>the model-call state <code>declared, not observed</code>: given by the caller, not read back;</li>
+<li><code>reproduce</code>'s <code>COULD NOT CHECK</code> category <code>declared</code>;</li>
+<li>&quot;a declared step with no <code>effect_label</code>&quot;: a decorated stage the team named.</li>
+</ul>
+<p>Two meet on one receipt: an auto-recorded step's stage is in <code>coverage.declared_stages</code> (an auto
+run declares the stage names of its hooks), while its <code>auto.declared</code> is <code>&quot;false&quot;</code>.</p>
+</li>
+<li>
+<p><strong>A decorated run's declared stages may grow while it runs.</strong> A decorated <code>@ot.run</code> gains an auto
+stage name the first time a hooked call inside it fires that stage: the name is added before the
+close stage, and no name is ever removed or reordered. Each receipt's <code>coverage.declared_stages</code> is
+the list as known when it was written, so an earlier receipt may declare fewer names than a later
+one. The close receipt's list is the run's whole list. A decorated run that fires no hooked call
+declares its team's stages and its close alone.</p>
+</li>
+</ul>
+<p><strong>How this release's onetrace-verify reads them.</strong> Each has rows of its own, PASS, FAIL or NOT-RUN:</p>
+<ul>
+<li><strong>the re-run mark</strong>, on a run whose record holds one: <code>a &lt;kind&gt; of &lt;run&gt; (&lt;chain head&gt;)</code>, or FAIL where
+the receipts disagree, the manifest's copy disagrees with them, <code>kind</code> is outside the four, or a member
+its kind requires is missing or one it may not hold is there; and <code>substituted output</code>, a
+counterfactual's substituted step holding the output its mark names. An original run gains no row. On a
+re-run every <code>--reference</code> row reads NOT-RUN, <code>a re-run is not checked against a reference</code>, and the
+summary line begins <code>re-run (&lt;kind&gt; of &lt;run&gt;):</code>;</li>
+<li><strong>an effect label</strong> of <code>read</code> on a receipt whose <code>effects</code> holds an entry: FAIL;</li>
+<li><strong><code>config_kept</code></strong>: its digest against <code>instrument.config_digest</code> (NOT-RUN <code>configuration kept in part</code>,
+naming the keys left out, where <code>partial</code> is <code>&quot;true&quot;</code>; FAIL for a <code>partial</code> other than <code>&quot;true&quot;</code>), and the
+kept file against its digest;</li>
+<li><strong>each expectation</strong>, <code>expect &lt;step&gt;.&lt;name&gt;</code>: its <code>declaration_digest</code> recomputed, and <code>range</code>, <code>unit</code>,
+<code>relation</code> and <code>member</code> read against the kept output, PASS or FAIL. A member absent is a FAIL; it reads
+NOT-RUN only where the output was not kept, its target or one of a relation's two values names no value,
+or a value is not a decimal. A ratio over a zero is a FAIL. A relation is computed to 100 significant
+digits;</li>
+<li><strong><code>outputs[].empty</code></strong>: <code>&quot;true&quot;</code> or <code>&quot;false&quot;</code>;</li>
+<li><strong>an embedding record</strong>: its format, its <code>identity.digest</code> recomputed, and its <code>rows</code> against
+<code>batch.size</code>. Its vectors read NOT-RUN: the receipt does not name the vectors output.</li>
+</ul>
+<p>Not checked yet: the <code>identity.digest</code> of a model-call record 1.1, and <code>return_holds</code>.</p>
+<p><strong>How onetrace 0.6.1 and onetrace-verify 0.6.1 read the new members.</strong> Each member was read under
+0.6.1 on a test copy: none of them makes 0.6.1 read a record more loosely, with one limit only
+onetrace 0.7 closes. <strong>onetrace 0.6.1's <code>reference make</code> accepts a run carrying the re-run mark,
+accepts a check run (stage <code>onetrace.check</code>, which carries no mark), and keeps the reserved stages
+<code>onetrace.check</code> and <code>onetrace.close</code> as steps.</strong> Two members, as first written, made 0.6.1 FAIL a
+record that should pass, and both now have a form measured to read as without them: the reference's
+empty mark, <code>steps.&lt;node&gt;.empty_outputs</code> beside the outputs, and the close receipt's constants,
+under the <code>onetrace.</code> prefix.</p>
+<p><strong>The model-call record 1.1 and the embedding record.</strong> onetrace-verify before 0.7 does not check a
+<code>model-call-record/1.1</code> record's content, or an embedding record at all, its credential row
+included. A gate that relies on those rows should move to onetrace-verify 0.7.</p>
+<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/manual.html"><span>← Previous</span>The full manual</a><a class="next" href="/onetrace/explain-format.html"><span>Next →</span>Explanation format</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#a-receipt">A receipt</a><a href="#trust-classes">Trust classes</a><a href="#a-chain">A chain</a><a href="#a-manifest">A manifest</a><a href="#two-roots-for-a-per-document-stage">Two roots, for a per-document stage</a><a href="#a-dag-not-just-a-chain">A DAG, not just a chain</a><a href="#format-03-and-the-path-to-10">Format 0.3, and the path to 1.0</a><a href="#format-04-every-run-ends-with-a-close-receipt">Format 0.4: every run ends with a close receipt</a></aside></div>
+<footer><div class="wrap stack-lg"><div class="foot">
+<div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
+<div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/debugging.html">Debug an agent</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>Also from oneproof</h4><ul><li><a href="/onedoor/">onedoor</a><br><span class="muted" style="font-size:13px">decide what an agent is allowed to do, before it does</span></li></ul></div>
+</div><div class="fine">© 2026 oneproof · Apache-2.0. onetrace itself reports to no one.</div></div></footer>
 <script src="/onetrace/assets/copy.js" defer></script>
 <script>if(window.matchMedia&&matchMedia("(max-width:760px)").matches){var d=document.querySelector(".docs-side details");if(d)d.removeAttribute("open")}</script>
 </body>

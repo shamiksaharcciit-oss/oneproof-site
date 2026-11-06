@@ -53,6 +53,30 @@ Something that belongs to a stage (`ot.constant`, `ot.assertion`, the stage cont
 
 **Fix:** Call it inside the decorated stage whose output it describes.
 
+## decision
+
+A step cited an onedoor decision with `ctx.decision`, but what it passed is not a decision-reference object, or the permit it passed is not a compact JWS string.
+
+**Fix:** Pass the `onedoor-decision-ref/1` object as `ref`; pass the bound permit's compact JWS (a string) as `permit` where one was issued; pass the action object the step is about to send as `action`.
+
+## verify-nested
+
+A nested run does not match the head the outer run recorded for it: the inner run's own chain head differs from what the outer run recorded as that run's input, or an inner run's folder was given but its manifest cannot be read.
+
+**Fix:** Give each nested run's folder with --nested-run; restore the outer and inner records as they were written, so the inner run's chain head equals the head the outer run recorded.
+
+## nesting-depth
+
+A stage was called more deeply nested than the limit onetrace records (NEST_DEPTH_LIMIT). A call past the limit is refused and named, never recorded as a silent gap, so a runaway recursion cannot fill a run folder.
+
+**Fix:** Reduce the nesting depth, or flatten the recursion into declared stages; the limit is stated in docs/nesting.md.
+
+## traceparent
+
+The `TRACEPARENT` environment variable is set to something that is not a W3C traceparent, so the run or a step could not record the trace context it ran in. A trace is a view, not evidence, and a broken one is never recorded.
+
+**Fix:** Set TRACEPARENT to `00-<32 hex trace id>-<16 hex span id>-<2 hex flags>` (neither id all zero), or unset it; a run with no active span and no TRACEPARENT records no trace context.
+
 ## keep-inputs
 
 `keep_inputs` names something that is not a parameter of the function, or `keep_inputs_cap` is not a whole number of bytes from 1 to 65536. Checked when the stage is decorated.
@@ -64,6 +88,24 @@ Something that belongs to a stage (`ot.constant`, `ot.assertion`, the stage cont
 A constant's name starts with `onetrace.`, which only onetrace's own constants use (`onetrace.kept_inputs`, `onetrace.inputs_not_kept`, `onetrace.links`), whether it was set with `ctx.constant` or straight into `ctx.constants`.
 
 **Fix:** Rename the constant without the `onetrace.` prefix.
+
+## reserved-stage
+
+A stage is named `onetrace.close`, the name every run's close receipt is recorded under (format 0.4), or `onetrace.check`, the name a check's run is recorded under. onetrace writes both itself, and no stage of a team's may take either.
+
+**Fix:** Rename the stage.
+
+## run-close
+
+`close(ended_by=...)` was given a value that is not one of the ways a run ends: `exit`, `SIGTERM`, `unhandled exception: ` followed by the exception's class, or a re-run's stop, `re-run stopped before <node>: effect <value> (<basis>)` or `...: effect not recorded`.
+
+**Fix:** Pass `exit` for a run that ended in the ordinary way, or leave `ended_by` out.
+
+## not-closed
+
+The run holds no close receipt: its record ends at its last step, and nothing in it says the run finished. The run was killed, or ended without closing, or it was written before format 0.4. A signature over it would cover a record that may be cut short, so it is not signed by default.
+
+**Fix:** Sign it anyway with `onetrace sign --not-closed` (or `sign_run(..., not_closed=True)`): the signed statement then says the run is not closed, inside the signed bytes.
 
 ## constant-name
 
@@ -136,6 +178,42 @@ A decorated stage was called in a child process (a fork of the run's process, as
 `@ot.stage` was put on something with no single return value to record: a generator, an async generator, or a lambda.
 
 **Fix:** Decorate a plain or async function that returns its result.
+
+## hooks-off
+
+`@ot.stage(hooks=...)` was given a value that is not `on` or `off`. `hooks="off"` turns the automatic library hooks off inside the stage, so a hooked call there records no step of its own.
+
+**Fix:** Pass hooks="off" to turn the hooks off inside the stage, or leave it unset (the default, "on").
+
+## stage-effect
+
+`@ot.stage(effect=...)` or `Recorder.stage(effect=...)` was given a value that is not `read` or `write`. The value is written as the receipt's `effect_label`, basis `declared on the stage`: whether running the stage again acts on the world outside the run.
+
+**Fix:** Pass effect="write" for a stage that acts on the world outside the run (sends, writes, orders), effect="read" for one that does not, or leave it unset to record no label.
+
+## keep-config
+
+`keep_config=` (on `@ot.stage`, `@ot.run` or `Recorder`) was given a value that is not `True` or `False`, or `keep_config_except=` is not a list of configuration keys. With `keep_config=True` a step's instrument configuration is kept as `config/<receipt stem>/config.json`, named by the receipt's `config_kept`; a key in `keep_config_except` is written as `not kept`.
+
+**Fix:** Pass keep_config=True to keep the configuration, or leave it unset; name the keys never to keep, as keep_config_except=["api_key"].
+
+## rerun-plan
+
+The process was given a re-run plan in `ONETRACE_RERUN_PLAN` that can't be read, or that is not as this build writes it. `onetrace reproduce` writes the plan and hands it to the pipeline it re-runs, so the produced run carries the re-run mark; a run is not recorded without the mark it was asked for.
+
+**Fix:** Leave ONETRACE_RERUN_PLAN unset when you run the pipeline yourself; `onetrace reproduce` sets it for the re-run it starts.
+
+## check-runner
+
+`onetrace check` was given a runner it does not run. In 0.7 that is a JSON runner (`--runner FILE`) holding an `{input:<name>}` placeholder: `onetrace reproduce` fills it from the run's kept input, and a check does not. A check with a `onetrace-runner/0.3` runner that uses only `config.*` params, or neither, runs.
+
+**Fix:** Write the input file's path in the runner's argv in place of its {input:...} placeholder, or re-run with onetrace reproduce, which fills it.
+
+## expectation
+
+An expectation given to a stage's `expect=` can't be recorded: it was not made by `ot.expect.range`, `unit`, `relation` or `member`; a bound (`lo`, `hi`, `within`) is not a decimal string; its target or `of=` names no member or JSON Pointer; or two expectations of one step share a name.
+
+**Fix:** Build each with `ot.expect.range`, `ot.expect.unit`, `ot.expect.relation` or `ot.expect.member`; give every bound as a decimal string, as `"0"` or `"0.01"`; give two expectations of one step two names with `name=`.
 
 ## meaning-fields
 
@@ -281,6 +359,12 @@ A corpus manifest is malformed: its digest isn't `sha256:` and 64 lower-case hex
 
 **Fix:** Pass the ingest run's folder (or its chain head) and the stages of this run that read the corpus; link only a run that verifies.
 
+## model-link
+
+`ot.model_from` can't link this run to its provisioning run: no run at the place given, a run that doesn't verify, no such serve stage, or stages that aren't the run's own.
+
+**Fix:** Pass the provisioning run's folder (or its chain head) and the model steps of this run; link only a run that verifies.
+
 ## anchor-run
 
 `onetrace anchor` can't read the run's chain head: there is no run folder at the path given (or it is a file), the run has no MANIFEST.json (it isn't finished), or the manifest can't be read, is over its size or depth cap, or names a chain head of the wrong form.
@@ -353,6 +437,12 @@ An output file a receipt names is missing from the run's artifacts/ folder, unre
 
 **Fix:** Restore the run's artifacts/ folder as it was written, or verify without `--require-artifacts` when the outputs were deliberately not kept.
 
+## verify-model-call
+
+A model-call record an output names fails its check: it doesn't parse or isn't canonical, names a format this verifier doesn't implement, is missing or has a malformed field, holds a value where it is not observed, or carries a string shaped like an authorization header. A model-call-record/1.1 record also fails when its steps.* members are not in their states and values, its steps digest names no output of the step, its steps file is not lined up with steps.count, or, at L3, its runner, engine core, executor, sampling members or ending are not as L3 writes them. Each FAIL row names the record and the check.
+
+**Fix:** Restore the record as it was written; a record is never edited. If the writer wrote it so, record the run again with a writer that writes the field, and write no credential into any recorded field.
+
 ## verify-anchor
 
 A record beside the chain (an anchor in anchors/) fails its check, or the file you passed to check it (`--headers`, `--tsa-cert`) can't be read.
@@ -365,14 +455,68 @@ A record in signatures/ fails its check: it is malformed, has an unknown member 
 
 **Fix:** Sign the run again with `onetrace sign`; a signature is never edited. Pass the trust file in the form `onetrace-verify --help` names. For a record in the format name before 0.2.0, `onetrace-signature/0.1`: move the record out of signatures/ (a development build before 0.2.0 wrote it, and no release writes that format), then sign the run again with onetrace sign.
 
+## verify-close
+
+The run's close receipt is not as format 0.4 writes it: it is not the chain's last receipt, there is a second one, its onetrace.steps doesn't count the receipts before it, its onetrace.ended_by is outside its five forms, a constant is missing, or onetrace.close is not the last declared stage. Or you passed --require-closed and the run holds no close receipt.
+
+**Fix:** Restore the receipts as they were written; a close receipt is written by the recorder, last, and a record is never edited. For a run with no close receipt, record it again and let it close (`Recorder.close()`, or a decorated run that returns); a run killed before it closed can't gain one.
+
+## verify-auto
+
+An auto-recorded step or run is not as format 0.4 gives it: an auto block with a member outside the format, a declared other than "false", a target of the wrong shape, no effect_label, an effect label outside its three values and six bases or not what the producer documents for the library, an onetrace. constant or value the format doesn't give, an HTTP step without its status output, a thread context other than its one value; a receipt's declared stages that drop or reorder an earlier receipt's, or add a stage of no auto step; or the run has no manifest auto block, or no open boundary.
+
+**Fix:** Restore the receipts and the manifest as they were written; an auto-recorded run is written by onetrace-auto, and a record is never edited. Record the run again with this release's onetrace-auto.
+
+## verify-rerun
+
+A re-run's mark is not as format 0.4 gives it: the receipts disagree on it, the manifest's copy disagrees with them, its kind is outside the four, it lacks a member its kind requires or holds one it may not, or a counterfactual's substituted step does not hold the output its mark names.
+
+**Fix:** Restore the receipts and the manifest as they were written; a re-run's mark is written by the re-run itself, in every receipt, and a record is never edited.
+
+## verify-receipt-0-4
+
+A step's format 0.4 member fails: it is labelled read and records an external effect; its config_kept.digest is not instrument.config_digest with no partial, its partial is other than "true", or its kept file is not that digest; an expectation it declared, or one an expectations file declares after the run, does not hold, or its declaration_digest does not recompute; the expectations file's seal does not recompute over its content, or it names a step the run does not record, or gives two entries the same name for one step; or an output's empty is other than "true" or "false".
+
+**Fix:** Restore the receipt and the files beside it as they were written; a record is never edited. For an expectation that does not hold, fix the step's output or the expectation, and record the run again.
+
+## verify-embedding
+
+An embedding record an output names fails its check: it does not parse, its identity.digest does not recompute over the fields the format names, or its rows do not number batch.size with positions 0 to n-1 and output.count equal to it.
+
+**Fix:** Restore the record as it was written; a record is never edited. If the writer wrote it so, record the call again with a writer that computes it.
+
 ## verify-plan
 
 The run's edges don't match its approved plan (`declared_edges`), or the manifest's edges aren't the ones its receipts record.
 
 **Fix:** Record the run again on the approved plan, or approve the plan it ran; restore the manifest if it was edited.
 
+## verify-decision
+
+An onedoor decision row fails: a declared gated step cited no decision, a reference is not an onedoor-decision-ref/1 object, a step acted on a denied or proposed decision, a permit does not cover the action the step recorded (signature, action digest or lifetime), or a cited decision is not in the export you passed. Or the --decisions or --permit-issuers file can't be read.
+
+**Fix:** Record a decision in every declared gated step (ctx.decision), cite a permitting decision for a step that acts, and record the action a permit covers; pass the decision export as --decisions and the issuer keys as --permit-issuers, in the form onetrace-verify --help names.
+
 ## unknown-command
 
 `onetrace` was given a subcommand it doesn't have. Verifying a run is a separate command, `onetrace-verify`.
 
 **Fix:** Run `onetrace --help` for the subcommands; to verify a run, `onetrace-verify <run folder>`.
+
+## s3-extra
+
+A run destination or a sink command names an `s3://` bucket, but the S3 client the sink needs is not installed. onetrace records no credential and no endpoint; the client reads those from its own environment and credential files.
+
+**Fix:** Install the extra: `pip install 'onetrace[s3]'` (hash-locked in requirements-s3.txt), or give a local run destination instead of an `s3://` URL.
+
+## s3-url
+
+An `s3://` value is not a bucket and prefix: it must read `s3://bucket/prefix`, with a non-empty bucket and an optional prefix path.
+
+**Fix:** Write the destination as `s3://bucket` or `s3://bucket/prefix`.
+
+## sink
+
+A finished run could not be uploaded to its `s3://` destination, or a sink command could not reach it: the bucket was unreachable, refused the write or the read, or an object's checksum did not match on the way back. The local run folder is kept.
+
+**Fix:** Check the bucket and the client's own credentials, then `onetrace sink retry <run folder>`; the run is already recorded locally and loses nothing by a failed upload.

@@ -4,7 +4,7 @@
 
 Key facts for a coding agent:
 
-- Python 3.10+. The console (`onetrace-console`) needs Python 3.12+, so start with 3.12 to use both. Install: `pip install onetrace` (SDK and verifier). This needs onetrace 0.2.0 or later: check with `python -c "import onetrace, onetrace_verify; print(onetrace.__version__, onetrace.__file__)"`, and if it prints an older version or a path outside the project's environment, use a fresh virtual environment. Signature and anchor checks: `pip install "onetrace-verify[crypto]"`.
+- Python 3.10+. The console (`onetrace-console`) needs Python 3.12+ and goes in an environment of its own until console 0.7.0: today it reads runs from onetrace 0.6.x (record formats up to 0.3), and onetrace 0.7 beside it breaks the console's pins. Install: `pip install onetrace` (SDK and verifier). This needs onetrace 0.2.0 or later: check with `python -c "import onetrace, onetrace_verify; print(onetrace.__version__, onetrace.__file__)"`, and if it prints an older version or a path outside the project's environment, use a fresh virtual environment. Signature and anchor checks: `pip install "onetrace-verify[crypto]"`.
 - Instrument existing code with two decorators: `@ot.run` on the function that is one run, and `@ot.stage(name, ...)` on each step. Nothing else in the code changes. Called outside a run, a decorated stage is a plain function, so tests keep working.
 - What a run folder holds: each stage's outputs (which can include documents, prompts and answers), and fingerprints (SHA-256 digests) of its inputs. Treat run folders like logs that may contain sensitive data. onetrace sends no telemetry and makes no network call during a run.
 - See what changed: `onetrace diff runs/A runs/B --text` shows the first stage that differs and the text that changed in its outputs, checked against the receipts first.
@@ -34,7 +34,15 @@ Key facts for a coding agent:
 ## Checking and comparing runs
 
 - [Verifying a run](https://oneproof.dev/onetrace/manual.md#8-verifying-a-run): `onetrace-verify`, exit codes, `--require-artifacts`, `--trust`
-- [diff and localize](https://oneproof.dev/onetrace/verdicts.md): the five verdicts (`same`, `FIRST DIFFERENCE`, `downstream`, `reconverged`, `COULD NOT CHECK`) and what each means
+- [diff and localize](https://oneproof.dev/onetrace/verdicts.md): the five verdicts (`same`, `FIRST DIFFERENCE`, `downstream`, `reconverged`, `COULD NOT CHECK`) and what each means; and a run's verdict against a reference — `same output`, `output differs`, `setting differs`, `input differs`, `slower than its range`, `could not check` — from onetrace verdict and onetrace-verify --reference
+- [References](https://oneproof.dev/onetrace/references.md): a sealed record of a known-good run a later run is compared against — per step the output digests, settings, data inputs and a timing range, with the rule; made with onetrace reference make, shown with onetrace reference show
+- [Variation across repeat runs](https://oneproof.dev/onetrace/variation.md): `repeat_of`, `may_vary`, onetrace repeat, and onetrace profile — how often each step's output differs across a set, and whether a fix holds
+- [Streaming the record](https://oneproof.dev/onetrace/streaming.md): `@ot.run(stream_to=URL)` / `ONETRACE_STREAM_TO` sends each receipt as it is written; it changes no receipt and adds nothing to the chain
+- [Storage: a run in a bucket](https://oneproof.dev/onetrace/storage.md): ONETRACE_RUNS=s3://bucket/prefix uploads a sealed run to an S3-compatible bucket behind the optional onetrace[s3] extra; the index object, onetrace sink retry and onetrace sink verify; a bucket verifies nothing, the reader verifies on every read
+- [onedoor decisions](https://oneproof.dev/onetrace/decisions.md): `gated_stages`, `ot.decision`, the receipt's `authorization` block, and the five verifier rows (`--decisions`, `--permit-issuers`). onetrace never imports onedoor
+- [The span context](https://oneproof.dev/onetrace/span-context.md): a step's W3C trace id and span id, and the run's `traceparent`, read from an active OpenTelemetry span or `TRACEPARENT`; no OpenTelemetry package required
+- [Nesting](https://oneproof.dev/onetrace/nesting.md): `parent`/`children` on a stage, `parent_run`/`parent_stage` on a nested run, the depth limit, the comparison's descent, and the `--nested-run` verifier row
+- [The model-call record](https://oneproof.dev/onetrace/model-call-record.md): one canonical record per model call, beside the stage receipt, behind the optional `onetrace[model-call]` extra — the five states and what each field observed or declared, the per-step capture as a separate model-generated output the record names by digest, the comparator's three results, the verifier's rows, `ot.model_from`, and what it does not claim
 - [What onetrace does not claim](https://oneproof.dev/onetrace/non-claims.md)
 - [Suggested explanations](https://oneproof.dev/onetrace/explain-format.md): `onetrace-explain`, a separate package: what it sends to the model you configure, how each claim is checked against the record before it is shown, and what it writes. A suggestion about a record, never a reading of it
 
@@ -330,7 +338,7 @@ This repository records each pipeline run with onetrace: one verifiable receipt 
 
 Add onetrace to a small pipeline in two steps: one stage first, then the rest. Then switch it off, and take it out. After the install, nothing here makes a network call; there's no model and no key, and it takes a few seconds.
 
-Use a fresh virtual environment with Python 3.10 or later. The console (`onetrace-console`) needs Python 3.12 or later, so start with 3.12 to use both. Each command runs from the folder you save the files in.
+Use a fresh virtual environment with Python 3.10 or later. Each command runs from the folder you save the files in. The console (`onetrace-console`) needs Python 3.12 or later and goes in an environment of its own until console 0.7.0: today it reads runs from onetrace 0.6.x (record formats up to 0.3), and onetrace 0.7 beside it breaks the console's pins.
 
 <!-- quickstart: run -->
 ```
@@ -431,10 +439,11 @@ onetrace doctor
 6 checks; all passed
 ```
 
-**What this one-stage run records.** Two receipts, not one:
+**What this one-stage run records.** Two receipts, not one, and the run's close:
 
 - **`intake`**: `@ot.run` records the run function's arguments as a stage of their own. Here, the digest of `question`.
 - **`answer`**: its arguments (`question` and `passages`), each as a SHA-256 digest of its encoding ([rule V1](manual.md#1616-numbers-and-booleans-rule-m-for-settings-rule-v1-for-values)), and its return value, stored as `return.json` in the run folder.
+- **`onetrace.close`**: the close receipt, the last in every run, written when the run closes. It is how the record says the run finished: a run killed before it closed has none ([the record format](format.md#format-04-every-run-ends-with-a-close-receipt)).
 
 And what it doesn't:
 
@@ -515,12 +524,12 @@ onetrace: run written to runs/<run id>
 next: onetrace-verify --require-artifacts runs/<run id>
 ```
 
-That command verifies one run by name. In a terminal it looks like this. The first line is the verifier's summary, printed to stderr, so the rows on stdout stay exactly as the reference verifier prints them. When a row fails, it also prints to stderr, under the summary, a `fix (…)` line for each failing row: what to change, and the section of the errors page that explains it. `ONETRACE_QUIET=1` silences these stderr lines too, the summary and the fix lines alike:
+That command verifies one run by name. In a terminal it looks like this. onetrace-verify 0.6.1 counts the close receipt as a stage, so this run of three steps reads `4 stages`. The first line is the verifier's summary, printed to stderr, so the rows on stdout stay exactly as the reference verifier prints them. When a row fails, it also prints to stderr, under the summary, a `fix (…)` line for each failing row: what to change, and the section of the errors page that explains it. `ONETRACE_QUIET=1` silences these stderr lines too, the summary and the fix lines alike:
 
 <!-- not executed: the run id differs on every run -->
 ```
 $ onetrace-verify --require-artifacts runs/<run id>
-record intact: 3 stages, 2 output files checked
+record intact: 4 stages, 2 output files checked
 [PASS   ] receipts/01-intake.json: receipt format
 ...
 80 pass, 0 fail, 4 not-run  ->  PASS
@@ -736,7 +745,7 @@ Anyone can then check the record, and compare two runs, with tools that don't tr
 
 ## 2. Install
 
-Requirements: **Python 3.10 or newer**. The console (`onetrace-console`) needs Python 3.12 or newer, so start with 3.12 to use both. Use a virtual environment.
+Requirements: **Python 3.10 or newer**. Use a virtual environment. The console (`onetrace-console`) needs Python 3.12 or newer and goes in an environment of its own until console 0.7.0: today it reads runs from onetrace 0.6.x (record formats up to 0.3), and onetrace 0.7 beside it breaks the console's pins.
 
 ```bash
 python -m venv .venv
@@ -755,7 +764,7 @@ This installs two packages:
 Check the install:
 
 ```bash
-python -c "import onetrace; print(onetrace.__version__)"   # 0.4.0
+python -c "import onetrace; print(onetrace.__version__)"   # 0.7.1
 ```
 
 To pin exactly what was published, take each file's sha256 from the **Download files** page of the project on PyPI and put it in a requirements file:
@@ -1038,7 +1047,7 @@ Both must name a **declared** stage, and both make coverage `incomplete`. They e
 
 ### 5.10 Closing the run, and verifying automatically
 
-**Always call `rec.close()`** at the end, in a `finally:` block if stages may raise. It writes the final manifest, including any gaps or boundaries declared after the last receipt, and runs the verify hook if you configured one:
+**Always call `rec.close()`** at the end, in a `finally:` block if stages may raise. It writes the run's close receipt (stage `onetrace.close`, the last in every run's chain; see [the record format](format.md#format-04-every-run-ends-with-a-close-receipt)), then the final manifest, including any gaps or boundaries declared after the last receipt, and runs the verify hook if you configured one. `close(ended_by=...)` says how the run ended, as the close receipt records it: `"exit"` (the default), `"SIGTERM"`, or `"unhandled exception: <class>"`; `@ot.run` passes the class of an exception that left the run function. A run killed before `close()` holds no close receipt:
 
 ```python
 from onetrace.verify_pin import VerifyPin
@@ -1058,7 +1067,7 @@ finally:
 
 ### 5.11 Limits, concurrency and async
 
-- **Size bound:** `Recorder(..., max_run_bytes=500_000_000)`. A write that would exceed it raises `StoreExhausted`. That derives from `BaseException`, like `KeyboardInterrupt`, so an ordinary `except Exception` doesn't swallow it. A receipt naming the limit is written for the stage in progress when the bound leaves room for it. `max_run_bytes` itself is refused at construction if it is below the smallest a real receipt for your own declared stages could ever be — measured fresh from your run's own configuration each time, not a fixed number — so a bound too small to hold even that receipt is never accepted in the first place, rather than left to fail later with no receipt and no gap to explain why. A write whose own output already reached disk before the bound stopped it is cleaned up: the bound is a controlled refusal, not a crash, so no orphaned `*.tmp` file is left under `artifacts/`.
+- **Size bound:** `Recorder(..., max_run_bytes=500_000_000)`. A write that would exceed it raises `StoreExhausted`. That derives from `BaseException`, like `KeyboardInterrupt`, so an ordinary `except Exception` doesn't swallow it. A receipt naming the limit is written for the stage in progress when the bound leaves room for it. The close receipt counts toward the bound but is never refused by it, so a run that reached its bound still closes. `max_run_bytes` itself is refused at construction if it is below the smallest a real receipt for your own declared stages could ever be — measured fresh from your run's own configuration each time, not a fixed number — so a bound too small to hold even that receipt is never accepted in the first place, rather than left to fail later with no receipt and no gap to explain why. A write whose own output already reached disk before the bound stopped it is cleaned up: the bound is a controlled refusal, not a crash, so no orphaned `*.tmp` file is left under `artifacts/`.
 - **One process per run folder.** The `.lock` file enforces it. Threads and asyncio tasks inside that process are fine, because emission is serialised inside the recorder.
 - **Async stages:**
 
@@ -1227,7 +1236,7 @@ Edit a receipt and the verifier fails it, and the chain head:
 
 ### 8.3 Output files are checked automatically
 
-As of 0.1.1, `onetrace-verify` reads `artifacts/` itself — you no longer need a separate script. For every receipt's own recorded outputs, it looks for `artifacts/<receipt stem>/<output name>` (the layout this SDK's own `ctx.write`/`write_json` produce):
+As of 0.1.1, `onetrace-verify` reads `artifacts/` itself — you no longer need a separate script. For every receipt's own recorded outputs, it looks for `artifacts/<receipt stem>/<output name>` (the layout this SDK's own `ctx.write`/`write_json` produce), the receipt stem being the receipt file's name without its `.json`, for example `03-answer`:
 
 - **A run with a recognised `artifacts/` layout:** every recorded output must be present with a matching digest, or it's a `[FAIL]` row naming the file. A receipt whose own format this verifier doesn't implement is skipped: its outputs are content it can't read.
 - **A run with no `artifacts/` at all, or one whose layout this verifier doesn't recognise** (an older run, or one built by hand rather than through this SDK): one `NOT-RUN` row, `run: artifacts`, naming which case it is. No file is checked. The summary can still read `PASS`, because the record itself checks out.
@@ -1348,6 +1357,8 @@ Each stage gets exactly one of five verdicts, always about the stage's **output*
 
 A change in an instrument's version or config never changes a verdict by itself. It's shown as an annotation, so a `same` never hides that *how* the output was produced changed.
 
+**The close receipt is not a stage** (format 0.4). A run's last receipt, `onetrace.close`, is set aside before the ladder is built, so it has no row and is never the first difference. When one run closed and the other did not, or both closed with different endings, the line after the verdict says so, before any stage difference: `close: run A closed (exit); run B not closed, its record ends at answer`. The JSON report carries it as `close`. It changes no verdict and no exit code: two runs whose stages all match read `identical` with the line beneath. See [the record format](format.md#format-04-every-run-ends-with-a-close-receipt).
+
 **Different inputs are said first** (0.3.1). When the two runs were given different recorded inputs, the line after the verdict says so and names them: `inputs differ: the runs were given different recorded inputs: q (the intake stage's inputs)`, then that the stages below are compared across different inputs, with the `onetrace match` command that finds a run on the same input (see [runs on the same input](#runs-on-the-same-input-onetrace-match)). A run's recorded inputs, here, are the arguments it was called with: its intake stage's inputs (section 16.3), the job it was given, such as a ticket or a question. An input a stage reads on its own, such as a corpus or a config file, is not one of them: a release changes those, and the ladder compares them stage by stage. A run with no intake stage (a run function without parameters, or a run not recorded with `@ot.run`) records no arguments, and nothing is said. They are compared by digest. The JSON report carries them under `inputs_differ`. The verdicts and the exit code are unchanged, but an `identical` or `identical after masking` verdict on different inputs says so on the verdict line itself, `localize: identical after masking, on different inputs (q)`, and the JSON carries `"on_different_inputs": "true"`: a mask that names the input's own kind of value (a path given as the argument, say) can make two runs on different inputs read the same, and a reader of the verdict alone should not take them for one run.
 
 **The outputs that changed at the end** (0.3.1). When two runs diverge, the report lists each stage nothing else reads from whose output differs, with where its change starts (its origins; see [one output's path](#one-outputs-path-localize---for)), under `end_outputs` in the JSON. The text prints the list as `outputs that changed at the end:` when it says more than the first difference does: more than one such stage, or one whose change starts somewhere else. On a straight line of stages there is one, and it isn't printed. When the origins are more than one stage, the report ranks them (`origins_ranked`): each stage, with how many of those outputs its change reaches. A stage none of whose recorded inputs differs at some origin ("nothing it read differs") ranks above one that was only ever given an input that differs and that no recorded link traces to a stage ("an input it was given differs"), since the second may only be passing on a change from outside the record; then most outputs first. The list and the ranking never change a verdict or the exit code.
@@ -1429,6 +1440,8 @@ On two runs, the cause names what changed at the first difference:
 - its config and constants;
 - the **corpus link** a query run records with `ot.corpus_from`, by digest: `corpus link changed: <digest> -> <digest>`.
 
+The text report heads this block `FIRST DIFFERENCE at stage <n>, '<stage>'`, or `FIRST DIFFERENCE at node '<step>'` on a run recorded with a topology. The JSON report carries it under `cause` (`frontier_causes` on a topology): the key names the first difference, not a cause, and renaming it waits for a minor format version.
+
 `diff` annotates a changed corpus link on every node that carries one, the way it annotates a changed setting.
 
 When nothing recorded differs at the first difference (the same instrument, version and settings), the cause says so in one sentence (0.3.0): `no recorded cause`, whether the step's instrument declares itself not rederivable (a model call, say, whose output can vary on its own), and the next later step with a recorded change, or `nothing recorded changes after it`. On a run recorded with a topology, the next change is one downstream of the first difference (reachable over the observed edges), never a change on another branch.
@@ -1461,7 +1474,7 @@ onetrace match runs/tuesday [--runs-root runs] --out r
 
 Each verb prints and writes a carried verifier line that repeats across receipts once, with a count (`[NOT-RUN] originality on 3 receipts -- ...`). `--verbose` prints and writes each line; the JSON report always keeps each.
 
-`localize A B --follow-corpus` follows a changed corpus link one hop, as `diff` does, and reports where the two linked ingest runs first differ and why, after its own report. It never shows stored ingest text (see [following a changed corpus link](#following-a-changed-corpus-link)).
+`localize A B --follow-corpus` follows a changed corpus link one hop, as `diff` does, and reports where the two linked ingest runs first differ and what differs there, after its own report. It never shows stored ingest text (see [following a changed corpus link](#following-a-changed-corpus-link)).
 
 The corpus link is compared on run records only. A query run's retrieval stage is a run record, so the per-document receipts of the two-root form are not compared for a corpus link.
 
@@ -1524,11 +1537,100 @@ onetrace reproduce runs/monday --runner runner.json --out reports/repro         
 
 - `{python}` is the interpreter that is running `onetrace`. Run `reproduce` from the virtual environment that has your pipeline's dependencies installed.
 - `{out}` is a fresh folder that `reproduce` chooses. Any further arguments your code needs, such as a run id, go in `argv` as plain strings.
+- **Runner format `onetrace-runner/0.3` (0.7)** adds two ways to read the record. `{input:<name>}` in `argv` or `cwd` is the path of a file holding the text of the input `<name>` that the run's first step kept (`keep_inputs`, section 16.19), its digest checked; the file is written beside the report, under `rerun-inputs/`. A param `{"stage": "answer", "field": "config.<key>"}` reads a value from that step's kept configuration (`keep_config`, section 16.21), its file checked against the receipt's `config_kept.digest`. A step that kept no configuration, a key left out, or an input not kept gives no value, and the re-run reads `COULD NOT CHECK`, naming the step. A `0.1` or `0.2` runner that uses either is refused; one that does not reads as before.
 - **Re-running a single stage is not available in 0.1.x.** `onetrace reproduce <run> <stage>` is accepted, but it always reports that stage as `COULD NOT CHECK` (exit 4), naming the reason. Reproduce the whole run instead.
 
 - The code's sha256 must equal the recorded `manifest_digest`, and the instrument identity must match exactly. Otherwise the result is `COULD NOT CHECK`, never "close enough".
 - Each stage is reported as `REPRODUCED`, `DIVERGED` or `COULD NOT CHECK`.
 - Stages marked `rederivable="false"` are expected not to reproduce.
+
+**Steps that act on the world (0.7).** A re-run executes your code again, so a step that sends an email or places an order would do it again. `reproduce` reads each step's `effect_label` in the record before the child starts:
+- **A step with no label runs, as it always has.** That is every step of a run recorded before 0.7, and every stage you have not marked. One line names them before the child starts: `this re-run executes 2 steps whose effect is not recorded: fetch, summarise`. The report keeps them as `execution.effect_not_recorded`.
+- **A step recorded `write` or `unknown` is not executed.** One line names those steps before the child starts: `this re-run stops before 1 step recorded as write or unknown: send_email (write: declared on the stage); --allow-writes runs it`. The re-run stops before that step's body is called; the step and every step after it read `COULD NOT CHECK  (stopped: ...)`, the summary line adds `stopped: N`, and the exit code is 4. The produced run closes with `onetrace.ended_by` `re-run stopped before send_email: effect write (declared on the stage)`. A step whose receipt holds the draft's `effects` with an entry is stopped before in the same way, whatever its label.
+- **`--allow-writes`** runs those steps too.
+- Mark a stage with `@ot.stage(..., effect="write")` for a step that acts on the world outside the run, or `effect="read"` for one that does not. The label is recorded on its receipt, basis `declared on the stage`. onetrace-auto labels each hooked call itself.
+
+**The twin: `--config-of` (0.7).** A twin answers "what would this run have given under that run's configuration?":
+
+```bash
+onetrace reproduce runs/tuesday --config-of runs/monday --runner runner.json --out reports/twin
+```
+
+- RUN's kept inputs (`runs/tuesday`) run once through REFERENCE_RUN's code and kept configuration (`runs/monday`). Every runner param is read from REFERENCE_RUN's record, and each `{input:<name>}` from RUN's.
+- The produced run is compared with RUN stage by stage. The report names the first difference and the configuration keys whose kept values differ at that step, as `config.<key>`.
+- The produced run carries `rerun` of kind `twin` in every receipt and in the manifest: `of_run`, `of_chain_head`, `config_of_run` and `config_of_chain_head`, and no `writes_allowed`. Like any re-run, it is not an original run and is not counted.
+- **A twin starts safe.** It runs a step only where both records and the code label it `read`. Before a step labelled `write` or `unknown`, or with no label, it stops; the close receipt's `onetrace.ended_by` names the step, and where that is the first step to execute, nothing runs. In the twin's process a hooked call that reads as `write` or `unknown` raises `RerunStopped`, and the library is not called. Mark a stage `effect="read"` in its code where running it again has no effect outside the run.
+- **It refuses, exit 3, running nothing,** where RUN kept no input the runner names, the code is not given or does not match REFERENCE_RUN, REFERENCE_RUN kept no configuration or left out a key a param reads, either run is itself a re-run or does not verify, or `--allow-writes` or a stage is given.
+- A twin shows what REFERENCE_RUN's configuration does on RUN's inputs today, with today's tools and services. They may answer differently than they did when either run was recorded.
+
+**The counterfactual: `--substitute STEP --from B` (0.7).** A counterfactual answers "what would the rest of A have done with B's value at this step?":
+
+```bash
+onetrace reproduce runs/monday --substitute summarise --from runs/tuesday --runner runner.json --out reports/cf
+```
+
+- A's code runs once, with A's kept inputs and params. Each step before STEP is not run: its body is replaced by A's own kept output. At STEP, B's kept output is put in place. Each file is checked against its digest first. The steps after STEP run.
+- "Before STEP" is the order of A's chain. On a DAG, a sibling written before STEP also carries A's own value, so nothing earlier is run again.
+- A value is put in place of an `@ot.stage` step only, from the return value it kept: rule V1's JSON, raw bytes, or a numpy array. A value recorded through a registered encoder comes back as its JSON form, not as its own type.
+- Each step put in place is labelled `read`, `substituted, not executed`, and reads `SUBSTITUTED` in the report, never compared. The produced run is compared with B at each step after STEP; the report names the steps that came out the same as B, and the first difference.
+- The produced run carries `rerun` of kind `counterfactual` in every receipt and in the manifest: `of_run`, `of_chain_head` and `substituted` (`step`, `from_run`, `from_chain_head`, `from_receipt`, `output`, `output_digest`).
+- **It starts safe, as a twin does.** After STEP, a step runs only where A's record and the code label it `read`; otherwise the run stops before it, its close receipt naming the step.
+- **The exit code.** The run's intake is declared, not re-derived, so it reads `COULD NOT CHECK`, as in any whole-run `reproduce`. A counterfactual of a decorated run therefore exits 4 even where every step after STEP matches B; read the rows after STEP for the answer.
+- **It refuses, exit 3, running nothing,** where B kept no output at STEP, A kept none at a step before it, STEP is not a step of A or is the intake, B's outputs at STEP are not A's by name and media type, a step to put in place is a hooked call or did not complete, either run is itself a re-run or does not verify, the code is not given or does not match A, or `--allow-writes`, `--config-of` or a stage is given.
+- A counterfactual shows how the rest of the pipeline runs on the value put in. It does not show that STEP made a difference, and its later steps carry their own variation.
+
+The produced run is marked as a re-run: every receipt, the intake and the close included, and the manifest carry `rerun`, kind `reproduce`, naming the run re-run and its chain head, and `writes_allowed` `"true"` with `--allow-writes`, else `"false"`. `onetrace reference make` refuses a marked run, and `onetrace verdict` says on its first line that the run is a re-run and not counted. The replay rule covers recorded steps and hooked calls only: code your pipeline runs outside any stage or hook is not seen and not stopped.
+
+### 10.3.1 A check of a claim: `onetrace check` (0.7)
+
+A check runs one verb to test one claim an explanation makes, and records what came back as a run of its own, so the result is bound to a chain head. It is what the console's "Prove it" button calls.
+
+```bash
+onetrace check reproduce runs/baseline runs/candidate --stage split \
+    --predicted "equal to the baseline's" --claim sha256:… --out checks/claim-2
+onetrace check localize  runs/baseline runs/candidate --predicted split --claim sha256:… --out checks/claim-3
+onetrace check diff-text runs/baseline runs/candidate --predicted split --claim sha256:… --out checks/claim-4
+onetrace check match     runs/candidate --runs-root runs --predicted PASS --claim sha256:… --out checks/claim-5
+```
+
+**The runner for a check of `reproduce`** is declared in onetrace-explain's configuration file (`ONETRACE_EXPLAIN_CONFIG`, else `~/.config/onetrace/explain.toml`), one `[[runner]]` table per pipeline:
+
+```toml
+[[runner]]
+code = "~/work/pipeline.py"
+command = ["python", "pipeline.py", "--from", "{stage}", "--run", "{run}"]
+cwd = "~/work"
+timeout_seconds = 600
+```
+
+- The runner is the one whose `code` file's sha256 equals every step's recorded `manifest_digest`. None matching, or two, is refused, naming them.
+- `command` is an argument list, never handed to a shell. It takes two placeholders only: `{stage}`, the node id the check starts from, and `{run}`, the absolute path of the run it re-runs. Any other is refused.
+- `cwd` unset is the code's folder; a relative `code` or `cwd` is read from the configuration file's folder. `timeout_seconds` unset is 600.
+- The table is read with `tomllib`, Python 3.11 and later. `--runner FILE` gives a JSON runner file in its place, read as `onetrace reproduce` reads one, except that a check does not fill `{input:<name>}`: a runner holding one is refused, exit 3, and nothing runs.
+
+**What a check of `reproduce` does.** It re-runs the candidate from `--stage`:
+- The command starts in a new session with the environment the check started with, every `ONETRACE_` variable removed, plus `ONETRACE_RUN_ID`, `ONETRACE_RUNS` and `ONETRACE_RERUN_PLAN`. Nothing else is added, and nothing from the environment is recorded.
+- Each step before the stage is put in place from the candidate's kept outputs: its body is not called, and its receipt is labelled `read`, `substituted, not executed`. A run that kept no outputs can't be checked from a later stage.
+- Each step from the stage on must be recorded `read`. Otherwise nothing starts, and onetrace prints why, then the filled command so you can run it yourself:
+  ```
+  Prove it can't run this check: send_email is recorded as write (declared on the stage).
+  A check never runs a step that writes, or whose effect is not recorded.
+  To run it yourself, on your machine:
+    python pipeline.py --from split --run /home/me/runs/candidate
+  ```
+  In the run, a step runs only where the record's label and the code's both say `read`.
+- At `timeout_seconds` the process group is sent `SIGTERM`, then `SIGKILL` 10 seconds later, so nothing the command started is left running.
+- The produced run carries the re-run mark, kind `check`, with `from_stage`.
+
+**The check's run** is in `--out`'s `check-run` folder. It holds one receipt of the reserved stage `onetrace.check` and the close receipt. Its constants say what was run and what was predicted, and are fixed in the checking process before the command starts; the record does not show that order, as the receipt is written after the command has ended. Its outputs are the command's `stdout.txt`, the verb's `report.json` and `stderr_tail.txt`. Its assertions `exit`, `result` and `came_back`:
+- `as predicted` or `otherwise`, by a fixed table: for `reproduce`, the produced outputs at the stage against the baseline's (`equal to the baseline's`), the candidate's (`equal to the candidate's`), or neither (`differs from both`), by digest; for `localize` and `diff-text`, whether the first difference is the predicted node; for `match`, whether the verifier's reading of the run is the predicted `PASS` or `FAIL`.
+- `did not run: <reason>` where the stage reads `COULD NOT CHECK`, the verb refused or could not check, the replay rule stopped the run, or the wall-clock limit was reached. It is never `otherwise`.
+
+`result` is the verb's own raw word, as its report gives it, so a check of `reproduce` on a decorated run reads `COULD NOT CHECK` there, from the run's intake. The check's own outcome is `came_back` against `predicted`, given as the words below.
+
+`onetrace check` prints the result's words first: `confirmed by a check (check 4be1…)`, `not supported by its check (check 4be1…)`, or `the check did not run: <reason> (check 4be1…)`, the check's run named by its chain head. Neither word is a verdict on the run. It exits 0 when the check ran, whatever came back, and 3 when it was refused and nothing ran. A check's run is never a reference: `onetrace reference make` refuses one.
+
+A check runs your own command: onetrace checks the code's identity and passes the stage and the run; it does not know what the command does with them. Code the command runs outside any stage or hook is not seen and not stopped. "Confirmed by a check" says one check's result matched what the claim predicted, on this machine, once; it is not a proof of the claim.
 
 ### 10.4 A summary for a pull request: `onetrace summary`
 
@@ -1700,8 +1802,11 @@ Keep a known-good run as `baselines/golden`. When a change is intended, regenera
 
 ```python
 import onetrace
-onetrace.__version__                         # "0.4.0"
+onetrace.__version__                         # "0.7.1"
 onetrace.digest(path_or_bytes) -> "sha256:<hex>"
+onetrace.current_stage()                     # the running step's context (its .name, its .write_json), or None
+onetrace.model_from(run, stages=[...], serve_stage=None)   # a model link, in the corpus-link form (16.20)
+onetrace.RerunStopped                        # raised in a re-run before a step it stops before (10.3); a BaseException
 
 from onetrace.emit import (Recorder, Instrument, Refusal,
                            EmissionRefused, StoreExhausted, current_run, current_stage)
@@ -1710,7 +1815,7 @@ from onetrace.verify_pin import VerifyPin
 Recorder(out_dir, declared_stages, manifest, policy, anchor_reason=None, run_id=None,
          topology=False, declared_edges=None, boundaries=None, instruments=None,
          verify_pin=None, max_run_bytes=None)
-  .stage(name, instrument=None, instance=None)        # decorator, or `async with`
+  .stage(name, instrument=None, instance=None, effect=None)   # decorator, or `async with`
   .run_stage(name, instrument, fn, *args, **kw)
   .run_node(name, instance, instrument, fn, *args, **kw)
   .boundary(name, kind, note=None)
@@ -2388,6 +2493,75 @@ def answer(question, passages):
 - **Checking it.** `onetrace-verify` (0.2.0 and 0.2.1) does not read `inputs/`: its result is the same with or without the files. The SDK's own check (`python -m onetrace.sdk_verify`) adds a row per kept input, `kept input text matches its digest`: PASS, FAIL, or NOT RUN when the file was removed; and a note, `inputs/: unlisted file`, for a file no receipt lists.
 - **Removing the text** (all of `inputs/`, or one file) is allowed and leaves the run verifiable: the digests are in the receipts.
 
+### 16.20 The model-call record: `onetrace[model-call]`
+
+`onetrace.model_call` writes one canonical **model-call record** per model call, as an ordinary output of the stage that made it. It never changes the receipt format and never changes the reading of a run's receipts; its own verifier rows read as every other row does, and a FAIL on one fails the run like any other FAIL. A run that writes no record is byte-for-byte the run it would be without the feature. Installed with `onetrace[model-call]`; the vLLM and transformers adapters import the engine only when used, so the engine stays your own version.
+
+```python
+import onetrace.model_call as mc
+from onetrace.model_call import hosted, record
+
+def answer(ctx, question):
+    rec, status = hosted.call(transport, endpoint, request, key, ctx=ctx)   # writes model_call.json
+    return mc.load(rec)
+```
+
+Every field that describes the call is a value object in one of five states — `observed`, `declared, not observed`, `declared, contradicted`, `not observed`, `not applicable` — with its source; a field the writer cannot fill is `not observed` or `not applicable`, never left out. The first record a stage writes is `model_call.json`, then `model_call.2.json` and so on. A per-step capture, when taken, is a separate `model-generated` output (`model_call.<n>.steps.json`) the record names by digest; the record holds no token id or text at any level. `mc.compare(a, b)` returns `same`, `diverged` or `could not compare`, and nothing else. `ot.model_from(run, stages=[...], serve_stage=...)` passed as `@ot.run(model=...)` records a verified model link in the corpus-link form. A verifier gains record rows for a run that holds a record, reading as its receipt rows do. The record, its states and sources, the capture levels, the comparator's results, the verifier's rows and what the record does not claim are specified in [the model-call record](model-call-record.md), with its schema `docs/model_call_record.schema.json` (`model-call-record/1.0`).
+
+### 16.21 Keeping a step's configuration: `keep_config` (0.7)
+
+```python
+@ot.stage("answer", instrument=llm, keep_config=True, keep_config_except=["api_key"])
+def answer(question): ...
+
+@ot.run(stages=["retrieve", "answer"], keep_config=True)   # every step's, unless a stage says otherwise
+def pipeline(question): ...
+```
+
+**`keep_config=True` keeps the step's instrument configuration as a file of the run.** It is off unless you set it. It is accepted on `@ot.stage`, `@ot.run`, `Recorder` and `Recorder.stage`.
+- **What is kept.** The configuration, in canonical form, as `config/<receipt stem>/config.json`, beside `artifacts/`. The receipt's `config_kept` names it: `name`, `digest` and `bytes`. The digest equals `instrument.config_digest`.
+- **Keys left out.** A key named in `keep_config_except=[...]` is written as `not kept`, and `config_kept.partial` is `"true"`; the digest is then the kept bytes' digest, and the verifier reads the equality NOT-RUN, `configuration kept in part`, never FAIL. A kept configuration is a file of the run, so it can hold a path or a host you did not mean to share: leave such keys out.
+- **Which wins.** A stage's own `keep_config=` wins over the run's; the keys left out are both's. The intake and close receipts, and a step recorded by a hook, never carry it.
+- A value that is not `True` or `False`, or an `except` list that is not a list of keys, is refused where it is declared, with the code [`keep-config`](errors.md#keep-config).
+- `onetrace reproduce --config-of` (section 10.3) and a runner's `config.<key>` params read the kept file. onetrace-verify 0.6.1 does not read `config_kept`.
+
+### 16.22 Step expectations: `ot.expect.*` (0.7)
+
+```python
+@ot.stage("calibrate", instrument=cal, expect=[
+    ot.expect.range("value", lo="0", hi="500", unit="kPa"),
+    ot.expect.relation("value", "difference", of=("raw", "offset"), within="0.01"),
+    ot.expect.member("value"),
+])
+def calibrate(reading): ...
+```
+
+**An expectation is a rule a step declares about its own output.** The verifier reads it on every run, with no other run to compare against. `expect=[...]` is accepted on `@ot.stage` and `Recorder.stage`, and each receipt of the step carries the list in `expectations`, `declared` `with the run`, with each declaration's digest. The run's data is never put in a declaration.
+
+**The four kinds.** Every bound is a decimal string, as `"0"`, `"-1.5"` or `"0.01"`:
+- `range(target, lo=, hi=, unit=)`: the value is at least `lo` and at most `hi`; either may be left out, not both. `unit` labels the bounds and is not read: use `unit(...)` to check a unit.
+- `unit(target, unit)`: the value at `target` is the string `unit`.
+- `relation(target, op, of=(a, b), within=)`: the value is within `within` of `a - b` (`difference`), `a + b` (`sum`) or `a / b` (`ratio`), `a` and `b` being two values of the same output.
+- `member(target)`: the output holds a value at `target`.
+
+A target is a member of the return value (`"value"`), a JSON Pointer into it (`"/a/0/b"`), or an output by name and a pointer into it (`"out.json#/n"`). An expectation's row is `expect <step>.<name>`; unnamed, it is `<target> <kind>`. A bound that is not a decimal string, a kind outside the four, or a name repeated in one step is refused where it is declared, with the code [`expectation`](errors.md#expectation).
+
+**How each reads.** One row per expectation: PASS, FAIL naming the value and the rule, or NOT-RUN.
+- Any kind reads NOT-RUN where the output was not kept or is not readable as JSON.
+- A value is read as a decimal from its JSON text, never through a float: a JSON number as written, or a decimal string. `true` and `false` are not decimals.
+- `range` reads NOT-RUN where the target names no value or the value is not a decimal.
+- `unit` compares the value as a string, and reads NOT-RUN where the target names no value.
+- `relation` reads NOT-RUN where the target or either of its two values names no value or is not a decimal. It is computed to 100 significant digits, and a ratio over zero FAILs.
+- `member` FAILs where the target names no value.
+
+**Expectations written after the run.** `onetrace expect write SOURCE --out FILE` writes an `onetrace-expectations/1` file from a JSON array of entries, each with `step` (the step's node id, as `calibrate` or `fetch#2`), `kind`, `target`, an optional `name`, and the kind's own members (`of` as a two-item array). Each entry is `declared` `after the run`, the file is sealed (not signed), and a file already there is never overwritten. The run's receipts are never edited. `onetrace-verify --expectations FILE RUN` reads it:
+- the row `expectations file` FAILs where the file's seal does not recompute over its content, and no entry is then read;
+- each entry's row is `expect <step>.<name> (declared after the run, <seal>)`, read as above. It FAILs where the run records no such step, and where an earlier entry of the file has the same `name` for the same `step`: the first is read, and each later one FAILs. `onetrace expect write` refuses such a source.
+
+An expectation declared after the run says nothing about what was expected when the run was made. onetrace-verify 0.6.1 does not read `expectations`, and does not take `--expectations`.
+
+**What it shows.** An expectation that holds shows the declared rule held, not that the output was right.
+
 ## 17. Signing a run
 
 A signature is an Ed25519 signature over a finished run's chain head, by a key you hold. It is stored as its own file, `signatures/<n>.json`, beside the run's receipts. Like an anchor, it is never part of the chain: signing changes no byte that was there before, so the chain head stays byte-identical, and a run may carry several signatures (a recorder and a reviewer, say). Signing and anchoring work together in either order.
@@ -2429,6 +2603,7 @@ On Windows, a folder in your user profile (`$HOME`, which is `C:\Users\<you>`) i
   - If signing fails at close (the key file was removed since the run started, say), `close()` raises `SignRefused`: the manifest stands, the run is unsigned, and the run folder is released. Sign it afterwards with `onetrace sign`. If the signature was stored but couldn't be confirmed, `close()` raises `SignNotConfirmed`, and a second `close()` doesn't sign again. Under `@ot.run` either exception comes out of the decorated call.
   - A signature says who signed the record, not that it verified: under `fail-open`, a run the verifier refused is still signed. Check it with `onetrace-verify`.
 - **Afterwards:** `onetrace sign RUN --key PATH` or `onetrace sign RUN --key-env NAME`, with an optional `--signer "label"`. It exits 0 when the signature is stored and confirmed, 1 when it is refused (nothing stored), and 3 when it was stored but could not be confirmed as landed in this run.
+- **Only a closed run is signed by default.** A run whose chain does not end with its close receipt (it was killed, or it was written before format 0.4) is refused, with a `fix:` line naming `--not-closed`: nothing in its record says it finished, and a signature over it would read as a signature of a finished run. `onetrace sign RUN --key PATH --not-closed` (or `sign_run(run, key, not_closed=True)`) signs it anyway, and the record says so inside the signed bytes: format `stage-receipt-signature/0.2`, with `closed: "false"`, over `stage-receipt-signature/0.2:not-closed:` followed by the chain head. `--not-closed` on a closed run is refused. onetrace-verify 0.6.1 does not read the 0.2 record: it FAILs it, naming the member `closed`, the stricter reading. A later onetrace-verify reads it as signed and not closed.
 
 **Key custody.** The key is never written into a run folder, never logged and never printed. A key file inside the run folder is refused before it is read, whether it is really there, reached through a link inside the folder, or a hard link to it anywhere under the folder (the refusal names that file, never the key). A key path must be a regular file of at most 64 KiB. In CI, keep the key in the CI secret store and pass it as an environment variable with `--key-env` or `onetrace.env(...)`.
 
@@ -2571,6 +2746,30 @@ Something that belongs to a stage (`ot.constant`, `ot.assertion`, the stage cont
 
 **Fix:** Call it inside the decorated stage whose output it describes.
 
+## decision
+
+A step cited an onedoor decision with `ctx.decision`, but what it passed is not a decision-reference object, or the permit it passed is not a compact JWS string.
+
+**Fix:** Pass the `onedoor-decision-ref/1` object as `ref`; pass the bound permit's compact JWS (a string) as `permit` where one was issued; pass the action object the step is about to send as `action`.
+
+## verify-nested
+
+A nested run does not match the head the outer run recorded for it: the inner run's own chain head differs from what the outer run recorded as that run's input, or an inner run's folder was given but its manifest cannot be read.
+
+**Fix:** Give each nested run's folder with --nested-run; restore the outer and inner records as they were written, so the inner run's chain head equals the head the outer run recorded.
+
+## nesting-depth
+
+A stage was called more deeply nested than the limit onetrace records (NEST_DEPTH_LIMIT). A call past the limit is refused and named, never recorded as a silent gap, so a runaway recursion cannot fill a run folder.
+
+**Fix:** Reduce the nesting depth, or flatten the recursion into declared stages; the limit is stated in docs/nesting.md.
+
+## traceparent
+
+The `TRACEPARENT` environment variable is set to something that is not a W3C traceparent, so the run or a step could not record the trace context it ran in. A trace is a view, not evidence, and a broken one is never recorded.
+
+**Fix:** Set TRACEPARENT to `00-<32 hex trace id>-<16 hex span id>-<2 hex flags>` (neither id all zero), or unset it; a run with no active span and no TRACEPARENT records no trace context.
+
 ## keep-inputs
 
 `keep_inputs` names something that is not a parameter of the function, or `keep_inputs_cap` is not a whole number of bytes from 1 to 65536. Checked when the stage is decorated.
@@ -2582,6 +2781,24 @@ Something that belongs to a stage (`ot.constant`, `ot.assertion`, the stage cont
 A constant's name starts with `onetrace.`, which only onetrace's own constants use (`onetrace.kept_inputs`, `onetrace.inputs_not_kept`, `onetrace.links`), whether it was set with `ctx.constant` or straight into `ctx.constants`.
 
 **Fix:** Rename the constant without the `onetrace.` prefix.
+
+## reserved-stage
+
+A stage is named `onetrace.close`, the name every run's close receipt is recorded under (format 0.4), or `onetrace.check`, the name a check's run is recorded under. onetrace writes both itself, and no stage of a team's may take either.
+
+**Fix:** Rename the stage.
+
+## run-close
+
+`close(ended_by=...)` was given a value that is not one of the ways a run ends: `exit`, `SIGTERM`, `unhandled exception: ` followed by the exception's class, or a re-run's stop, `re-run stopped before <node>: effect <value> (<basis>)` or `...: effect not recorded`.
+
+**Fix:** Pass `exit` for a run that ended in the ordinary way, or leave `ended_by` out.
+
+## not-closed
+
+The run holds no close receipt: its record ends at its last step, and nothing in it says the run finished. The run was killed, or ended without closing, or it was written before format 0.4. A signature over it would cover a record that may be cut short, so it is not signed by default.
+
+**Fix:** Sign it anyway with `onetrace sign --not-closed` (or `sign_run(..., not_closed=True)`): the signed statement then says the run is not closed, inside the signed bytes.
 
 ## constant-name
 
@@ -2654,6 +2871,42 @@ A decorated stage was called in a child process (a fork of the run's process, as
 `@ot.stage` was put on something with no single return value to record: a generator, an async generator, or a lambda.
 
 **Fix:** Decorate a plain or async function that returns its result.
+
+## hooks-off
+
+`@ot.stage(hooks=...)` was given a value that is not `on` or `off`. `hooks="off"` turns the automatic library hooks off inside the stage, so a hooked call there records no step of its own.
+
+**Fix:** Pass hooks="off" to turn the hooks off inside the stage, or leave it unset (the default, "on").
+
+## stage-effect
+
+`@ot.stage(effect=...)` or `Recorder.stage(effect=...)` was given a value that is not `read` or `write`. The value is written as the receipt's `effect_label`, basis `declared on the stage`: whether running the stage again acts on the world outside the run.
+
+**Fix:** Pass effect="write" for a stage that acts on the world outside the run (sends, writes, orders), effect="read" for one that does not, or leave it unset to record no label.
+
+## keep-config
+
+`keep_config=` (on `@ot.stage`, `@ot.run` or `Recorder`) was given a value that is not `True` or `False`, or `keep_config_except=` is not a list of configuration keys. With `keep_config=True` a step's instrument configuration is kept as `config/<receipt stem>/config.json`, named by the receipt's `config_kept`; a key in `keep_config_except` is written as `not kept`.
+
+**Fix:** Pass keep_config=True to keep the configuration, or leave it unset; name the keys never to keep, as keep_config_except=["api_key"].
+
+## rerun-plan
+
+The process was given a re-run plan in `ONETRACE_RERUN_PLAN` that can't be read, or that is not as this build writes it. `onetrace reproduce` writes the plan and hands it to the pipeline it re-runs, so the produced run carries the re-run mark; a run is not recorded without the mark it was asked for.
+
+**Fix:** Leave ONETRACE_RERUN_PLAN unset when you run the pipeline yourself; `onetrace reproduce` sets it for the re-run it starts.
+
+## check-runner
+
+`onetrace check` was given a runner it does not run. In 0.7 that is a JSON runner (`--runner FILE`) holding an `{input:<name>}` placeholder: `onetrace reproduce` fills it from the run's kept input, and a check does not. A check with a `onetrace-runner/0.3` runner that uses only `config.*` params, or neither, runs.
+
+**Fix:** Write the input file's path in the runner's argv in place of its {input:...} placeholder, or re-run with onetrace reproduce, which fills it.
+
+## expectation
+
+An expectation given to a stage's `expect=` can't be recorded: it was not made by `ot.expect.range`, `unit`, `relation` or `member`; a bound (`lo`, `hi`, `within`) is not a decimal string; its target or `of=` names no member or JSON Pointer; or two expectations of one step share a name.
+
+**Fix:** Build each with `ot.expect.range`, `ot.expect.unit`, `ot.expect.relation` or `ot.expect.member`; give every bound as a decimal string, as `"0"` or `"0.01"`; give two expectations of one step two names with `name=`.
 
 ## meaning-fields
 
@@ -2799,6 +3052,12 @@ A corpus manifest is malformed: its digest isn't `sha256:` and 64 lower-case hex
 
 **Fix:** Pass the ingest run's folder (or its chain head) and the stages of this run that read the corpus; link only a run that verifies.
 
+## model-link
+
+`ot.model_from` can't link this run to its provisioning run: no run at the place given, a run that doesn't verify, no such serve stage, or stages that aren't the run's own.
+
+**Fix:** Pass the provisioning run's folder (or its chain head) and the model steps of this run; link only a run that verifies.
+
 ## anchor-run
 
 `onetrace anchor` can't read the run's chain head: there is no run folder at the path given (or it is a file), the run has no MANIFEST.json (it isn't finished), or the manifest can't be read, is over its size or depth cap, or names a chain head of the wrong form.
@@ -2871,6 +3130,12 @@ An output file a receipt names is missing from the run's artifacts/ folder, unre
 
 **Fix:** Restore the run's artifacts/ folder as it was written, or verify without `--require-artifacts` when the outputs were deliberately not kept.
 
+## verify-model-call
+
+A model-call record an output names fails its check: it doesn't parse or isn't canonical, names a format this verifier doesn't implement, is missing or has a malformed field, holds a value where it is not observed, or carries a string shaped like an authorization header. A model-call-record/1.1 record also fails when its steps.* members are not in their states and values, its steps digest names no output of the step, its steps file is not lined up with steps.count, or, at L3, its runner, engine core, executor, sampling members or ending are not as L3 writes them. Each FAIL row names the record and the check.
+
+**Fix:** Restore the record as it was written; a record is never edited. If the writer wrote it so, record the run again with a writer that writes the field, and write no credential into any recorded field.
+
 ## verify-anchor
 
 A record beside the chain (an anchor in anchors/) fails its check, or the file you passed to check it (`--headers`, `--tsa-cert`) can't be read.
@@ -2883,17 +3148,71 @@ A record in signatures/ fails its check: it is malformed, has an unknown member 
 
 **Fix:** Sign the run again with `onetrace sign`; a signature is never edited. Pass the trust file in the form `onetrace-verify --help` names. For a record in the format name before 0.2.0, `onetrace-signature/0.1`: move the record out of signatures/ (a development build before 0.2.0 wrote it, and no release writes that format), then sign the run again with onetrace sign.
 
+## verify-close
+
+The run's close receipt is not as format 0.4 writes it: it is not the chain's last receipt, there is a second one, its onetrace.steps doesn't count the receipts before it, its onetrace.ended_by is outside its five forms, a constant is missing, or onetrace.close is not the last declared stage. Or you passed --require-closed and the run holds no close receipt.
+
+**Fix:** Restore the receipts as they were written; a close receipt is written by the recorder, last, and a record is never edited. For a run with no close receipt, record it again and let it close (`Recorder.close()`, or a decorated run that returns); a run killed before it closed can't gain one.
+
+## verify-auto
+
+An auto-recorded step or run is not as format 0.4 gives it: an auto block with a member outside the format, a declared other than "false", a target of the wrong shape, no effect_label, an effect label outside its three values and six bases or not what the producer documents for the library, an onetrace. constant or value the format doesn't give, an HTTP step without its status output, a thread context other than its one value; a receipt's declared stages that drop or reorder an earlier receipt's, or add a stage of no auto step; or the run has no manifest auto block, or no open boundary.
+
+**Fix:** Restore the receipts and the manifest as they were written; an auto-recorded run is written by onetrace-auto, and a record is never edited. Record the run again with this release's onetrace-auto.
+
+## verify-rerun
+
+A re-run's mark is not as format 0.4 gives it: the receipts disagree on it, the manifest's copy disagrees with them, its kind is outside the four, it lacks a member its kind requires or holds one it may not, or a counterfactual's substituted step does not hold the output its mark names.
+
+**Fix:** Restore the receipts and the manifest as they were written; a re-run's mark is written by the re-run itself, in every receipt, and a record is never edited.
+
+## verify-receipt-0-4
+
+A step's format 0.4 member fails: it is labelled read and records an external effect; its config_kept.digest is not instrument.config_digest with no partial, its partial is other than "true", or its kept file is not that digest; an expectation it declared, or one an expectations file declares after the run, does not hold, or its declaration_digest does not recompute; the expectations file's seal does not recompute over its content, or it names a step the run does not record, or gives two entries the same name for one step; or an output's empty is other than "true" or "false".
+
+**Fix:** Restore the receipt and the files beside it as they were written; a record is never edited. For an expectation that does not hold, fix the step's output or the expectation, and record the run again.
+
+## verify-embedding
+
+An embedding record an output names fails its check: it does not parse, its identity.digest does not recompute over the fields the format names, or its rows do not number batch.size with positions 0 to n-1 and output.count equal to it.
+
+**Fix:** Restore the record as it was written; a record is never edited. If the writer wrote it so, record the call again with a writer that computes it.
+
 ## verify-plan
 
 The run's edges don't match its approved plan (`declared_edges`), or the manifest's edges aren't the ones its receipts record.
 
 **Fix:** Record the run again on the approved plan, or approve the plan it ran; restore the manifest if it was edited.
 
+## verify-decision
+
+An onedoor decision row fails: a declared gated step cited no decision, a reference is not an onedoor-decision-ref/1 object, a step acted on a denied or proposed decision, a permit does not cover the action the step recorded (signature, action digest or lifetime), or a cited decision is not in the export you passed. Or the --decisions or --permit-issuers file can't be read.
+
+**Fix:** Record a decision in every declared gated step (ctx.decision), cite a permitting decision for a step that acts, and record the action a permit covers; pass the decision export as --decisions and the issuer keys as --permit-issuers, in the form onetrace-verify --help names.
+
 ## unknown-command
 
 `onetrace` was given a subcommand it doesn't have. Verifying a run is a separate command, `onetrace-verify`.
 
 **Fix:** Run `onetrace --help` for the subcommands; to verify a run, `onetrace-verify <run folder>`.
+
+## s3-extra
+
+A run destination or a sink command names an `s3://` bucket, but the S3 client the sink needs is not installed. onetrace records no credential and no endpoint; the client reads those from its own environment and credential files.
+
+**Fix:** Install the extra: `pip install 'onetrace[s3]'` (hash-locked in requirements-s3.txt), or give a local run destination instead of an `s3://` URL.
+
+## s3-url
+
+An `s3://` value is not a bucket and prefix: it must read `s3://bucket/prefix`, with a non-empty bucket and an optional prefix path.
+
+**Fix:** Write the destination as `s3://bucket` or `s3://bucket/prefix`.
+
+## sink
+
+A finished run could not be uploaded to its `s3://` destination, or a sink command could not reach it: the bucket was unreachable, refused the write or the read, or an object's checksum did not match on the way back. The local run folder is kept.
+
+**Fix:** Check the bucket and the client's own credentials, then `onetrace sink retry <run folder>`; the run is already recorded locally and loses nothing by a failed upload.
 
 <!-- https://oneproof.dev/onetrace/verdicts.md -->
 
@@ -2944,6 +3263,1192 @@ answer "if I re-run this stage's own code right now, does it produce what the re
 produced," not "do two already-recorded runs match." `rederivable` is measured by actually
 re-executing the stage, never declared; a stage that isn't rederivable keeps its originally
 recorded outputs rather than being treated as broken.
+
+## A run's verdict against a reference (onetrace 0.6)
+
+A [reference](references.md) is a sealed record of a known-good run. `onetrace verdict RUN
+--reference FILE` reads a finished run against one and gives each step one word, and the run its
+own. A verdict is derived from the record and the reference's declared rule; nothing is inferred.
+
+A re-run is never counted (0.7). On a run whose receipts carry the re-run mark `rerun`, the verdict's
+first line says so, `re-run: reproduce of <run id>; not counted`, and the words below it are the same
+words as for any run. The verdict JSON keeps the mark as `rerun`.
+
+**The run's word** is one of four, with the same exit codes the other verbs use:
+
+| word | means | exit |
+|---|---|---|
+| `identical` | every step matched | 0 |
+| `diverged` | a step's output, setting or input differs from the reference; the verdict names the first such step | 1 |
+| `refused` | the run is refused (it does not verify, or a step was held) | 3 |
+| `could not check` | the verifier could not check the run, or the reference names a step the run does not record | 4 |
+
+**Each step's word** is one of seven, each with the record item it rests on:
+
+- **same output** — the step's output digests match the reference.
+- **output differs** — they do not.
+- **setting differs** — the instrument's configuration digest, or a constant the rule counts,
+  differs.
+- **input differs** — a data input's digest differs.
+- **slower than its range** — the step matched on output, setting and input but ran longer than the
+  reference's timing range. Timing is a **view**: a step slower than its range is never a divergence
+  and never fails a verdict.
+- **no output recorded** — the step records no outputs, in the run and in the reference alike, so
+  there was no output to compare; its settings and inputs matched. A decorated run's `intake` step,
+  whose arguments are inputs, reads this. It never makes a run diverge. A step with outputs on one
+  side and none on the other reads **output differs**, naming the side that records none.
+- **could not check** — the reference names this step; the run does not record it.
+
+Among the first three differences the order is output, then setting, then input: a step reads the
+first that holds. The run `diverged`s at the first step that reads output, setting or input differs.
+
+**onetrace-verify** gains the same verdict over a run and a reference, as rows beside its others:
+`--reference FILE` adds one row per step — PASS (same output, or slower than its range), FAIL
+(output, setting or input differs), or NOT-RUN (could not check) — and a row for the reference's
+seal and, where it carries one, its signature. A nested run is checked against its own reference
+with `--nested-reference FILE`, given its folder with `--nested-run`; with no reference for it, the
+nested run reads NOT-RUN with the reason. A run verified without `--reference` reads exactly as
+before. The verifier reads the reference with its own canonicalizer and imports nothing from the
+SDK.
+
+<!-- https://oneproof.dev/onetrace/references.md -->
+
+# References: a sealed record of a known-good run
+
+A **reference** is a sealed record of a run you vouch for, or of selected steps of it: per step,
+the output digests, the settings, the data inputs and a timing range, with the rule for the step.
+A later run is checked against it with [`onetrace verdict`](verdicts.md), which gives each step one
+word and the run its own. A reference is its own file, format `onetrace-reference/1`; it is never a
+receipt and never part of a run's chain.
+
+## Making one
+
+```
+onetrace reference make RUN… --out FILE [--steps NODE …] [--mask FILE] [--sign FILE | --sign-env NAME]
+```
+
+- `RUN…` is one or more finished runs that verify. A run that is refused, or that the verifier
+  could not check, is not a known-good run: making a reference from it is refused, naming it.
+- A re-run is not an original run (0.7). A run whose receipts carry the re-run mark `rerun`, such as
+  the run `onetrace reproduce` produces, is refused, naming it: `<RUN> is a re-run (reproduce of
+  <run id>): a reference is made from an original run`. The manifest's copy of the mark alone marks
+  nothing. onetrace 0.6.1's `reference make` accepted a marked run.
+- The output digests, the settings and the data inputs are taken from the first run; the **timing
+  range** is taken across every run given (a range needs more than one run — a single run gives a
+  point, not a range, so a reference made from one run carries no timing).
+- `--steps NODE` keeps only the named steps (by node id, `name` or `name#instance`); the default is
+  every step of the first run.
+- The reference is **sealed** as a receipt is: its `seal` is the SHA-256 content digest over its
+  canonical bytes. `--sign FILE` or `--sign-env NAME` signs the seal with an Ed25519 key, the way a
+  run's chain head is signed; a reader checks the signature as they check a run's.
+
+```
+onetrace reference show FILE
+```
+
+prints a reference as text: its seal, its signature, the runs it was made from, and per step the
+outputs, inputs, settings and timing range.
+
+## What a step holds
+
+| field | what it is |
+|---|---|
+| `outputs` | the step's output digests, by name |
+| `inputs` | the step's **data** inputs by digest (not the `receipt:` links to earlier steps, which are the run's structure) |
+| `settings` | the instrument's configuration digest and the stage's own constants (onetrace's own `onetrace.*` constants are not settings) |
+| `timing_ms` | the range `{min, max}` across the runs given, when more than one gave a readable time |
+| `rule` | `exact` (the default), or a mask |
+
+## The rule
+
+The default rule is **exact**: a step's output digests, its settings and its data inputs must match
+the reference. `--mask FILE` (an [`onetrace-mask/0.1`](verbs.md) file) names settings not to count
+as a difference; the reference records the rule in full, so a reader sees exactly what was not
+counted. Outputs are always compared by digest — a reference holds digests, which a value mask has
+nothing to act on — so a tolerance on a numeric output waits for the per-step values a later
+release records, not this one.
+
+## A pipeline may hold several
+
+A pipeline's golden set is its references — one per release, say. Each is a separate file; a run is
+checked against whichever one you name.
+
+## What a reference does not claim
+
+- A step matching its reference shows it did what the known-good run did, not that either was right.
+- A reference is a statement that this run is the one to compare against, not that it is correct.
+- The seal shows the reference was not changed after it was made; the signature shows who made it,
+  under the trust the reader places in the key. Neither shows the run it was made from was correct.
+
+<!-- https://oneproof.dev/onetrace/variation.md -->
+
+# Variation: repeat runs and the profile
+
+Monitoring shows where runs depart; it does not make a step repeatable. These two things help a
+team see where variation enters, and whether a fix holds.
+
+## Repeat-run sets
+
+Record several runs of the same input as a set, so they can be read together:
+
+```python
+@ot.run(repeat_of=RUN_ID)          # this run repeats RUN_ID; Recorder(repeat_of=…) does the same
+def main():
+    ...
+```
+
+or run a command N times and link the runs it writes:
+
+```
+onetrace repeat -n N --runs-root DIR -- CMD…
+```
+
+The first run is the set's anchor; runs 2…N are started with `ONETRACE_REPEAT_OF` set to the
+anchor's id, so each records the manifest member `repeat_of`. A run that repeats another records
+`repeat_of`; a run that repeats nothing records nothing new, and is byte-identical to before.
+
+## A step that may vary
+
+A step may declare that its output is expected to differ between runs:
+
+```python
+@ot.stage("plan", instrument=…, may_vary=True)
+def plan(…):
+    ...
+```
+
+The declaration is recorded on the receipt (`may_vary`) and shown by the profile. It is never used
+to hide a difference: a `may_vary` step that differs is still counted and still named.
+
+## The profile
+
+```
+onetrace profile RUN…
+```
+
+reads a set of two or more runs and shows, per step, how often its output differs across the set
+and of what kind:
+
+- the runs are grouped by their output digests; the largest group is the set's common output, and a
+  run outside it is one whose output differs;
+- each differing run is classified against the common group: its **setting differs**, its **input
+  differs**, or neither — **output only**, which the step is then marked **"varies on its own"**
+  for (the question "does it differ even when nothing changed?").
+
+Counts only; no score or grade.
+
+## Whether a fix holds
+
+After a change meant to make a step repeatable (a pinned seed, temperature 0, a fixed prompt, a
+cached tool result), re-run the set and read the two profiles side by side:
+
+```
+onetrace profile --before SET… --after SET…
+```
+
+It shows, per step, how often the output differed before and after (for example, `plan`: 4 of 5
+before, 0 of 5 after), and **names the setting that changed between the sets**. It does so as a
+comparison does: it names the setting; it does not say the change made the difference.
+
+A step that now matches across its repeats can be given an exact-match rule in a
+[reference](references.md); one that still varies keeps a mask, declared, never guessed.
+
+## What a profile does not claim
+
+- A profile describes the repeats recorded, not every future run.
+- Matching in N repeats does not prove a step is deterministic.
+
+<!-- https://oneproof.dev/onetrace/streaming.md -->
+
+# Streaming the record as it is written
+
+A run may send each receipt to a console as it is written, so the console can show the run filling
+in step by step while it is still going. Streaming **shares the record as it grows; it is not the
+record.**
+
+## Turning it on
+
+```python
+@ot.run(stream_to="https://console.example/ingest")
+def main():
+    ...
+```
+
+or set `ONETRACE_STREAM_TO` in the environment, so a deployment can turn it on without changing the
+code. `Recorder(stream_to=…)` does the same.
+
+## What is sent
+
+As each receipt is written, its bytes are sent to the endpoint as an HTTP POST. The body is the
+receipt's bytes and nothing else; the run id and the receipt's position in the chain (its index and
+digest) travel as headers (`X-Onetrace-Run-Id`, `X-Onetrace-Chain-Index`, `X-Onetrace-Chain-Digest`).
+
+Streaming **changes no receipt and adds nothing to the chain.** A run streamed and a run not
+streamed write the same receipts and the same chain head; the only difference is in the manifest,
+which records the stream's outcome.
+
+## When the endpoint cannot be reached
+
+A slow or dead endpoint never holds the run up. The receipt is written, the chain goes on, and the
+stream for that receipt is recorded as not delivered. When the run closes, the manifest says how
+many receipts were delivered and how many were not:
+
+```json
+"stream": {"delivered": "3", "not_delivered": "2", "note": "the stream was not delivered"}
+```
+
+The endpoint URL is not recorded. A failed stream changes no receipt: the run records as before and
+verifies as before.
+
+## The other mode: watching the folder
+
+A console on the same machine can instead watch the run folder and read each receipt as it appears;
+there is nothing to configure in the SDK for that. Streaming is for a console that is not on the
+machine the run is on.
+
+## What streaming does not claim
+
+- Streaming shares the record as it grows; it is not the record. Only the written run folder, read
+  and verified, is the record.
+- A receipt that reached a console is provisional until the run closes and its whole chain verifies.
+
+<!-- https://oneproof.dev/onetrace/storage.md -->
+
+# Storage: a run in a bucket
+
+A run folder is immutable files whose integrity is in the files themselves — the chain, the
+digests, the signature. So a finished run can live in an S3-compatible bucket, apart from any
+console, and a reader verifies it on every read. The bucket **verifies nothing; the reader does.**
+
+The client is the optional `onetrace[s3]` extra. Without it, an `s3://` destination is refused,
+naming the extra; a local destination needs none of it.
+
+## Sending a run to a bucket
+
+Name the destination with `ONETRACE_RUNS`, so a deployment turns it on without changing the code:
+
+```
+ONETRACE_RUNS=s3://my-bucket/runs  python pipeline.py
+```
+
+or on the run itself:
+
+```python
+@ot.run(runs="s3://my-bucket/runs")
+def main():
+    ...
+```
+
+`Recorder(runs=…)` does the same. A local path there (or none) writes runs locally as always.
+
+The run is **written and sealed locally first**, exactly as a local run is. When it closes, the
+sealed folder is uploaded, **the manifest last**, so the last byte to reach the bucket is the one
+that names the chain head: a reader sees a whole run or no run, never half of one. Each object's
+checksum is set to the file's sha256 — the S3 checksum header where the endpoint stores one, else a
+`<key>.sha256` sidecar beside the object.
+
+The manifest gains a `sink` member saying whether the upload was delivered:
+
+```json
+"sink": {"delivered": "true", "objects": "7"}
+```
+
+The **bucket, the endpoint and the credentials are never recorded.** The client reads its
+credentials from its own environment and credential files (the standard ones the S3 client uses),
+never from onetrace's own configuration; onetrace records no credential and no endpoint in the run.
+
+A run with no sink writes the same bytes it always did: the `sink` member is absent, and the record
+format is unchanged.
+
+## The index object
+
+Beside the runs, one small object per run — `<prefix>/_index/<run id>.json` — carries the run id,
+the pipeline, the chain head, the first step's instrument, the run's time, the verdict it recorded
+(when it recorded one) and the kept-files count. A console lists runs from these without fetching a
+whole folder.
+
+## When the upload does not go through
+
+A failed upload never loses the run: it is **recorded, not silent.** The failure is reported on
+stderr and in the manifest's `sink` member, and the local folder stays:
+
+```json
+"sink": {"delivered": "false", "objects": "0", "note": "the run was not delivered",
+         "reason": "EndpointConnectionError"}
+```
+
+Upload it later, from where it was recorded:
+
+```
+onetrace sink retry ./runs/<run id>
+```
+
+`sink retry` reads the destination from a `.sink` file beside the folder (a local operational file,
+not part of the record and never uploaded), or takes `--to s3://bucket/prefix`. A delivered run's
+local copy stays unless `--sink-remove` is given.
+
+## Reading a run back
+
+Verify a run in the bucket as you would a local one:
+
+```
+onetrace sink verify s3://my-bucket/runs/<run id>
+```
+
+It fetches the run into a temporary folder, checks each object against its stored checksum or its
+`.sha256` sidecar, and runs the verifier over it, reporting as the verifier does. `onetrace-verify`
+itself stays file-only: it reads a folder, never a bucket.
+
+## Streaming into the same bucket
+
+A run may stream its receipts to the same bucket as they are produced
+(`stream_to="s3://my-bucket/runs"`, or `ONETRACE_STREAM_TO`), so a run interrupted partway still
+leaves its partial chain in storage. A streamed receipt is written under the run's own prefix,
+**byte-identical to the one the sealed upload carries.** See [streaming](streaming.md).
+
+## Lifecycle lives in the bucket, not in onetrace
+
+The runs are plain objects, so the bucket's own lifecycle rules — not onetrace — move old runs to
+colder storage, or delete them, when a team decides. A team can keep the small receipts for years
+and let the larger kept inputs and outputs expire sooner, by prefix; the verifier reads a run whose
+kept files are gone as "outputs not kept", a verdict it already knows. onetrace writes the runs and
+reads them; it does not manage the bucket.
+
+## What the sink does not claim
+
+- **A bucket verifies nothing; the reader verifies on every read.** Storage location does not change
+  what a record proves. A tampered object is caught when a reader verifies the run, not at rest.
+- **A delivered run is the same record as the local one.** The sink uploads the sealed folder and
+  changes no receipt; the only addition is the manifest's optional `sink` member, which names no
+  endpoint and no credential.
+- **An object's checksum guards the transfer, not the record.** The chain, the digests and the
+  signature are what prove the run; the per-object sha256 only catches an object damaged in the
+  bucket, on the way back.
+
+<!-- https://oneproof.dev/onetrace/decisions.md -->
+
+# Recording which onedoor decision allowed an action
+
+A step that takes an action can record which [onedoor](https://onedoor.example) decision allowed
+it, and the record proves it: anyone can check, with no network calls, that the decision exists
+unaltered, that it permitted this step, and, where a bound permit was used, that the permit covered
+exactly the action the step recorded. onetrace never imports onedoor — the small, stable pieces it
+needs are vendored as standard-library code (`onetrace.onedoor_ref`) and tested against onedoor's
+own published vectors.
+
+## Declaring the gated steps
+
+A run declares which of its steps must be gated:
+
+```python
+@ot.run(stages=["approve_payment"], gated_stages=["approve_payment"])
+def main():
+    ...
+```
+
+`Recorder(..., gated_stages=[...])` does the same. Each gated stage must be a declared stage. The
+declaration is written into the run's manifest. A gated step that records no decision is a finding
+the verifier names, not a silence. A step not declared gated may still cite a decision.
+
+## Recording the decision inside the step
+
+Inside a decorated step, after onedoor answers and before the action:
+
+```python
+ot.decision(ref, permit=None, action=None)
+```
+
+- `ref`: the `onedoor-decision-ref/1` object onedoor returns (`request_id`, `decision_digest`,
+  `verdict`, `issuer`), recorded verbatim. A step may record more than one — a proposal, then its
+  resumption — and they are kept in call order.
+- `permit`: optional, the bound permit's compact JWS, where one was issued. It is recorded verbatim
+  so its signature can be re-checked later.
+- `action`: optional, the action object the step is about to send. It is recorded **by digest
+  only** — the digest the bound-permit profile uses (domain tag `aadp:action:v1`, one zero byte,
+  the JCS form of the object, SHA-256, base64) — never the object itself. An action object's numbers
+  are **decimal strings**, as onedoor's vectors have them (`"amount_eur": "40.00"`); a float in an
+  action is refused and named, never canonicalised.
+
+These go in the receipt's optional `authorization` block. A run that records no decision writes
+receipts byte-identical to 0.4.0.
+
+## What onetrace-verify checks
+
+Five rows, each PASS, FAIL or NOT-RUN, never guessed. They appear only when a run declares gated
+stages or cites a decision; a run verified without any is read exactly as before.
+
+| row | PASS | FAIL | NOT-RUN |
+|---|---|---|---|
+| gated steps cite a decision | every declared gated step cited one | a gated step cited none | no `gated_stages` declared |
+| references are well formed | each is `onedoor-decision-ref/1` | one is malformed | no references |
+| a step that acted cites a permitting decision | its last reference's verdict is `permit` | it acted on a `deny` or `propose` | no references on an acting step |
+| the permit covers the recorded action | the signature is valid for an issuer in `--permit-issuers`, the action digest equals the step's recorded action, and the step ran within the permit's lifetime | any of these fails | no permit recorded, or no issuer key given |
+| the decision is in the export | `--decisions <export.jsonl>` (with its `.sha256` sidecar) given, and every reference matches a row by digest | a digest mismatch, not in the export, or the export is damaged | no export given |
+
+The last row reuses onedoor's own five outcomes. With no export and no permit, the record can still
+show that a gated step cited a permitting decision; the rows that need more read NOT-RUN, so nothing
+reads as checked that was not.
+
+```
+onetrace-verify --decisions decisions.jsonl --permit-issuers issuers.json runs/<run_id>
+```
+
+The permit issuer's Ed25519 public key is read from `--permit-issuers`, an `onedoor-issuer-trust/1`
+file, separate from the run-signing `--trust` file: the permit issuer is a different trust domain
+from the run's signer, and the `onetrace-trust/0.1` file carries key fingerprints, not public keys.
+The run-signing `--trust` file is never read for an issuer, and an issuer key is never read from the
+run. The file names each issuer and its 64-hex Ed25519 public key:
+
+```json
+{
+  "format": "onedoor-issuer-trust/1",
+  "issuers": [
+    {"issuer": "https://onedoor.example/payments-issuer",
+     "alg": "ed25519",
+     "public_key": "03a107bff3ce10be1d70dd18e74bc09967e4d6309ba50d5f1ddc866412553..."}
+  ]
+}
+```
+
+When `--decisions` is given without `--permit-issuers`, the permit row reads NOT-RUN, naming the
+missing `--permit-issuers` file, so a permit is never read as checked when its issuer key is absent.
+
+## What this does not claim
+
+- A citation shows that the run names an existing, unaltered decision. It does not show that every
+  action was gated, only that every declared gated step cited one.
+- A permit check shows the decision covered the action object the step recorded. It does not show
+  that the receiving system received exactly that object; that is the recipient's own check.
+- Nothing here says a decision was right.
+
+<!-- https://oneproof.dev/onetrace/span-context.md -->
+
+# The span context
+
+When a step runs inside an active OpenTelemetry span, its receipt records that span's W3C trace id
+and span id, and the run's manifest records the run's own `traceparent`. This is the one thing the
+record keeps about a trace: where the run and its steps ran, so a later reader can line the record
+up with the spans an app emitted — nothing more.
+
+## What is read, and from where
+
+- Where an OpenTelemetry package is installed and a span is recording, its active span is read.
+- Where none is, the `TRACEPARENT` environment variable is read instead.
+- With no active span and no `TRACEPARENT`, nothing is recorded and the receipt is byte-identical
+  to 0.4.0.
+
+No OpenTelemetry package is required: onetrace reads the active context where it can and the environment
+otherwise. No network call is made.
+
+## What is recorded
+
+- Each step's receipt gets an optional `trace` block: `{"trace_id": "<32 hex>", "span_id":
+  "<16 hex>"}`, the span active when the step ran.
+- The run's manifest gets an optional `traceparent`: the full W3C traceparent the run ran in
+  (`00-<32 hex trace id>-<16 hex span id>-<2 hex flags>`).
+
+A `TRACEPARENT` that is present but malformed — not a W3C traceparent, or with an all-zero id — is
+refused and named, never recorded: a broken trace is not written into the record.
+
+## What this does not claim
+
+- **A trace is a view, not evidence.** It may be sampled, dropped, rewritten or re-timed by a
+  collector. The span context says which trace the run and its steps ran in; only the record proves
+  the step's inputs and outputs.
+
+<!-- https://oneproof.dev/onetrace/nesting.md -->
+
+# Nesting
+
+A record shows which step called which, for stages and for whole runs, so that an agent that calls
+a sub-agent (or a LangGraph subgraph) is one record a reviewer can walk down. A run with no nesting
+writes receipts byte-identical to 0.4.0.
+
+## Stage inside stage
+
+A stage called while another is running records `parent` (the caller's node id) in its receipt, and
+the caller's receipt lists its `children` in call order. A child's return given to another stage as
+an argument is linked the usual way, as that stage's input, by digest. A child's return the caller
+uses in its own body is not recorded as an input of the caller: the caller's receipt names the
+child in `children`, and nothing more. One context variable holds the step running now; the span
+context and nesting both read it.
+
+## Run inside run
+
+A decorated run started inside another's stage keeps its own folder and chain. Its manifest records
+`parent_run` (the outer run's id) and `parent_stage` (the calling stage). The outer run records the
+inner run as an input of the calling stage — named `run:<inner run id>`, with the inner run's chain
+head as its digest — so the outer run is no longer empty.
+
+A LangGraph subgraph node is an ordinary decorated stage, so it records as a nested step when it
+runs inside another; its state-key edges stay as they are.
+
+## The depth limit
+
+Nesting is recorded up to a fixed depth (`onetrace.emit.NEST_DEPTH_LIMIT`, **32**; 1 at the top
+level). A call nested deeper than the limit is refused and named, never left out, so a runaway
+recursion cannot fill a record folder.
+
+## Comparing nested runs
+
+`onetrace diff` and `onetrace localize` name the first difference in chain order. A step's receipt
+is written when the step ends, so a stage called inside another stage comes before its caller in the
+chain. What the comparison prints depends on the shape:
+
+- **A run started inside a stage.** The calling stage records the inner run as its input
+  `run:<inner run id>`, so the calling stage is the first difference. Given both inner runs' folders
+  (`--nested-run PATH`, once for each), the comparison descends into the inner run and names its first
+  differing step: `inside <step>, into run <id> at <child>`. Without them it says `nested run <id>:
+  folder not given`.
+- **A stage called inside another stage.** Each stage is compared in its own right. When the child's
+  output differs, the comparison reports two first differences, the child first in chain order and
+  then its caller, and prints no `inside` line. A child called in one run only is reported as present
+  in that run only, and its caller, whose output is the same, as `same`.
+
+The `inside <step>, at <child>` line is printed only when the first difference is a step whose
+recorded children differ from the other run's. Neither stage-inside-stage shape above prints it.
+
+### A stage inside a stage, compared
+
+`plan` calls `price_lookup` inside its own stage. Record it twice, with two prices:
+
+<!-- the stage-in-stage example -->
+```python
+# order.py -- record it twice: python order.py 10, then python order.py 12
+import sys
+
+import onetrace as ot
+from onetrace.emit import Instrument
+
+PRICE = int(sys.argv[1])
+TOOL = Instrument("order", "tool", "1.0.0", {})
+
+
+@ot.stage("price_lookup", instrument=TOOL)
+def price_lookup(item):
+    return {"item": item, "price": PRICE}
+
+
+@ot.stage("plan", instrument=TOOL)
+def plan(item):
+    p = price_lookup(item)            # a stage called inside plan's stage
+    return {"item": item, "total": p["price"] * 2}
+
+
+@ot.run(stages=["plan", "price_lookup"])
+def main(item):
+    return plan(item)
+
+
+main("widget")
+```
+
+```
+ONETRACE_RUN_ID=order-a python order.py 10
+ONETRACE_RUN_ID=order-b python order.py 12
+onetrace localize runs/order-a runs/order-b
+```
+
+The comparison, as `localize` prints it (exit 1, diverged):
+
+<!-- localize output -->
+```text
+localize: diverged
+
+node            A     B     verdict
+--------------------------------------------------------------------
+intake          1     1     same
+price_lookup    2     2     FIRST DIFFERENCE
+                            output return.json differs
+plan            3     3     FIRST DIFFERENCE
+                            output return.json differs
+
+first difference  price_lookup, plan   (2 branches)
+comparisons performed 3 of 3 nodes; same 1, FIRST DIFFERENCE 2, downstream 0, reconverged 0, COULD NOT CHECK 0
+```
+
+`onetrace diff runs/order-a runs/order-b` prints the same table and the same `first difference`
+line under `diff: diverged`, and also exits 1.
+
+## Verifying nested runs
+
+onetrace-verify adds one row, **"nested runs match their recorded heads"**: give each inner run's
+folder with `--nested-run PATH`, and the inner run's own chain head must equal the head the outer
+run recorded for it.
+
+- PASS: every recorded inner run whose folder was given matches its recorded head.
+- FAIL: a recorded head differs from the inner run's actual chain head, or an inner run's folder was
+  given but its manifest cannot be read (a damaged inner chain).
+- NOT-RUN: no nested run was recorded, or no folder was given.
+
+```
+onetrace-verify --nested-run runs/<inner_run_id> runs/<outer_run_id>
+```
+
+## What this does not claim
+
+- **Nesting is recorded for calls through decorated stages only.** A call that bypasses the
+  decorator is not in the record, as today. `parent`, `children`, `parent_run` and `parent_stage`
+  name the calls that went through `@ot.stage` and `@ot.run`, and nothing else.
+- **A comparison does not descend into a stage called inside another stage.** It reports that stage
+  as a first difference of its own, as shown above; it descends into a run started inside a stage
+  only when both inner runs' folders are given.
+
+<!-- https://oneproof.dev/onetrace/model-call-record.md -->
+
+# The model-call record
+
+A **model-call record** is one canonical JSON document per model call, written as an ordinary output
+of the stage that made the call. It is evidence beside the stage receipt: it never changes the
+receipt format and never adds a member to the receipt or the chain. It never changes the reading of a
+run's receipts; its own verifier rows read as every other row does, and a FAIL on one fails the run
+like any other FAIL. A run that writes no record is byte-for-byte the run it would be without the
+feature.
+
+It is written by `onetrace.model_call`, installed with `onetrace[model-call]`. The engine adapters
+import vLLM or transformers only when used, so the engine stays your own installed version; onetrace
+pins no engine. The transformers adapter is tested only where torch and transformers are installed
+(`tests/test_model_call_capture.py`, a tiny model built from a config on the CPU); its tests skip
+without them. CI runs them in a job of their own on a CPU-only torch, pinned by hash. The record's schema is `docs/model_call_record.schema.json`, labelled
+`model-call-record/1.0`.
+
+## What a record holds, and how honestly
+
+Every scalar in a record is a string. Every field that describes the call is a **value object** with a
+`status`, a `source`, and — where there is one — a `value`. A field the writer cannot fill is written
+as `not observed` or `not applicable`, with its reason in `source`: never left out, and never given a
+default.
+
+The five states:
+
+- **`observed`** — read at call time; `source` says from where.
+- **`declared, not observed`** — given by the caller and not read back from the engine; `source` says
+  what it is.
+- **`declared, contradicted`** — declared, and a different value was read; both are kept (`value` the
+  declaration, `observed_value` the reading).
+- **`not observed`** — the writer cannot see it; no value, never a default; `source` says so.
+- **`not applicable`** — the field has no meaning for this engine or call; no value; `source` says
+  why.
+
+Four fields are written by the helper itself, as plain strings with no state — they describe how the
+record was written, not the call: `format`, `call.kind`, `call.api`, and `credential`.
+`credential` is `present` or `absent` — never the key, its digest, or any part of it.
+
+### The record says only what it observed
+
+The record is written so that a status is never a claim the writer did not make:
+
+- **Settings the engine did not expose are declared, not observed.** A self-hosted call's
+  `sampling.*` is the caller's own sampling parameters as built, not read back from the engine, so it
+  is `declared, not observed`. A value a caller hands the adapter for a `runtime.*` field is
+  `declared, not observed` for that field — never shown as observed.
+- **The runtime is read in the calling process.** `runtime.torch`, `runtime.cuda`,
+  `runtime.gpu_name` and `runtime.compute_capability` are read from `torch` in the calling process
+  and are `observed` from it; a field not read there is `not observed`. The driver is not read from
+  `torch`: a driver the caller gives the adapter is `declared, not observed`, as a caller's value for
+  any `runtime.*` field is; without one, the driver is `not observed`; it is never `observed`. On a CPU run, the transformers adapter writes the GPU runtime fields
+  (`runtime.cuda`, `runtime.gpu_name`, `runtime.compute_capability`, `runtime.driver`) as **`not
+  applicable`** — `not applicable` is one of the record's five states, and it is the truer word than
+  `not observed` for a field that has no meaning on a CPU run.
+- **A model digest names the directory it hashed, not the engine.** `model.files_digest` and
+  `tokenizer.digest` are the digest of the directory given to the adapter; the `source` says "the
+  directory given to the adapter; not read from the engine." Nothing ties the hashed directory to the
+  weights the engine actually loaded, and the record does not claim it does.
+- **A self-hosted record digests the output text only where there is one.** vLLM's
+  `output.text_digest` is read from the engine's own setting, `model_config.skip_tokenizer_init`.
+  With it on, the engine produces no text, and the member is `not applicable`. With it off, it is
+  `observed`: the sha256 of `RequestOutput.outputs[0].text`'s UTF-8 bytes. The record holds the
+  digest, never the text. A setting that cannot be read leaves the member `not observed`.
+- **A constant says it is a constant.** `engine.name` is `observed` with the source "a constant
+  written by this adapter."
+- **The filler count is the caller's.** `batch.fillers` is `declared, not observed`: how many of the
+  submitted requests the caller said were fillers.
+- **A hosted call invents nothing.** Every internal field of a hosted call (`engine.*`, `runtime.*`,
+  `batch.*`, the token-id digests) is `not observed`: the provider does not expose it. When the
+  request names no model, `model.requested` is `not observed`, "the request names no model" — not an
+  empty declared string. On an HTTP error, `output.finish` is `observed`, `error (HTTP <status>)`,
+  with the source "the response's HTTP status": the status is what was observed, not a finish reason
+  the provider did not send.
+
+### The fingerprints
+
+`fingerprints` is a list of distribution digests. A transformers prefill records an `exact` form (the
+raw bytes of the last position's logits) and a `tolerant` form (the top-16 token ids of that
+position, rounded). A vLLM call records a `topk_exact` and a `tolerant` form over the first generated
+token's top-16 log-probabilities. A hosted call records a `tolerant` form over the provider's
+first-token log-probabilities, when the response carries at least 16.
+
+A vLLM request that delivered no token has no first-token log-probabilities, and the vLLM
+fingerprint has no value defined for it. A 1.1 record writes both forms `not observed`, with the
+source `RequestOutput.outputs[0] holds no generated token: no first-token log-probabilities to
+digest`. A call with no capture still stops at such a request with an `IndexError`, as onetrace
+0.6.1 does.
+
+## Several calls in one stage
+
+The first record a stage writes is `model_call.json`, then `model_call.2.json`, `model_call.3.json`,
+and so on, in write order. The package refuses a name it has already used in a stage before it writes,
+so a repeat never reaches onetrace.
+
+## The capture levels, and the steps file
+
+A call's **answer** — its chosen token ids — is the model's own output, not the operator's. The
+record never holds a token id or any text, at any capture level.
+
+When a per-step capture (L1: the chosen token ids; L2: the top-k candidate ids) is taken, it is
+written as a **separate output**, `model_call.<n>.steps.json`, classed **`model-generated`**, and the
+record names it only by **digest**, in the optional `steps` field. The token ids live in that
+model-generated file; the operator-authored record holds a digest of it and nothing more.
+
+A prefix-digest chain over the token ids is not a way to hide them: each step's digest, with the
+model's vocabulary, **reveals the tokens to anyone with the vocabulary**. The steps file is treated as
+the model's output, classed `model-generated`, for that reason.
+
+The cost of taking L1 or L2 is **not measured**. L3 (a full per-step capture on the serving engine) is
+**not measured**.
+
+## `model-call-record/1.1`: the self-hosted steps file, from onetrace 0.7
+
+This section gives six parts of `model-call-record/1.1` for a self-hosted call, from
+`design/model_call_l3.md` and vLLM 0.30.0's source. This build writes 1.1 for a self-hosted vLLM call
+captured at L1, L2 or L3: `capture.vllm`'s `Engine.generate(..., level=..., ctx=...)` writes each
+request's steps file and its record through the stage context. A call with no capture is written as
+1.0, as before. onetrace-verify before 0.7 does not check a 1.1 record's content (`docs/format.md`). **The record
+format is not part of the Internet-Draft**: the draft describes the receipt and its chain, and the
+record formats sit outside it, as `design/format_04_members.md` says.
+
+### The steps file at L1, L2 and L3
+
+`model_call.<n>.steps.json`, classed `model-generated`, as in 1.0: one JSON object, written
+canonically.
+
+| Member | Type | L1 | L2 | L3 |
+|---|---|---|---|---|
+| `level` | string | `"L1"` | `"L2"` | `"L3"` |
+| `method` | string | `"token-ids"` | `"top-k-ids"` | `"sha256-tree-512/v0"` |
+| `token_ids` | list of decimal strings | yes | yes | yes |
+| `top_k_ids` | list of lists of decimal strings | — | yes | yes |
+| `digests` | list of 64-character lowercase hex strings | — | — | yes |
+
+- **No other member, at any level.** `level` and `method` equal the record's `steps.level` and
+  `steps.method`. L3 is L2 plus the digests.
+- **Step i is the i-th delivered token,** counted from 0. `token_ids[i]` is the id the engine chose
+  at step i; `top_k_ids[i]` the ids ranked 1 to k at step i, by the engine's own rank, rank 1 first,
+  with the chosen id kept in `token_ids[i]` alone; `digests[i]` the `sha256-tree-512/v0` digest of
+  the row the engine chose `token_ids[i]` from.
+- **Every list has exactly `steps.count` entries,** and `steps.count` is `len(token_ids)`.
+  `top_k_ids[i]` holds between `steps.k_returned_min` and `steps.k_returned_max` ids, never padded,
+  never empty, with no id twice.
+- **Ids are decimal strings:** base 10, no sign, no leading zero, `"0"` for zero. The steps file is
+  written through `ctx.write_json`, which refuses a JSON number anywhere.
+- **L3's digests: exactly one per delivered token.** A capture that holds fewer digests than delivered
+  tokens writes no steps file. The record then carries `steps.level` `declared, not observed`, value
+  `L3`, and `steps` `not observed`, with the source `the capture held <n> digests for <m> delivered
+  tokens`, and no other `steps.*` member. So it has no `steps.k_*` member and no steps file. A
+  verifier reads its `steps.k_*` members as NOT-RUN with that reason, beside `no capture taken` for
+  a record with no capture, and its steps file as NOT-RUN, `the steps file was not written`.
+- **At L1, and at `L1-hosted`,** `steps.k_requested`, `steps.k_returned_min` and
+  `steps.k_returned_max` are each `not applicable`, with the source `<level> holds no candidates`,
+  never left out. L3's missed-digest record, above, holds none of the three.
+- **No `steps.logprobs`.** A self-hosted record does not carry `steps.logprobs`, at any level: L2 and
+  L3 carry ids, not probabilities.
+- **A request with no delivered token** is a record like any other. Its `steps.count` is `"0"`, and
+  its steps file holds the level's members with every list empty. At L2 and L3,
+  `steps.k_returned_min` and `steps.k_returned_max` are each `not applicable`, with the source `no
+  step: the request delivered no token`; `steps.k_requested` is written as at any other count. At
+  L3, `steps.surplus` counts every digest the capture took for it. `output.finish` is as read, and
+  both fingerprints are `not observed` (the fingerprints, above).
+
+### The record's `steps.*` members
+
+The record's `format` is `model-call-record/1.1` wherever these members are written. A 1.0 record
+holding one of them is outside its format.
+
+| Member | State | Source | Value |
+|---|---|---|---|
+| `steps` | `observed` | the steps file's name, `model_call.<n>.steps.json` | the file's `sha256:<hex>` |
+| `steps.level` | `observed` | `the capture this adapter wrote` | `L1`, `L2`, `L3` |
+| `steps.method` | `observed` | `the capture this adapter wrote` | `token-ids`, `top-k-ids`, `sha256-tree-512/v0` |
+| `steps.count` | `observed` | `len(RequestOutput.outputs[0].token_ids)` | a decimal string |
+| `steps.k_requested` | `declared, not observed`, at L2 and L3 | `SamplingParams.logprobs as the caller built it, not read back from the engine` | the request's `logprobs`, so k is never more than `sampling.logprobs` |
+| `steps.k_returned_min`, `steps.k_returned_max` | `observed`, at L2 and L3; `not applicable` at `steps.count` `"0"` | `RequestOutput.outputs[0].logprobs: the ids ranked 1 to k at each step`; at `"0"`, `no step: the request delivered no token` | the fewest and the most ids any step holds |
+
+`top_k_ids[i]` is the ids vLLM ranks 1 to k at step i. The entry vLLM adds for the sampled token
+when its rank is outside the top k is left out.
+
+### Where L3's digests are taken
+
+- **L3's own logits processor.** `capture.vllm.start(level="L3", ...)` adds it to the engine's
+  `logits_processors`, after any the caller gives. It reports `is_argmax_invariant()` `False`, so vLLM
+  calls it at every decoding step, greedy decoding included, and that call is where the digests are
+  taken. For each tagged request it digests the float32 row with `sha256-tree-512/v0`, and it never
+  changes the logits.
+- **Each request is tagged.** The adapter gives each request of the call a copy of its
+  `SamplingParams` whose `extra_args` carry a tag of its own; the caller's own `SamplingParams` are
+  unchanged. A filler is not tagged, and not digested.
+- **The batch is followed by index,** as vLLM reports it to the processor before each step: removals,
+  then additions, then moves. A request moved onto another's index takes it.
+- **The rows are copied to the host and digested there.** No GPU kernel ships in this build.
+- **The digests reach the adapter only where the engine core runs in the calling process.** The
+  processor keeps them in the process it runs in, and the adapter reads them in its own. vLLM 0.30.0
+  runs the engine core in a separate process by default (`VLLM_ENABLE_V1_MULTIPROCESSING`, on unless
+  set to `0`), so `capture.vllm.start(level="L3", ...)` sets it to `0` (below, the engine core). An
+  engine whose engine core or workers run in another process anyway is refused at L3.
+
+### `steps.surplus`
+
+- A value object, `observed`, source `digests computed ahead of the request's end and discarded`; its
+  value a decimal string: the digests the capture computed for the request, less `len(token_ids)`.
+- **`"0"`** at an L3 capture that computed none beyond the delivered tokens: written, not left out.
+- **Absent** at L1, L2, `L1-hosted` and `L2-hosted`; with no capture; and where an L3 capture's
+  `steps` is `not observed`.
+- **Counted, never listed.** No surplus digest is written anywhere, so none can be compared.
+
+### The model runner
+
+`engine.settings.model_runner`, an engine setting under the open `engine.settings.` prefix, values
+`V1` and `V2`:
+- **The pin.** vLLM 0.30.0 runs the V2 model runner by default, and reads `VLLM_USE_V2_MODEL_RUNNER`
+  when the engine starts. `capture.vllm.start(level="L3", ...)` sets it to `0` before it starts the
+  engine.
+- **The read-back** is the engine configuration's `use_v2_model_runner`, a property vLLM computes
+  when it is read. The adapter reads it in the calling process; the worker's own reading is not
+  exposed.
+- **At L3, on an engine `start` pinned,** its value is `V1`. It is `observed` when read back, source
+  `the engine's configuration, read after start in the calling process; pinned to V1 by the
+  adapter: L3 asked for`. It is `declared, not observed` when it cannot be read back, source `pinned
+  to V1 by the adapter: L3 asked for; not read back from the engine`.
+- **Otherwise** it is written as read, source `the engine's configuration, read after start in the
+  calling process; not pinned by the adapter`, or `not observed` when it is not read.
+
+### The engine core
+
+`engine.settings.engine_core`, an engine setting under the open `engine.settings.` prefix, values
+`in the calling process` and `in another process`:
+- **The setting.** vLLM 0.30.0 runs the engine core in a process of its own by default, and reads
+  `VLLM_ENABLE_V1_MULTIPROCESSING` when the engine starts. `capture.vllm.start(level="L3", ...)`
+  sets it to `0` before it starts the engine, as it sets the runner pin.
+- **The read-back** is the class of the engine's `llm_engine.engine_core`, the engine-core client:
+  `InprocClient` builds the engine core in the calling process, and `MPClient` and its subclasses
+  run it in another.
+- **At L3, on an engine `start` set,** its value is `in the calling process`. It is `observed` when
+  read back, source `the class of llm.llm_engine.engine_core, read after start in the calling
+  process; set to run in the calling process by the adapter: L3 asked for`. It is `declared, not
+  observed` when it cannot be read back, source `set to run in the calling process by the adapter:
+  L3 asked for; not read back from the engine`.
+- **Otherwise** it is written as read, source `the class of llm.llm_engine.engine_core, read after
+  start in the calling process; not set by the adapter`, or `not observed` when it is not read.
+- **What running the engine core in the calling process costs in speed is not measured.**
+
+### The executor
+
+`engine.settings.executor`, an engine setting under the open `engine.settings.` prefix: the
+engine's `parallel_config.distributed_executor_backend` as vLLM resolved it, `uni`, `mp`, `ray`,
+`external_launcher`, or a class given as `<module>.<qualname>`.
+- **Written at every 1.1 level,** `observed`, source `vllm_config.parallel_config.distributed_executor_backend,
+  read after start in the calling process; not set by the adapter`; `not observed`, source `not read
+  from the engine's configuration; not set by the adapter`, where there is none to read.
+- **vLLM resolves it when the engine is configured:** with no executor given, `uni` at world size 1,
+  where world size is pipeline × tensor × prefill-context parallel size; above 1, on a GPU host, `mp`
+  or `ray`. `uni` builds the engine's worker in the calling process.
+- **The executor as built,** `engine.settings.executor_built`, beside it at every 1.1 level: the class
+  of the engine's `llm_engine.model_executor`, read back. vLLM's own classes read as the name they
+  are configured by, each by its exact class: `UniProcExecutor` `uni`, `ExecutorWithExternalLauncher`
+  `external_launcher` (a subclass of `UniProcExecutor`, and not `uni`), `MultiprocExecutor` `mp`,
+  `RayDistributedExecutor` and `RayExecutorV2` `ray`. Any other class reads as `<module>.<qualname>`.
+  It is `observed`, source `the class of llm.llm_engine.model_executor, read after start in the
+  calling process; not set by the adapter`, or `not observed`, source `not read back from the engine:
+  llm.llm_engine.model_executor is not there; not set by the adapter`. vLLM sets it only with the
+  engine core in the calling process.
+
+### How the request ended
+
+`output.finish`, the member 1.0 already has. For a self-hosted vLLM record at 1.1 its value is one
+of seven:
+
+| Value | Read from |
+|---|---|
+| `eos` | `finish_reason` `stop`, `stop_reason` none, or a token id that is one of the model's eos token ids and not one of the caller's `stop_token_ids` |
+| `stop-string` | `finish_reason` `stop`, `stop_reason` a string |
+| `stop-token` | `finish_reason` `stop`, `stop_reason` any other token id |
+| `length` | `finish_reason` `length` |
+| `abort` | `finish_reason` `abort` |
+| `repetition` | `finish_reason` `repetition` |
+| `error` | `finish_reason` `error` |
+
+- **State `observed`,** source `RequestOutput.outputs[0].finish_reason and stop_reason`. For a token-id
+  `stop_reason`, the source goes on to say whether the id is an eos token id, and where the eos ids
+  were read.
+- **The model's eos token ids** are read once per engine, from the engine's own configuration: the
+  generation config's `eos_token_id`, one id or a list, as the engine read it when it started
+  (`llm.llm_engine.input_processor.generation_config_fields`), and the HF config's
+  (`model_config.hf_config.eos_token_id`) where the generation config gives none. On an engine
+  started with `skip_tokenizer_init`, vLLM 0.30.0 adds the generation config's eos ids to each
+  request's stop token ids, so the model's end of sequence comes back as `finish_reason` `stop`
+  with the eos id as `stop_reason`; it reads `eos`. An id that is also one of the caller's
+  `stop_token_ids` reads `stop-token`, and the source says it is also an eos id. Where no eos id can
+  be read, a token-id `stop_reason` reads `stop-token`, and the source says the eos ids were not
+  read.
+- **The three stop forms are read only when `finish_reason` is `stop`.** A request that ends by
+  repetition carries the string `stop_reason` `repetition_detected`, and reads `repetition`, never
+  `stop-string`.
+- **`stop-string` cannot be reached on an engine started with `skip_tokenizer_init`:** with no
+  tokenizer, vLLM finds no stop string. It stays defined for an engine with a tokenizer.
+- **A finished output with no finish reason:** `not observed`, source `the engine gave no finish
+  reason`. vLLM 0.30.0's source, as read, gives one on every path a finished output takes.
+- **A finish reason outside these:** `not observed`, source `finish_reason '<value>' is not one this
+  adapter reads`.
+- **Never the string `"None"`.** A hosted record's `output.finish` is unchanged: the provider's
+  string, or `error (HTTP <status>)`. A self-hosted call with no capture is written as 1.0, with
+  vLLM's `finish_reason` as it is.
+- **A request with no output.** Under `LLM.generate`, a request aborted by the client comes back with
+  no output at all. A call whose outputs are fewer than its requests is an error naming the requests
+  that came back with none, and no record is written for any of the call's requests.
+- **An output that is not finished.** A `RequestOutput` whose `finished` is false, as a wrapper
+  around the engine may hand over before a request ends, is refused as a missing output is: no record
+  is written for any of the call's requests, and the error says, for each, `request <i>: the engine's
+  output is not finished, so no record was written for this call`, with its `fix:` line. "A finished
+  output with no finish reason", above, is about a finished output only.
+
+### The refusal at L3
+
+L3 covers greedy decoding with nothing set that acts on the row. The adapter checks the engine and
+every request of the call before it submits any, and when one is not covered it refuses the whole
+call (`L3Refused`), naming each request and member in request order, each with its `fix:` line, and
+nothing runs:
+
+```
+L3 refused for request 2: SamplingParams.presence_penalty is 0.5; with it set, the digested row is not the row the token was chosen from
+fix: ask for L2 for this call, or leave presence_penalty at its default
+```
+
+| `SamplingParams` member | Covered when | Acts on the row |
+|---|---|---|
+| `temperature` | 0 | with any other value, the choice is not the argmax of the digested row |
+| `repetition_penalty`, `presence_penalty`, `frequency_penalty` | 1, 0 and 0 | after the digest: the token is chosen from a row the digest did not cover |
+| `logit_bias`, `allowed_token_ids`, `bad_words` | unset | before the digest: the digest covers a changed row, not the model's |
+| `min_tokens` | 0 | before the digest, as `logit_bias` |
+| `thinking_token_budget` | unset | after the digest, as the penalties |
+| `structured_outputs` | unset | before the digest: vLLM applies the mask to the logits before it samples |
+
+An L3 record carries each of these as `sampling.<name>`, `declared, not observed`, source
+`SamplingParams.<name> as the caller built it, not read back from the engine`, at its value: `1.0`,
+`0.0`, `0`, or `none` for an unset list or map. vLLM refuses structured outputs on an engine started
+with `skip_tokenizer_init`; the adapter checks it all the same. Each request's record carries its own
+request's members, whether the call is given one `SamplingParams` or one per request.
+
+**The engine is checked too,** before any request:
+
+| Engine setting | Refused when | The line |
+|---|---|---|
+| the V1 pin | the engine was not started by `capture.vllm.start(level="L3")` | `L3 refused: the engine was not started by capture.vllm.start(level="L3"), so the V1 model runner is not pinned` |
+| HiSparse attention | `attention_config.hisparse_config` is set: it forces the V2 model runner over the pin | `L3 refused: the engine's attention_config.hisparse_config is set; …` |
+| a watermark | `watermark_config` is set: it forces the V2 model runner over the pin | `L3 refused: the engine's watermark_config is set; …` |
+| the runner read back | it reads V2 after the pin | `L3 refused: the engine's configuration reads the V2 model runner after the adapter's pin` |
+| the engine core | its client is read as running it in another process: L3's digests stay there | `L3 refused: the engine core runs in another process (llm.llm_engine.engine_core is <class>), so L3's digests stay in that process`, with `fix: start the engine with capture.vllm.start(level="L3", ...) in the process environment, with nothing that sets VLLM_ENABLE_V1_MULTIPROCESSING to 1` |
+| the worker | any `parallel_config` member below with another value, or none that can be read; any other parallel size above 1; the executor as built not read, or not the configured one: L3 is covered only where the engine's executor runs its worker in the calling process | one line per member, `L3 refused: the engine's parallel_config.<member> is <value>; …`, with `fix: ask for L2, or start the engine with <member> <value that runs here>`; for the executor as built, the lines below |
+| a logits processor | any but L3's own that is not argmax-invariant, wherever it sits: one before L3's changes the row the digest covers, one after changes the row the token is chosen from | `L3 refused: engine logits processor <i>: <module>.<class>; before L3's digest …`, with `fix: ask for L2, or start the engine without it` |
+
+- **The worker is checked where it is shown to run here,** not by listing the ways it does not. Each
+  member that differs gets a line of its own, in this order, naming the member and its value:
+
+  | `parallel_config` member | Runs here at | The line after the value |
+  |---|---|---|
+  | `tensor_parallel_size` | `1` | `tensor parallelism above 1 runs the workers in other processes, so L3's digests stay there` |
+  | `pipeline_parallel_size` | `1` | `pipeline parallelism above 1 runs the workers in other processes, so L3's digests stay there` |
+  | `prefill_context_parallel_size` | `1` | `prefill-context parallelism above 1 runs the workers in other processes, so L3's digests stay there` |
+  | `data_parallel_size` | `1` | `L3 is covered only at data parallel size 1, where the one engine's worker runs in the calling process` |
+  | `distributed_executor_backend` | `uni` | `L3 is covered only where the uni executor runs the worker in the calling process` |
+
+  The first three make world size 1. A size that cannot be read is shown as `not read`, and an
+  executor that cannot be read as `none`; both are refused. Any executor but `uni` is refused, a
+  subclass of `uni`'s own class given as a class among them.
+- **Every other parallel size above 1 is refused too,** `decode_context_parallel_size` and
+  `data_parallel_size_local` among them: any `parallel_config` member whose name holds
+  `parallel_size`, after the five above, by name, `L3 refused: the engine's parallel_config.<member> is
+  <n>; L3 is covered only where every parallel size is at most 1`, with `fix: ask for L2, or start the
+  engine with <member> 1`.
+- **The executor as built is checked against the configuration.** Where it is not read: `L3 refused:
+  the engine's executor as built is not read (llm.llm_engine.model_executor is not there), so its
+  worker is not shown to run in the calling process`. Where it is not the configured one: `L3 refused:
+  the engine's executor as built is <name> (llm.llm_engine.model_executor is <class>), where
+  parallel_config.distributed_executor_backend reads <configured>`. Each with its `fix:` line.
+- **The engine's logits processors** are the ones vLLM builds for it: the installed plugins of the
+  entry-point group `vllm.logits_processors`, then the ones given to the engine, numbered from 0 in
+  that order. Each is built in the calling process to ask `is_argmax_invariant()`; one that cannot be
+  built there is refused.
+- **An argmax-invariant processor** does not run under greedy decoding, so it is not refused. An L3
+  record lists it in `engine.settings.logits_processors`, `observed`, source `the engine's logits
+  processors as the adapter started it, besides L3's own`, at `none` when there is none.
+
+### What a one-GPU, text-only engine does not reach
+
+On a one-GPU, text-only vLLM 0.30.0 engine, four things this page describes are not reachable. Each
+code path stays, with its test against the fake engine:
+- **the `abort` ending:** vLLM gives an aborted request under `LLM.generate` no output, so the call
+  is refused as "a request with no output", not recorded as `abort`;
+- **the zero-token record:** vLLM refuses `max_tokens` below 1, and an abort before the first step
+  gives no output;
+- **the parallel-size refusal on a running engine:** vLLM refuses a world size above the node's GPUs
+  first, so no engine starts for L3 to refuse;
+- **the `error` ending:** its paths in vLLM need structured outputs, a KV connector, multimodal input,
+  or the engine core in a process of its own.
+
+### On a GPU of compute capability 12.x
+
+On a GPU of compute capability 12.x (Blackwell), FlashInfer's compile step needs a CUDA toolchain of
+12.9 or later, which a pip `nvidia-cuda-nvcc` provides. That is a requirement of the GPU and of
+FlashInfer, not of onetrace: the adapter compiles nothing. The GPU check met it on such a GPU, and set
+the toolchain up without changing vLLM.
+
+### `sha256-tree-512/v0`
+
+Over a byte string m:
+- **H(m) = SHA-256(m)** when m is at most 512 bytes;
+- **otherwise H(m) = H(SHA-256(c₀) ‖ … ‖ SHA-256(cₙ₋₁))**, where c₀ … cₙ₋₁ are m's consecutive
+  512-byte chunks, the last one shorter when 512 does not divide m's length, and ‖ joins the 32-byte
+  digests in chunk order.
+
+The input is the logits row's float32 values as they sit in memory, little-endian, in vocabulary
+order, with no copy, conversion or reordering. The empty input gives SHA-256 of the empty string; a
+logits row is never empty, and the SDK refuses an empty row before it digests one. The output is the
+final digest as **64 lowercase hexadecimal characters, with no prefix**: everywhere else in a record,
+`sha256:<hex>` is the plain SHA-256 of the named bytes, and this digest is not.
+
+```python
+def tree512(m: bytes) -> str:
+    while len(m) > 512:
+        m = b"".join(hashlib.sha256(m[i:i + 512]).digest() for i in range(0, len(m), 512))
+    return hashlib.sha256(m).hexdigest()
+```
+
+**The method's test vectors.** The byte strings have byte i = i mod 251. The row is 151,936 float32
+values, value i = float32(r.random() × 64 − 32) for `r = random.Random(20261030)`, packed
+little-endian. `tests/test_tree512.py` checks each, through the reference in `tests/tree512.py`.
+
+| Input | `sha256-tree-512/v0` |
+|---|---|
+| 0 bytes | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
+| 1 byte | `6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d` |
+| 512 bytes | `d86e386278a71782a283f96aae4f4e7437471abef71136bd2811f98245488d89` |
+| 513 bytes | `af03b0360647e12bfa680604a52fe9216fd9304c071daa000254ab0650a613b3` |
+| 1,024 bytes | `d926a38a6e800e3795e8acbf9c0842d279faf72f61af254f17ae4aecaeb70187` |
+| 1,025 bytes | `bb8b24b99a2a4b500a9380ef88e9bf210fd25a84c48d78e59d926a911532ab83` |
+| the row (607,744 bytes) | `458ded0881470ec3e41a77bfd901aacf699ccc3a6fc0694e370dedd44e3bb9a8` |
+
+At 512 bytes and below the method equals plain SHA-256. The 1-, 513- and 1,025-byte inputs test the
+definition at a chunk edge; a float32 row never has those lengths.
+
+## Comparing two records
+
+`onetrace.model_call.compare(a, b)` reads two records and returns one of three results, and nothing
+else:
+
+- **`same`** — the compared fields are equal under the stated mode.
+- **`diverged`** — naming the first field that differs.
+- **`could not compare`** — naming each condition that was not met, in order.
+
+A comparison names the mode it applied (1, 2 or 3) and what it rested on. It measures nothing. vLLM
+with batch-invariant mode not observed on, at a submitted batch size over 1, **is not compared**: the
+reason says that, and claims no property of such a configuration. The evidence for that condition is
+one measurement, named in full, applied to every such record with no other configuration having been
+measured.
+
+When the two sides' per-step token-id sequences are given to `compare` and the result is `diverged`,
+the first differing step is added as a **line of that diverged result** — never as a fourth result.
+The three results stand.
+
+Comparing two records is `onetrace.model_call.compare`: the verbs `onetrace diff` and `onetrace
+localize` do not read records in 0.6.0 or 0.6.1.
+
+## The verifier's rows
+
+A verifier that reads a run gains rows **only for a run that holds a record**; a run with no record
+gains no row, and its output is unchanged. For each record the run holds, the rows read exactly as the
+receipt rows do — `PASS`, `FAIL` or `NOT-RUN`, never a guess, the matched text of a credential never
+echoed:
+
+- the record parses and its bytes are canonical;
+- the record format is one the verifier implements (`model-call-record/1.0` and, from this release's
+  onetrace-verify, `/1.1`); a format it does not implement reads `NOT-RUN`, naming it, and the run's
+  exit is unchanged;
+- the fields are complete and well formed;
+- no field holds a value where it is `not observed` or `not applicable`;
+- no credential material: an authorization-header shape in any string is a `FAIL`, by structure only —
+  the verifier is never given the key.
+
+A `model-call-record/1.1` record gains its own rows; a 1.0 record gains none:
+
+- `steps members`: every `steps.*` member in its state and value set, as the 1.1 section above gives
+  them; `k_returned_min` at most `k_returned_max`, at most `k_requested`, and, self-hosted,
+  `k_requested` at most `sampling.logprobs`; `steps.logprobs` in a hosted record alone; `steps.surplus`
+  exactly at L3. NOT-RUN `no capture taken` with no `steps.level`, and, for L3's missed-digest record,
+  its reason;
+- `steps names an output`: the `steps` digest is the digest of the step's own output
+  `model_call.<n>.steps.json`, classed `model-generated`, read from the receipt; NOT-RUN where `steps`
+  is not observed;
+- `steps file`: the file lined up with the record, as the steps-file section above gives it (and the
+  hosted form's steps, candidates and `logprob` rule). NOT-RUN `the steps file was not kept`, or `the
+  steps file was not written` for the missed-digest record. The credential check covers its strings;
+- self-hosted: `model runner`, `engine core` and `executor` (at L3 as `start` gives them: V1 pinned,
+  the engine core in the calling process, `uni` as configured and as built), `L3 sampling` (each
+  covered member at its value, and `engine.settings.logits_processors`), and `how it ended` (one of the
+  seven endings, or `not observed`).
+
+## The model link
+
+`ot.model_from(provisioning_run, stages=[...], serve_stage=...)`, passed as `@ot.run(model=...)`,
+links a run to the run that fetched, optionally quantised and served its model — the same shape as the
+corpus link, one hop further. The link is the provisioning run's chain head, recorded on exactly the
+named steps; the provisioning run is verified when the query run starts, and refused if it does not
+verify, as a corpus link is. Following a model link one hop in a comparison, and cross-checking a
+record's `model.files_digest` against the provisioning run's own digest, are later work and are not
+done yet.
+
+## What this does not claim
+
+- **onetrace does not read the model's reasoning.** The record holds no hidden reasoning.
+- **A record is not a correctness claim.** It does not check whether an answer is semantically
+  correct.
+- **A differing value is not a cause.** The record names no causality from a differing value alone.
+- **A record does not reproduce across machines.** It claims no reproducibility across GPUs, versions
+  or engines.
+- **A record says nothing about a hosted provider's internals.** Those are `not observed`.
+- **Record equivalence is not correctness**, and `same` covers only the compared fields.
+- **The comparator's not-repeatable condition rests on one measurement** and fits no tolerance; it
+  claims no cause.
+- **A digest is not a commitment.** A digest in the record names a value; it does not bind the writer
+  to anything, and is not a proof of what was served.
+- **The companion result was measured at one arrangement.** That a filler request changed a target's
+  answer was measured at batch 4 only, with the target first, companions no longer than the target,
+  and no fillers beyond the companions; it is not a claim about other batch sizes or arrangements.
+- **The tolerant form is not a detector of small numeric changes.** It is built to miss them; a small
+  numeric change can leave the tolerant form unchanged.
+- **The exact form is the full row for a transformers prefill, and the top 16 unrounded for a vLLM
+  call.** It is not the full vLLM distribution.
+- **The per-step capture holds the model's token ids.** It is `model-generated`, kept in a separate
+  output, and the record names only its digest; a prefix-digest chain over token ids reveals the
+  tokens to anyone with the vocabulary. The cost of L1 or L2 is not measured, and L3 is not measured.
+
+## The schema
+
+`docs/model_call_record.schema.json`, labelled `model-call-record/1.0`, is the schema of 1.0, and
+`docs/model_call_record_1_1.schema.json`, labelled `model-call-record/1.1`, is the schema of 1.1. Each uses
+only the validation keywords a strict reader applies, so the reader can read it; it declares the
+optional `steps` capture member; `x-groups` groups the fields for a reader, with a group for the
+capture member; and `x-most-bytes` bounds a record's size, with its reason (the record holds digests
+and short value objects, and the per-step capture lives in a separate output, so the record does not
+grow with capture depth).
+
+The 1.1 schema adds the capture's own members (`steps.*`), `identity.digest` and the call kind
+`endpoint`, and groups the capture's members together. It holds members and their value-object form;
+the states and values the 1.1 section gives are the verifier's rows. `record.validate` and the schema
+agree on both versions: a record the SDK writes passes both, and a member outside its version fails both.
+
+The wheel carries a byte-identical copy of each as package data,
+`onetrace/model_call/model_call_record.schema.json` and
+`onetrace/model_call/model_call_record_1_1.schema.json`, readable with
+`importlib.resources.files("onetrace.model_call").joinpath(<name>)`.
 
 <!-- https://oneproof.dev/onetrace/non-claims.md -->
 
@@ -3059,6 +4564,114 @@ doesn't.
 - **`diff --text` never shows an input's content.** Inputs are fingerprinted, not stored, so a
   changed input is named, with its trust class and digests, and nothing more.
 
+## onetrace 0.5: onedoor decisions, span context, nesting
+
+- **A citation shows that the run names an existing, unaltered decision.** It does not show that
+  every action was gated, only that every declared gated step cited one.
+
+- **A permit check shows the decision covered the action object the step recorded.** It does not
+  show that the receiving system received exactly that object; that is the recipient's own check.
+
+- **Nothing here says a decision was right.** onetrace records which onedoor decision allowed an
+  action and lets anyone re-check it offline; it does not judge the policy, the decision or the
+  action.
+
+- **A trace is a view, not evidence.** It may be sampled, dropped, rewritten or re-timed by a
+  collector. The span context a receipt records (a W3C trace id and span id) and the run's
+  `traceparent` say which trace the run and its steps ran in; only the record proves the step's
+  inputs and outputs.
+
+- **Nesting is recorded for calls through decorated stages only.** A call that bypasses the
+  decorator is not in the record, as today. `parent`, `children`, `parent_run` and `parent_stage`
+  name the calls that went through `@ot.stage` and `@ot.run`, and nothing else.
+
+- **A 0.5 receipt is not a new format.** onetrace 0.5 stays in format 0.3: a 0.4.0 verifier reads a
+  0.5 receipt unchanged, ignoring the `authorization`, span-context and nesting blocks it does not
+  know, and a run that records none of them is byte-identical to 0.4.0.
+
+## onetrace 0.6: references and verdicts, variation, streaming
+
+- **A verdict is derived from the record and a declared rule.** The rules are declared per step —
+  exact digest by default, a mask where one is given — never inferred. A verdict names where a run
+  parts from its reference; it does not say why, or that either run was right.
+
+- **A step matching its reference shows it did what the known-good run did, not that either was
+  right.** A reference is a statement that a run is the one to compare against, not that it is
+  correct.
+
+- **Timing is a view, never part of a verdict.** A step slower than its range is reported, but it is
+  never a divergence and never fails a verdict.
+
+- **A profile describes the repeats recorded, not every future run.** Matching in N repeats does not
+  prove a step is deterministic. A step declared `may_vary` is shown as declared; the declaration is
+  never used to hide a difference.
+
+- **A before/after profile names the setting that changed between the sets; it does not say the
+  change made the difference.** It is a comparison, as the others are.
+
+- **Streaming shares the record as it grows; it is not the record.** Only the written run folder,
+  read and verified, is the record; a receipt that reached a console is provisional until the run
+  closes and its whole chain verifies. A failed stream changes no receipt.
+
+- **A 0.6 record is not a new format.** onetrace 0.6 stays in format 0.3: a 0.5.0 verifier reads a
+  0.6 run unchanged, ignoring the `repeat_of` and `stream` members in the manifest and the
+  `may_vary` member on a receipt, and a run that records none of them is byte-identical to 0.5.0. A
+  reference is its own file (`onetrace-reference/1`), sealed and signed as a run is, never a
+  receipt.
+
+## onetrace 0.6: the run sink
+
+- **A bucket verifies nothing; the reader verifies on every read.** Storage location does not change
+  what a record proves. A tampered object is caught when a reader verifies the run, not at rest.
+
+- **A delivered run is the same record as the local one.** The sink uploads the sealed folder and
+  changes no receipt; the only addition is the manifest's optional `sink` member, which names no
+  endpoint and no credential.
+
+- **An object's checksum guards the transfer, not the record.** The chain, the digests and the
+  signature are what prove the run; the per-object sha256 only catches an object damaged in the
+  bucket, on the way back.
+
+## onetrace 0.6: the model-call record
+
+The [model-call record](model-call-record.md) is evidence beside a stage receipt; it never changes the
+reading of a run's receipts — its own verifier rows read as every other row does, and a FAIL on one
+fails the run like any other FAIL. What it does not claim:
+
+- **A record is not a correctness claim.** It holds no hidden reasoning, and does not check whether an
+  answer is semantically correct. A differing value names no cause, and `same` covers only the
+  compared fields. Record equivalence is not correctness.
+
+- **A record does not reproduce across machines.** It claims no reproducibility across GPUs, versions
+  or engines, and says nothing about a hosted provider's internals, which are `not observed`.
+
+- **A digest is not a commitment.** A digest in the record names a value; it does not bind the writer
+  to anything, and is not a proof of what was served. In particular, `model.files_digest` is the
+  digest of the directory given to the adapter, not read from the engine: it does not show that the
+  served weights are the hashed ones.
+
+- **The comparator's not-repeatable condition rests on one measurement** and fits no tolerance. vLLM
+  with batch-invariant mode not observed on, at a submitted batch size over 1, is not compared; the
+  reason claims no property of such a configuration.
+
+- **The tolerant fingerprint is not a detector of small numeric changes.** It is built to miss them; a
+  small numeric change can leave it unchanged. The exact form is the full row for a transformers
+  prefill, and the top 16 unrounded for a vLLM call — not the full vLLM distribution.
+
+- **The companion result was measured at one arrangement.** That a filler request changed a target's
+  answer was measured at batch 4 only, with the target first, companions no longer than the target,
+  and no fillers beyond the companions; it is not a claim about other batch sizes or arrangements.
+
+- **The per-step capture holds the model's token ids.** It is `model-generated`, kept in a separate
+  output (`model_call.<n>.steps.json`), and the record names only its digest — the record itself
+  holds no token id and no text at any level. A prefix-digest chain over token ids reveals the tokens
+  to anyone with the vocabulary; it hides nothing. The cost of taking L1 or L2 is not measured, and L3
+  is not measured.
+
+- **The verifier does not check that a record's `steps` digest names the steps output.** The steps
+  file is an ordinary model-generated output the chain covers; a verifier does not add a row checking
+  that the record's `steps` digest is that output's digest.
+
 <!-- https://oneproof.dev/onetrace/explain-format.md -->
 
 # onetrace-explain: what it reads, sends, checks and writes
@@ -3067,7 +4680,8 @@ doesn't.
 comparison. **An explanation is a suggestion about a record, never a reading of it.** onetrace's
 verdicts, exit codes and `onetrace summary` are what they are without it; the deterministic tools
 never call a model and never read an explanation back. This page fixes the formats a reader of an
-explanation (the console, a script) can rely on. Version 1, `0.1`.
+explanation (the console, a script) can rely on. Version 2, `0.2`: the two-run form below; the
+report-folder form and its packet, `0.1`, are unchanged.
 
 ## The command
 
@@ -3080,6 +4694,135 @@ own and say nothing about the runs: 0 an explanation or a dry run was written; 2
 comparison that can't be explained (no report, a refused or could-not-check verdict, a run whose
 chain head is not the one the report checked); 3 the model couldn't be reached, or replied with no
 usable JSON. Never use it as a CI gate.
+
+## Two runs: `onetrace-explain RUN_A RUN_B` (0.2)
+
+```
+onetrace-explain RUN_A RUN_B [--no-model] [--json] [--probes NAME,...] [--max-probes N] [--runs-root DIR]
+                 [--mask FILE] [--model PROVIDER:NAME] [--yes] [--include-text] [--redact NAME]... [--out DIR]
+```
+
+It compares the two runs itself (`onetrace diff`, in this process) and prints four parts, in order.
+Its exit code is `onetrace diff`'s for the two runs, whatever the model says, or whether one is
+asked. It is `onetrace-explain RUN_A RUN_B`, not `onetrace explain`: onetrace's CLI takes no verb it
+doesn't define, and onetrace is not changed. With one folder, `onetrace-explain REPORT_DIR`, it is
+the 0.1 command below, unchanged.
+
+1. **What changed (checked from the records).** The headline and the stage strip, from `onetrace
+   diff`'s JSON report, in the console's words: Same, First difference, Changed after it, Same
+   again, Couldn't check. Printed always, with no model and no network call.
+2. **Evidence (read-only, no re-runs).** Probes: questions answered from records already written.
+   A probe never re-runs a pipeline, calls a tool, changes a file or a setting, or reaches a host.
+   Each one that ran states its sample: how many runs it read, and which. A probe whose needs are
+   missing reads `not run: <what is missing>`, never skipped silently.
+3. **What may have happened (AI-generated, may be wrong).** The model's claims. Each must cite a
+   probe that ran (`probe/P1`, ...) or an item of the record, and the post-check below drops the
+   rest and counts them. A claim citing a probe that did not run is dropped. Asked only when a
+   model is configured and the kinds sent are consented to.
+4. **Checks a human could run (not run).** Never run here. Each is marked "runnable here" or
+   "needs a runner you name". A check that re-runs a step names that step's replay-safety label,
+   `effect_label` (format 0.4), its `value` and its `basis`. A step labelled `write` or `unknown` is
+   named as one whose re-run may change state outside the record, and `unknown` is read as `write`.
+   A receipt with no label reads `effect not recorded`, never `unknown`: every record written
+   before format 0.4 reads so.
+
+### The probes
+
+| Probe | Question | Needs | 0.2 |
+|---|---|---|---|
+| `variation` | Is the difference inside the range the baseline's repeat set shows at the step? | a repeat set under `--runs-root` (`repeat_of`, onetrace 0.6) | runs |
+| `mask` | Does the difference vanish under the mask `onetrace mask suggest` proposes? | the two runs | runs |
+| `model_call` | At a model step: what does the model-call comparator read? | a model-call record in both runs, its file kept | runs |
+| `same_config`, `same_model_files`, `neighbours` | across a console's stored runs | a console store | `not run: no console store given`; `--store` is refused |
+| `config_vs_reference`, `bisect`, `kind_of_change`, `close_call` | | console 0.6.0 | `not run`, naming it |
+| `expectations`, `fallback` | | onetrace 0.7 | `not run`, naming it |
+
+**The playbook** picks the probes from the first difference's kind, with no model, `mask` first:
+
+- configuration changed (an instrument or a constant at the first difference): `mask`,
+  `config_vs_reference`, `same_config`, `bisect`;
+- same inputs, different model output (a model-call record at the first difference): `mask`,
+  `variation`, `close_call`, `model_call`, `same_model_files`;
+- inputs changed (the runs were given different recorded inputs): `mask`, `neighbours`;
+- otherwise (the output differs only): `mask`, `variation`.
+
+`--probes a,b` runs exactly those instead. At most `--max-probes` probes run (default 8); past the
+bound, a probe reads `not run: past the bound of N probes`.
+
+**A model may propose more,** once, from the same list only, beside its claims:
+`{"probes": [{"probe": "<name>", "step": "<a node in the packet>", "run": "<a run id in the
+packet>"}]}`. A proposal naming anything else (a command, a path, a host, a URL, another argument,
+a step or run the evidence doesn't hold, a probe off the list) is refused and counted. So is one
+past the bound, or one made after the first round. When a proposal runs, the model is asked once
+more with the probe's result, and its second reply's claims are the ones checked.
+
+### What is sent: `onetrace-explain-evidence/0.2`
+
+The 0.1 packet below, built from the comparison's report, with each probe that ran as an item of
+kind `probe` (`probe/P1`: the probe, its arguments, its one-line result, its result and its sample).
+`not_run` lists the probes that did not run, with why, and they may not be cited. A probe's result
+names runs by run id, never by a path of this machine. With `--no-model`, nothing is sent.
+
+### What it writes
+
+Under `OUT` (default `./onetrace-explain`): `compare/`, `onetrace diff`'s report; `probes/`, the
+probes' own working files (a suggested mask, its masked comparison); and `explain/<run id>/`, the
+explanation as a run of its own, with these stages:
+
+- **`evidence`**: the report, and both runs' manifests and receipts in, by digest; what changed out;
+- **`probe#P1`, `probe#P2`, ...**: one node per probe, its name, arguments, status and result
+  digest as constants, and its result out;
+- **`model#1`** (and **`model#2`** after a round of proposals): what was sent out, `sent.json`, then
+  the raw reply, `reply.txt`, `model-generated`;
+- **`post_check`**: what was kept and dropped.
+
+Beside the run are `explain/<run id>.explanation.json`, the four parts as `--json` prints them, and
+`explain/<run id>.explanation.txt`, as the command printed it.
+
+### A worked pair
+
+**Fixture data**, written by `tests/explain_fixtures.py` (`worked_pair`), with no model and no
+network. A baseline with two repeats, and a candidate whose model step answered differently. The
+model is a fake one, which replies with a fixed file, `reply.json`. Its third claim uses a causal
+word, and the post-check drops it. `tests/test_explain_02.py` runs this and compares it with the output below,
+line by line, the record's run id apart:
+
+<!-- explain: worked pair, fixture data -->
+```
+$ onetrace-explain runs/base runs/cand --model fake:reply.json --out out
+What changed (checked from the records)
+  First difference at answer
+    load                     Same
+    answer                   First difference
+
+Evidence (read-only, no re-runs)
+  P1 mask  nothing to mask: the differences are not ids, times or folders onetrace masks   [2 runs: base, cand]
+  P2 variation  at answer: 1 of 3 runs in the repeat set of base differ from its common output; the candidate's output is among the outputs the set recorded (2 distinct)   [3 runs: base, rep1, rep2]
+  P3 not run: close_call (not in explain 0.2: it waits for console 0.6.0's near-tie reading (L2))
+  P4 model_call  at answer: the model-call comparator reads could not compare: batch context not observed: batch.size, batch.padded_width, batch.position, batch.members, batch.fillers, batch.batch_invariant   [2 runs: base, cand]
+  P5 not run: same_model_files (no console store given)
+
+What may have happened (AI-generated, may be wrong)
+  model: fake:reply.json
+  - note: The repeat set already varies at answer: `1` of `3` runs differ from its common output, and the candidate's output is among the outputs it recorded.
+    shown by: probe/P2
+  - possible culprit: The answer step's output differs with its inputs the same; the model-call record is the place to look.
+    shown by: node/answer, probe/P4
+  dropped: 1 says what caused a difference
+
+Checks a human could run (not run)
+  onetrace diff runs/base runs/cand --text --stage answer
+      runnable here
+  onetrace localize runs/base runs/cand --for answer
+      runnable here
+  onetrace reproduce runs/cand answer --runner <your runner>
+      needs a runner you name; effect not recorded
+recorded: out/explain/<run id>
+```
+
+The exit code is 1, `onetrace diff`'s for a pair that diverged. `--no-model` prints the first, second
+and fourth parts, and sends nothing. `--json` prints the same four parts as one JSON object, in four
+keys: `what_changed`, `evidence`, `what_may_have_happened`, `checks`.
 
 ## The evidence packet, `onetrace-explain-evidence/0.1`
 
@@ -3160,7 +4903,9 @@ its own record.
 # The record format, in plain words
 
 Full, normative detail is the Internet-Draft:
-`draft/draft-saha-stage-receipts-00.txt`. This page
+`draft/draft-saha-stage-receipts-02.txt`, which describes the members through format 0.4, the re-run
+mark, the step's effect label, step expectations, the kept configuration and the check run among them.
+Its earlier revision -01, beside it, is kept as it was, and revision -00 describes format 0.1. This page
 is an orientation, not a substitute for it.
 
 ## A receipt
@@ -3257,6 +5002,12 @@ Format 0.3's rejection vectors are in tests/rejection_0_3/: eleven runs, each ch
 members and re-linked, each FAILed by onetrace-verify 0.4 on the row its INDEX.json names, with what
 onetrace-verify 0.3.0 reads of it.
 
+onetrace 0.5 stays in format 0.3: its optional blocks — `authorization` (onedoor decisions), the
+span context (`trace`, `traceparent`) and the nesting fields (`parent`, `children`, `parent_run`,
+`parent_stage`) — are optional members a 0.4.0 verifier reads unchanged, ignoring the blocks it does
+not know, so a 0.5 receipt verifies exactly as a 0.4.0 one does and a run that records none of them
+is byte-identical to 0.4.0.
+
 The path to 1.0:
 
 1. **0.3 is the last minor that adds a required behaviour.** After it, a 0.x minor only adds
@@ -3268,6 +5019,358 @@ The path to 1.0:
    still read); the `receipts_root` / `outputs_root` naming stays, with the warning above.
 4. **What 1.0 promises:** every 1.x verifier reads every 0.x record it has ever been able to read;
    required members don't change within 1.x; a change that would change a reading is 2.0.
+
+## Format 0.4: every run ends with a close receipt
+
+Format 0.4 is written by onetrace 0.7, and it is that release's one minor. Everything onetrace 0.7
+adds under it is optional members only: nothing removes a required member, changes a type or
+changes a canonical form.
+
+**What this build writes.** Of the members below, this build writes:
+- the close receipt, and the not-closed signature record;
+- the model-call record 1.1 in its self-hosted form, with the members the table marks;
+- with onetrace-auto, the members of an auto-recorded run that the table marks;
+- `effect_label` on a declared stage, and on a step a check or a counterfactual puts in place;
+- the re-run mark of all four kinds, `reproduce`, `twin`, `counterfactual` and `check`, with
+  `writes_allowed`, `config_of_*`, `substituted` and `from_stage` where the kind has them, and the two
+  `re-run stopped` forms of `onetrace.ended_by`;
+- a check's run (`onetrace.check`);
+- `config_kept`, the kept configuration;
+- step expectations: `expectations` in a receipt, and the `onetrace-expectations/1` file
+  `onetrace expect write` writes.
+
+The members the table below marks "not yet" are specified here and in the Internet-Draft's revision
+-02, and no onetrace build writes them yet. Each line names its row of the table, then what in it is
+not written:
+- manifest, `auto`: `boundary` `request`, and `key`;
+- receipt, `effect_label`: the value `unknown`, and the basis `not classified`;
+- receipt, `outputs[].empty`: the member;
+- receipt, `return_holds`: the member;
+- reference, `steps.<node>.reads`: the member;
+- reference, `steps.<node>.empty_outputs`: the member;
+- model-call record 1.1, `steps.level`, `steps.method`: in a hosted record;
+- model-call record 1.1, `steps.k_requested`, `steps.k_returned_min`, `steps.k_returned_max`, `steps.count`, `steps.logprobs`: in a hosted record, and `steps.logprobs` in a self-hosted one;
+- model-call record 1.1, the steps file, hosted form: the file;
+- model-call record 1.1, `identity.digest`, `call.kind`: `identity.digest`, and the call kind `endpoint`;
+- embedding record 1.0, the members it shares with the model-call record: the record;
+- embedding record 1.0, `embedding.*`: the members;
+- embedding record 1.0, `output.*`, `usage.tokens`, `batch.size`, `rows`: the members;
+- embedding record 1.0, `fingerprints[].quantity`: the member.
+
+### The version lines
+
+| Version line | Before | Format 0.4 | Written by this build |
+|---|---|---|---|
+| receipt `format` | `stage-receipt/0.3` | `stage-receipt/0.4` | yes |
+| manifest `format` | `stage-receipt-chain/0.3` | `stage-receipt-chain/0.4` | yes |
+| signature record | `stage-receipt-signature/0.1` | `0.1` kept for a closed run; `0.2`, written only for a run signed not closed | yes |
+| model-call record | `model-call-record/1.0` | `model-call-record/1.1` | self-hosted: yes; hosted: not yet |
+| embedding record | none | `embedding-call-record/1.0`, new | not yet |
+| reference | `onetrace-reference/1` | `onetrace-reference/1`, unchanged: optional members only | not yet |
+| expectations file | none | `onetrace-expectations/1`, new | yes |
+| runner | `onetrace-runner/0.2` | `onetrace-runner/0.3`: `{input:<name>}` and `config.*` params | yes |
+| runner table | none | `[[runner]]` in onetrace-explain's configuration file: `code`, `command` (`{stage}` and `{run}` only), `cwd`, `timeout_seconds`; read by the SDK on Python 3.11 and later | yes, by `onetrace check` |
+
+The receipt and manifest members below are all under `0.4`, and the model-call record's under `1.1`.
+The signature record, the model-call and embedding records, the reference and the runner are outside
+the Internet-Draft. The expectations file is specified in its revision -02, section 4.15.
+
+### The close receipt
+
+**What it is for.** A run killed before it closed (`SIGKILL`, `os._exit`, out of memory, power lost)
+leaves a folder whose chain verifies to the last receipt written, with a manifest that agrees with
+it. That is exactly the shape of a closed run with fewer steps, and nothing else in the record
+tells the two apart. onetrace-verify 0.6.1 reads such a run PASS.
+
+**What is written.** When a run closes, before its final manifest, its verify hook and any
+signature, the recorder writes one more receipt, the **close receipt**:
+
+- stage `onetrace.close`. Every run declares it as its last stage, after its own stages and any
+  intake. The name is reserved: a stage of a team's may not take it, and the recorder refuses one
+  that does;
+- instrument `onetrace.close`, kind `close`, at onetrace's own version, `rederivable: "false"`;
+- no inputs and no outputs, outcome `ok`;
+- three constants, under the prefix onetrace keeps for its own: `onetrace.closed: "true"`,
+  `onetrace.steps` (how many receipts come before it) and `onetrace.ended_by`:
+  `exit`, `unhandled exception: <class>` (a decorated run whose function raised) or `SIGTERM`.
+  Every reader leaves `onetrace.` constants out of a step's settings, and a team's constant of
+  that form is refused. So a reference made from a closed run, read by onetrace 0.6.1's `verdict`
+  or by onetrace-verify 0.6.1's `--reference`, doesn't fail a run that closed another way or after
+  another number of steps;
+- in a re-run, the re-run mark `rerun`, as every receipt of a re-run carries (below).
+
+`onetrace.ended_by` has five forms in format 0.4. Beside the three above, a re-run stopped by the
+replay rule writes `re-run stopped before <node>: effect <value> (<basis>)` at a step with a label,
+or `re-run stopped before <node>: effect not recorded` at a step with none. This build writes all
+five: the last two in the run `onetrace reproduce` produces, where the replay rule stops it before a
+step, with a boundary of kind `re-run stopped` whose note holds the same words. An auto-recorded run that reaches its store bound closes with `exit` (below): that is
+not a sixth form, and there is none.
+
+**`exit` says the interpreter exited normally.** An app's own signal handler that ends the process
+through `sys.exit` writes `exit` too, so `exit` does not say the work ran to its end.
+
+Its digest is the chain head, so a signature, which is over the chain head, covers it.
+`onetrace.close` is declared, so no receipt before it can read `complete`, the last step included:
+**only the close receipt can read `complete`**, and only when every declared stage emitted and no
+boundary stands. A run in which nothing happened writes no close receipt, as it writes no
+manifest. `max_run_bytes` bounds a run's steps: the close receipt counts toward it but is never
+refused by it, so a run that reached its bound still closes. A close receipt that cannot be written
+is recorded as a gap, like any other receipt, and the run then has no close receipt.
+
+**A run with no close receipt** was killed, ended without closing, or was written before format
+0.4. Its chain verifies to its last receipt, and in a 0.4 run that last receipt reads `incomplete`.
+onetrace-verify 0.6.1 reads such a run as it reads any run, PASS when what was written is intact.
+This release's onetrace-verify gives every run a row of its own, `the close receipt`: PASS, `closed: by
+<onetrace.ended_by>`, for a run whose chain ends with its close receipt; NOT-RUN, `not closed: the record
+ends at <last step> and holds no close`, for a run with none, which `--require-closed` makes a FAIL; and
+FAIL for a close receipt that is not last, a second one, an `onetrace.steps` that does not count the
+receipts before it, an `onetrace.ended_by` outside its five forms, a constant missing, or
+`onetrace.close` not the last declared stage. The NOT-RUN row cannot tell a run stopped before its
+close from a run written before format 0.4, and says only that the record holds none.
+
+**The close receipt is optional for every reader,** so the promise of the path to 1.0 above holds
+unchanged. A reader never fails a run for lacking one. Every run written before format 0.4 verifies
+exactly as it did. A writer from onetrace 0.7 always writes one, as its own choice, not as a
+requirement on any record a reader is given. Two reading rules keep it so:
+
+1. **A receipt is a close receipt only when its own `format` is `stage-receipt/0.4` or later and
+   its instrument is `onetrace.close` of kind `close`.** Before 0.4 the name was not reserved, so a
+   run written then can hold an ordinary stage named `onetrace.close`, with any instrument. Such a
+   receipt is read as the ordinary step it is.
+2. **Completeness is read off the last receipt, as before.** The writer is what makes the close
+   receipt the only one that can read `complete`, so a reader adds no rule, and a run written
+   before 0.4 that reads `complete` still does.
+
+**How onetrace-verify 0.6.1 reads a 0.4 run.** It accepts any minor of major 0, so it reads a 0.4
+run's close receipt as an ordinary receipt: a closed run reads PASS, and a killed 0.4 run reads
+PASS, as a killed 0.3 run does.
+
+**The verbs read the close receipt as what it is, not as a step.** `onetrace diff`, `localize`
+and `reproduce` set it aside before they compare, so the steps they compare are the same with
+and without it, and the search for a first difference never lands on it. When one run closed and
+the other did not, or both closed with different endings, a comparison says so in a line of its
+own, before any step difference:
+
+```
+close: run A closed (exit); run B not closed, its record ends at answer
+```
+
+The line changes no verdict and no exit code. `onetrace reference make` leaves the close receipt
+out of a reference. Where a reference made earlier holds it as a step, `onetrace verdict` skips it
+and names it, under `set_aside`, as not a step. It skips a step only on both sides: the run set its
+close receipt aside, and the reference's entry has a close receipt's exact shape (no outputs, no
+data inputs, no constants of its own, and the empty configuration's digest). The same reading rule
+applies: a stage named `onetrace.close` in a run written before 0.4 is a step, and is compared as
+one.
+
+**A gap: an empty stage of that name is still skipped.** A reference records neither the
+receipt's format nor its instrument's kind, so the verdict reads the entry's shape. A stage named
+`onetrace.close` in a run written before 0.4 with no outputs, no data inputs, no constants of its
+own and an empty configuration has exactly that shape, and against a closed run it is skipped, not
+compared. Recording both parts in a reference is not in this release.
+
+**Only a closed run is signed by default.** `onetrace sign` refuses a run with no close receipt.
+`--not-closed` signs it anyway, in format `stage-receipt-signature/0.2`, with `closed: "false"`,
+over `stage-receipt-signature/0.2:not-closed:` followed by the chain head, so the statement can't
+be removed without the signature failing. A closed run's signature is unchanged:
+`stage-receipt-signature/0.1`, over the chain head, which is the close receipt's. onetrace-verify
+0.6.1 FAILs a 0.2 record (it names the member `closed`, which it does not know), the stricter
+reading: under no verifier does a signature make an interrupted run look finished. This release's
+onetrace-verify reads a 0.2 record: on a run that is not closed it is checked over its own statement,
+and its row says `signed as not closed`; on a closed run it FAILs, `a not-closed record on a closed run`.
+
+**Byte-identity with 0.6.1 ends at 0.7.** A 0.7 run is never byte-identical to a 0.6.1 run of the
+same pipeline: its format strings say 0.4, every receipt declares `onetrace.close`, and its chain
+ends with the close receipt.
+
+### An auto-recorded step
+
+**Every HTTP step's `status` output.** A step onetrace-auto records from an HTTP call
+(`httpx.send`, `requests.send`) has two outputs: `status`, the canonical JSON object
+`{"status": "<code>"}`, and `response`, the response body's bytes. A `requests` call that followed
+redirects is one step: its `status` is the final response's, with the number of hops,
+`{"redirects": "<n>", "status": "<code>"}`, and its `response` is the final body. An `httpx` step's
+`status` never carries `redirects`. A streamed response has `status` alone: its body is not read.
+So a status that differs is an output that differs, whatever the body.
+
+**A model step's `auto.target` is `{"host": "<host>"}` alone:** the host the client's request went
+to, read through the client's public `post` while the call runs. It has no `method`, `path_digest`,
+`path` or `query_names`. A model step whose hook did not see the client's request has no `target`.
+
+**The boundaries an auto-recorded run declares.** When it opens, one boundary over its first
+declared stage, of `kind` `not observed` with the `note` `steps outside the hooked libraries`, so its
+coverage never reads `complete`. When it reaches its store bound, it declares the boundary of `kind`
+`store bound reached`, with the `note` `nothing after this point is recorded`, at the step that
+reached it, and closes, with `onetrace.ended_by` `exit`: the five forms above stand, with no sixth.
+That boundary's `name` is the step, its node id `<stage>#<instance>` (`httpx.send#2`): a boundary's
+`name` is a declared stage, or a step: the step that reached the store bound, or, for the `re-run
+stopped` boundary, the step the re-run stopped before. The step that reached the
+bound is recorded as a gap at its own index, the index its receipt would have had, in the next
+receipt written and in the manifest, as the draft's section 9 records an absence. Every later hooked
+call in that process goes ahead unrecorded. **A decorated run's own auto step** that reaches that run's
+store bound, a top-level auto step or a stage's child, records the same gap at its index and the same
+boundary naming it, and its call goes ahead; but the run is not closed. Recording goes on, and `@ot.run`
+closes the run at its end.
+
+**The constants an auto-recorded step carries.** Each is under the `onetrace.` prefix, which
+onetrace keeps for its own, as the close receipt's are: every reader leaves `onetrace.` constants
+out of a step's settings, and a team's constant of that form is refused. So none of them ever reads
+as a setting that differs.
+
+| Constant | Value | On |
+|---|---|---|
+| `onetrace.http.body` | `not observed: streamed` | an HTTP step whose response was streamed: it has no `response` output |
+| `onetrace.http.request` | `not observed: streamed` | an HTTP step whose request body was streamed (an iterator): it has no `request` input |
+| `onetrace.http.request` | `not observed: the text cannot be encoded as it will be sent` | a `requests` step whose text body the installed urllib3 would send as ISO-8859-1, and which that cannot encode: no digest is taken, and it has no `request` input |
+| `onetrace.model_call` | `not written: the hook did not see the client's request` | a model step on a client made before onetrace-auto's boot, or a model step whose call failed before it reached the client's `post`: no model-call record, no credential, no host |
+| `onetrace.model_call` | `not written: embeddings have no record format in this release` | an embeddings call: no model-call record |
+
+**How this release's onetrace-verify reads an auto-recorded run.** Each receipt with an `auto` block gets
+its rows: the block's members and its `target`'s shape (an HTTP step's, or a model step's `host` alone);
+`declared` is `"false"`; the step carries `effect_label`, its value one of the three and its basis one of
+the six, as the producer documents it for the library (the table below); an HTTP step's `status` output
+in its form, read where the output was kept; and its `onetrace.` constants, each one the format gives.
+A run onetrace-auto opened itself, the process run or a request run, gets two: the manifest's `auto` block,
+and the open boundary. A decorated `@ot.run` that holds auto steps gets neither: its auto steps get their
+rows, and the run keeps its own declared coverage, so its close may read `complete`. onetrace-verify knows
+a run onetrace-auto opened by the manifest's `auto` block or by the open boundary, in the manifest or in any
+receipt's coverage; it makes no claim about a process run rewritten without both and re-linked, which reads as a
+decorated run, nor about a decorated run whose team declares that exact boundary, which reads as one onetrace-auto
+opened. The summary line ends `auto-recorded: N steps, not declared`. An auto step's thread `context`, where present, is read: `thread
+without the run's context` is its one value, and any other FAILs. A run whose receipts declare stage lists that
+differ gets one row, `declared stages grow only by auto stages`: a later list may add only the stages of the chain's
+auto steps, every earlier name in its place, and a removal, a reorder or another added name FAILs. A run whose
+receipts all declare one list, a straight decorated run among them, gets no such row.
+
+**The effect labels the producer documents, by library.** At minor 4 an `effect_label`'s basis is one of
+six: `declared on the stage`, `model call`, `model call stored by the provider`, `http method`, `not
+classified` and `substituted, not executed`. A record holding any other basis is outside the format, and
+its row FAILs, naming the basis. For an auto-recorded step, onetrace-verify reads the label against what
+the producer documents for the step's library:
+
+| Library | Value | Basis | On |
+|---|---|---|---|
+| `httpx`, `requests` | `read` | `http method` | a `GET` or `HEAD` |
+| `httpx`, `requests` | `write` | `http method` | any other method |
+| `openai` | `write` | `model call stored by the provider` | a `responses.create` call without `store=False` |
+| `openai` | `read` | `model call` | any other call |
+| any | `unknown` | `not classified` | a call the hook cannot classify |
+
+A label outside its library's rows FAILs. On a `responses.create` step either `openai` label reads as
+documented: the receipt does not hold `store`. A library the producer does not document reads NOT-RUN,
+`<library>: no documented bases`; its value is still checked against the three, and its basis against
+the six. `onetrace.sdk_verify`, the SDK's own verifier, has none of the rows this release's
+onetrace-verify adds for format 0.4.
+
+### Every member format 0.4 adds
+
+Every scalar is a string, and every member is optional: a record that does not hold one reads as a
+record written before 0.4 does.
+
+| Record | Member | Values | Written by this build |
+|---|---|---|---|
+| close receipt | `stage.name`, `instrument` | `onetrace.close`, reserved; instrument `onetrace.close`, kind `close`, onetrace's version | yes |
+| close receipt | constants `onetrace.closed`, `onetrace.steps`, `onetrace.ended_by` | `true`; the number of receipts before it; the five forms above | yes |
+| signature record | `closed` | `false`, in `stage-receipt-signature/0.2` only, inside the signed bytes; `--not-closed` is refused on a closed run | yes |
+| receipt | `auto` | `declared` (`false`), `call`, `library`; for an HTTP call `target`: `host`, `method`, `query_names` and one of `path_digest` (the default) or `path` (only with `ONETRACE_AUTO_HTTP_PATH=plain`); for a model call `target`: `host` alone; and on a step recorded from a thread that did not carry the run's context, `context`: `thread without the run's context` | with onetrace-auto: yes |
+| manifest | `auto` | `boundary` (`process`, `request`), `hooks` (each `library`, `status`, `version`), `key` | with onetrace-auto: `boundary` `process` and `hooks`; `request` and `key` not yet |
+| receipt | `rerun` | `kind` (`twin`, `counterfactual`, `reproduce`, `check`), `of_run`, `of_chain_head`; a twin, and a check under the baseline's settings: `config_of_run`, `config_of_chain_head`; a counterfactual: `substituted`; a check: `from_stage`. In every receipt of a re-run, the intake and close receipts included | kind `reproduce`, in the run `onetrace reproduce` produces, kind `twin`, in the run `onetrace reproduce --config-of` produces, kind `counterfactual`, in the run `onetrace reproduce --substitute` produces, and kind `check`, in the run a check of `reproduce` produces: yes |
+| receipt | `rerun.from_stage` | the node id a check started from: required for `check`, absent for every other kind | yes |
+| receipt | `rerun.writes_allowed` | plain `reproduce` only, and required there: `true` when `--allow-writes` was given, `false` otherwise | yes |
+| receipt | `rerun.substituted` | `step`, `from_run`, `from_chain_head`, `from_receipt`, `output`, `output_digest` | yes |
+| manifest | `rerun` | a copy of the receipts' `rerun` (below) | kinds `reproduce`, `twin`, `counterfactual` and `check`: yes |
+| check run | stage `onetrace.check` | reserved; instrument `onetrace.check`, kind `check`. Its constants (`verb`, `argv`, `runner_digest`, `rerun_plan`, `timeout_seconds`, `baseline`, `candidate`, `stage`, `claim`, `predicted`) and assertions (`exit`, `result`, `came_back`: `as predicted`, `otherwise`, `did not run: <reason>`) are ordinary constants and assertions | yes, by `onetrace check`; the constants `baseline` and `stage` only where the verb has them, and `runner_digest` and `rerun_plan` for `reproduce` only |
+| receipt | `effect_label` | `value` (`read`, `write`, `unknown`) and `basis` (`declared on the stage`, `model call`, `model call stored by the provider`, `http method`, `not classified`, `substituted, not executed`). Required on a receipt with an `auto` block; absent on an unmarked declared stage and on the recorder's own receipts (intake, close) | on a declared stage marked `effect="read"` or `"write"`: yes, basis `declared on the stage`; with onetrace-auto: `read` and `write`, basis `http method`, `model call` and `model call stored by the provider`; on a step a check or a counterfactual puts in place: `read`, basis `substituted, not executed`: yes; the others not yet |
+| receipt | `config_kept` | `name` (`config.json`), `digest` (equal to `instrument.config_digest`), `bytes`; the file under `config/<receipt stem>/`, the receipt stem being the receipt file's name without its `.json`, for example `03-answer`. Where keys were left out of the kept file, `partial`: `true`, and `digest` is the kept bytes' digest; the next verifier then reads the equality as NOT-RUN, `configuration kept in part`, never FAIL | yes |
+| receipt | `expectations` | each `name`, `kind` (`range`, `unit`, `relation`, `member`), `target`, `declaration`, `declaration_digest`, `declared` (`with the run`). A `relation`'s `declaration` is `op` (`difference`, `sum` or `ratio`), `of` (two JSON Pointers into the target's own output, joined by one space, as `/raw /offset`) and `within`: the target's value is within `within` of the first value less the second, the two added, or the first divided by the second. An expectation that holds shows the declared rule held, not that the output was right | yes |
+| expectations file | entries | as `expectations`, with `declared`: `after the run`; the file sealed as a reference is. An expectation declared after the run says nothing about what was expected when the run was made, and one that holds shows the declared rule held, not that the output was right | yes |
+| receipt | `outputs[].empty` | `true`, `false` | not yet |
+| receipt | `return_holds` | each `at`, `child`, `child_at`, `digest`: a part of a child's return held, as the same object, in the caller's return | not yet |
+| reference | `steps.<node>.reads` | stage names, sorted, unique; `[]` for none | not yet |
+| reference | `steps.<node>.empty_outputs` | beside `outputs`, never inside an entry: the outputs the run marked empty, sorted, unique; `[]` for none; absent where any of the step's outputs carries no mark | not yet |
+| model-call record 1.1 | `steps.level`, `steps.method` | `L1-hosted`, `L2-hosted`, and self-hosted `L1`, `L2`, `L3`; `provider-text`, and self-hosted `token-ids`, `top-k-ids`, `sha256-tree-512/v0` | self-hosted: yes; hosted: not yet |
+| model-call record 1.1 | `steps.k_requested`, `steps.k_returned_min`, `steps.k_returned_max`, `steps.count`, `steps.logprobs` | decimal strings (`k_requested` `declared, not observed`, `k_returned_min` and `k_returned_max` and `steps.count` `observed`; all three k members `not applicable` at `L1-hosted`, as at self-hosted `L1`); `logprobs`: `none` (the default), `rounded-2`, `as-returned` | self-hosted, all but `steps.logprobs`: yes; hosted: not yet |
+| model-call record 1.1 | the steps file, hosted form | `level`, `method`, `steps[]`, each `{chosen, candidates}`, each token `{text, bytes, provider_token_id, logprob}`, the last three where present | not yet |
+| model-call record 1.1 | the self-hosted members | the steps file at L1, L2 and L3, `steps.surplus`, `engine.settings.model_runner`, the self-hosted `output.finish`, and the refusal at L3 with its `sampling.*` members and `engine.settings.logits_processors`: given once, in `docs/model-call-record.md`'s 1.1 section | yes |
+| model-call record 1.1 | `identity.digest`, `call.kind` | `sha256:<hex>`; `call.kind` adds `endpoint` | not yet |
+| embedding record 1.0 | the members it shares with the model-call record | `format`, `call.kind`, `call.api`, `credential`, `model.*`, `tokenizer.digest`, `engine.*`, `runtime.*`, `dtype`, `input.request_digest`, `input.token_ids_digest`, `engine.settings.*`, `identity.digest` | not yet |
+| embedding record 1.0 | `embedding.*` | `pooling` (`mean`, `cls`, `max`, `last-token`, or the module's own name), `normalize`, `max_length`, `truncation` (`end`, `start`, `none`, `error`), `dimensions`, `input_type`, `encoding` (`float`, `base64`, `int8`, `uint8`, `binary`, `ubinary`) | not yet |
+| embedding record 1.0 | `output.*`, `usage.tokens`, `batch.size`, `rows` | `vectors_digest`, `vectors_form` (`raw-<dtype>-le`, `json-decimal`, `base64-bytes`), `count`, `dimensions`, `norms` (`unit`, `not unit`); tokens or `not observed`; the batch size; each row `{position, input_digest, vector_digest, tokens}` | not yet |
+| embedding record 1.0 | `fingerprints[].quantity` | adds `embedding-vectors`, in the embedding record only | not yet |
+
+### Reading the new members
+
+- **Absent is not `unknown`.** A missing `effect_label` says no label was recorded; `unknown` says
+  a hook could not classify the call. Every reader's words for a missing label are `effect not
+  recorded`, never `unknown`. The next verifier fails a receipt with an `auto` block and no
+  `effect_label`. A substituted step's label is `read`, basis `substituted, not executed`: nothing
+  ran.
+- **The manifest's `rerun` copy marks nothing by itself.** It is read only where every receipt
+  carries the same mark, and a tool that reads the manifest alone does not take it as one. The intake
+  and close receipts of a re-run carry the mark like every other receipt.
+- **`return_holds`:** `[]` means checked, nothing held; absent means not checked. `digest` is the
+  sha256 of the held part's canonical bytes, as an output's digest is.
+- **A check's run may hold local paths and output.** Its `argv` constant holds the filled `{run}`,
+  and its outputs keep `stdout.txt` and a tail of stderr. The record's credential rule covers its
+  constants and kept outputs like any other run's.
+- **`identity.digest`** hashes a field's `status` alone where the field has no value, so two
+  `not observed` fields whose reasons differ give one identity.
+- **Reserved names.** A stage named `onetrace.close` or `onetrace.check` in a run written before
+  0.4 is an ordinary step, in every reader. A receipt is a close or check receipt only when its own
+  `format` is `stage-receipt/0.4` or later and its instrument is the reserved one of its kind.
+- **The meanings of "declared".** The format uses the word in eight places:
+  - `auto.declared: "false"`: the step was not declared in code;
+  - `effect_label.basis: "declared on the stage"`: the label was declared in code;
+  - `expectations[].declared`: `with the run` or `after the run`;
+  - `coverage.declared_stages`: the stages the run declared;
+  - `declared_edges`: the plan's edges, declared by the team;
+  - the model-call state `declared, not observed`: given by the caller, not read back;
+  - `reproduce`'s `COULD NOT CHECK` category `declared`;
+  - "a declared step with no `effect_label`": a decorated stage the team named.
+
+  Two meet on one receipt: an auto-recorded step's stage is in `coverage.declared_stages` (an auto
+  run declares the stage names of its hooks), while its `auto.declared` is `"false"`.
+- **A decorated run's declared stages may grow while it runs.** A decorated `@ot.run` gains an auto
+  stage name the first time a hooked call inside it fires that stage: the name is added before the
+  close stage, and no name is ever removed or reordered. Each receipt's `coverage.declared_stages` is
+  the list as known when it was written, so an earlier receipt may declare fewer names than a later
+  one. The close receipt's list is the run's whole list. A decorated run that fires no hooked call
+  declares its team's stages and its close alone.
+
+**How this release's onetrace-verify reads them.** Each has rows of its own, PASS, FAIL or NOT-RUN:
+- **the re-run mark**, on a run whose record holds one: `a <kind> of <run> (<chain head>)`, or FAIL where
+  the receipts disagree, the manifest's copy disagrees with them, `kind` is outside the four, or a member
+  its kind requires is missing or one it may not hold is there; and `substituted output`, a
+  counterfactual's substituted step holding the output its mark names. An original run gains no row. On a
+  re-run every `--reference` row reads NOT-RUN, `a re-run is not checked against a reference`, and the
+  summary line begins `re-run (<kind> of <run>):`;
+- **an effect label** of `read` on a receipt whose `effects` holds an entry: FAIL;
+- **`config_kept`**: its digest against `instrument.config_digest` (NOT-RUN `configuration kept in part`,
+  naming the keys left out, where `partial` is `"true"`; FAIL for a `partial` other than `"true"`), and the
+  kept file against its digest;
+- **each expectation**, `expect <step>.<name>`: its `declaration_digest` recomputed, and `range`, `unit`,
+  `relation` and `member` read against the kept output, PASS or FAIL. A member absent is a FAIL; it reads
+  NOT-RUN only where the output was not kept, its target or one of a relation's two values names no value,
+  or a value is not a decimal. A ratio over a zero is a FAIL. A relation is computed to 100 significant
+  digits;
+- **`outputs[].empty`**: `"true"` or `"false"`;
+- **an embedding record**: its format, its `identity.digest` recomputed, and its `rows` against
+  `batch.size`. Its vectors read NOT-RUN: the receipt does not name the vectors output.
+
+Not checked yet: the `identity.digest` of a model-call record 1.1, and `return_holds`.
+
+**How onetrace 0.6.1 and onetrace-verify 0.6.1 read the new members.** Each member was read under
+0.6.1 on a test copy: none of them makes 0.6.1 read a record more loosely, with one limit only
+onetrace 0.7 closes. **onetrace 0.6.1's `reference make` accepts a run carrying the re-run mark,
+accepts a check run (stage `onetrace.check`, which carries no mark), and keeps the reserved stages
+`onetrace.check` and `onetrace.close` as steps.** Two members, as first written, made 0.6.1 FAIL a
+record that should pass, and both now have a form measured to read as without them: the reference's
+empty mark, `steps.<node>.empty_outputs` beside the outputs, and the close receipt's constants,
+under the `onetrace.` prefix.
+
+**The model-call record 1.1 and the embedding record.** onetrace-verify before 0.7 does not check a
+`model-call-record/1.1` record's content, or an embedding record at all, its credential row
+included. A gate that relies on those rows should move to onetrace-verify 0.7.
 
 <!-- https://oneproof.dev/onetrace/README.md -->
 

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recording which onedoor decision allowed an action · onetrace docs</title>
+<meta name="description" content="onetrace documentation: onedoor decisions">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site-v2.css">
+<link rel="stylesheet" href="/onetrace/assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html">Developers</a><a href="/debugging.html">Debug an agent</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/" aria-current="page">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
+<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li><li><a href="/onetrace/references.html">References</a></li><li><a href="/onetrace/variation.html">Variation across repeat runs</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>6</i>Record features</div><ul><li><a href="/onetrace/decisions.html" aria-current="page">onedoor decisions</a></li><li><a href="/onetrace/span-context.html">The span context</a></li><li><a href="/onetrace/nesting.html">Nesting</a></li><li><a href="/onetrace/streaming.html">Streaming the record</a></li><li><a href="/onetrace/storage.html">Storage in a bucket</a></li><li><a href="/onetrace/model-call-record.html">The model-call record</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Record features</p>
+<h1 id="recording-which-onedoor-decision-allowed-an-action">Recording which onedoor decision allowed an action</h1>
+<p>A step that takes an action can record which <a href="https://onedoor.example">onedoor</a> decision allowed
+it, and the record proves it: anyone can check, with no network calls, that the decision exists
+unaltered, that it permitted this step, and, where a bound permit was used, that the permit covered
+exactly the action the step recorded. onetrace never imports onedoor — the small, stable pieces it
+needs are vendored as standard-library code (<code>onetrace.onedoor_ref</code>) and tested against onedoor's
+own published vectors.</p>
+<h2 id="declaring-the-gated-steps">Declaring the gated steps</h2>
+<p>A run declares which of its steps must be gated:</p>
+<div class="code"><pre><code class="language-python">@ot.run(stages=[&quot;approve_payment&quot;], gated_stages=[&quot;approve_payment&quot;])
+def main():
+    ...
+</code></pre></div>
+<p><code>Recorder(..., gated_stages=[...])</code> does the same. Each gated stage must be a declared stage. The
+declaration is written into the run's manifest. A gated step that records no decision is a finding
+the verifier names, not a silence. A step not declared gated may still cite a decision.</p>
+<h2 id="recording-the-decision-inside-the-step">Recording the decision inside the step</h2>
+<p>Inside a decorated step, after onedoor answers and before the action:</p>
+<div class="code"><pre><code class="language-python">ot.decision(ref, permit=None, action=None)
+</code></pre></div>
+<ul>
+<li><code>ref</code>: the <code>onedoor-decision-ref/1</code> object onedoor returns (<code>request_id</code>, <code>decision_digest</code>,
+<code>verdict</code>, <code>issuer</code>), recorded verbatim. A step may record more than one — a proposal, then its
+resumption — and they are kept in call order.</li>
+<li><code>permit</code>: optional, the bound permit's compact JWS, where one was issued. It is recorded verbatim
+so its signature can be re-checked later.</li>
+<li><code>action</code>: optional, the action object the step is about to send. It is recorded <strong>by digest
+only</strong> — the digest the bound-permit profile uses (domain tag <code>aadp:action:v1</code>, one zero byte,
+the JCS form of the object, SHA-256, base64) — never the object itself. An action object's numbers
+are <strong>decimal strings</strong>, as onedoor's vectors have them (<code>&quot;amount_eur&quot;: &quot;40.00&quot;</code>); a float in an
+action is refused and named, never canonicalised.</li>
+</ul>
+<p>These go in the receipt's optional <code>authorization</code> block. A run that records no decision writes
+receipts byte-identical to 0.4.0.</p>
+<h2 id="what-onetrace-verify-checks">What onetrace-verify checks</h2>
+<p>Five rows, each PASS, FAIL or NOT-RUN, never guessed. They appear only when a run declares gated
+stages or cites a decision; a run verified without any is read exactly as before.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>row</th>
+<th>PASS</th>
+<th>FAIL</th>
+<th>NOT-RUN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gated steps cite a decision</td>
+<td>every declared gated step cited one</td>
+<td>a gated step cited none</td>
+<td>no <code>gated_stages</code> declared</td>
+</tr>
+<tr>
+<td>references are well formed</td>
+<td>each is <code>onedoor-decision-ref/1</code></td>
+<td>one is malformed</td>
+<td>no references</td>
+</tr>
+<tr>
+<td>a step that acted cites a permitting decision</td>
+<td>its last reference's verdict is <code>permit</code></td>
+<td>it acted on a <code>deny</code> or <code>propose</code></td>
+<td>no references on an acting step</td>
+</tr>
+<tr>
+<td>the permit covers the recorded action</td>
+<td>the signature is valid for an issuer in <code>--permit-issuers</code>, the action digest equals the step's recorded action, and the step ran within the permit's lifetime</td>
+<td>any of these fails</td>
+<td>no permit recorded, or no issuer key given</td>
+</tr>
+<tr>
+<td>the decision is in the export</td>
+<td><code>--decisions &lt;export.jsonl&gt;</code> (with its <code>.sha256</code> sidecar) given, and every reference matches a row by digest</td>
+<td>a digest mismatch, not in the export, or the export is damaged</td>
+<td>no export given</td>
+</tr>
+</tbody>
+</table></div>
+<p>The last row reuses onedoor's own five outcomes. With no export and no permit, the record can still
+show that a gated step cited a permitting decision; the rows that need more read NOT-RUN, so nothing
+reads as checked that was not.</p>
+<div class="code"><pre><code>onetrace-verify --decisions decisions.jsonl --permit-issuers issuers.json runs/&lt;run_id&gt;
+</code></pre></div>
+<p>The permit issuer's Ed25519 public key is read from <code>--permit-issuers</code>, an <code>onedoor-issuer-trust/1</code>
+file, separate from the run-signing <code>--trust</code> file: the permit issuer is a different trust domain
+from the run's signer, and the <code>onetrace-trust/0.1</code> file carries key fingerprints, not public keys.
+The run-signing <code>--trust</code> file is never read for an issuer, and an issuer key is never read from the
+run. The file names each issuer and its 64-hex Ed25519 public key:</p>
+<div class="code"><pre><code class="language-json">{
+  &quot;format&quot;: &quot;onedoor-issuer-trust/1&quot;,
+  &quot;issuers&quot;: [
+    {&quot;issuer&quot;: &quot;https://onedoor.example/payments-issuer&quot;,
+     &quot;alg&quot;: &quot;ed25519&quot;,
+     &quot;public_key&quot;: &quot;03a107bff3ce10be1d70dd18e74bc09967e4d6309ba50d5f1ddc866412553...&quot;}
+  ]
+}
+</code></pre></div>
+<p>When <code>--decisions</code> is given without <code>--permit-issuers</code>, the permit row reads NOT-RUN, naming the
+missing <code>--permit-issuers</code> file, so a permit is never read as checked when its issuer key is absent.</p>
+<h2 id="what-this-does-not-claim">What this does not claim</h2>
+<ul>
+<li>A citation shows that the run names an existing, unaltered decision. It does not show that every
+action was gated, only that every declared gated step cited one.</li>
+<li>A permit check shows the decision covered the action object the step recorded. It does not show
+that the receiving system received exactly that object; that is the recipient's own check.</li>
+<li>Nothing here says a decision was right.</li>
+</ul>
+<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/explain-format.html"><span>← Previous</span>Explanation format</a><a class="next" href="/onetrace/span-context.html"><span>Next →</span>The span context</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#declaring-the-gated-steps">Declaring the gated steps</a><a href="#recording-the-decision-inside-the-step">Recording the decision inside the step</a><a href="#what-onetrace-verify-checks">What onetrace-verify checks</a><a href="#what-this-does-not-claim">What this does not claim</a></aside></div>
+<footer><div class="wrap stack-lg"><div class="foot">
+<div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
+<div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/debugging.html">Debug an agent</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>Also from oneproof</h4><ul><li><a href="/onedoor/">onedoor</a><br><span class="muted" style="font-size:13px">decide what an agent is allowed to do, before it does</span></li></ul></div>
+</div><div class="fine">© 2026 oneproof · Apache-2.0. onetrace itself reports to no one.</div></div></footer>
+<script src="/onetrace/assets/copy.js" defer></script>
+<script>if(window.matchMedia&&matchMedia("(max-width:760px)").matches){var d=document.querySelector(".docs-side details");if(d)d.removeAttribute("open")}</script>
+</body>
+</html>

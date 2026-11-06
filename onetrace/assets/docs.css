@@ -1,7 +1,9 @@
-/* onetrace docs: the layout and reading styles, on top of /assets/site.css (same tokens). */
+/* onetrace docs: the layout and reading styles, on top of /assets/site-v2.css (its tokens, and six of the docs' own below). */
 .docs{display:grid;grid-template-columns:232px minmax(0,1fr) 200px;gap:44px;max-width:1320px;margin:0 auto;padding:36px 24px 72px}
 .docs-side{position:sticky;top:84px;align-self:start;max-height:calc(100vh - 100px);overflow:auto;font-size:14.5px;padding-right:6px}
 .docs-side details>summary{display:none}
+.docs-side details{border:0;border-radius:0;background:none}
+.docs-side details>summary{padding:0}
 .docs-side .grp{margin:0 0 18px}
 .docs-side .grp-t{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
 .docs-side .grp-t i{font-style:normal;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--navy);color:#fff;font-size:11px;letter-spacing:0}
@@ -72,7 +74,7 @@
  .prose>h1:first-of-type{font-size:30px}.dhero h1{font-size:32px}
  .paths6{grid-template-columns:1fr}.pager{grid-template-columns:1fr}.pager .next{grid-column:1}
 }
-/* overrides of site.css for docs pages */
+/* overrides of the site stylesheet for docs pages */
 .prose h2,.prose h3,.prose p{max-width:none}
 .prose p,.prose li{font-size:17px}
 .prose .lede{font-size:19px}
@@ -101,3 +103,9 @@ section.dhero{padding:0}
 .prose .code pre{padding-top:38px}
 .prose .lead{font-size:19px}
 .docs>*{min-width:0}
+/* under /assets/site-v2.css: the docs' tokens it does not define, and the defaults it resets */
+:root{--navy:#0b1626;--navy-2:#13233a;--navy-3:#1f3a5f;--on-navy:#e8eef7;--on-navy-2:#a9b7cb;--soft:#0f1a2b}
+:where(.prose) p{margin:1em 0}
+.prose .code{background:none;border:0;border-radius:0}
+.prose pre{border:1px solid var(--line)}
+.prose img{max-width:100%;height:auto}

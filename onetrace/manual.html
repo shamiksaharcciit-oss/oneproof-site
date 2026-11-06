@@ -8,28 +8,14 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site-v2.css">
 <link rel="stylesheet" href="/onetrace/assets/docs.css">
 </head>
 <body>
 <a class="skip" href="#content">Skip to the content</a>
-<header class="nav">
-  <div class="wrap">
-    <a class="brand" href="/" aria-label="onetrace by oneproof, home">
-      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>
-      onetrace <small>by oneproof</small>
-    </a>
-    <nav class="nav-links" aria-label="Main">
-      <a href="/">Product</a>
-      <a href="/developers.html">Developers</a>
-      <a href="/how-it-works.html">How it works</a>
-      <a href="/onetrace/" aria-current="page">Docs</a>
-      <a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a>
-    </nav>
-  </div>
-</header>
-<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html" aria-current="page">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Reference</p>
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html">Developers</a><a href="/debugging.html">Debug an agent</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/" aria-current="page">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
+<div class="docs"><aside class="docs-side" aria-label="Documentation"><details open><summary>Docs menu: all pages</summary><div class="grp"><div class="grp-t"><i>1</i>Start here</div><ul><li><a href="/onetrace/index.html">Docs home</a></li><li><a href="/get-started.html">Get started, step by step <span class="ext">↗</span></a></li><li><a href="/onetrace/quickstart.html">Quickstart</a></li></ul></div><div class="grp"><div class="grp-t"><i>2</i>Add it to your code</div><ul><li><a href="/onetrace/agents/instrument.html">With your coding agent</a></li><li><a href="/onetrace/adapters/plain-python.html">Plain Python</a></li><li><a href="/onetrace/adapters/langchain.html">LangChain</a></li><li><a href="/onetrace/adapters/llamaindex.html">LlamaIndex</a></li><li><a href="/onetrace/adapters/langflow.html">Langflow</a></li><li><a href="/onetrace/tool-using-agent.html">Tool-using agent</a></li><li><a href="/onetrace/manual.html#16-decorators">Decorators and options</a></li></ul></div><div class="grp"><div class="grp-t"><i>3</i>Check and compare</div><ul><li><a href="/onetrace/manual.html#8-verifying-a-run">Verify a run</a></li><li><a href="/onetrace/verbs.html">Compare runs: diff, localize, reproduce</a></li><li><a href="/onetrace/verdicts.html">The five verdicts</a></li><li><a href="/onetrace/textdiff-format.html">Text-diff format</a></li><li><a href="/onetrace/references.html">References</a></li><li><a href="/onetrace/variation.html">Variation across repeat runs</a></li></ul></div><div class="grp"><div class="grp-t"><i>4</i>Sign and timestamp</div><ul><li><a href="/onetrace/manual.html#17-signing-a-run">Sign a run</a></li><li><a href="/onetrace/manual.html#15-anchoring-a-run">Timestamp a run</a></li></ul></div><div class="grp"><div class="grp-t"><i>5</i>When something fails</div><ul><li><a href="/onetrace/errors.html">Errors and fixes</a></li><li><a href="/onetrace/manual.html#12-common-errors-and-what-they-mean">Common errors, explained</a></li></ul></div><div class="grp"><div class="grp-t"><i>6</i>Record features</div><ul><li><a href="/onetrace/decisions.html">onedoor decisions</a></li><li><a href="/onetrace/span-context.html">The span context</a></li><li><a href="/onetrace/nesting.html">Nesting</a></li><li><a href="/onetrace/streaming.html">Streaming the record</a></li><li><a href="/onetrace/storage.html">Storage in a bucket</a></li><li><a href="/onetrace/model-call-record.html">The model-call record</a></li></ul></div><div class="grp"><div class="grp-t"><i>R</i>Reference</div><ul><li><a href="/onetrace/manual.html" aria-current="page">The full manual</a></li><li><a href="/onetrace/format.html">Record format</a></li><li><a href="/onetrace/explain-format.html">Explanation format</a></li><li><a href="/onetrace/non-claims.html">What onetrace doesn&#x27;t claim</a></li><li><a href="/onetrace/agents/AGENTS-section.html">Snippet for AGENTS.md</a></li><li><a href="/onetrace/README.html">All pages</a></li></ul></div></details></aside><main id="content" class="prose"><p class="crumb"><a href="/onetrace/">Docs</a> / Reference</p>
 <h1 id="onetrace-developer-manual">onetrace: developer manual</h1>
 <p>This manual takes you from knowing nothing about onetrace to recording, verifying and comparing your own pipeline's runs. Jump to any section from the menu, or from <strong>On this page</strong>.</p>
 <hr />
@@ -85,7 +71,7 @@
 </ul>
 <hr />
 <h2 id="2-install">2. Install</h2>
-<p>Requirements: <strong>Python 3.10 or newer</strong>. The console (<code>onetrace-console</code>) needs Python 3.12 or newer, so start with 3.12 to use both. Use a virtual environment.</p>
+<p>Requirements: <strong>Python 3.10 or newer</strong>. Use a virtual environment. The console (<code>onetrace-console</code>) needs Python 3.12 or newer and goes in an environment of its own until console 0.7.0: today it reads runs from onetrace 0.6.x (record formats up to 0.3), and onetrace 0.7 beside it breaks the console's pins.</p>
 <div class="code"><pre><code class="language-bash">python -m venv .venv
 # Windows PowerShell:  .\.venv\Scripts\Activate.ps1
 # macOS / Linux:       source .venv/bin/activate
@@ -114,7 +100,7 @@ pip install onetrace
 </tbody>
 </table></div>
 <p>Check the install:</p>
-<div class="code"><pre><code class="language-bash">python -c &quot;import onetrace; print(onetrace.__version__)&quot;   # 0.4.0
+<div class="code"><pre><code class="language-bash">python -c &quot;import onetrace; print(onetrace.__version__)&quot;   # 0.7.1
 </code></pre></div>
 <p>To pin exactly what was published, take each file's sha256 from the <strong>Download files</strong> page of the project on PyPI and put it in a requirements file:</p>
 <div class="code"><pre><code>onetrace==0.4.0         --hash=sha256:&lt;from the PyPI page&gt;
@@ -486,7 +472,7 @@ rec.boundary(&quot;answer&quot;, &quot;external service&quot;, &quot;vendor API;
 </code></pre></div>
 <p>Both must name a <strong>declared</strong> stage, and both make coverage <code>incomplete</code>. They exist so that a record can be honest about what it doesn't show.</p>
 <h3 id="510-closing-the-run-and-verifying-automatically">5.10 Closing the run, and verifying automatically</h3>
-<p><strong>Always call <code>rec.close()</code></strong> at the end, in a <code>finally:</code> block if stages may raise. It writes the final manifest, including any gaps or boundaries declared after the last receipt, and runs the verify hook if you configured one:</p>
+<p><strong>Always call <code>rec.close()</code></strong> at the end, in a <code>finally:</code> block if stages may raise. It writes the run's close receipt (stage <code>onetrace.close</code>, the last in every run's chain; see <a href="format.html#format-04-every-run-ends-with-a-close-receipt">the record format</a>), then the final manifest, including any gaps or boundaries declared after the last receipt, and runs the verify hook if you configured one. <code>close(ended_by=...)</code> says how the run ended, as the close receipt records it: <code>&quot;exit&quot;</code> (the default), <code>&quot;SIGTERM&quot;</code>, or <code>&quot;unhandled exception: &lt;class&gt;&quot;</code>; <code>@ot.run</code> passes the class of an exception that left the run function. A run killed before <code>close()</code> holds no close receipt:</p>
 <div class="code"><pre><code class="language-python">from onetrace.verify_pin import VerifyPin
 
 rec = Recorder(..., policy=&quot;fail-closed&quot;, verify_pin=VerifyPin())
@@ -504,7 +490,7 @@ finally:
 </ul>
 <h3 id="511-limits-concurrency-and-async">5.11 Limits, concurrency and async</h3>
 <ul>
-<li><strong>Size bound:</strong> <code>Recorder(..., max_run_bytes=500_000_000)</code>. A write that would exceed it raises <code>StoreExhausted</code>. That derives from <code>BaseException</code>, like <code>KeyboardInterrupt</code>, so an ordinary <code>except Exception</code> doesn't swallow it. A receipt naming the limit is written for the stage in progress when the bound leaves room for it. <code>max_run_bytes</code> itself is refused at construction if it is below the smallest a real receipt for your own declared stages could ever be — measured fresh from your run's own configuration each time, not a fixed number — so a bound too small to hold even that receipt is never accepted in the first place, rather than left to fail later with no receipt and no gap to explain why. A write whose own output already reached disk before the bound stopped it is cleaned up: the bound is a controlled refusal, not a crash, so no orphaned <code>*.tmp</code> file is left under <code>artifacts/</code>.</li>
+<li><strong>Size bound:</strong> <code>Recorder(..., max_run_bytes=500_000_000)</code>. A write that would exceed it raises <code>StoreExhausted</code>. That derives from <code>BaseException</code>, like <code>KeyboardInterrupt</code>, so an ordinary <code>except Exception</code> doesn't swallow it. A receipt naming the limit is written for the stage in progress when the bound leaves room for it. The close receipt counts toward the bound but is never refused by it, so a run that reached its bound still closes. <code>max_run_bytes</code> itself is refused at construction if it is below the smallest a real receipt for your own declared stages could ever be — measured fresh from your run's own configuration each time, not a fixed number — so a bound too small to hold even that receipt is never accepted in the first place, rather than left to fail later with no receipt and no gap to explain why. A write whose own output already reached disk before the bound stopped it is cleaned up: the bound is a controlled refusal, not a crash, so no orphaned <code>*.tmp</code> file is left under <code>artifacts/</code>.</li>
 <li><strong>One process per run folder.</strong> The <code>.lock</code> file enforces it. Threads and asyncio tasks inside that process are fine, because emission is serialised inside the recorder.</li>
 <li><strong>Async stages:</strong></li>
 </ul>
@@ -656,7 +642,7 @@ is printed, not what is checked.</p>
 54 pass, 2 fail, 2 not-run  -&gt;  FAIL
 </code></pre></div>
 <h3 id="83-output-files-are-checked-automatically">8.3 Output files are checked automatically</h3>
-<p>As of 0.1.1, <code>onetrace-verify</code> reads <code>artifacts/</code> itself — you no longer need a separate script. For every receipt's own recorded outputs, it looks for <code>artifacts/&lt;receipt stem&gt;/&lt;output name&gt;</code> (the layout this SDK's own <code>ctx.write</code>/<code>write_json</code> produce):</p>
+<p>As of 0.1.1, <code>onetrace-verify</code> reads <code>artifacts/</code> itself — you no longer need a separate script. For every receipt's own recorded outputs, it looks for <code>artifacts/&lt;receipt stem&gt;/&lt;output name&gt;</code> (the layout this SDK's own <code>ctx.write</code>/<code>write_json</code> produce), the receipt stem being the receipt file's name without its <code>.json</code>, for example <code>03-answer</code>:</p>
 <ul>
 <li><strong>A run with a recognised <code>artifacts/</code> layout:</strong> every recorded output must be present with a matching digest, or it's a <code>[FAIL]</code> row naming the file. A receipt whose own format this verifier doesn't implement is skipped: its outputs are content it can't read.</li>
 <li><strong>A run with no <code>artifacts/</code> at all, or one whose layout this verifier doesn't recognise</strong> (an older run, or one built by hand rather than through this SDK): one <code>NOT-RUN</code> row, <code>run: artifacts</code>, naming which case it is. No file is checked. The summary can still read <code>PASS</code>, because the record itself checks out.</li>
@@ -775,6 +761,7 @@ answer        35a281ec6835        9f02c1d7a4be        FIRST DIFFERENCE
 </tbody>
 </table></div>
 <p>A change in an instrument's version or config never changes a verdict by itself. It's shown as an annotation, so a <code>same</code> never hides that <em>how</em> the output was produced changed.</p>
+<p><strong>The close receipt is not a stage</strong> (format 0.4). A run's last receipt, <code>onetrace.close</code>, is set aside before the ladder is built, so it has no row and is never the first difference. When one run closed and the other did not, or both closed with different endings, the line after the verdict says so, before any stage difference: <code>close: run A closed (exit); run B not closed, its record ends at answer</code>. The JSON report carries it as <code>close</code>. It changes no verdict and no exit code: two runs whose stages all match read <code>identical</code> with the line beneath. See <a href="format.html#format-04-every-run-ends-with-a-close-receipt">the record format</a>.</p>
 <p><strong>Different inputs are said first</strong> (0.3.1). When the two runs were given different recorded inputs, the line after the verdict says so and names them: <code>inputs differ: the runs were given different recorded inputs: q (the intake stage's inputs)</code>, then that the stages below are compared across different inputs, with the <code>onetrace match</code> command that finds a run on the same input (see <a href="#runs-on-the-same-input-onetrace-match">runs on the same input</a>). A run's recorded inputs, here, are the arguments it was called with: its intake stage's inputs (section 16.3), the job it was given, such as a ticket or a question. An input a stage reads on its own, such as a corpus or a config file, is not one of them: a release changes those, and the ladder compares them stage by stage. A run with no intake stage (a run function without parameters, or a run not recorded with <code>@ot.run</code>) records no arguments, and nothing is said. They are compared by digest. The JSON report carries them under <code>inputs_differ</code>. The verdicts and the exit code are unchanged, but an <code>identical</code> or <code>identical after masking</code> verdict on different inputs says so on the verdict line itself, <code>localize: identical after masking, on different inputs (q)</code>, and the JSON carries <code>&quot;on_different_inputs&quot;: &quot;true&quot;</code>: a mask that names the input's own kind of value (a path given as the argument, say) can make two runs on different inputs read the same, and a reader of the verdict alone should not take them for one run.</p>
 <p><strong>The outputs that changed at the end</strong> (0.3.1). When two runs diverge, the report lists each stage nothing else reads from whose output differs, with where its change starts (its origins; see <a href="#one-outputs-path-localize---for">one output's path</a>), under <code>end_outputs</code> in the JSON. The text prints the list as <code>outputs that changed at the end:</code> when it says more than the first difference does: more than one such stage, or one whose change starts somewhere else. On a straight line of stages there is one, and it isn't printed. When the origins are more than one stage, the report ranks them (<code>origins_ranked</code>): each stage, with how many of those outputs its change reaches. A stage none of whose recorded inputs differs at some origin (&quot;nothing it read differs&quot;) ranks above one that was only ever given an input that differs and that no recorded link traces to a stage (&quot;an input it was given differs&quot;), since the second may only be passing on a change from outside the record; then most outputs first. The list and the ranking never change a verdict or the exit code.</p>
 <h4 id="release-noise---mask-file">Release noise: <code>--mask FILE</code></h4>
@@ -834,6 +821,7 @@ onetrace localize runs/monday runs/tuesday --out r    # two runs: first differen
 <li>its config and constants;</li>
 <li>the <strong>corpus link</strong> a query run records with <code>ot.corpus_from</code>, by digest: <code>corpus link changed: &lt;digest&gt; -&gt; &lt;digest&gt;</code>.</li>
 </ul>
+<p>The text report heads this block <code>FIRST DIFFERENCE at stage &lt;n&gt;, '&lt;stage&gt;'</code>, or <code>FIRST DIFFERENCE at node '&lt;step&gt;'</code> on a run recorded with a topology. The JSON report carries it under <code>cause</code> (<code>frontier_causes</code> on a topology): the key names the first difference, not a cause, and renaming it waits for a minor format version.</p>
 <p><code>diff</code> annotates a changed corpus link on every node that carries one, the way it annotates a changed setting.</p>
 <p>When nothing recorded differs at the first difference (the same instrument, version and settings), the cause says so in one sentence (0.3.0): <code>no recorded cause</code>, whether the step's instrument declares itself not rederivable (a model call, say, whose output can vary on its own), and the next later step with a recorded change, or <code>nothing recorded changes after it</code>. On a run recorded with a topology, the next change is one downstream of the first difference (reachable over the observed edges), never a change on another branch.</p>
 <h4 id="one-outputs-path-localize---for">One output's path: <code>localize --for</code></h4>
@@ -855,7 +843,7 @@ onetrace localize runs/monday runs/tuesday --out r    # two runs: first differen
 </code></pre></div>
 <p><code>match</code> (0.3.1) lists the runs given the same recorded inputs as this one, so a comparison can be between runs on the same job. It looks one level down in <code>--runs-root</code> (default: the folder holding the run), compares each run's arguments (its intake stage's inputs, as above) with this run's by digest, and checks each run that matches with the verifier. Only a run that verifies is listed, newest first by its first receipt's recorded start, each with the <code>onetrace diff</code> command that compares it with this one (both paths resolved, as the runs are found, so a linked folder or a Windows short folder name is not mixed with its other form); a run that matches but doesn't verify, or couldn't be checked, is named under <code>not listed</code>, with why. Exit 0 when one or more runs are listed, 1 when none, 3 when this run doesn't verify, 4 when it has no intake stage to match on or couldn't be checked. Nothing is read but the receipts.</p>
 <p>Each verb prints and writes a carried verifier line that repeats across receipts once, with a count (<code>[NOT-RUN] originality on 3 receipts -- ...</code>). <code>--verbose</code> prints and writes each line; the JSON report always keeps each.</p>
-<p><code>localize A B --follow-corpus</code> follows a changed corpus link one hop, as <code>diff</code> does, and reports where the two linked ingest runs first differ and why, after its own report. It never shows stored ingest text (see <a href="#following-a-changed-corpus-link">following a changed corpus link</a>).</p>
+<p><code>localize A B --follow-corpus</code> follows a changed corpus link one hop, as <code>diff</code> does, and reports where the two linked ingest runs first differ and what differs there, after its own report. It never shows stored ingest text (see <a href="#following-a-changed-corpus-link">following a changed corpus link</a>).</p>
 <p>The corpus link is compared on run records only. A query run's retrieval stage is a run record, so the per-document receipts of the two-root form are not compared for a corpus link.</p>
 <h4 id="a-straight-line-run-against-a-graph-run">A straight-line run against a graph run</h4>
 <p>A run written with the Recorder API records its stages in a straight line, with no edges; the same
@@ -907,6 +895,9 @@ than in the run it was compared with is listed.</p>
 <p><code>{out}</code> is a fresh folder that <code>reproduce</code> chooses. Any further arguments your code needs, such as a run id, go in <code>argv</code> as plain strings.</p>
 </li>
 <li>
+<p><strong>Runner format <code>onetrace-runner/0.3</code> (0.7)</strong> adds two ways to read the record. <code>{input:&lt;name&gt;}</code> in <code>argv</code> or <code>cwd</code> is the path of a file holding the text of the input <code>&lt;name&gt;</code> that the run's first step kept (<code>keep_inputs</code>, section 16.19), its digest checked; the file is written beside the report, under <code>rerun-inputs/</code>. A param <code>{&quot;stage&quot;: &quot;answer&quot;, &quot;field&quot;: &quot;config.&lt;key&gt;&quot;}</code> reads a value from that step's kept configuration (<code>keep_config</code>, section 16.21), its file checked against the receipt's <code>config_kept.digest</code>. A step that kept no configuration, a key left out, or an input not kept gives no value, and the re-run reads <code>COULD NOT CHECK</code>, naming the step. A <code>0.1</code> or <code>0.2</code> runner that uses either is refused; one that does not reads as before.</p>
+</li>
+<li>
 <p><strong>Re-running a single stage is not available in 0.1.x.</strong> <code>onetrace reproduce &lt;run&gt; &lt;stage&gt;</code> is accepted, but it always reports that stage as <code>COULD NOT CHECK</code> (exit 4), naming the reason. Reproduce the whole run instead.</p>
 </li>
 <li>
@@ -919,6 +910,81 @@ than in the run it was compared with is listed.</p>
 <p>Stages marked <code>rederivable=&quot;false&quot;</code> are expected not to reproduce.</p>
 </li>
 </ul>
+<p><strong>Steps that act on the world (0.7).</strong> A re-run executes your code again, so a step that sends an email or places an order would do it again. <code>reproduce</code> reads each step's <code>effect_label</code> in the record before the child starts:</p>
+<ul>
+<li><strong>A step with no label runs, as it always has.</strong> That is every step of a run recorded before 0.7, and every stage you have not marked. One line names them before the child starts: <code>this re-run executes 2 steps whose effect is not recorded: fetch, summarise</code>. The report keeps them as <code>execution.effect_not_recorded</code>.</li>
+<li><strong>A step recorded <code>write</code> or <code>unknown</code> is not executed.</strong> One line names those steps before the child starts: <code>this re-run stops before 1 step recorded as write or unknown: send_email (write: declared on the stage); --allow-writes runs it</code>. The re-run stops before that step's body is called; the step and every step after it read <code>COULD NOT CHECK  (stopped: ...)</code>, the summary line adds <code>stopped: N</code>, and the exit code is 4. The produced run closes with <code>onetrace.ended_by</code> <code>re-run stopped before send_email: effect write (declared on the stage)</code>. A step whose receipt holds the draft's <code>effects</code> with an entry is stopped before in the same way, whatever its label.</li>
+<li><strong><code>--allow-writes</code></strong> runs those steps too.</li>
+<li>Mark a stage with <code>@ot.stage(..., effect=&quot;write&quot;)</code> for a step that acts on the world outside the run, or <code>effect=&quot;read&quot;</code> for one that does not. The label is recorded on its receipt, basis <code>declared on the stage</code>. onetrace-auto labels each hooked call itself.</li>
+</ul>
+<p><strong>The twin: <code>--config-of</code> (0.7).</strong> A twin answers &quot;what would this run have given under that run's configuration?&quot;:</p>
+<div class="code"><pre><code class="language-bash">onetrace reproduce runs/tuesday --config-of runs/monday --runner runner.json --out reports/twin
+</code></pre></div>
+<ul>
+<li>RUN's kept inputs (<code>runs/tuesday</code>) run once through REFERENCE_RUN's code and kept configuration (<code>runs/monday</code>). Every runner param is read from REFERENCE_RUN's record, and each <code>{input:&lt;name&gt;}</code> from RUN's.</li>
+<li>The produced run is compared with RUN stage by stage. The report names the first difference and the configuration keys whose kept values differ at that step, as <code>config.&lt;key&gt;</code>.</li>
+<li>The produced run carries <code>rerun</code> of kind <code>twin</code> in every receipt and in the manifest: <code>of_run</code>, <code>of_chain_head</code>, <code>config_of_run</code> and <code>config_of_chain_head</code>, and no <code>writes_allowed</code>. Like any re-run, it is not an original run and is not counted.</li>
+<li><strong>A twin starts safe.</strong> It runs a step only where both records and the code label it <code>read</code>. Before a step labelled <code>write</code> or <code>unknown</code>, or with no label, it stops; the close receipt's <code>onetrace.ended_by</code> names the step, and where that is the first step to execute, nothing runs. In the twin's process a hooked call that reads as <code>write</code> or <code>unknown</code> raises <code>RerunStopped</code>, and the library is not called. Mark a stage <code>effect=&quot;read&quot;</code> in its code where running it again has no effect outside the run.</li>
+<li><strong>It refuses, exit 3, running nothing,</strong> where RUN kept no input the runner names, the code is not given or does not match REFERENCE_RUN, REFERENCE_RUN kept no configuration or left out a key a param reads, either run is itself a re-run or does not verify, or <code>--allow-writes</code> or a stage is given.</li>
+<li>A twin shows what REFERENCE_RUN's configuration does on RUN's inputs today, with today's tools and services. They may answer differently than they did when either run was recorded.</li>
+</ul>
+<p><strong>The counterfactual: <code>--substitute STEP --from B</code> (0.7).</strong> A counterfactual answers &quot;what would the rest of A have done with B's value at this step?&quot;:</p>
+<div class="code"><pre><code class="language-bash">onetrace reproduce runs/monday --substitute summarise --from runs/tuesday --runner runner.json --out reports/cf
+</code></pre></div>
+<ul>
+<li>A's code runs once, with A's kept inputs and params. Each step before STEP is not run: its body is replaced by A's own kept output. At STEP, B's kept output is put in place. Each file is checked against its digest first. The steps after STEP run.</li>
+<li>&quot;Before STEP&quot; is the order of A's chain. On a DAG, a sibling written before STEP also carries A's own value, so nothing earlier is run again.</li>
+<li>A value is put in place of an <code>@ot.stage</code> step only, from the return value it kept: rule V1's JSON, raw bytes, or a numpy array. A value recorded through a registered encoder comes back as its JSON form, not as its own type.</li>
+<li>Each step put in place is labelled <code>read</code>, <code>substituted, not executed</code>, and reads <code>SUBSTITUTED</code> in the report, never compared. The produced run is compared with B at each step after STEP; the report names the steps that came out the same as B, and the first difference.</li>
+<li>The produced run carries <code>rerun</code> of kind <code>counterfactual</code> in every receipt and in the manifest: <code>of_run</code>, <code>of_chain_head</code> and <code>substituted</code> (<code>step</code>, <code>from_run</code>, <code>from_chain_head</code>, <code>from_receipt</code>, <code>output</code>, <code>output_digest</code>).</li>
+<li><strong>It starts safe, as a twin does.</strong> After STEP, a step runs only where A's record and the code label it <code>read</code>; otherwise the run stops before it, its close receipt naming the step.</li>
+<li><strong>The exit code.</strong> The run's intake is declared, not re-derived, so it reads <code>COULD NOT CHECK</code>, as in any whole-run <code>reproduce</code>. A counterfactual of a decorated run therefore exits 4 even where every step after STEP matches B; read the rows after STEP for the answer.</li>
+<li><strong>It refuses, exit 3, running nothing,</strong> where B kept no output at STEP, A kept none at a step before it, STEP is not a step of A or is the intake, B's outputs at STEP are not A's by name and media type, a step to put in place is a hooked call or did not complete, either run is itself a re-run or does not verify, the code is not given or does not match A, or <code>--allow-writes</code>, <code>--config-of</code> or a stage is given.</li>
+<li>A counterfactual shows how the rest of the pipeline runs on the value put in. It does not show that STEP made a difference, and its later steps carry their own variation.</li>
+</ul>
+<p>The produced run is marked as a re-run: every receipt, the intake and the close included, and the manifest carry <code>rerun</code>, kind <code>reproduce</code>, naming the run re-run and its chain head, and <code>writes_allowed</code> <code>&quot;true&quot;</code> with <code>--allow-writes</code>, else <code>&quot;false&quot;</code>. <code>onetrace reference make</code> refuses a marked run, and <code>onetrace verdict</code> says on its first line that the run is a re-run and not counted. The replay rule covers recorded steps and hooked calls only: code your pipeline runs outside any stage or hook is not seen and not stopped.</p>
+<h3 id="1031-a-check-of-a-claim-onetrace-check-07">10.3.1 A check of a claim: <code>onetrace check</code> (0.7)</h3>
+<p>A check runs one verb to test one claim an explanation makes, and records what came back as a run of its own, so the result is bound to a chain head. It is what the console's &quot;Prove it&quot; button calls.</p>
+<div class="code"><pre><code class="language-bash">onetrace check reproduce runs/baseline runs/candidate --stage split \
+    --predicted &quot;equal to the baseline&#x27;s&quot; --claim sha256:… --out checks/claim-2
+onetrace check localize  runs/baseline runs/candidate --predicted split --claim sha256:… --out checks/claim-3
+onetrace check diff-text runs/baseline runs/candidate --predicted split --claim sha256:… --out checks/claim-4
+onetrace check match     runs/candidate --runs-root runs --predicted PASS --claim sha256:… --out checks/claim-5
+</code></pre></div>
+<p><strong>The runner for a check of <code>reproduce</code></strong> is declared in onetrace-explain's configuration file (<code>ONETRACE_EXPLAIN_CONFIG</code>, else <code>~/.config/onetrace/explain.toml</code>), one <code>[[runner]]</code> table per pipeline:</p>
+<div class="code"><pre><code class="language-toml">[[runner]]
+code = &quot;~/work/pipeline.py&quot;
+command = [&quot;python&quot;, &quot;pipeline.py&quot;, &quot;--from&quot;, &quot;{stage}&quot;, &quot;--run&quot;, &quot;{run}&quot;]
+cwd = &quot;~/work&quot;
+timeout_seconds = 600
+</code></pre></div>
+<ul>
+<li>The runner is the one whose <code>code</code> file's sha256 equals every step's recorded <code>manifest_digest</code>. None matching, or two, is refused, naming them.</li>
+<li><code>command</code> is an argument list, never handed to a shell. It takes two placeholders only: <code>{stage}</code>, the node id the check starts from, and <code>{run}</code>, the absolute path of the run it re-runs. Any other is refused.</li>
+<li><code>cwd</code> unset is the code's folder; a relative <code>code</code> or <code>cwd</code> is read from the configuration file's folder. <code>timeout_seconds</code> unset is 600.</li>
+<li>The table is read with <code>tomllib</code>, Python 3.11 and later. <code>--runner FILE</code> gives a JSON runner file in its place, read as <code>onetrace reproduce</code> reads one, except that a check does not fill <code>{input:&lt;name&gt;}</code>: a runner holding one is refused, exit 3, and nothing runs.</li>
+</ul>
+<p><strong>What a check of <code>reproduce</code> does.</strong> It re-runs the candidate from <code>--stage</code>:</p>
+<ul>
+<li>The command starts in a new session with the environment the check started with, every <code>ONETRACE_</code> variable removed, plus <code>ONETRACE_RUN_ID</code>, <code>ONETRACE_RUNS</code> and <code>ONETRACE_RERUN_PLAN</code>. Nothing else is added, and nothing from the environment is recorded.</li>
+<li>Each step before the stage is put in place from the candidate's kept outputs: its body is not called, and its receipt is labelled <code>read</code>, <code>substituted, not executed</code>. A run that kept no outputs can't be checked from a later stage.</li>
+<li>Each step from the stage on must be recorded <code>read</code>. Otherwise nothing starts, and onetrace prints why, then the filled command so you can run it yourself:<div class="code"><pre><code>Prove it can&#x27;t run this check: send_email is recorded as write (declared on the stage).
+A check never runs a step that writes, or whose effect is not recorded.
+To run it yourself, on your machine:
+  python pipeline.py --from split --run /home/me/runs/candidate
+</code></pre></div>
+In the run, a step runs only where the record's label and the code's both say <code>read</code>.</li>
+<li>At <code>timeout_seconds</code> the process group is sent <code>SIGTERM</code>, then <code>SIGKILL</code> 10 seconds later, so nothing the command started is left running.</li>
+<li>The produced run carries the re-run mark, kind <code>check</code>, with <code>from_stage</code>.</li>
+</ul>
+<p><strong>The check's run</strong> is in <code>--out</code>'s <code>check-run</code> folder. It holds one receipt of the reserved stage <code>onetrace.check</code> and the close receipt. Its constants say what was run and what was predicted, and are fixed in the checking process before the command starts; the record does not show that order, as the receipt is written after the command has ended. Its outputs are the command's <code>stdout.txt</code>, the verb's <code>report.json</code> and <code>stderr_tail.txt</code>. Its assertions <code>exit</code>, <code>result</code> and <code>came_back</code>:</p>
+<ul>
+<li><code>as predicted</code> or <code>otherwise</code>, by a fixed table: for <code>reproduce</code>, the produced outputs at the stage against the baseline's (<code>equal to the baseline's</code>), the candidate's (<code>equal to the candidate's</code>), or neither (<code>differs from both</code>), by digest; for <code>localize</code> and <code>diff-text</code>, whether the first difference is the predicted node; for <code>match</code>, whether the verifier's reading of the run is the predicted <code>PASS</code> or <code>FAIL</code>.</li>
+<li><code>did not run: &lt;reason&gt;</code> where the stage reads <code>COULD NOT CHECK</code>, the verb refused or could not check, the replay rule stopped the run, or the wall-clock limit was reached. It is never <code>otherwise</code>.</li>
+</ul>
+<p><code>result</code> is the verb's own raw word, as its report gives it, so a check of <code>reproduce</code> on a decorated run reads <code>COULD NOT CHECK</code> there, from the run's intake. The check's own outcome is <code>came_back</code> against <code>predicted</code>, given as the words below.</p>
+<p><code>onetrace check</code> prints the result's words first: <code>confirmed by a check (check 4be1…)</code>, <code>not supported by its check (check 4be1…)</code>, or <code>the check did not run: &lt;reason&gt; (check 4be1…)</code>, the check's run named by its chain head. Neither word is a verdict on the run. It exits 0 when the check ran, whatever came back, and 3 when it was refused and nothing ran. A check's run is never a reference: <code>onetrace reference make</code> refuses one.</p>
+<p>A check runs your own command: onetrace checks the code's identity and passes the stage and the run; it does not know what the command does with them. Code the command runs outside any stage or hook is not seen and not stopped. &quot;Confirmed by a check&quot; says one check's result matched what the claim predicted, on this machine, once; it is not a proof of the claim.</p>
 <h3 id="104-a-summary-for-a-pull-request-onetrace-summary">10.4 A summary for a pull request: <code>onetrace summary</code></h3>
 <div class="code"><pre><code class="language-bash">onetrace-verify --json runs/candidate &gt; verify.json
 onetrace diff runs/baseline runs/candidate --out r
@@ -1178,8 +1244,11 @@ settings: none changed
 <hr />
 <h2 id="13-api-summary">13. API summary</h2>
 <div class="code"><pre><code class="language-python">import onetrace
-onetrace.__version__                         # &quot;0.4.0&quot;
+onetrace.__version__                         # &quot;0.7.1&quot;
 onetrace.digest(path_or_bytes) -&gt; &quot;sha256:&lt;hex&gt;&quot;
+onetrace.current_stage()                     # the running step&#x27;s context (its .name, its .write_json), or None
+onetrace.model_from(run, stages=[...], serve_stage=None)   # a model link, in the corpus-link form (16.20)
+onetrace.RerunStopped                        # raised in a re-run before a step it stops before (10.3); a BaseException
 
 from onetrace.emit import (Recorder, Instrument, Refusal,
                            EmissionRefused, StoreExhausted, current_run, current_stage)
@@ -1188,7 +1257,7 @@ from onetrace.verify_pin import VerifyPin
 Recorder(out_dir, declared_stages, manifest, policy, anchor_reason=None, run_id=None,
          topology=False, declared_edges=None, boundaries=None, instruments=None,
          verify_pin=None, max_run_bytes=None)
-  .stage(name, instrument=None, instance=None)        # decorator, or `async with`
+  .stage(name, instrument=None, instance=None, effect=None)   # decorator, or `async with`
   .run_stage(name, instrument, fn, *args, **kw)
   .run_node(name, instance, instrument, fn, *args, **kw)
   .boundary(name, kind, note=None)
@@ -1798,6 +1867,64 @@ def answer(question, passages):
 <li><strong>Checking it.</strong> <code>onetrace-verify</code> (0.2.0 and 0.2.1) does not read <code>inputs/</code>: its result is the same with or without the files. The SDK's own check (<code>python -m onetrace.sdk_verify</code>) adds a row per kept input, <code>kept input text matches its digest</code>: PASS, FAIL, or NOT RUN when the file was removed; and a note, <code>inputs/: unlisted file</code>, for a file no receipt lists.</li>
 <li><strong>Removing the text</strong> (all of <code>inputs/</code>, or one file) is allowed and leaves the run verifiable: the digests are in the receipts.</li>
 </ul>
+<h3 id="1620-the-model-call-record-onetracemodel-call">16.20 The model-call record: <code>onetrace[model-call]</code></h3>
+<p><code>onetrace.model_call</code> writes one canonical <strong>model-call record</strong> per model call, as an ordinary output of the stage that made it. It never changes the receipt format and never changes the reading of a run's receipts; its own verifier rows read as every other row does, and a FAIL on one fails the run like any other FAIL. A run that writes no record is byte-for-byte the run it would be without the feature. Installed with <code>onetrace[model-call]</code>; the vLLM and transformers adapters import the engine only when used, so the engine stays your own version.</p>
+<div class="code"><pre><code class="language-python">import onetrace.model_call as mc
+from onetrace.model_call import hosted, record
+
+def answer(ctx, question):
+    rec, status = hosted.call(transport, endpoint, request, key, ctx=ctx)   # writes model_call.json
+    return mc.load(rec)
+</code></pre></div>
+<p>Every field that describes the call is a value object in one of five states — <code>observed</code>, <code>declared, not observed</code>, <code>declared, contradicted</code>, <code>not observed</code>, <code>not applicable</code> — with its source; a field the writer cannot fill is <code>not observed</code> or <code>not applicable</code>, never left out. The first record a stage writes is <code>model_call.json</code>, then <code>model_call.2.json</code> and so on. A per-step capture, when taken, is a separate <code>model-generated</code> output (<code>model_call.&lt;n&gt;.steps.json</code>) the record names by digest; the record holds no token id or text at any level. <code>mc.compare(a, b)</code> returns <code>same</code>, <code>diverged</code> or <code>could not compare</code>, and nothing else. <code>ot.model_from(run, stages=[...], serve_stage=...)</code> passed as <code>@ot.run(model=...)</code> records a verified model link in the corpus-link form. A verifier gains record rows for a run that holds a record, reading as its receipt rows do. The record, its states and sources, the capture levels, the comparator's results, the verifier's rows and what the record does not claim are specified in <a href="model-call-record.html">the model-call record</a>, with its schema <code>docs/model_call_record.schema.json</code> (<code>model-call-record/1.0</code>).</p>
+<h3 id="1621-keeping-a-steps-configuration-keep_config-07">16.21 Keeping a step's configuration: <code>keep_config</code> (0.7)</h3>
+<div class="code"><pre><code class="language-python">@ot.stage(&quot;answer&quot;, instrument=llm, keep_config=True, keep_config_except=[&quot;api_key&quot;])
+def answer(question): ...
+
+@ot.run(stages=[&quot;retrieve&quot;, &quot;answer&quot;], keep_config=True)   # every step&#x27;s, unless a stage says otherwise
+def pipeline(question): ...
+</code></pre></div>
+<p><strong><code>keep_config=True</code> keeps the step's instrument configuration as a file of the run.</strong> It is off unless you set it. It is accepted on <code>@ot.stage</code>, <code>@ot.run</code>, <code>Recorder</code> and <code>Recorder.stage</code>.</p>
+<ul>
+<li><strong>What is kept.</strong> The configuration, in canonical form, as <code>config/&lt;receipt stem&gt;/config.json</code>, beside <code>artifacts/</code>. The receipt's <code>config_kept</code> names it: <code>name</code>, <code>digest</code> and <code>bytes</code>. The digest equals <code>instrument.config_digest</code>.</li>
+<li><strong>Keys left out.</strong> A key named in <code>keep_config_except=[...]</code> is written as <code>not kept</code>, and <code>config_kept.partial</code> is <code>&quot;true&quot;</code>; the digest is then the kept bytes' digest, and the verifier reads the equality NOT-RUN, <code>configuration kept in part</code>, never FAIL. A kept configuration is a file of the run, so it can hold a path or a host you did not mean to share: leave such keys out.</li>
+<li><strong>Which wins.</strong> A stage's own <code>keep_config=</code> wins over the run's; the keys left out are both's. The intake and close receipts, and a step recorded by a hook, never carry it.</li>
+<li>A value that is not <code>True</code> or <code>False</code>, or an <code>except</code> list that is not a list of keys, is refused where it is declared, with the code <a href="errors.html#keep-config"><code>keep-config</code></a>.</li>
+<li><code>onetrace reproduce --config-of</code> (section 10.3) and a runner's <code>config.&lt;key&gt;</code> params read the kept file. onetrace-verify 0.6.1 does not read <code>config_kept</code>.</li>
+</ul>
+<h3 id="1622-step-expectations-otexpect-07">16.22 Step expectations: <code>ot.expect.*</code> (0.7)</h3>
+<div class="code"><pre><code class="language-python">@ot.stage(&quot;calibrate&quot;, instrument=cal, expect=[
+    ot.expect.range(&quot;value&quot;, lo=&quot;0&quot;, hi=&quot;500&quot;, unit=&quot;kPa&quot;),
+    ot.expect.relation(&quot;value&quot;, &quot;difference&quot;, of=(&quot;raw&quot;, &quot;offset&quot;), within=&quot;0.01&quot;),
+    ot.expect.member(&quot;value&quot;),
+])
+def calibrate(reading): ...
+</code></pre></div>
+<p><strong>An expectation is a rule a step declares about its own output.</strong> The verifier reads it on every run, with no other run to compare against. <code>expect=[...]</code> is accepted on <code>@ot.stage</code> and <code>Recorder.stage</code>, and each receipt of the step carries the list in <code>expectations</code>, <code>declared</code> <code>with the run</code>, with each declaration's digest. The run's data is never put in a declaration.</p>
+<p><strong>The four kinds.</strong> Every bound is a decimal string, as <code>&quot;0&quot;</code>, <code>&quot;-1.5&quot;</code> or <code>&quot;0.01&quot;</code>:</p>
+<ul>
+<li><code>range(target, lo=, hi=, unit=)</code>: the value is at least <code>lo</code> and at most <code>hi</code>; either may be left out, not both. <code>unit</code> labels the bounds and is not read: use <code>unit(...)</code> to check a unit.</li>
+<li><code>unit(target, unit)</code>: the value at <code>target</code> is the string <code>unit</code>.</li>
+<li><code>relation(target, op, of=(a, b), within=)</code>: the value is within <code>within</code> of <code>a - b</code> (<code>difference</code>), <code>a + b</code> (<code>sum</code>) or <code>a / b</code> (<code>ratio</code>), <code>a</code> and <code>b</code> being two values of the same output.</li>
+<li><code>member(target)</code>: the output holds a value at <code>target</code>.</li>
+</ul>
+<p>A target is a member of the return value (<code>&quot;value&quot;</code>), a JSON Pointer into it (<code>&quot;/a/0/b&quot;</code>), or an output by name and a pointer into it (<code>&quot;out.json#/n&quot;</code>). An expectation's row is <code>expect &lt;step&gt;.&lt;name&gt;</code>; unnamed, it is <code>&lt;target&gt; &lt;kind&gt;</code>. A bound that is not a decimal string, a kind outside the four, or a name repeated in one step is refused where it is declared, with the code <a href="errors.html#expectation"><code>expectation</code></a>.</p>
+<p><strong>How each reads.</strong> One row per expectation: PASS, FAIL naming the value and the rule, or NOT-RUN.</p>
+<ul>
+<li>Any kind reads NOT-RUN where the output was not kept or is not readable as JSON.</li>
+<li>A value is read as a decimal from its JSON text, never through a float: a JSON number as written, or a decimal string. <code>true</code> and <code>false</code> are not decimals.</li>
+<li><code>range</code> reads NOT-RUN where the target names no value or the value is not a decimal.</li>
+<li><code>unit</code> compares the value as a string, and reads NOT-RUN where the target names no value.</li>
+<li><code>relation</code> reads NOT-RUN where the target or either of its two values names no value or is not a decimal. It is computed to 100 significant digits, and a ratio over zero FAILs.</li>
+<li><code>member</code> FAILs where the target names no value.</li>
+</ul>
+<p><strong>Expectations written after the run.</strong> <code>onetrace expect write SOURCE --out FILE</code> writes an <code>onetrace-expectations/1</code> file from a JSON array of entries, each with <code>step</code> (the step's node id, as <code>calibrate</code> or <code>fetch#2</code>), <code>kind</code>, <code>target</code>, an optional <code>name</code>, and the kind's own members (<code>of</code> as a two-item array). Each entry is <code>declared</code> <code>after the run</code>, the file is sealed (not signed), and a file already there is never overwritten. The run's receipts are never edited. <code>onetrace-verify --expectations FILE RUN</code> reads it:</p>
+<ul>
+<li>the row <code>expectations file</code> FAILs where the file's seal does not recompute over its content, and no entry is then read;</li>
+<li>each entry's row is <code>expect &lt;step&gt;.&lt;name&gt; (declared after the run, &lt;seal&gt;)</code>, read as above. It FAILs where the run records no such step, and where an earlier entry of the file has the same <code>name</code> for the same <code>step</code>: the first is read, and each later one FAILs. <code>onetrace expect write</code> refuses such a source.</li>
+</ul>
+<p>An expectation declared after the run says nothing about what was expected when the run was made. onetrace-verify 0.6.1 does not read <code>expectations</code>, and does not take <code>--expectations</code>.</p>
+<p><strong>What it shows.</strong> An expectation that holds shows the declared rule held, not that the output was right.</p>
 <h2 id="17-signing-a-run">17. Signing a run</h2>
 <p>A signature is an Ed25519 signature over a finished run's chain head, by a key you hold. It is stored as its own file, <code>signatures/&lt;n&gt;.json</code>, beside the run's receipts. Like an anchor, it is never part of the chain: signing changes no byte that was there before, so the chain head stays byte-identical, and a run may carry several signatures (a recorder and a reviewer, say). Signing and anchoring work together in either order.</p>
 <p><strong>A signature does not show:</strong></p>
@@ -1830,6 +1957,7 @@ onetrace keygen --out &quot;$HOME\keys\recorder.key&quot;
 </ul>
 </li>
 <li><strong>Afterwards:</strong> <code>onetrace sign RUN --key PATH</code> or <code>onetrace sign RUN --key-env NAME</code>, with an optional <code>--signer &quot;label&quot;</code>. It exits 0 when the signature is stored and confirmed, 1 when it is refused (nothing stored), and 3 when it was stored but could not be confirmed as landed in this run.</li>
+<li><strong>Only a closed run is signed by default.</strong> A run whose chain does not end with its close receipt (it was killed, or it was written before format 0.4) is refused, with a <code>fix:</code> line naming <code>--not-closed</code>: nothing in its record says it finished, and a signature over it would read as a signature of a finished run. <code>onetrace sign RUN --key PATH --not-closed</code> (or <code>sign_run(run, key, not_closed=True)</code>) signs it anyway, and the record says so inside the signed bytes: format <code>stage-receipt-signature/0.2</code>, with <code>closed: &quot;false&quot;</code>, over <code>stage-receipt-signature/0.2:not-closed:</code> followed by the chain head. <code>--not-closed</code> on a closed run is refused. onetrace-verify 0.6.1 does not read the 0.2 record: it FAILs it, naming the member <code>closed</code>, the stricter reading. A later onetrace-verify reads it as signed and not closed.</li>
 </ul>
 <p><strong>Key custody.</strong> The key is never written into a run folder, never logged and never printed. A key file inside the run folder is refused before it is read, whether it is really there, reached through a link inside the folder, or a hard link to it anywhere under the folder (the refusal names that file, never the key). A key path must be a regular file of at most 64 KiB. In CI, keep the key in the CI secret store and pass it as an environment variable with <code>--key-env</code> or <code>onetrace.env(...)</code>.</p>
 <p><code>--signer</code> (or <code>signer=</code>) is a label the signer claims, such as &quot;nightly CI&quot;. It is stored as a claim and only ever reported as claimed: the name the verifier shows as the signer comes from your trust list, never from the record.</p>
@@ -1954,47 +2082,12 @@ own tracer.</p>
 <p>The same run always exports to the same bytes. A changed receipt changes its own span's id and the
 id of every span after it, since each later receipt's <code>prev</code> link changes with it.</p>
 <nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/errors.html"><span>← Previous</span>Errors and fixes</a><a class="next" href="/onetrace/format.html"><span>Next →</span>Record format</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#1-what-onetrace-is-in-one-page">1. What onetrace is, in one page</a><a href="#2-install">2. Install</a><a href="#3-five-minute-quickstart">3. Five-minute quickstart</a><a href="#4-core-concepts">4. Core concepts</a><a href="#5-integrating-onetrace-into-your-code-step-by-step">5. Integrating onetrace into your code, step by step</a><a href="#6-branching-pipelines-dags">6. Branching pipelines (DAGs)</a><a href="#7-what-a-run-folder-contains">7. What a run folder contains</a><a href="#8-verifying-a-run">8. Verifying a run</a><a href="#9-framework-integrations-langchain-llamaindex-langflow">9. Framework integrations (LangChain, LlamaIndex, Langflow)</a><a href="#10-comparing-runs">10. Comparing runs</a><a href="#11-using-onetrace-in-ci">11. Using onetrace in CI</a><a href="#12-common-errors-and-what-they-mean">12. Common errors and what they mean</a><a href="#13-api-summary">13. API summary</a><a href="#14-known-limitations">14. Known limitations</a><a href="#15-anchoring-a-run">15. Anchoring a run</a><a href="#16-decorators">16. Decorators</a><a href="#17-signing-a-run">17. Signing a run</a><a href="#18-seeing-a-run-in-your-tracing-tool">18. Seeing a run in your tracing tool</a></aside></div>
-<footer>
-  <div class="wrap">
-    <div class="foot-grid">
-      <div>
-        <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a>
-        <p style="margin-top:14px;max-width:36ch">A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p>
-        <p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p>
-      </div>
-      <div>
-        <h4>Product</h4>
-        <ul>
-          <li><a href="https://demo.oneproof.dev">Live demo</a></li>
-          <li><a href="/developers.html">Developers</a></li>
-          <li><a href="/how-it-works.html">How it works</a></li>
-          <li><a href="/onetrace/">Documentation</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Packages</h4>
-        <ul>
-          <li><a href="https://pypi.org/project/onetrace/">onetrace on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-verify/">onetrace-verify on PyPI</a></li>
-          <li><a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>More from oneproof</h4>
-        <ul>
-          <li><a href="/oneground/">oneground</a></li>
-          <li><a href="https://github.com/shamiksaharcciit-oss/onedoor">onedoor</a></li>
-          <li><a href="/where-it-fits.html">Where it fits</a></li>
-          <li><a href="/answer-lineage.html">A forensic report</a></li>
-          <li><a href="/building.html">What we're building</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one.</div>
-  </div>
-</footer>
+<footer><div class="wrap stack-lg"><div class="foot">
+<div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
+<div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/debugging.html">Debug an agent</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>Also from oneproof</h4><ul><li><a href="/onedoor/">onedoor</a><br><span class="muted" style="font-size:13px">decide what an agent is allowed to do, before it does</span></li></ul></div>
+</div><div class="fine">© 2026 oneproof · Apache-2.0. onetrace itself reports to no one.</div></div></footer>
 <script src="/onetrace/assets/copy.js" defer></script>
 <script>if(window.matchMedia&&matchMedia("(max-width:760px)").matches){var d=document.querySelector(".docs-side details");if(d)d.removeAttribute("open")}</script>
 </body>
