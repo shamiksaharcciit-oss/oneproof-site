@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>What's new · onetrace</title>
-<meta name="description" content="onetrace releases, latest first: onetrace 0.7.1, onetrace-console 0.6.0, onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
+<meta name="description" content="onetrace releases, latest first: onetrace-console 0.6.1, onetrace 0.7.1, onetrace-console 0.6.0, onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
 <link rel="canonical" href="https://oneproof.dev/whats-new.html">
 <meta property="og:title" content="What's new · onetrace">
-<meta property="og:description" content="onetrace releases, latest first: onetrace 0.7.1, onetrace-console 0.6.0, onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
+<meta property="og:description" content="onetrace releases, latest first: onetrace-console 0.6.1, onetrace 0.7.1, onetrace-console 0.6.0, onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://oneproof.dev/whats-new.html">
 <meta property="og:image" content="https://oneproof.dev/og.png">
@@ -34,6 +34,30 @@
 <section class="band" style="padding-top:24px">
   <div class="wrap">
     <span class="anchor" id="upgrade"></span>
+    <article class="rel" id="console061">
+      <div class="ver">onetrace-console 0.6.1<small>on onetrace 0.6.1</small></div>
+      <div class="stack">
+        <h2 style="font-size:1.5rem">Setup from a settings menu, an Explain panel that reads as a flow, and a start-up you can follow.</h2>
+        <div class="grid g3">
+          <div class="card"><h3>A settings menu, top right</h3><p>A gear on a local console's pages opens Explain's and neighbours' setup, each with its state. A dot on it says a setup has stopped working.</p></div>
+          <div class="card"><h3>Neighbours, turned on in the console</h3><p>Confirm on the setup page and the model's files are fetched in the background, with a count of the files checked. Where the extra is missing, the page gives the install line for the Python the console runs from.</p></div>
+          <div class="card"><h3>Explain, one step at a time</h3><p>Prepare, Check, Send, Read. Only Send sends, and it names the address. The first-send question says in plain words what would go.</p></div>
+        </div>
+        <details><summary>Also in 0.6.1</summary><div class="in">
+          <p><b>A key variable that is not set says where to look:</b> the file onetrace-explain reads, the variable its <code>key_env</code> names, and whether that variable is set where the console started, never its value.</p>
+          <p><b>Two dropdowns to choose a pair</b> on a local console's pipeline page, then Compare.</p>
+          <p><b>Progress while the console starts:</b> <code>demo</code> and a runs folder say each phase as it happens; <code>--quiet</code> keeps the old silence.</p>
+          <p><b>The nearness ladder marks a drop only where there is one.</b> No number, verdict or exact comparison changes.</p>
+          <p><b>An explanation's lead reads "Lead: where to look first",</b> and backtick pairs show as code.</p>
+          <p><b>A check the page already ran reads "Run on this page",</b> with its one-line result.</p>
+          <p><b>Include the kept text of outputs that differ:</b> a checkbox beside Send, off by default, shown by Show the packet before anything goes.</p>
+          <p class="note"><b>Still set by hand:</b> Explain's model and key. The console's setup page shows the file it reads and whether the key's variable is set; you write the file and set the variable yourself. The console reads records up to format 0.3, so runs from onetrace 0.7 are not read yet.</p>
+        </div></details>
+        <div class="code"><div class="label"><span>Install</span><button class="copy" type="button">Copy</button></div><pre>pip install --upgrade "onetrace-console[neighbours]"</pre></div>
+        <p class="muted" style="font-size:15px"><a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.6.1">Release notes</a> · <a href="/developers.html#neighbours">Turn on neighbours</a> · <a href="/developers.html#model">Set up a model for Explain</a></p>
+      </div>
+    </article>
+
     <article class="rel" id="v071">
       <div class="ver">onetrace 0.7.1<small>with onetrace-verify 0.7.1 and onetrace-auto 0.7.1</small></div>
       <div class="stack">
@@ -64,7 +88,7 @@ pip install -U onetrace-auto</pre></div>
           <p><b>A run's configuration against its pipeline's reference run,</b> step by step. An item a record lacks reads "not recorded", never "same".</p>
           <p><b>A model step's token as text, on a local console,</b> only where the tokenizer files you name hash to the record's digest. A public console decodes nothing.</p>
           <p><b>The demo's app traces,</b> labelled as example data.</p>
-          <p class="note warn"><b>Known issue:</b> just after Explain is pressed, the page that follows its progress can show an error naming the explanations folder once; reloading it reads correctly. A fix is planned for 0.6.1. The console reads records up to format 0.3, so runs from onetrace 0.7 are not read yet.</p>
+          <p class="note warn"><b>Known issue:</b> just after Explain is pressed, the page that follows its progress can show an error naming the explanations folder once; reloading it reads correctly. The console reads records up to format 0.3, so runs from onetrace 0.7 are not read yet.</p>
         </div></details>
         <div class="code"><div class="label"><span>Install</span><button class="copy" type="button">Copy</button></div><pre>pip install --upgrade onetrace-console</pre></div>
         <p class="muted" style="font-size:15px"><a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.6.0">Release notes</a> · <a href="https://demo.oneproof.dev/bisect-p10.html">The first run to leave the reference, on the live demo</a></p>

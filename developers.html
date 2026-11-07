@@ -74,7 +74,7 @@ onetrace doctor</pre></div></div>
 pip install onetrace "onetrace-console[neighbours]" onetrace-explain
 onetrace doctor</pre></div></div>
       </div>
-      <p class="muted" style="font-size:15px"><code>onetrace doctor</code> checks your setup. Your prompt starts with <code>(.venv)</code> while the environment is active. <code>[neighbours]</code> adds what finding similar runs needs (onnxruntime, tokenizers and numpy, about 140 to 170 MB on disk, by system); no model is downloaded until you turn the feature on (step 5b). For a smaller install, leave it out: <code>pip install onetrace onetrace-console onetrace-explain</code>.</p>
+      <p class="muted" style="font-size:15px"><code>onetrace doctor</code> checks your setup. Your prompt starts with <code>(.venv)</code> while the environment is active. <code>[neighbours]</code> adds what finding similar runs needs (onnxruntime, tokenizers and numpy, about 140 to 170 MB on disk, by system); no model is downloaded until you turn the feature on, from the console (step 5b). For a smaller install, leave it out: <code>pip install onetrace onetrace-console onetrace-explain</code>.</p>
       <details><summary>New to Python or virtual environments?</summary><div class="in">
         <p>A virtual environment keeps what you install here apart from the rest of your computer. Come back to it later with <code>cd</code> into the folder and the activate line again.</p>
         <p>If <code>onetrace-console --version</code> shows <code>0.0.0</code>, an older install answered first: make a fresh environment and install there.</p>
@@ -124,7 +124,7 @@ onetrace-explain runs/&lt;run A&gt; runs/&lt;run B&gt; --no-model</pre></div></d
       </div>
       <div class="mini" id="model">
         <div class="mini-head"><span class="n">3b</span><h3>Set up a model (optional)</h3><span class="tag tag-ai">for the AI-generated part</span></div>
-        <p class="sub">One small file names the model. The key never goes in it: the file names the environment variable that holds the key. The terminal command and the console's Explain button read the same file.</p>
+        <p class="sub">One small file names the model. The key never goes in it: the file names the environment variable that holds the key. The terminal command and the console's Explain button read the same file. You write the file and set the variable yourself; the console shows whether they are in place.</p>
         <p class="muted" style="font-size:15px">The file: <code>~/.config/onetrace/explain.toml</code> on macOS and Linux, <code>C:\Users\&lt;you&gt;\.config\onetrace\explain.toml</code> on Windows, or the path in <code>ONETRACE_EXPLAIN_CONFIG</code>.</p>
         <div class="tabs" data-tabs>
           <div class="tablist" role="tablist" aria-label="Model provider">
@@ -160,7 +160,7 @@ onetrace-explain runs/&lt;run A&gt; runs/&lt;run B&gt;</pre></div></div>
         <ul class="ticks">
           <li>The first time a kind of item would go to a model's address, it names those kinds and asks first. <code>--yes</code> is for scripts.</li>
           <li>To see the exact bytes before anything is sent: <code>onetrace localize runs/&lt;run A&gt; runs/&lt;run B&gt; --for &lt;step&gt; --out report</code>, then <code>onetrace-explain report --dry-run</code>.</li>
-          <li>Set the key in the terminal you start the console from, so its Explain button can use it. A local console's <b>Set up Explain</b> page shows the configured model, never the key.</li>
+          <li>Set the key in the terminal you start the console from, so its Explain button can use it. To check, open the gear at the top right of a local console, then <b>Explain</b>: it names the file it read, the model, the variable <code>key_env</code> names and whether that variable is set, never its value. If it isn't set, set it and start the console again.</li>
           <li>Never put the key in the file, in your code, or in a decorator's settings.</li>
         </ul>
       </div>
@@ -279,7 +279,7 @@ onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt; --text</pre></div>
           keep_inputs=["question"])</pre></div>
         </div>
         <p class="muted" style="font-size:15px">Only kept inputs, and the kept outputs of a run that keeps inputs, are read. A run that kept nothing has no neighbours.</p>
-        <p class="sub"><b>3 · Choose the embedding model.</b> Start the console as above and open <code style="overflow-wrap:anywhere">http://127.0.0.1:8080/neighbours/setup</code>.</p>
+        <p class="sub"><b>3 · Choose the embedding model, in the console.</b> Start the console as above, open the gear at the top right of any page, then <b>Neighbours</b> (or go to <code style="overflow-wrap:anywhere">http://127.0.0.1:8080/neighbours/setup</code>). If the extra is missing, the page says so and gives the install line for the Python the console runs from.</p>
         <div class="tabs" data-tabs>
           <div class="tablist" role="tablist" aria-label="Embedding model">
             <button role="tab" id="tab-nb-in" aria-controls="p-nb-in" aria-selected="true" type="button">Built-in local model</button>
@@ -289,7 +289,7 @@ onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt; --text</pre></div>
           <div id="p-nb-in" role="tabpanel" aria-labelledby="tab-nb-in">
             <ol class="nums">
               <li>Pick <b>The default</b> (all-MiniLM-L6-v2, about 90 MB) or <b>The alternate</b> (bge-small-en-v1.5, about 133 MB), then <b>Continue</b>.</li>
-              <li>Read the confirmation and press <b>Confirm and turn on</b>. The model's files are fetched once from huggingface.co at a pinned revision, each checked by its sha256, into the store's <code>neighbours/models/</code> folder.</li>
+              <li>Read the confirmation and press <b>Confirm and turn on</b>. The model's files are fetched once from huggingface.co at a pinned revision, each checked by its sha256, into the store's <code>neighbours/models/</code> folder. The page shows the count of files checked and refreshes itself until it says <b>Neighbours are on</b>.</li>
               <li>After that, embedding runs on your CPU with onnxruntime and makes no network calls. No text leaves the machine.</li>
             </ol>
           </div>
