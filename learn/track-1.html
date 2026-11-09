@@ -45,7 +45,7 @@
   <div class="wrap">
     <span class="eyebrow"><b>Learn onetrace</b> track 1 · nine levels · about two hours</span>
     <h1>Record, check, compare.</h1>
-    <p class="lede">Nine levels with onetrace 0.5.0 or later: eight on your own machine and one on the live demo. Each level says what to do, what its output must be, and what the verifier must say for it to pass. Most levels build on the one before, so do them in order and keep every folder: they are your proof, and the badge's inputs later.</p>
+    <p class="lede">Nine levels with onetrace 0.5.0 or later (the outputs below are onetrace 0.7.1's): eight on your own machine and one on the live demo. Each level says what to do, what its output must be, and what the verifier must say for it to pass. Most levels build on the one before, so do them in order and keep every folder: they are your proof, and the badge's inputs later.</p>
     <div class="crumbs">
       <a href="#before">Before you start</a>
       <a href="#levels">The levels</a>
@@ -86,7 +86,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install &#x27;onetrace[crypto]&#x27;
 onetrace --version</pre></div></div>
-        <p>The last line prints the version installed, <code>onetrace 0.6.1</code> at the time of writing; the levels were checked on 0.5.0 and 0.6.0. The console is not needed for this track. Every later command runs in this folder, with the virtual environment active. If you close the terminal, come back with <code>cd onetrace-learn</code> and the activate line.</p>
+        <p>The last line prints the version installed, <code>onetrace 0.7.1</code> at the time of writing; the levels were checked on 0.7.1, and earlier on 0.5.0 and 0.6.0. The console is not needed for this track. Every later command runs in this folder, with the virtual environment active. If you close the terminal, come back with <code>cd onetrace-learn</code> and the activate line.</p>
         <p>Create <code>app.py</code> with this in it: a retrieve stage and an answer stage, with a <code>TOP_K</code> setting recorded by name with <code>ot.constant</code>. It is the <a href="/get-started.html#example">Get started</a> example plus that one line.</p>
         <pre>import sys
 import onetrace as ot
@@ -127,7 +127,7 @@ if __name__ == &quot;__main__&quot;:
 python app.py
 onetrace-verify --require-artifacts runs/level-1</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-1 python app.py
 onetrace-verify --require-artifacts runs/level-1</pre></div></div>
-        <p><b>Pass when:</b> the last line reads <code>81 pass, 0 fail, 4 not-run  -&gt;  PASS</code>, and <code>runs/level-1/receipts/</code> holds three receipts: <code>01-intake.json</code> (the question going in), <code>02-retrieve.json</code> and <code>03-answer.json</code>. The four <code>NOT-RUN</code> lines name checks this record doesn't use (no anchor, no declared plan); they are not failures.</p>
+        <p><b>Pass when:</b> the last line reads <code>106 pass, 0 fail, 5 not-run  -&gt;  PASS</code>, and <code>runs/level-1/receipts/</code> holds four receipts: <code>01-intake.json</code> (the question going in), <code>02-retrieve.json</code>, <code>03-answer.json</code> and <code>04-onetrace-close.json</code> (the run's close). The five <code>NOT-RUN</code> lines name checks this record doesn't use (no anchor, no declared plan); they are not failures.</p>
         <p class="gs-note"><b>Badge:</b> first verified run. Keep <code>runs/level-1</code>.</p>
       </div></div>
       <div class="stepx"><div>
@@ -138,7 +138,7 @@ notepad runs\level-2\receipts\03-answer.json</pre></div><div><p class="lbl">macO
 open -e runs/level-2/receipts/03-answer.json   # or any text editor</pre></div></div>
         <p>The receipt is one long line. Find <code>"outputs"</code>, and in its <code>digest</code> change the first character after <code>sha256:</code> to another hex digit (<code>f</code> to <code>e</code>, say). Save, then verify:</p>
         <pre>onetrace-verify --require-artifacts runs/level-2</pre>
-        <p><b>Pass when:</b> the first line reads <code>record NOT intact: receipts/03-answer.json: digest matches the manifest (3 failing rows)</code> and the summary ends <code>77 pass, 3 fail, 5 not-run  -&gt;  FAIL</code>. The three <code>[FAIL]</code> rows are: the receipt's digest no longer matches the manifest; the output file <code>return.json</code> no longer matches the digest the receipt now claims for it, with the expected and found digests printed; and the chain head no longer matches the last receipt. Each comes with a <code>fix</code> line that says how to restore it. You changed one character; the record says which file, which value, and that the chain no longer closes.</p>
+        <p><b>Pass when:</b> the first line reads <code>record NOT intact: receipts/03-answer.json: digest matches the manifest (3 failing rows)</code> and the summary ends <code>102 pass, 3 fail, 6 not-run  -&gt;  FAIL</code>. The three <code>[FAIL]</code> rows are: the receipt's digest no longer matches the manifest; the output file <code>return.json</code> no longer matches the digest the receipt now claims for it, with the expected and found digests printed; and the close receipt's link to it no longer matches. Each comes with a <code>fix</code> line that says how to restore it. You changed one character; the record says which file, which value, and that the chain no longer closes.</p>
         <p>Now the other half. Copy the original receipt back and verify again:</p>
         <div class="os"><div><p class="lbl">Windows (PowerShell)</p><pre>Copy-Item runs\level-1\receipts\03-answer.json runs\level-2\receipts\03-answer.json -Force
 onetrace-verify --require-artifacts runs/level-2</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>cp runs/level-1/receipts/03-answer.json runs/level-2/receipts/03-answer.json
@@ -155,7 +155,7 @@ onetrace localize runs/level-1 runs/level-3 --out r3
 echo $LASTEXITCODE</pre></div><div><p class="lbl">macOS or Linux (Terminal)</p><pre>ONETRACE_RUN_ID=level-3 python app.py
 onetrace localize runs/level-1 runs/level-3 --out r3
 echo $?</pre></div></div>
-        <p><b>Pass when:</b> the line after the two run names reads <code>localize: diverged</code>; the ladder reads <code>intake</code> <code>same</code>, <code>retrieve</code> <code>FIRST DIFFERENCE</code> and <code>answer</code> <code>reconverged</code>; under <code>retrieve</code> it lists <code>instrument config_digest differs</code>, <code>constant top_k differs</code> and <code>output return.json differs</code>; the <code>CAUSE at node 'retrieve'</code> block names the instrument, its config and <code>constant top_k differs</code>; and the exit code is 1, which is what "the runs differ" looks like to a script. The instrument's name and version are unchanged; its config digest changed too, as <code>top_k</code> is also in its config: the same change, seen as a digest.</p>
+        <p><b>Pass when:</b> the line after the two run names reads <code>localize: diverged</code>; the ladder reads <code>intake</code> <code>same</code>, <code>retrieve</code> <code>FIRST DIFFERENCE</code> and <code>answer</code> <code>reconverged</code>; under <code>retrieve</code> it lists <code>instrument config_digest differs</code>, <code>constant top_k differs</code> and <code>output return.json differs</code>; the <code>FIRST DIFFERENCE at node 'retrieve'</code> block names the instrument, its config and <code>constant top_k differs</code>; and the exit code is 1, which is what "the runs differ" looks like to a script. The instrument's name and version are unchanged; its config digest changed too, as <code>top_k</code> is also in its config: the same change, seen as a digest.</p>
         <p>Read <code>reconverged</code> carefully: it is the lesson of this level. Retrieve now returns two passages, so its output differs; but the answer stage uses only the first passage, which is the same, so the answer's output is identical. A setting changed, an intermediate result changed, and the final answer did not. The record shows exactly where the difference started and where it stopped. <code>r3/localize.json</code> is the same answer as data.</p>
         <p class="gs-note"><b>Badge:</b> found the first difference. Keep <code>runs/level-3</code> and the comparison report <code>r3/</code>.</p>
       </div></div>
@@ -195,7 +195,7 @@ onetrace-verify --require-artifacts runs/level-6</pre></div><div><p class="lbl">
 onetrace-verify --require-artifacts runs/level-6
 rm -r runs/level-6/inputs
 onetrace-verify --require-artifacts runs/level-6</pre></div></div>
-        <p><b>Pass when:</b> before the deletion, the folder holds <code>inputs/02-retrieve/question.json</code> (the question's text) and the check reads <code>-&gt; PASS</code>; after it, the check reads exactly the same, <code>81 pass, 0 fail, 4 not-run  -&gt;  PASS</code>. A receipt holds each input's digest, never its text, so the kept file was an extra you could take back without touching the record.</p>
+        <p><b>Pass when:</b> before the deletion, the folder holds <code>inputs/02-retrieve/question.json</code> (the question's text) and the check reads <code>-&gt; PASS</code>; after it, the check reads exactly the same, <code>106 pass, 0 fail, 5 not-run  -&gt;  PASS</code>. A receipt holds each input's digest, never its text, so the kept file was an extra you could take back without touching the record.</p>
         <p class="gs-note"><b>Badge:</b> kept and erased. Keep <code>runs/level-6</code>, with its <code>inputs/</code> removed.</p>
       </div></div>
       <div class="stepx"><div>

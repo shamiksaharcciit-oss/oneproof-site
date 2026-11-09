@@ -55,10 +55,18 @@
     <p>The check fails. Each record holds the digest of the one before it, so a changed file breaks the chain from that point on. <a href="/onetrace/format.html">The record format →</a></p>
     <h3 id="signed">Are records signed and timestamped?</h3>
     <p>Records are always linked by their digests. You can also sign with your own Ed25519 key and anchor a run's time with an RFC 3161 time-stamp authority. An anchor is only as good as that authority's certificate, which the docs say plainly. <a href="/onetrace/manual.html">Manual →</a></p>
+    <h3 id="signing-key">Who holds the signing key?</h3>
+    <p>You do. <code>onetrace keygen</code> writes the private key to a file you choose, readable by you alone, and onetrace never writes it into a run folder, logs it or prints it. A signature carries its public key, so a signed run still verifies if the private key is lost; you just can't sign new runs with it, so make a new key and add it to your trust list. <a href="/onetrace/manual.html">Manual →</a></p>
 
     <h2 id="security">Security</h2>
+    <h3 id="report-issue">How do I report a security issue?</h3>
+    <p>Email <a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a>, and please don't open a public issue for a vulnerability. onetrace's <code>SECURITY.md</code>, in its source distribution, says what is in and out of scope; there is no fixed response time yet. Anything else goes to the issue tracker. <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue →</a></p>
+    <h3 id="threat-model">Is there a threat model or security brief?</h3>
+    <p>Not as a separate document yet. onetrace's <code>SECURITY.md</code> says what counts as a vulnerability and what is out of scope, and the non-claims page lists what a verified record does not prove. <a href="/onetrace/non-claims.html">Non-claims →</a></p>
     <h3 id="same-package">How do I know the package I install is the one released?</h3>
     <p>PyPI lists each release file's SHA-256, and <code>pip install --require-hashes</code> installs only files that match. From console 0.7.0, its release files built on Windows are the same bytes as those built on Linux. <a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI →</a></p>
+    <h3 id="release-checks">What checks does a release pass before it ships?</h3>
+    <p>Before a onetrace release ships, its full test suite runs on the source and again on the public code, installed from the built packages in a fresh environment, and the packages are built twice and must come out byte-identical. The built files are also scanned for anything that should not ship. A failing test is fixed before release or waived with its reason recorded: console 0.7.0 shipped with nine such waivers, in tests that fail only on the exported code. <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/blob/v0.7.0/CHANGELOG.md">Changelog →</a></p>
     <h3 id="console-network">Is the console safe to expose on a network?</h3>
     <p>It is built to sit behind your own TLS proxy. Sign-in uses local accounts with scrypt-hashed passwords, sessions that time out, CSRF tokens on every action, and a rolling limit on sign-in attempts. Today every signed-in person is a viewer, and there is no identity provider: read the release's known gaps first. <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/blob/v0.7.0/OPERATOR_README.md">Operator guide →</a></p>
     <h3 id="explain-key">Where is the Explain key kept?</h3>
@@ -69,16 +77,29 @@
     <h2 id="data">Data and privacy</h2>
     <h3 id="data-leaves">Does onetrace send my data anywhere?</h3>
     <p>No. A run is files in a folder you choose, or in a bucket you configure. onetrace reports to no one, and the verifier makes no network calls. <a href="/onetrace/storage.html">Storage →</a></p>
+    <h3 id="what-is-kept">Does a record hold my prompts and outputs, or only fingerprints?</h3>
+    <p>By default a run keeps each step's outputs and only fingerprints of its inputs. <code>keep_inputs=["name"]</code> also keeps that input's text, and <code>keep_outputs=False</code> keeps fingerprints of outputs and removes the files when the run closes. No onetrace command erases a kept input, but you can delete its file, or the run's <code>inputs/</code> folder, and the run still verifies. <a href="/onetrace/manual.html">Manual →</a></p>
+    <h3 id="personal-data">Can I use it with personal or regulated data?</h3>
+    <p>A run folder holds each step's outputs, which can include documents, prompts and answers; inputs are kept as fingerprints unless you ask to keep one. Treat run folders like logs that may hold sensitive data, and keep them where your data policy says. onetrace itself sends nothing anywhere. <a href="/onetrace/manual.html">Manual →</a></p>
     <h3 id="model-send">Does the console or Explain send records to a model?</h3>
     <p>Only when you ask. Explain sends to the model you configured, your provider's or one on your own machine, and shows what will be sent before anything goes. Without a model, it still gives what changed and the evidence. <a href="/developers.html#t-explain">Explain a difference →</a></p>
+
+    <h3 id="demo-data">Does the hosted demo collect anything?</h3>
+    <p>The demo shows sample runs made when it was built, asks for no account and sets no cookie. When you use Compare, it keeps the comparison it computed so the next visitor gets the same page, and logs the pair, the result and the time, never your address. Its pages load nothing from other sites. This site, oneproof.dev, counts page views with GoatCounter, which sets no cookies, and loads its fonts from Google Fonts. <a href="https://demo.oneproof.dev">Live demo →</a></p>
 
     <h2 id="performance">Performance</h2>
     <h3 id="model-calls">Does it slow down model calls?</h3>
     <p>The call itself runs as before; onetrace records its request and response around it, so the cost is the recording's, not the model's. The console and Explain work only when you use them, never in your pipeline's path. <a href="/how-it-works.html">How it works →</a></p>
+    <h3 id="verifier-speed">How fast is the verifier?</h3>
+    <p>On one machine, <code>onetrace-verify</code> checked a 1,000-step run in 0.45 s (0.42 to 0.46 s over 5 runs) and a 100-step run in 0.09 s, with 1 KB of output per step and Python's start-up included. Its time grows with the data recorded, not with model time. Measured with onetrace-verify 0.7.1 on an 8-CPU container. <a href="/stage-records.html">Stage records →</a></p>
+    <h3 id="onedoor-latency">How much latency does onedoor add to an agent's action?</h3>
+    <p>On one machine, onedoor 0.10.2's library call decided a permitted action in 0.29 ms at the median and refused an undeclared one in 0.21 ms, over 1,000 decisions each; the 99th percentile was about 2.1 ms for both. Each decision is written to a local SQLite database before it returns, and no model is called. <a href="/onedoor/developers.html">onedoor for developers →</a></p>
 
     <h2 id="engineering">Engineering</h2>
     <h3 id="on-disk">What does a record look like on disk?</h3>
     <p>A run is a folder: one JSON receipt per stage, and a manifest whose chain head names the last one. It is plain files you can archive, copy or compare like anything else. <a href="/onetrace/format.html">The record format →</a></p>
+    <h3 id="disk">How much disk does a run take?</h3>
+    <p>With outputs kept (the default), a step costs its output plus about 1.5 KB of record: about 2.5 KB of files for a 1 KB output and 1.05 MB for a 1 MB output. With <code>keep_outputs=False</code>, a step costs about 1.5 KB whatever its output's size. Each file takes at least one filesystem block, so small steps use more on disk. Measured with onetrace 0.7.1. <a href="/onetrace/format.html">The record format →</a></p>
     <h3 id="opentelemetry">Does it work with OpenTelemetry?</h3>
     <p>Yes, beside it. Where a run keeps your app's traces, the console shows the spans at the step where two runs differ, attribute by attribute. <a href="/developers.html">Developer guide →</a></p>
     <h3 id="future-verify">Will records I make today still verify with later versions?</h3>
@@ -93,6 +114,8 @@
     <p>Python and pip. onetrace needs Python 3.10 or later, onetrace-explain 3.11 or later, and the console 3.12 or later. There are install lines for macOS, Linux and Windows. <a href="/developers.html#install">Install →</a></p>
     <h3 id="code-change">Do I have to change my code?</h3>
     <p>No. Either add a decorator per stage, or start your app with <code>onetrace-run</code> from onetrace-auto: calls through supported libraries become steps, and the run says what it could not see. <a href="/developers.html#auto">Zero-config →</a></p>
+    <h3 id="libraries">Which model providers and frameworks are supported?</h3>
+    <p>Any Python code can be recorded with decorators. Without code changes, onetrace-auto 0.7.1 records calls made through openai (1.40 up to 4), requests (2.28 up to 3) and httpx (0.24 up to 1); under openai 3.x, the client's own HTTP layer is not recorded by the httpx hook. <a href="/developers.html#auto">Zero-config →</a></p>
     <h3 id="learn">Is there a way to learn it hands-on?</h3>
     <p>Yes: Learn's track 1, nine levels in about two hours. <a href="/learn.html">Learn →</a></p>
 
@@ -109,6 +132,8 @@
     <h2 id="project">The project</h2>
     <h3 id="production">Is it ready for production?</h3>
     <p>The recorder, verifier and console are released and versioned, and each release lists its known gaps. Read those before relying on it; for example, the console has no identity provider yet. <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/blob/v0.7.0/CHANGELOG.md">Changelog →</a></p>
+    <h3 id="who">Who is behind it?</h3>
+    <p>onetrace, onetrace-verify, onetrace-auto, onetrace-console and onedoor are written by Shamik Saha and published under oneproof, as open source under Apache-2.0. <a href="https://pypi.org/project/onetrace/">onetrace on PyPI →</a></p>
     <h3 id="help">How do I get help or give feedback?</h3>
     <p>Open an issue, or write to <a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a>. <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue →</a></p>
   </div>
