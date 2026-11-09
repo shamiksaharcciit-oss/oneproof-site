@@ -67,14 +67,14 @@
         </div>
         <div id="p-unix" role="tabpanel" aria-labelledby="tab-unix"><div class="code"><div class="label"><span>Terminal</span><button class="copy" type="button">Copy</button></div><pre>python3 -m venv .venv
 source .venv/bin/activate
-pip install onetrace "onetrace-console[neighbours]" onetrace-explain
+pip install onetrace "onetrace-console[neighbours]" "onetrace-explain[keyring]"
 onetrace doctor</pre></div></div>
         <div id="p-win" role="tabpanel" aria-labelledby="tab-win" hidden><div class="code"><div class="label"><span>PowerShell</span><button class="copy" type="button">Copy</button></div><pre>py -3.12 -m venv .venv
 .venv\Scripts\Activate.ps1
-pip install onetrace "onetrace-console[neighbours]" onetrace-explain
+pip install onetrace "onetrace-console[neighbours]" "onetrace-explain[keyring]"
 onetrace doctor</pre></div></div>
       </div>
-      <p class="muted" style="font-size:15px"><code>onetrace doctor</code> checks your setup. Your prompt starts with <code>(.venv)</code> while the environment is active. <code>[neighbours]</code> adds what finding similar runs needs (onnxruntime, tokenizers and numpy, about 140 to 170 MB on disk, by system); no model is downloaded until you turn the feature on, from the console (step 5b). For a smaller install, leave it out: <code>pip install onetrace onetrace-console onetrace-explain</code>.</p>
+      <p class="muted" style="font-size:15px"><code>onetrace doctor</code> checks your setup. Your prompt starts with <code>(.venv)</code> while the environment is active. <code>[neighbours]</code> adds what finding similar runs needs (onnxruntime, tokenizers and numpy, about 140 to 170 MB on disk, by system); no model is downloaded until you turn the feature on, from the console (step 5b). <code>[keyring]</code> lets Explain keep its key in your system's keychain. For a smaller install, leave both out: <code>pip install onetrace onetrace-console onetrace-explain</code>.</p>
       <details><summary>New to Python or virtual environments?</summary><div class="in">
         <p>A virtual environment keeps what you install here apart from the rest of your computer. Come back to it later with <code>cd</code> into the folder and the activate line again.</p>
         <p>If <code>onetrace-console --version</code> shows <code>0.0.0</code>, an older install answered first: make a fresh environment and install there.</p>
@@ -205,7 +205,7 @@ and tell me the exact commands to run my program and open its runs in onetrace-c
       <div class="mini" id="auto">
         <div class="mini-head"><span class="n">4b</span><h3>Zero-config</h3><span class="tag">onetrace-auto</span></div>
         <p class="sub">Run your app as you do today, started through <code>onetrace-run</code>. Each call it makes through a supported library becomes a recorded step. Your code doesn't change.</p>
-        <div class="note warn"><b>Today, zero-config runs open in the terminal, not the console.</b> onetrace-auto 0.7.0 needs onetrace 0.7.0 and writes record format 0.4; the console reads formats up to 0.3. Install onetrace-auto in your app's own environment, not in step 1's: there it moves onetrace to 0.7.0 and breaks the console's pins. Compare those runs with <code>onetrace diff</code> and <code>onetrace-verify</code> until a console release reads format 0.4.</div>
+        <div class="note"><b>Zero-config runs open in the console.</b> From console 0.7.0, the console runs on onetrace 0.7.1 and reads record format 0.4, so <code>pip install onetrace-auto</code> goes in step 1's environment, beside the console. A run it records shows the libraries it hooked and each gap.</div>
         <div class="code"><div class="label"><span>In your app's environment</span><button class="copy" type="button">Copy</button></div><pre>pip install onetrace-auto
 onetrace-run python app.py        <span class="c"># or: ONETRACE_AUTO=1 python app.py</span>
 onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt;</pre></div>
@@ -341,7 +341,7 @@ ollama serve                   <span class="c"># if it is not already running</s
 <footer><div class="wrap stack-lg"><div class="foot">
 <div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
 <div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
-<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/debugging.html">Debug an agent</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/debugging.html">Debug an agent</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/faq.html">FAQ</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
 <div><h4>Also from oneproof</h4><ul><li><a href="/onedoor/">onedoor</a><br><span class="muted" style="font-size:13px">decide what an agent is allowed to do, before it does</span></li></ul></div>
 </div><div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one. Screens show the public demo's sample runs, not customer data.</div></div></footer>
 <script src="/assets/site-v2.js"></script>

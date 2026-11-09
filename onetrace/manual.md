@@ -39,7 +39,7 @@ Anyone can then check the record, and compare two runs, with tools that don't tr
 
 ## 2. Install
 
-Requirements: **Python 3.10 or newer**. Use a virtual environment. The console (`onetrace-console`) needs Python 3.12 or newer and goes in an environment of its own until console 0.7.0: today it reads runs from onetrace 0.6.x (record formats up to 0.3), and onetrace 0.7 beside it breaks the console's pins.
+Requirements: **Python 3.10 or newer**. Use a virtual environment. The console (`onetrace-console`) needs Python 3.12 or newer. From console 0.7.0 it runs on onetrace 0.7.1 and reads runs from onetrace 0.7 (record format 0.4) and earlier, in the same environment.
 
 ```bash
 python -m venv .venv

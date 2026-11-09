@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>What's new · onetrace</title>
-<meta name="description" content="onetrace releases, latest first: onetrace-console 0.6.1, onetrace 0.7.1, onetrace-console 0.6.0, onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
+<meta name="description" content="onetrace releases, latest first: onetrace-console 0.7.0 with onetrace-explain 0.3.0, onetrace-console 0.6.1, onetrace 0.7.1, onetrace-console 0.6.0, onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
 <link rel="canonical" href="https://oneproof.dev/whats-new.html">
 <meta property="og:title" content="What's new · onetrace">
-<meta property="og:description" content="onetrace releases, latest first: onetrace-console 0.6.1, onetrace 0.7.1, onetrace-console 0.6.0, onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
+<meta property="og:description" content="onetrace releases, latest first: onetrace-console 0.7.0 with onetrace-explain 0.3.0, onetrace-console 0.6.1, onetrace 0.7.1, onetrace-console 0.6.0, onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://oneproof.dev/whats-new.html">
 <meta property="og:image" content="https://oneproof.dev/og.png">
@@ -34,6 +34,30 @@
 <section class="band" style="padding-top:24px">
   <div class="wrap">
     <span class="anchor" id="upgrade"></span>
+    <article class="rel" id="console070">
+      <div class="ver">onetrace-console 0.7.0<small>on onetrace 0.7.1, with onetrace-explain 0.3.0</small></div>
+      <div class="stack">
+        <h2 style="font-size:1.5rem">Runs from onetrace 0.7 open, in one environment with everything else.</h2>
+        <div class="grid g3">
+          <div class="card"><h3>onetrace 0.7 runs, and zero-config runs</h3><p>The console reads record format 0.4 beside the earlier formats, and runs on onetrace 0.7.1. A run onetrace-auto recorded shows the libraries it hooked, what it could see, and each gap.</p></div>
+          <div class="card"><h3>Whether a run closed, and how it ended</h3><p>A Closed column in the runs list, in the verifier's own words: "closed: by exit", or "not closed: the record ends at" its last step. A run's page lists each step's expectations and whether they held.</p></div>
+          <div class="card"><h3>Set up Explain in the console</h3><p>A form for the provider, model and key, the key kept in your system's keychain with onetrace-explain 0.3. The page says who can read it, and the console stores no key.</p></div>
+        </div>
+        <details><summary>Also in 0.7.0</summary><div class="in">
+          <p><b>One environment:</b> <code>pip install onetrace onetrace-console onetrace-explain onetrace-auto</code> installs together, and <code>pip check</code> finds nothing to report.</p>
+          <p><b>The first-run-to-leave page says its answer first,</b> in one sentence from the records, then how to read it in plain words. Each gap gives its reason, and one "Find the first run to leave after" control replaces a link on every row.</p>
+          <p><b>The app's spans at a differing step,</b> attribute by attribute: baseline and candidate side by side, the rows that differ first.</p>
+          <p><b>Expectations declared after the run:</b> on a local console, check a run against an expectations file, shown apart from the run's own.</p>
+          <p><b>A tokenizer from this machine</b> shows a model step's tokens as text, kept only where its digest matches the record's.</p>
+          <p><b>The same release files on Windows as on Linux,</b> byte for byte.</p>
+          <p><b>Smaller:</b> the Compare picker keeps each label with its select; a static export shows Compare disabled ("Needs a running console."); start-up progress reads cleanly in Windows PowerShell 5.1; a sub-agent's run link isn't read as a step's input; CSRF values are compared in constant time; the sign-in limit counts a rolling window.</p>
+          <p class="note"><b>Known gaps:</b> a run killed while it records keeps onetrace's <code>.lock</code>, so it reaches a console only by upload. There is no identity provider: a signed-in person is always a viewer. Lint, format and type checks are not part of the release gate yet.</p>
+        </div></details>
+        <div class="code"><div class="label"><span>Install</span><button class="copy" type="button">Copy</button></div><pre>pip install --upgrade onetrace-console "onetrace-explain[keyring]"</pre></div>
+        <p class="muted" style="font-size:15px"><a href="https://github.com/shamiksaharcciit-oss/onetrace-console/releases/tag/v0.7.0">Release notes</a> · <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/blob/v0.7.0/CHANGELOG.md">Changelog</a> · <a href="/developers.html#model">Set up a model for Explain</a> · <a href="/faq.html">FAQ</a></p>
+      </div>
+    </article>
+
     <article class="rel" id="console061">
       <div class="ver">onetrace-console 0.6.1<small>on onetrace 0.6.1</small></div>
       <div class="stack">
@@ -163,7 +187,7 @@ pip install onetrace-auto</pre></div>
 <footer><div class="wrap stack-lg"><div class="foot">
 <div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
 <div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
-<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/debugging.html">Debug an agent</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/debugging.html">Debug an agent</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/faq.html">FAQ</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
 <div><h4>Also from oneproof</h4><ul><li><a href="/onedoor/">onedoor</a><br><span class="muted" style="font-size:13px">decide what an agent is allowed to do, before it does</span></li></ul></div>
 </div><div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one. Screens show the public demo's sample runs, not customer data.</div></div></footer>
 <script src="/assets/site-v2.js"></script>

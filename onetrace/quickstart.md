@@ -2,7 +2,7 @@
 
 Add onetrace to a small pipeline in two steps: one stage first, then the rest. Then switch it off, and take it out. After the install, nothing here makes a network call; there's no model and no key, and it takes a few seconds.
 
-Use a fresh virtual environment with Python 3.10 or later. Each command runs from the folder you save the files in. The console (`onetrace-console`) needs Python 3.12 or later and goes in an environment of its own until console 0.7.0: today it reads runs from onetrace 0.6.x (record formats up to 0.3), and onetrace 0.7 beside it breaks the console's pins.
+Use a fresh virtual environment with Python 3.10 or later. Each command runs from the folder you save the files in. The console (`onetrace-console`) needs Python 3.12 or later. From console 0.7.0 it runs on onetrace 0.7.1 and reads runs from onetrace 0.7 (record format 0.4) and earlier, in the same environment.
 
 <!-- quickstart: run -->
 ```

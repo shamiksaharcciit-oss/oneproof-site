@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ · onetrace</title>
+<meta name="description" content="Questions about onetrace, the console, onetrace-explain and onedoor, answered from what is released: verification, security, data, performance and getting started.">
+<link rel="canonical" href="https://oneproof.dev/faq.html">
+<meta property="og:title" content="FAQ · onetrace">
+<meta property="og:description" content="Questions about onetrace, the console, onetrace-explain and onedoor, answered from what is released: verification, security, data, performance and getting started.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneproof.dev/faq.html">
+<meta property="og:image" content="https://oneproof.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site-v2.css">
+<script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<style>.faq h2{margin-top:32px;padding-top:8px;border-top:1px solid var(--line,#2a3446)}.faq h2:first-child{border-top:0;margin-top:0}.faq h2{margin-bottom:8px}.faq h3{font-size:1.1rem;margin:22px 0 6px}.faq p{max-width:72ch;margin:0}</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav"><div class="wrap"><a class="brand" href="/" aria-label="onetrace by oneproof, home"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><nav class="nav-links" aria-label="Main"><a href="/developers.html">Developers</a><a href="/debugging.html">Debug an agent</a><a href="/how-it-works.html">How it works</a><a href="/whats-new.html">What's new</a><a href="/learn.html">Learn</a><a href="/onetrace/">Docs</a><a class="btn btn-primary" href="https://demo.oneproof.dev">Live demo</a></nav></div></header>
+<main id="main">
+<section class="hero" style="padding-bottom:16px">
+  <div class="wrap stack-lg">
+    <span class="eyebrow">FAQ</span>
+    <h1>Questions, answered from what is released</h1>
+    <p class="lede">Each answer says what today's releases do, and links to the page that shows it. Where something is planned rather than released, this page leaves it out.</p>
+    <p class="muted" style="font-size:15px"><a href="#what">What it is</a> · <a href="#trust">Trust and verification</a> · <a href="#security">Security</a> · <a href="#data">Data and privacy</a> · <a href="#performance">Performance</a> · <a href="#engineering">Engineering</a> · <a href="#start">Getting started</a> · <a href="#onedoor">Agents and onedoor</a> · <a href="#project">The project</a></p>
+  </div>
+</section>
+
+<section class="band" style="padding-top:24px">
+  <div class="wrap faq">
+
+    <h2 id="what">What it is</h2>
+    <h3 id="what-does-it-do">What does onetrace do?</h3>
+    <p>It records each stage of an AI pipeline (the code, the settings, every input and output by fingerprint) as a chain of linked records anyone can check. When an answer changes, it shows the first step that changed and what changed there. <a href="/how-it-works.html">How it works →</a></p>
+    <h3 id="vs-tracing">How is it different from tracing tools such as LangSmith, Langfuse or Datadog?</h3>
+    <p>Tracing tools show you what happened, inside their service. onetrace gives you a record you can check yourself, offline, with no account: if a byte changes after the run, the check fails. It works beside them: the console can show your app's own OpenTelemetry spans at the step where two runs differ. <a href="/where-it-fits.html">Where it fits →</a></p>
+    <h3 id="which-package">What do onetrace, the console, onetrace-explain and onedoor each do? Do I need all of them?</h3>
+    <p>onetrace records and verifies runs. The console shows runs in your browser, compares them and finds the first one that changed. onetrace-explain says what changed, with the evidence, and can add a model's reading. onedoor decides, per action, what an AI agent may do. Each works on its own; start with onetrace. <a href="/developers.html">Developer guide →</a></p>
+    <h3 id="open-source">Is it open source?</h3>
+    <p>Yes, under the Apache-2.0 licence, on GitHub and PyPI. <a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub →</a></p>
+
+    <h2 id="trust">Trust and verification</h2>
+    <h3 id="verified-means">What does "verified" prove, and what doesn't it?</h3>
+    <p>It proves the record is intact (no file changed after the run), complete as the run declared it, and in order. It doesn't prove the answer was right or the model behaved well. The non-claims page lists what a record does not prove. <a href="/onetrace/non-claims.html">Non-claims →</a></p>
+    <h3 id="verify-offline">Can I verify a run without an account, a server or the internet?</h3>
+    <p>Yes. <code>onetrace-verify</code> is a separate package that needs no network, no key and no account. Anyone you give a run folder to can check it the same way. <a href="/stage-records.html">Stage records →</a></p>
+    <h3 id="edited-record">What happens if someone edits a record after the run?</h3>
+    <p>The check fails. Each record holds the digest of the one before it, so a changed file breaks the chain from that point on. <a href="/onetrace/format.html">The record format →</a></p>
+    <h3 id="signed">Are records signed and timestamped?</h3>
+    <p>Records are always linked by their digests. You can also sign with your own Ed25519 key and anchor a run's time with an RFC 3161 time-stamp authority. An anchor is only as good as that authority's certificate, which the docs say plainly. <a href="/onetrace/manual.html">Manual →</a></p>
+
+    <h2 id="security">Security</h2>
+    <h3 id="same-package">How do I know the package I install is the one released?</h3>
+    <p>PyPI lists each release file's SHA-256, and <code>pip install --require-hashes</code> installs only files that match. From console 0.7.0, its release files built on Windows are the same bytes as those built on Linux. <a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI →</a></p>
+    <h3 id="console-network">Is the console safe to expose on a network?</h3>
+    <p>It is built to sit behind your own TLS proxy. Sign-in uses local accounts with scrypt-hashed passwords, sessions that time out, CSRF tokens on every action, and a rolling limit on sign-in attempts. Today every signed-in person is a viewer, and there is no identity provider: read the release's known gaps first. <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/blob/v0.7.0/OPERATOR_README.md">Operator guide →</a></p>
+    <h3 id="explain-key">Where is the Explain key kept?</h3>
+    <p>In your operating system's keychain, under your login, when you install <code>onetrace-explain[keyring]</code>. The console stores no key. Anyone who can run code as your user can read it, as with an environment variable. <a href="/developers.html#model">Set up a model for Explain →</a></p>
+    <h3 id="explain-invent">Can onetrace-explain make things up?</h3>
+    <p>Its first answer, what changed and the evidence, uses no model at all. A model's reading is optional, labelled AI-generated, and each of its claims must cite a probe or an item of the record, or it is dropped and counted. What remains is still a reading, not proof. <a href="/developers.html#t-explain">Explain a difference →</a></p>
+
+    <h2 id="data">Data and privacy</h2>
+    <h3 id="data-leaves">Does onetrace send my data anywhere?</h3>
+    <p>No. A run is files in a folder you choose, or in a bucket you configure. onetrace reports to no one, and the verifier makes no network calls. <a href="/onetrace/storage.html">Storage →</a></p>
+    <h3 id="model-send">Does the console or Explain send records to a model?</h3>
+    <p>Only when you ask. Explain sends to the model you configured, your provider's or one on your own machine, and shows what will be sent before anything goes. Without a model, it still gives what changed and the evidence. <a href="/developers.html#t-explain">Explain a difference →</a></p>
+
+    <h2 id="performance">Performance</h2>
+    <h3 id="model-calls">Does it slow down model calls?</h3>
+    <p>The call itself runs as before; onetrace records its request and response around it, so the cost is the recording's, not the model's. The console and Explain work only when you use them, never in your pipeline's path. <a href="/how-it-works.html">How it works →</a></p>
+
+    <h2 id="engineering">Engineering</h2>
+    <h3 id="on-disk">What does a record look like on disk?</h3>
+    <p>A run is a folder: one JSON receipt per stage, and a manifest whose chain head names the last one. It is plain files you can archive, copy or compare like anything else. <a href="/onetrace/format.html">The record format →</a></p>
+    <h3 id="opentelemetry">Does it work with OpenTelemetry?</h3>
+    <p>Yes, beside it. Where a run keeps your app's traces, the console shows the spans at the step where two runs differ, attribute by attribute. <a href="/developers.html">Developer guide →</a></p>
+    <h3 id="future-verify">Will records I make today still verify with later versions?</h3>
+    <p>A record keeps the format it was written in, and later verifiers read earlier formats. A released verifier also reads a newer minor format, checking what it knows. The format page says how each verifier reads each format. <a href="/onetrace/format.html">The record format →</a></p>
+    <h3 id="specification">Is there a specification I can implement against?</h3>
+    <p>The format is documented, and an IETF Internet-Draft, <code>draft-saha-stage-receipts</code>, describes it. It is a draft, not a standard. <a href="/stage-records.html">Stage records →</a></p>
+    <h3 id="ci">Can I run it in CI?</h3>
+    <p>Yes. A check that fails exits non-zero (<code>PASS</code> 0, <code>FAIL</code> 1), so it can fail a build. Steps can declare expectations (onetrace 0.7's <code>expect=</code>), which the check reads after the run. <a href="/onetrace/manual.html">Manual →</a></p>
+
+    <h2 id="start">Getting started</h2>
+    <h3 id="requirements">What do I need?</h3>
+    <p>Python and pip. onetrace needs Python 3.10 or later, onetrace-explain 3.11 or later, and the console 3.12 or later. There are install lines for macOS, Linux and Windows. <a href="/developers.html#install">Install →</a></p>
+    <h3 id="code-change">Do I have to change my code?</h3>
+    <p>No. Either add a decorator per stage, or start your app with <code>onetrace-run</code> from onetrace-auto: calls through supported libraries become steps, and the run says what it could not see. <a href="/developers.html#auto">Zero-config →</a></p>
+    <h3 id="learn">Is there a way to learn it hands-on?</h3>
+    <p>Yes: Learn's track 1, nine levels in about two hours. <a href="/learn.html">Learn →</a></p>
+
+    <h2 id="onedoor">Agents and onedoor</h2>
+    <h3 id="onedoor-stop">How does onedoor stop an agent doing something it shouldn't?</h3>
+    <p>Every action the agent proposes is checked against your policy before it runs: refused by default, permitted within caps you set, held for a person, or stopped by a kill switch. Each decision goes into an append-only ledger with a digest of the policy that made it. <a href="/onedoor/">onedoor →</a></p>
+    <h3 id="onedoor-rewrite">Do I have to rewrite my agent?</h3>
+    <p>No. onedoor sits in front of your tools as an MCP proxy, LangChain or LangGraph middleware, or an HTTP service. <a href="/onedoor/developers.html">onedoor for developers →</a></p>
+    <h3 id="permits">Can the system receiving the action check it was really allowed?</h3>
+    <p>Yes, with a signed permit for the exact request, short-lived and usable once, which the receiving system checks without calling onedoor. In 0.10.2, the library call is the surface that issues permits. <a href="/onedoor/developers.html">onedoor for developers →</a></p>
+    <h3 id="together">How do onedoor and onetrace fit together?</h3>
+    <p>onedoor decides what an agent may do; onetrace records what it did. A onetrace record can hold onedoor's decisions, so a reviewer can check each gated step against its decision. <a href="/onetrace/decisions.html">onedoor decisions in a record →</a></p>
+
+    <h2 id="project">The project</h2>
+    <h3 id="production">Is it ready for production?</h3>
+    <p>The recorder, verifier and console are released and versioned, and each release lists its known gaps. Read those before relying on it; for example, the console has no identity provider yet. <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/blob/v0.7.0/CHANGELOG.md">Changelog →</a></p>
+    <h3 id="help">How do I get help or give feedback?</h3>
+    <p>Open an issue, or write to <a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a>. <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue →</a></p>
+  </div>
+</section>
+
+</main>
+<footer><div class="wrap stack-lg"><div class="foot">
+<div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
+<div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>
+<div><h4>Product</h4><ul><li><a href="/how-it-works.html">How it works</a></li><li><a href="/debugging.html">Debug an agent</a></li><li><a href="/whats-new.html">What's new</a></li><li><a href="/faq.html">FAQ</a></li><li><a href="/onetrace/">Docs</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub</a></li><li><a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue</a></li></ul></div>
+<div><h4>Also from oneproof</h4><ul><li><a href="/onedoor/">onedoor</a><br><span class="muted" style="font-size:13px">decide what an agent is allowed to do, before it does</span></li></ul></div>
+</div><div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one. Screens show the public demo's sample runs, not customer data.</div></div></footer>
+<script src="/assets/site-v2.js"></script>
+</body>
+</html>
