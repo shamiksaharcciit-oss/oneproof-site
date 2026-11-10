@@ -18,7 +18,70 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/site-v2.css">
 <script data-goatcounter="https://shamik85.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-<style>.faq h2{margin-top:32px;padding-top:8px;border-top:1px solid var(--line,#2a3446)}.faq h2:first-child{border-top:0;margin-top:0}.faq h2{margin-bottom:8px}.faq h3{font-size:1.1rem;margin:22px 0 6px}.faq p{max-width:72ch;margin:0}</style>
+<style>
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.faq-band{padding-top:8px}
+.faq-tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0 0 28px}
+.faq-tools[hidden]{display:none}
+.faq-search{flex:1 1 320px;display:flex;align-items:center;gap:10px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--card);min-width:0}
+.faq-search:focus-within{border-color:var(--amber)}
+.faq-search svg{width:18px;height:18px;flex:none;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round}
+.faq-search input{flex:1;min-width:0;background:none;border:0;color:var(--ink);font:400 16px/1 var(--sans);padding:12px 0;outline:none}
+.faq-buttons{display:flex;gap:8px}
+.faq-buttons button{padding:10px 16px;font:500 14px/1 var(--sans);border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink-2);cursor:pointer}
+.faq-buttons button:hover{border-color:var(--amber);color:var(--ink)}
+.faq-buttons button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.faq-status{flex-basis:100%;margin:0;font-size:14px;min-height:1em}
+.faq-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px;align-items:start}
+.faq-nav{position:sticky;top:84px}
+.faq-nav-h{font:600 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.faq-nav ul{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.faq-nav a{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;color:var(--ink-2);text-decoration:none;font-size:15px;border-left:2px solid transparent}
+.faq-nav a:hover{background:var(--card);color:var(--ink)}
+.faq-nav a.on{background:var(--card);color:var(--ink);border-left-color:var(--amber)}
+.faq-nav b{font:500 12px/1 var(--mono);color:var(--muted);background:var(--band);border:1px solid var(--line);border-radius:999px;padding:3px 7px}
+.faq-nav li[hidden]{display:none}
+.faq{display:grid;gap:40px;min-width:0}
+.faq-topic{scroll-margin-top:84px;display:grid;gap:14px}
+.faq-topic[hidden]{display:none}
+.faq-topic-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center}
+.faq-topic-n{width:40px;height:40px;border-radius:10px;background:var(--amber-soft);color:var(--amber);display:grid;place-items:center;font:600 14px/1 var(--mono)}
+.faq-topic-head h2{margin:0;font-size:1.35rem}
+.faq-topic-head p{margin:2px 0 0;color:var(--muted);font-size:15px}
+.faq-topic-count{font:500 12px/1 var(--mono);color:var(--muted);white-space:nowrap}
+.faq-list{display:grid;gap:8px}
+details.faq-q{border:1px solid var(--line);border-radius:12px;background:var(--card);scroll-margin-top:96px;transition:border-color .15s}
+details.faq-q:hover{border-color:#3a4c66}
+details.faq-q[open]{border-color:#3a4c66;background:var(--card-2)}
+details.faq-q[hidden]{display:none}
+details.faq-q summary{display:flex;align-items:center;gap:14px;padding:16px 18px;font-weight:500;font-size:16px;line-height:1.4;color:var(--ink)}
+details.faq-q summary::before{content:none}
+details.faq-q summary:focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:12px}
+.faq-q-text{flex:1;min-width:0}
+.faq-chev{flex:none;width:28px;height:28px;border-radius:999px;border:1px solid var(--line);position:relative;transition:transform .2s,background .2s}
+.faq-chev::before{content:"";position:absolute;left:50%;top:45%;width:7px;height:7px;border-right:2px solid var(--amber);border-bottom:2px solid var(--amber);transform:translate(-50%,-50%) rotate(45deg)}
+details.faq-q[open] .faq-chev{transform:rotate(180deg);background:var(--amber-soft)}
+.faq-a{padding:0 18px 18px;display:grid;gap:12px;color:var(--ink-2);font-size:15.5px;line-height:1.65;max-width:76ch}
+.faq-a p{margin:0}
+.faq-a code{font-size:.9em}
+.faq-more-row{margin-top:2px}
+a.faq-more{display:inline-block;padding:6px 12px;border:1px solid var(--line);border-radius:999px;font-size:14px;text-decoration:none;color:var(--amber-ink)}
+a.faq-more:hover{border-color:var(--amber)}
+.faq mark{background:var(--amber-soft);color:var(--amber-ink);border-radius:3px;padding:0 1px}
+.faq-empty{color:var(--ink-2)}
+@media (max-width:900px){
+  .faq-layout{grid-template-columns:1fr;gap:20px}
+  .faq-nav{position:static;margin:0 -16px;overflow-x:auto;padding:0 16px}
+  .faq-nav-h{display:none}
+  .faq-nav ul{display:flex;gap:8px;width:max-content}
+  .faq-nav a{border:1px solid var(--line);border-radius:999px;padding:7px 12px;white-space:nowrap}
+  .faq-nav a.on{border-color:var(--amber)}
+  .faq-topic-count{display:none}
+  .faq-topic-head{grid-template-columns:auto minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){.faq-chev,details.faq-q{transition:none}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What does onetrace do?", "acceptedAnswer": {"@type": "Answer", "text": "It records each stage of an AI pipeline (the code, the settings, every input and output by fingerprint) as a chain of linked records anyone can check. When an answer changes, it shows the first step that changed and what changed there. How it works"}}, {"@type": "Question", "name": "How is it different from tracing tools such as LangSmith, Langfuse or Datadog?", "acceptedAnswer": {"@type": "Answer", "text": "Tracing tools show you what happened, inside their service. onetrace gives you a record you can check yourself, offline, with no account: if a byte changes after the run, the check fails. It works beside them: the console can show your app's own OpenTelemetry spans at the step where two runs differ. Where it fits"}}, {"@type": "Question", "name": "What do onetrace, the console, onetrace-explain and onedoor each do? Do I need all of them?", "acceptedAnswer": {"@type": "Answer", "text": "onetrace records and verifies runs. The console shows runs in your browser, compares them and finds the first one that changed. onetrace-explain says what changed, with the evidence, and can add a model's reading. onedoor decides, per action, what an AI agent may do. Each works on its own; start with onetrace. Developer guide"}}, {"@type": "Question", "name": "Is it open source?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, under the Apache-2.0 licence, on GitHub and PyPI. Source on GitHub"}}, {"@type": "Question", "name": "What does \"verified\" prove, and what doesn't it?", "acceptedAnswer": {"@type": "Answer", "text": "It proves the record is intact (no file changed after the run), complete as the run declared it, and in order. It doesn't prove the answer was right or the model behaved well. The non-claims page lists what a record does not prove. Non-claims"}}, {"@type": "Question", "name": "Can I verify a run without an account, a server or the internet?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. onetrace-verify is a separate package that needs no network, no key and no account. Anyone you give a run folder to can check it the same way. Stage records"}}, {"@type": "Question", "name": "What happens if someone edits a record after the run?", "acceptedAnswer": {"@type": "Answer", "text": "The check fails. Each record holds the digest of the one before it, so a changed file breaks the chain from that point on. The record format"}}, {"@type": "Question", "name": "Are records signed and timestamped?", "acceptedAnswer": {"@type": "Answer", "text": "Records are always linked by their digests. You can also sign with your own Ed25519 key and anchor a run's time with an RFC 3161 time-stamp authority. An anchor is only as good as that authority's certificate, which the docs say plainly. Manual"}}, {"@type": "Question", "name": "Who holds the signing key?", "acceptedAnswer": {"@type": "Answer", "text": "You do. onetrace keygen writes the private key to a file you choose, readable by you alone, and onetrace never writes it into a run folder, logs it or prints it. A signature carries its public key, so a signed run still verifies if the private key is lost; you just can't sign new runs with it, so make a new key and add it to your trust list. Manual"}}, {"@type": "Question", "name": "How do I report a security issue?", "acceptedAnswer": {"@type": "Answer", "text": "Email onetrace@oneproof.dev, and please don't open a public issue for a vulnerability. onetrace's SECURITY.md, in its source distribution, says what is in and out of scope; there is no fixed response time yet. Anything else goes to the issue tracker. Report an issue"}}, {"@type": "Question", "name": "Is there a threat model or security brief?", "acceptedAnswer": {"@type": "Answer", "text": "Not as a separate document yet. onetrace's SECURITY.md says what counts as a vulnerability and what is out of scope, and the non-claims page lists what a verified record does not prove. Non-claims"}}, {"@type": "Question", "name": "How do I know the package I install is the one released?", "acceptedAnswer": {"@type": "Answer", "text": "PyPI lists each release file's SHA-256, and pip install --require-hashes installs only files that match. From console 0.7.0, its release files built on Windows are the same bytes as those built on Linux. onetrace-console on PyPI"}}, {"@type": "Question", "name": "What checks does a release pass before it ships?", "acceptedAnswer": {"@type": "Answer", "text": "Before a onetrace release ships, its full test suite runs on the source and again on the public code, installed from the built packages in a fresh environment, and the packages are built twice and must come out byte-identical. The built files are also scanned for anything that should not ship. A failing test is fixed before release or waived with its reason recorded: console 0.7.0 shipped with nine such waivers, in tests that fail only on the exported code. Changelog"}}, {"@type": "Question", "name": "Is the console safe to expose on a network?", "acceptedAnswer": {"@type": "Answer", "text": "It is built to sit behind your own TLS proxy. Sign-in uses local accounts with scrypt-hashed passwords, sessions that time out, CSRF tokens on every action, and a rolling limit on sign-in attempts. Today every signed-in person is a viewer, and there is no identity provider: read the release's known gaps first. Operator guide"}}, {"@type": "Question", "name": "Where is the Explain key kept?", "acceptedAnswer": {"@type": "Answer", "text": "In your operating system's keychain, under your login, when you install onetrace-explain[keyring]. The console stores no key. Anyone who can run code as your user can read it, as with an environment variable. Set up a model for Explain"}}, {"@type": "Question", "name": "Can onetrace-explain make things up?", "acceptedAnswer": {"@type": "Answer", "text": "Its first answer, what changed and the evidence, uses no model at all. A model's reading is optional, labelled AI-generated, and each of its claims must cite a probe or an item of the record, or it is dropped and counted. What remains is still a reading, not proof. Explain a difference"}}, {"@type": "Question", "name": "Does onetrace send my data anywhere?", "acceptedAnswer": {"@type": "Answer", "text": "No. A run is files in a folder you choose, or in a bucket you configure. onetrace reports to no one, and the verifier makes no network calls. Storage"}}, {"@type": "Question", "name": "Does a record hold my prompts and outputs, or only fingerprints?", "acceptedAnswer": {"@type": "Answer", "text": "By default a run keeps each step's outputs and only fingerprints of its inputs. keep_inputs=[\"name\"] also keeps that input's text, and keep_outputs=False keeps fingerprints of outputs and removes the files when the run closes. No onetrace command erases a kept input, but you can delete its file, or the run's inputs/ folder, and the run still verifies. Manual"}}, {"@type": "Question", "name": "Can I use it with personal or regulated data?", "acceptedAnswer": {"@type": "Answer", "text": "A run folder holds each step's outputs, which can include documents, prompts and answers; inputs are kept as fingerprints unless you ask to keep one. Treat run folders like logs that may hold sensitive data, and keep them where your data policy says. onetrace itself sends nothing anywhere. Manual"}}, {"@type": "Question", "name": "Does the console or Explain send records to a model?", "acceptedAnswer": {"@type": "Answer", "text": "Only when you ask. Explain sends to the model you configured, your provider's or one on your own machine, and shows what will be sent before anything goes. Without a model, it still gives what changed and the evidence. Explain a difference"}}, {"@type": "Question", "name": "Does the hosted demo collect anything?", "acceptedAnswer": {"@type": "Answer", "text": "The demo shows sample runs made when it was built, asks for no account and sets no cookie. When you use Compare, it keeps the comparison it computed so the next visitor gets the same page, and logs the pair, the result and the time, never your address. Its pages load nothing from other sites. This site, oneproof.dev, counts page views with GoatCounter, which sets no cookies, and loads its fonts from Google Fonts. Live demo"}}, {"@type": "Question", "name": "Does it slow down model calls?", "acceptedAnswer": {"@type": "Answer", "text": "The call itself runs as before; onetrace records its request and response around it, so the cost is the recording's, not the model's. The console and Explain work only when you use them, never in your pipeline's path. How it works"}}, {"@type": "Question", "name": "How fast is the verifier?", "acceptedAnswer": {"@type": "Answer", "text": "On one machine, onetrace-verify checked a 1,000-step run in 0.45 s (0.42 to 0.46 s over 5 runs) and a 100-step run in 0.09 s, with 1 KB of output per step and Python's start-up included. Its time grows with the data recorded, not with model time. Measured with onetrace-verify 0.7.1 on an 8-CPU container. Stage records"}}, {"@type": "Question", "name": "How much latency does onedoor add to an agent's action?", "acceptedAnswer": {"@type": "Answer", "text": "On one machine, onedoor 0.10.2's library call decided a permitted action in 0.29 ms at the median and refused an undeclared one in 0.21 ms, over 1,000 decisions each; the 99th percentile was about 2.1 ms for both. Each decision is written to a local SQLite database before it returns, and no model is called. onedoor for developers"}}, {"@type": "Question", "name": "What does a record look like on disk?", "acceptedAnswer": {"@type": "Answer", "text": "A run is a folder: one JSON receipt per stage, and a manifest whose chain head names the last one. It is plain files you can archive, copy or compare like anything else. The record format"}}, {"@type": "Question", "name": "How much disk does a run take?", "acceptedAnswer": {"@type": "Answer", "text": "With outputs kept (the default), a step costs its output plus about 1.5 KB of record: about 2.5 KB of files for a 1 KB output and 1.05 MB for a 1 MB output. With keep_outputs=False, a step costs about 1.5 KB whatever its output's size. Each file takes at least one filesystem block, so small steps use more on disk. Measured with onetrace 0.7.1. The record format"}}, {"@type": "Question", "name": "Does it work with OpenTelemetry?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, beside it. Where a run keeps your app's traces, the console shows the spans at the step where two runs differ, attribute by attribute. Developer guide"}}, {"@type": "Question", "name": "Will records I make today still verify with later versions?", "acceptedAnswer": {"@type": "Answer", "text": "A record keeps the format it was written in, and later verifiers read earlier formats. A released verifier also reads a newer minor format, checking what it knows. The format page says how each verifier reads each format. The record format"}}, {"@type": "Question", "name": "Is there a specification I can implement against?", "acceptedAnswer": {"@type": "Answer", "text": "The format is documented, and an IETF Internet-Draft, draft-saha-stage-receipts, describes it. It is a draft, not a standard. Stage records"}}, {"@type": "Question", "name": "Can I run it in CI?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. A check that fails exits non-zero (PASS 0, FAIL 1), so it can fail a build. Steps can declare expectations (onetrace 0.7's expect=), which the check reads after the run. Manual"}}, {"@type": "Question", "name": "What do I need?", "acceptedAnswer": {"@type": "Answer", "text": "Python and pip. onetrace needs Python 3.10 or later, onetrace-explain 3.11 or later, and the console 3.12 or later. There are install lines for macOS, Linux and Windows. Install"}}, {"@type": "Question", "name": "Do I have to change my code?", "acceptedAnswer": {"@type": "Answer", "text": "No. Either add a decorator per stage, or start your app with onetrace-run from onetrace-auto: calls through supported libraries become steps, and the run says what it could not see. Zero-config"}}, {"@type": "Question", "name": "Which model providers and frameworks are supported?", "acceptedAnswer": {"@type": "Answer", "text": "Any Python code can be recorded with decorators. Without code changes, onetrace-auto 0.7.1 records calls made through openai (1.40 up to 4), requests (2.28 up to 3) and httpx (0.24 up to 1); under openai 3.x, the client's own HTTP layer is not recorded by the httpx hook. Zero-config"}}, {"@type": "Question", "name": "Is there a way to learn it hands-on?", "acceptedAnswer": {"@type": "Answer", "text": "Yes: Learn's track 1, nine levels in about two hours. Learn"}}, {"@type": "Question", "name": "How does onedoor stop an agent doing something it shouldn't?", "acceptedAnswer": {"@type": "Answer", "text": "Every action the agent proposes is checked against your policy before it runs: refused by default, permitted within caps you set, held for a person, or stopped by a kill switch. Each decision goes into an append-only ledger with a digest of the policy that made it. onedoor"}}, {"@type": "Question", "name": "Do I have to rewrite my agent?", "acceptedAnswer": {"@type": "Answer", "text": "No. onedoor sits in front of your tools as an MCP proxy, LangChain or LangGraph middleware, or an HTTP service. onedoor for developers"}}, {"@type": "Question", "name": "Can the system receiving the action check it was really allowed?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, with a signed permit for the exact request, short-lived and usable once, which the receiving system checks without calling onedoor. In 0.10.2, the library call is the surface that issues permits. onedoor for developers"}}, {"@type": "Question", "name": "How do onedoor and onetrace fit together?", "acceptedAnswer": {"@type": "Answer", "text": "onedoor decides what an agent may do; onetrace records what it did. A onetrace record can hold onedoor's decisions, so a reviewer can check each gated step against its decision. onedoor decisions in a record"}}, {"@type": "Question", "name": "Is it ready for production?", "acceptedAnswer": {"@type": "Answer", "text": "The recorder, verifier and console are released and versioned, and each release lists its known gaps. Read those before relying on it; for example, the console has no identity provider yet. Changelog"}}, {"@type": "Question", "name": "Who is behind it?", "acceptedAnswer": {"@type": "Answer", "text": "onetrace, onetrace-verify, onetrace-auto, onetrace-console and onedoor are written by Shamik Saha and published under oneproof, as open source under Apache-2.0. onetrace on PyPI"}}, {"@type": "Question", "name": "How do I get help or give feedback?", "acceptedAnswer": {"@type": "Answer", "text": "Open an issue, or write to onetrace@oneproof.dev. Report an issue"}}]}</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -29,113 +92,406 @@
     <span class="eyebrow">FAQ</span>
     <h1>Questions, answered from what is released</h1>
     <p class="lede">Each answer says what today's releases do, and links to the page that shows it. Where something is planned rather than released, this page leaves it out.</p>
-    <p class="muted" style="font-size:15px"><a href="#what">What it is</a> · <a href="#trust">Trust and verification</a> · <a href="#security">Security</a> · <a href="#data">Data and privacy</a> · <a href="#performance">Performance</a> · <a href="#engineering">Engineering</a> · <a href="#start">Getting started</a> · <a href="#onedoor">Agents and onedoor</a> · <a href="#project">The project</a></p>
   </div>
 </section>
 
-<section class="band" style="padding-top:24px">
-  <div class="wrap faq">
-
-    <h2 id="what">What it is</h2>
-    <h3 id="what-does-it-do">What does onetrace do?</h3>
-    <p>It records each stage of an AI pipeline (the code, the settings, every input and output by fingerprint) as a chain of linked records anyone can check. When an answer changes, it shows the first step that changed and what changed there. <a href="/how-it-works.html">How it works →</a></p>
-    <h3 id="vs-tracing">How is it different from tracing tools such as LangSmith, Langfuse or Datadog?</h3>
-    <p>Tracing tools show you what happened, inside their service. onetrace gives you a record you can check yourself, offline, with no account: if a byte changes after the run, the check fails. It works beside them: the console can show your app's own OpenTelemetry spans at the step where two runs differ. <a href="/where-it-fits.html">Where it fits →</a></p>
-    <h3 id="which-package">What do onetrace, the console, onetrace-explain and onedoor each do? Do I need all of them?</h3>
-    <p>onetrace records and verifies runs. The console shows runs in your browser, compares them and finds the first one that changed. onetrace-explain says what changed, with the evidence, and can add a model's reading. onedoor decides, per action, what an AI agent may do. Each works on its own; start with onetrace. <a href="/developers.html">Developer guide →</a></p>
-    <h3 id="open-source">Is it open source?</h3>
-    <p>Yes, under the Apache-2.0 licence, on GitHub and PyPI. <a href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub →</a></p>
-
-    <h2 id="trust">Trust and verification</h2>
-    <h3 id="verified-means">What does "verified" prove, and what doesn't it?</h3>
-    <p>It proves the record is intact (no file changed after the run), complete as the run declared it, and in order. It doesn't prove the answer was right or the model behaved well. The non-claims page lists what a record does not prove. <a href="/onetrace/non-claims.html">Non-claims →</a></p>
-    <h3 id="verify-offline">Can I verify a run without an account, a server or the internet?</h3>
-    <p>Yes. <code>onetrace-verify</code> is a separate package that needs no network, no key and no account. Anyone you give a run folder to can check it the same way. <a href="/stage-records.html">Stage records →</a></p>
-    <h3 id="edited-record">What happens if someone edits a record after the run?</h3>
-    <p>The check fails. Each record holds the digest of the one before it, so a changed file breaks the chain from that point on. <a href="/onetrace/format.html">The record format →</a></p>
-    <h3 id="signed">Are records signed and timestamped?</h3>
-    <p>Records are always linked by their digests. You can also sign with your own Ed25519 key and anchor a run's time with an RFC 3161 time-stamp authority. An anchor is only as good as that authority's certificate, which the docs say plainly. <a href="/onetrace/manual.html">Manual →</a></p>
-    <h3 id="signing-key">Who holds the signing key?</h3>
-    <p>You do. <code>onetrace keygen</code> writes the private key to a file you choose, readable by you alone, and onetrace never writes it into a run folder, logs it or prints it. A signature carries its public key, so a signed run still verifies if the private key is lost; you just can't sign new runs with it, so make a new key and add it to your trust list. <a href="/onetrace/manual.html">Manual →</a></p>
-
-    <h2 id="security">Security</h2>
-    <h3 id="report-issue">How do I report a security issue?</h3>
-    <p>Email <a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a>, and please don't open a public issue for a vulnerability. onetrace's <code>SECURITY.md</code>, in its source distribution, says what is in and out of scope; there is no fixed response time yet. Anything else goes to the issue tracker. <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue →</a></p>
-    <h3 id="threat-model">Is there a threat model or security brief?</h3>
-    <p>Not as a separate document yet. onetrace's <code>SECURITY.md</code> says what counts as a vulnerability and what is out of scope, and the non-claims page lists what a verified record does not prove. <a href="/onetrace/non-claims.html">Non-claims →</a></p>
-    <h3 id="same-package">How do I know the package I install is the one released?</h3>
-    <p>PyPI lists each release file's SHA-256, and <code>pip install --require-hashes</code> installs only files that match. From console 0.7.0, its release files built on Windows are the same bytes as those built on Linux. <a href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI →</a></p>
-    <h3 id="release-checks">What checks does a release pass before it ships?</h3>
-    <p>Before a onetrace release ships, its full test suite runs on the source and again on the public code, installed from the built packages in a fresh environment, and the packages are built twice and must come out byte-identical. The built files are also scanned for anything that should not ship. A failing test is fixed before release or waived with its reason recorded: console 0.7.0 shipped with nine such waivers, in tests that fail only on the exported code. <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/blob/v0.7.0/CHANGELOG.md">Changelog →</a></p>
-    <h3 id="console-network">Is the console safe to expose on a network?</h3>
-    <p>It is built to sit behind your own TLS proxy. Sign-in uses local accounts with scrypt-hashed passwords, sessions that time out, CSRF tokens on every action, and a rolling limit on sign-in attempts. Today every signed-in person is a viewer, and there is no identity provider: read the release's known gaps first. <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/blob/v0.7.0/OPERATOR_README.md">Operator guide →</a></p>
-    <h3 id="explain-key">Where is the Explain key kept?</h3>
-    <p>In your operating system's keychain, under your login, when you install <code>onetrace-explain[keyring]</code>. The console stores no key. Anyone who can run code as your user can read it, as with an environment variable. <a href="/developers.html#model">Set up a model for Explain →</a></p>
-    <h3 id="explain-invent">Can onetrace-explain make things up?</h3>
-    <p>Its first answer, what changed and the evidence, uses no model at all. A model's reading is optional, labelled AI-generated, and each of its claims must cite a probe or an item of the record, or it is dropped and counted. What remains is still a reading, not proof. <a href="/developers.html#t-explain">Explain a difference →</a></p>
-
-    <h2 id="data">Data and privacy</h2>
-    <h3 id="data-leaves">Does onetrace send my data anywhere?</h3>
-    <p>No. A run is files in a folder you choose, or in a bucket you configure. onetrace reports to no one, and the verifier makes no network calls. <a href="/onetrace/storage.html">Storage →</a></p>
-    <h3 id="what-is-kept">Does a record hold my prompts and outputs, or only fingerprints?</h3>
-    <p>By default a run keeps each step's outputs and only fingerprints of its inputs. <code>keep_inputs=["name"]</code> also keeps that input's text, and <code>keep_outputs=False</code> keeps fingerprints of outputs and removes the files when the run closes. No onetrace command erases a kept input, but you can delete its file, or the run's <code>inputs/</code> folder, and the run still verifies. <a href="/onetrace/manual.html">Manual →</a></p>
-    <h3 id="personal-data">Can I use it with personal or regulated data?</h3>
-    <p>A run folder holds each step's outputs, which can include documents, prompts and answers; inputs are kept as fingerprints unless you ask to keep one. Treat run folders like logs that may hold sensitive data, and keep them where your data policy says. onetrace itself sends nothing anywhere. <a href="/onetrace/manual.html">Manual →</a></p>
-    <h3 id="model-send">Does the console or Explain send records to a model?</h3>
-    <p>Only when you ask. Explain sends to the model you configured, your provider's or one on your own machine, and shows what will be sent before anything goes. Without a model, it still gives what changed and the evidence. <a href="/developers.html#t-explain">Explain a difference →</a></p>
-
-    <h3 id="demo-data">Does the hosted demo collect anything?</h3>
-    <p>The demo shows sample runs made when it was built, asks for no account and sets no cookie. When you use Compare, it keeps the comparison it computed so the next visitor gets the same page, and logs the pair, the result and the time, never your address. Its pages load nothing from other sites. This site, oneproof.dev, counts page views with GoatCounter, which sets no cookies, and loads its fonts from Google Fonts. <a href="https://demo.oneproof.dev">Live demo →</a></p>
-
-    <h2 id="performance">Performance</h2>
-    <h3 id="model-calls">Does it slow down model calls?</h3>
-    <p>The call itself runs as before; onetrace records its request and response around it, so the cost is the recording's, not the model's. The console and Explain work only when you use them, never in your pipeline's path. <a href="/how-it-works.html">How it works →</a></p>
-    <h3 id="verifier-speed">How fast is the verifier?</h3>
-    <p>On one machine, <code>onetrace-verify</code> checked a 1,000-step run in 0.45 s (0.42 to 0.46 s over 5 runs) and a 100-step run in 0.09 s, with 1 KB of output per step and Python's start-up included. Its time grows with the data recorded, not with model time. Measured with onetrace-verify 0.7.1 on an 8-CPU container. <a href="/stage-records.html">Stage records →</a></p>
-    <h3 id="onedoor-latency">How much latency does onedoor add to an agent's action?</h3>
-    <p>On one machine, onedoor 0.10.2's library call decided a permitted action in 0.29 ms at the median and refused an undeclared one in 0.21 ms, over 1,000 decisions each; the 99th percentile was about 2.1 ms for both. Each decision is written to a local SQLite database before it returns, and no model is called. <a href="/onedoor/developers.html">onedoor for developers →</a></p>
-
-    <h2 id="engineering">Engineering</h2>
-    <h3 id="on-disk">What does a record look like on disk?</h3>
-    <p>A run is a folder: one JSON receipt per stage, and a manifest whose chain head names the last one. It is plain files you can archive, copy or compare like anything else. <a href="/onetrace/format.html">The record format →</a></p>
-    <h3 id="disk">How much disk does a run take?</h3>
-    <p>With outputs kept (the default), a step costs its output plus about 1.5 KB of record: about 2.5 KB of files for a 1 KB output and 1.05 MB for a 1 MB output. With <code>keep_outputs=False</code>, a step costs about 1.5 KB whatever its output's size. Each file takes at least one filesystem block, so small steps use more on disk. Measured with onetrace 0.7.1. <a href="/onetrace/format.html">The record format →</a></p>
-    <h3 id="opentelemetry">Does it work with OpenTelemetry?</h3>
-    <p>Yes, beside it. Where a run keeps your app's traces, the console shows the spans at the step where two runs differ, attribute by attribute. <a href="/developers.html">Developer guide →</a></p>
-    <h3 id="future-verify">Will records I make today still verify with later versions?</h3>
-    <p>A record keeps the format it was written in, and later verifiers read earlier formats. A released verifier also reads a newer minor format, checking what it knows. The format page says how each verifier reads each format. <a href="/onetrace/format.html">The record format →</a></p>
-    <h3 id="specification">Is there a specification I can implement against?</h3>
-    <p>The format is documented, and an IETF Internet-Draft, <code>draft-saha-stage-receipts</code>, describes it. It is a draft, not a standard. <a href="/stage-records.html">Stage records →</a></p>
-    <h3 id="ci">Can I run it in CI?</h3>
-    <p>Yes. A check that fails exits non-zero (<code>PASS</code> 0, <code>FAIL</code> 1), so it can fail a build. Steps can declare expectations (onetrace 0.7's <code>expect=</code>), which the check reads after the run. <a href="/onetrace/manual.html">Manual →</a></p>
-
-    <h2 id="start">Getting started</h2>
-    <h3 id="requirements">What do I need?</h3>
-    <p>Python and pip. onetrace needs Python 3.10 or later, onetrace-explain 3.11 or later, and the console 3.12 or later. There are install lines for macOS, Linux and Windows. <a href="/developers.html#install">Install →</a></p>
-    <h3 id="code-change">Do I have to change my code?</h3>
-    <p>No. Either add a decorator per stage, or start your app with <code>onetrace-run</code> from onetrace-auto: calls through supported libraries become steps, and the run says what it could not see. <a href="/developers.html#auto">Zero-config →</a></p>
-    <h3 id="libraries">Which model providers and frameworks are supported?</h3>
-    <p>Any Python code can be recorded with decorators. Without code changes, onetrace-auto 0.7.1 records calls made through openai (1.40 up to 4), requests (2.28 up to 3) and httpx (0.24 up to 1); under openai 3.x, the client's own HTTP layer is not recorded by the httpx hook. <a href="/developers.html#auto">Zero-config →</a></p>
-    <h3 id="learn">Is there a way to learn it hands-on?</h3>
-    <p>Yes: Learn's track 1, nine levels in about two hours. <a href="/learn.html">Learn →</a></p>
-
-    <h2 id="onedoor">Agents and onedoor</h2>
-    <h3 id="onedoor-stop">How does onedoor stop an agent doing something it shouldn't?</h3>
-    <p>Every action the agent proposes is checked against your policy before it runs: refused by default, permitted within caps you set, held for a person, or stopped by a kill switch. Each decision goes into an append-only ledger with a digest of the policy that made it. <a href="/onedoor/">onedoor →</a></p>
-    <h3 id="onedoor-rewrite">Do I have to rewrite my agent?</h3>
-    <p>No. onedoor sits in front of your tools as an MCP proxy, LangChain or LangGraph middleware, or an HTTP service. <a href="/onedoor/developers.html">onedoor for developers →</a></p>
-    <h3 id="permits">Can the system receiving the action check it was really allowed?</h3>
-    <p>Yes, with a signed permit for the exact request, short-lived and usable once, which the receiving system checks without calling onedoor. In 0.10.2, the library call is the surface that issues permits. <a href="/onedoor/developers.html">onedoor for developers →</a></p>
-    <h3 id="together">How do onedoor and onetrace fit together?</h3>
-    <p>onedoor decides what an agent may do; onetrace records what it did. A onetrace record can hold onedoor's decisions, so a reviewer can check each gated step against its decision. <a href="/onetrace/decisions.html">onedoor decisions in a record →</a></p>
-
-    <h2 id="project">The project</h2>
-    <h3 id="production">Is it ready for production?</h3>
-    <p>The recorder, verifier and console are released and versioned, and each release lists its known gaps. Read those before relying on it; for example, the console has no identity provider yet. <a href="https://github.com/shamiksaharcciit-oss/onetrace-console/blob/v0.7.0/CHANGELOG.md">Changelog →</a></p>
-    <h3 id="who">Who is behind it?</h3>
-    <p>onetrace, onetrace-verify, onetrace-auto, onetrace-console and onedoor are written by Shamik Saha and published under oneproof, as open source under Apache-2.0. <a href="https://pypi.org/project/onetrace/">onetrace on PyPI →</a></p>
-    <h3 id="help">How do I get help or give feedback?</h3>
-    <p>Open an issue, or write to <a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a>. <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue →</a></p>
+<section class="band faq-band">
+  <div class="wrap">
+  <div class="faq-tools" data-faq-tools hidden>
+    <label class="faq-search"><span class="sr">Search the questions</span>
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5 18 18"/></svg>
+      <input type="search" id="faq-search" placeholder="Search 41 questions" autocomplete="off">
+    </label>
+    <div class="faq-buttons"><button type="button" data-faq-all="open">Expand all</button><button type="button" data-faq-all="close">Collapse all</button></div>
+    <p class="faq-status muted" aria-live="polite" id="faq-status"></p>
+  </div>
+  <div class="faq-layout">
+  <nav class="faq-nav" aria-label="FAQ topics">
+    <p class="faq-nav-h">Topics</p>
+    <ul>
+      <li><a href="#what" data-topic="what"><span>What it is</span><b>4</b></a></li>
+      <li><a href="#trust" data-topic="trust"><span>Trust and verification</span><b>5</b></a></li>
+      <li><a href="#security" data-topic="security"><span>Security</span><b>7</b></a></li>
+      <li><a href="#data" data-topic="data"><span>Data and privacy</span><b>5</b></a></li>
+      <li><a href="#performance" data-topic="performance"><span>Performance</span><b>3</b></a></li>
+      <li><a href="#engineering" data-topic="engineering"><span>Engineering</span><b>6</b></a></li>
+      <li><a href="#start" data-topic="start"><span>Getting started</span><b>4</b></a></li>
+      <li><a href="#onedoor" data-topic="onedoor"><span>Agents and onedoor</span><b>4</b></a></li>
+      <li><a href="#project" data-topic="project"><span>The project</span><b>3</b></a></li>
+    </ul>
+  </nav>
+  <div class="faq">
+    <section class="faq-topic" id="what" aria-labelledby="what-h">
+      <header class="faq-topic-head">
+        <span class="faq-topic-n">01</span>
+        <div><h2 id="what-h">What it is</h2><p>What each package does, and how it differs from tracing tools.</p></div>
+        <span class="faq-topic-count">4 questions</span>
+      </header>
+      <div class="faq-list">
+      <details class="faq-q" id="what-does-it-do">
+        <summary><span class="faq-q-text">What does onetrace do?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>It records each stage of an AI pipeline (the code, the settings, every input and output by fingerprint) as a chain of linked records anyone can check. When an answer changes, it shows the first step that changed and what changed there.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/how-it-works.html">How it works →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="vs-tracing">
+        <summary><span class="faq-q-text">How is it different from tracing tools such as LangSmith, Langfuse or Datadog?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Tracing tools show you what happened, inside their service. onetrace gives you a record you can check yourself, offline, with no account: if a byte changes after the run, the check fails. It works beside them: the console can show your app's own OpenTelemetry spans at the step where two runs differ.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/where-it-fits.html">Where it fits →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="which-package">
+        <summary><span class="faq-q-text">What do onetrace, the console, onetrace-explain and onedoor each do? Do I need all of them?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>onetrace records and verifies runs. The console shows runs in your browser, compares them and finds the first one that changed. onetrace-explain says what changed, with the evidence, and can add a model's reading. onedoor decides, per action, what an AI agent may do. Each works on its own; start with onetrace.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/developers.html">Developer guide →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="open-source">
+        <summary><span class="faq-q-text">Is it open source?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Yes, under the Apache-2.0 licence, on GitHub and PyPI.</p>
+          <p class="faq-more-row"><a class="faq-more" href="https://github.com/shamiksaharcciit-oss/onetrace-console">Source on GitHub →</a></p>
+        </div>
+      </details>
+      </div>
+    </section>
+    <section class="faq-topic" id="trust" aria-labelledby="trust-h">
+      <header class="faq-topic-head">
+        <span class="faq-topic-n">02</span>
+        <div><h2 id="trust-h">Trust and verification</h2><p>What a verified run proves, and how you check one yourself.</p></div>
+        <span class="faq-topic-count">5 questions</span>
+      </header>
+      <div class="faq-list">
+      <details class="faq-q" id="verified-means">
+        <summary><span class="faq-q-text">What does "verified" prove, and what doesn't it?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>It proves the record is intact (no file changed after the run), complete as the run declared it, and in order. It doesn't prove the answer was right or the model behaved well. The non-claims page lists what a record does not prove.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onetrace/non-claims.html">Non-claims →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="verify-offline">
+        <summary><span class="faq-q-text">Can I verify a run without an account, a server or the internet?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Yes. <code>onetrace-verify</code> is a separate package that needs no network, no key and no account. Anyone you give a run folder to can check it the same way.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/stage-records.html">Stage records →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="edited-record">
+        <summary><span class="faq-q-text">What happens if someone edits a record after the run?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>The check fails. Each record holds the digest of the one before it, so a changed file breaks the chain from that point on.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onetrace/format.html">The record format →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="signed">
+        <summary><span class="faq-q-text">Are records signed and timestamped?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Records are always linked by their digests. You can also sign with your own Ed25519 key and anchor a run's time with an RFC 3161 time-stamp authority. An anchor is only as good as that authority's certificate, which the docs say plainly.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onetrace/manual.html">Manual →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="signing-key">
+        <summary><span class="faq-q-text">Who holds the signing key?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>You do. <code>onetrace keygen</code> writes the private key to a file you choose, readable by you alone, and onetrace never writes it into a run folder, logs it or prints it. A signature carries its public key, so a signed run still verifies if the private key is lost; you just can't sign new runs with it, so make a new key and add it to your trust list.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onetrace/manual.html">Manual →</a></p>
+        </div>
+      </details>
+      </div>
+    </section>
+    <section class="faq-topic" id="security" aria-labelledby="security-h">
+      <header class="faq-topic-head">
+        <span class="faq-topic-n">03</span>
+        <div><h2 id="security-h">Security</h2><p>Reporting issues, release checks, and running the console safely.</p></div>
+        <span class="faq-topic-count">7 questions</span>
+      </header>
+      <div class="faq-list">
+      <details class="faq-q" id="report-issue">
+        <summary><span class="faq-q-text">How do I report a security issue?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Email <a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a>, and please don't open a public issue for a vulnerability. onetrace's <code>SECURITY.md</code>, in its source distribution, says what is in and out of scope; there is no fixed response time yet. Anything else goes to the issue tracker.</p>
+          <p class="faq-more-row"><a class="faq-more" href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="threat-model">
+        <summary><span class="faq-q-text">Is there a threat model or security brief?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Not as a separate document yet. onetrace's <code>SECURITY.md</code> says what counts as a vulnerability and what is out of scope, and the non-claims page lists what a verified record does not prove.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onetrace/non-claims.html">Non-claims →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="same-package">
+        <summary><span class="faq-q-text">How do I know the package I install is the one released?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>PyPI lists each release file's SHA-256, and <code>pip install --require-hashes</code> installs only files that match. From console 0.7.0, its release files built on Windows are the same bytes as those built on Linux.</p>
+          <p class="faq-more-row"><a class="faq-more" href="https://pypi.org/project/onetrace-console/">onetrace-console on PyPI →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="release-checks">
+        <summary><span class="faq-q-text">What checks does a release pass before it ships?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Before a onetrace release ships, its full test suite runs on the source and again on the public code, installed from the built packages in a fresh environment, and the packages are built twice and must come out byte-identical. The built files are also scanned for anything that should not ship. A failing test is fixed before release or waived with its reason recorded: console 0.7.0 shipped with nine such waivers, in tests that fail only on the exported code.</p>
+          <p class="faq-more-row"><a class="faq-more" href="https://github.com/shamiksaharcciit-oss/onetrace-console/blob/v0.7.0/CHANGELOG.md">Changelog →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="console-network">
+        <summary><span class="faq-q-text">Is the console safe to expose on a network?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>It is built to sit behind your own TLS proxy. Sign-in uses local accounts with scrypt-hashed passwords, sessions that time out, CSRF tokens on every action, and a rolling limit on sign-in attempts. Today every signed-in person is a viewer, and there is no identity provider: read the release's known gaps first.</p>
+          <p class="faq-more-row"><a class="faq-more" href="https://github.com/shamiksaharcciit-oss/onetrace-console/blob/v0.7.0/OPERATOR_README.md">Operator guide →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="explain-key">
+        <summary><span class="faq-q-text">Where is the Explain key kept?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>In your operating system's keychain, under your login, when you install <code>onetrace-explain[keyring]</code>. The console stores no key. Anyone who can run code as your user can read it, as with an environment variable.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/developers.html#model">Set up a model for Explain →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="explain-invent">
+        <summary><span class="faq-q-text">Can onetrace-explain make things up?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Its first answer, what changed and the evidence, uses no model at all. A model's reading is optional, labelled AI-generated, and each of its claims must cite a probe or an item of the record, or it is dropped and counted. What remains is still a reading, not proof.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/developers.html#t-explain">Explain a difference →</a></p>
+        </div>
+      </details>
+      </div>
+    </section>
+    <section class="faq-topic" id="data" aria-labelledby="data-h">
+      <header class="faq-topic-head">
+        <span class="faq-topic-n">04</span>
+        <div><h2 id="data-h">Data and privacy</h2><p>What a record holds, and what leaves your machine.</p></div>
+        <span class="faq-topic-count">5 questions</span>
+      </header>
+      <div class="faq-list">
+      <details class="faq-q" id="data-leaves">
+        <summary><span class="faq-q-text">Does onetrace send my data anywhere?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>No. A run is files in a folder you choose, or in a bucket you configure. onetrace reports to no one, and the verifier makes no network calls.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onetrace/storage.html">Storage →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="what-is-kept">
+        <summary><span class="faq-q-text">Does a record hold my prompts and outputs, or only fingerprints?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>By default a run keeps each step's outputs and only fingerprints of its inputs. <code>keep_inputs=["name"]</code> also keeps that input's text, and <code>keep_outputs=False</code> keeps fingerprints of outputs and removes the files when the run closes. No onetrace command erases a kept input, but you can delete its file, or the run's <code>inputs/</code> folder, and the run still verifies.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onetrace/manual.html">Manual →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="personal-data">
+        <summary><span class="faq-q-text">Can I use it with personal or regulated data?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>A run folder holds each step's outputs, which can include documents, prompts and answers; inputs are kept as fingerprints unless you ask to keep one. Treat run folders like logs that may hold sensitive data, and keep them where your data policy says. onetrace itself sends nothing anywhere.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onetrace/manual.html">Manual →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="model-send">
+        <summary><span class="faq-q-text">Does the console or Explain send records to a model?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Only when you ask. Explain sends to the model you configured, your provider's or one on your own machine, and shows what will be sent before anything goes. Without a model, it still gives what changed and the evidence.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/developers.html#t-explain">Explain a difference →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="demo-data">
+        <summary><span class="faq-q-text">Does the hosted demo collect anything?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>The demo shows sample runs made when it was built, asks for no account and sets no cookie. When you use Compare, it keeps the comparison it computed so the next visitor gets the same page, and logs the pair, the result and the time, never your address. Its pages load nothing from other sites. This site, oneproof.dev, counts page views with GoatCounter, which sets no cookies, and loads its fonts from Google Fonts.</p>
+          <p class="faq-more-row"><a class="faq-more" href="https://demo.oneproof.dev">Live demo →</a></p>
+        </div>
+      </details>
+      </div>
+    </section>
+    <section class="faq-topic" id="performance" aria-labelledby="performance-h">
+      <header class="faq-topic-head">
+        <span class="faq-topic-n">05</span>
+        <div><h2 id="performance-h">Performance</h2><p>The cost of recording, verifying and gating, as measured.</p></div>
+        <span class="faq-topic-count">3 questions</span>
+      </header>
+      <div class="faq-list">
+      <details class="faq-q" id="model-calls">
+        <summary><span class="faq-q-text">Does it slow down model calls?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>The call itself runs as before; onetrace records its request and response around it, so the cost is the recording's, not the model's. The console and Explain work only when you use them, never in your pipeline's path.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/how-it-works.html">How it works →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="verifier-speed">
+        <summary><span class="faq-q-text">How fast is the verifier?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>On one machine, <code>onetrace-verify</code> checked a 1,000-step run in 0.45 s (0.42 to 0.46 s over 5 runs) and a 100-step run in 0.09 s, with 1 KB of output per step and Python's start-up included. Its time grows with the data recorded, not with model time. Measured with onetrace-verify 0.7.1 on an 8-CPU container.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/stage-records.html">Stage records →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="onedoor-latency">
+        <summary><span class="faq-q-text">How much latency does onedoor add to an agent's action?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>On one machine, onedoor 0.10.2's library call decided a permitted action in 0.29 ms at the median and refused an undeclared one in 0.21 ms, over 1,000 decisions each; the 99th percentile was about 2.1 ms for both. Each decision is written to a local SQLite database before it returns, and no model is called.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onedoor/developers.html">onedoor for developers →</a></p>
+        </div>
+      </details>
+      </div>
+    </section>
+    <section class="faq-topic" id="engineering" aria-labelledby="engineering-h">
+      <header class="faq-topic-head">
+        <span class="faq-topic-n">06</span>
+        <div><h2 id="engineering-h">Engineering</h2><p>Records on disk, OpenTelemetry, the specification and CI.</p></div>
+        <span class="faq-topic-count">6 questions</span>
+      </header>
+      <div class="faq-list">
+      <details class="faq-q" id="on-disk">
+        <summary><span class="faq-q-text">What does a record look like on disk?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>A run is a folder: one JSON receipt per stage, and a manifest whose chain head names the last one. It is plain files you can archive, copy or compare like anything else.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onetrace/format.html">The record format →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="disk">
+        <summary><span class="faq-q-text">How much disk does a run take?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>With outputs kept (the default), a step costs its output plus about 1.5 KB of record: about 2.5 KB of files for a 1 KB output and 1.05 MB for a 1 MB output. With <code>keep_outputs=False</code>, a step costs about 1.5 KB whatever its output's size. Each file takes at least one filesystem block, so small steps use more on disk. Measured with onetrace 0.7.1.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onetrace/format.html">The record format →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="opentelemetry">
+        <summary><span class="faq-q-text">Does it work with OpenTelemetry?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Yes, beside it. Where a run keeps your app's traces, the console shows the spans at the step where two runs differ, attribute by attribute.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/developers.html">Developer guide →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="future-verify">
+        <summary><span class="faq-q-text">Will records I make today still verify with later versions?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>A record keeps the format it was written in, and later verifiers read earlier formats. A released verifier also reads a newer minor format, checking what it knows. The format page says how each verifier reads each format.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onetrace/format.html">The record format →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="specification">
+        <summary><span class="faq-q-text">Is there a specification I can implement against?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>The format is documented, and an IETF Internet-Draft, <code>draft-saha-stage-receipts</code>, describes it. It is a draft, not a standard.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/stage-records.html">Stage records →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="ci">
+        <summary><span class="faq-q-text">Can I run it in CI?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Yes. A check that fails exits non-zero (<code>PASS</code> 0, <code>FAIL</code> 1), so it can fail a build. Steps can declare expectations (onetrace 0.7's <code>expect=</code>), which the check reads after the run.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onetrace/manual.html">Manual →</a></p>
+        </div>
+      </details>
+      </div>
+    </section>
+    <section class="faq-topic" id="start" aria-labelledby="start-h">
+      <header class="faq-topic-head">
+        <span class="faq-topic-n">07</span>
+        <div><h2 id="start-h">Getting started</h2><p>What you need, and how little your code changes.</p></div>
+        <span class="faq-topic-count">4 questions</span>
+      </header>
+      <div class="faq-list">
+      <details class="faq-q" id="requirements">
+        <summary><span class="faq-q-text">What do I need?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Python and pip. onetrace needs Python 3.10 or later, onetrace-explain 3.11 or later, and the console 3.12 or later. There are install lines for macOS, Linux and Windows.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/developers.html#install">Install →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="code-change">
+        <summary><span class="faq-q-text">Do I have to change my code?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>No. Either add a decorator per stage, or start your app with <code>onetrace-run</code> from onetrace-auto: calls through supported libraries become steps, and the run says what it could not see.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/developers.html#auto">Zero-config →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="libraries">
+        <summary><span class="faq-q-text">Which model providers and frameworks are supported?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Any Python code can be recorded with decorators. Without code changes, onetrace-auto 0.7.1 records calls made through openai (1.40 up to 4), requests (2.28 up to 3) and httpx (0.24 up to 1); under openai 3.x, the client's own HTTP layer is not recorded by the httpx hook.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/developers.html#auto">Zero-config →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="learn">
+        <summary><span class="faq-q-text">Is there a way to learn it hands-on?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Yes: Learn's track 1, nine levels in about two hours.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/learn.html">Learn →</a></p>
+        </div>
+      </details>
+      </div>
+    </section>
+    <section class="faq-topic" id="onedoor" aria-labelledby="onedoor-h">
+      <header class="faq-topic-head">
+        <span class="faq-topic-n">08</span>
+        <div><h2 id="onedoor-h">Agents and onedoor</h2><p>Deciding what an agent may do, before it does it.</p></div>
+        <span class="faq-topic-count">4 questions</span>
+      </header>
+      <div class="faq-list">
+      <details class="faq-q" id="onedoor-stop">
+        <summary><span class="faq-q-text">How does onedoor stop an agent doing something it shouldn't?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Every action the agent proposes is checked against your policy before it runs: refused by default, permitted within caps you set, held for a person, or stopped by a kill switch. Each decision goes into an append-only ledger with a digest of the policy that made it.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onedoor/">onedoor →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="onedoor-rewrite">
+        <summary><span class="faq-q-text">Do I have to rewrite my agent?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>No. onedoor sits in front of your tools as an MCP proxy, LangChain or LangGraph middleware, or an HTTP service.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onedoor/developers.html">onedoor for developers →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="permits">
+        <summary><span class="faq-q-text">Can the system receiving the action check it was really allowed?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Yes, with a signed permit for the exact request, short-lived and usable once, which the receiving system checks without calling onedoor. In 0.10.2, the library call is the surface that issues permits.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onedoor/developers.html">onedoor for developers →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="together">
+        <summary><span class="faq-q-text">How do onedoor and onetrace fit together?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>onedoor decides what an agent may do; onetrace records what it did. A onetrace record can hold onedoor's decisions, so a reviewer can check each gated step against its decision.</p>
+          <p class="faq-more-row"><a class="faq-more" href="/onetrace/decisions.html">onedoor decisions in a record →</a></p>
+        </div>
+      </details>
+      </div>
+    </section>
+    <section class="faq-topic" id="project" aria-labelledby="project-h">
+      <header class="faq-topic-head">
+        <span class="faq-topic-n">09</span>
+        <div><h2 id="project-h">The project</h2><p>Readiness, who builds it, and where to get help.</p></div>
+        <span class="faq-topic-count">3 questions</span>
+      </header>
+      <div class="faq-list">
+      <details class="faq-q" id="production">
+        <summary><span class="faq-q-text">Is it ready for production?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>The recorder, verifier and console are released and versioned, and each release lists its known gaps. Read those before relying on it; for example, the console has no identity provider yet.</p>
+          <p class="faq-more-row"><a class="faq-more" href="https://github.com/shamiksaharcciit-oss/onetrace-console/blob/v0.7.0/CHANGELOG.md">Changelog →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="who">
+        <summary><span class="faq-q-text">Who is behind it?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>onetrace, onetrace-verify, onetrace-auto, onetrace-console and onedoor are written by Shamik Saha and published under oneproof, as open source under Apache-2.0.</p>
+          <p class="faq-more-row"><a class="faq-more" href="https://pypi.org/project/onetrace/">onetrace on PyPI →</a></p>
+        </div>
+      </details>
+      <details class="faq-q" id="help">
+        <summary><span class="faq-q-text">How do I get help or give feedback?</span><span class="faq-chev" aria-hidden="true"></span></summary>
+        <div class="faq-a">
+          <p>Open an issue, or write to <a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a>.</p>
+          <p class="faq-more-row"><a class="faq-more" href="https://github.com/shamiksaharcciit-oss/onetrace-issues">Report an issue →</a></p>
+        </div>
+      </details>
+      </div>
+    </section>
+    <p class="faq-empty" id="faq-empty" hidden>No question matches. Try another word, or <a href="https://github.com/shamiksaharcciit-oss/onetrace-issues">ask in an issue</a>.</p>
+  </div>
+  </div>
   </div>
 </section>
 
@@ -147,5 +503,72 @@
 <div><h4>Also from oneproof</h4><ul><li><a href="/onedoor/">onedoor</a><br><span class="muted" style="font-size:13px">decide what an agent is allowed to do, before it does</span></li></ul></div>
 </div><div class="fine">© 2026 oneproof · Apache-2.0. Page views are counted by GoatCounter, an open-source counter that sets no cookies and stores no personal data. onetrace itself reports to no one. Screens show the public demo's sample runs, not customer data.</div></div></footer>
 <script src="/assets/site-v2.js"></script>
+<script>
+(function () {
+  var qs = Array.from(document.querySelectorAll('details.faq-q'));
+  var topics = Array.from(document.querySelectorAll('.faq-topic'));
+  var navLinks = Array.from(document.querySelectorAll('.faq-nav a'));
+  var tools = document.querySelector('[data-faq-tools]');
+  if (tools) tools.hidden = false;
+  function openHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) return;
+    var el = document.getElementById(id);
+    if (el && el.tagName === 'DETAILS') { el.open = true; el.scrollIntoView(); }
+  }
+  window.addEventListener('hashchange', openHash);
+  openHash();
+  qs.forEach(function (d) {
+    d.addEventListener('toggle', function () {
+      if (d.open && history.replaceState) history.replaceState(null, '', '#' + d.id);
+    });
+  });
+  document.querySelectorAll('[data-faq-all]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var open = b.getAttribute('data-faq-all') === 'open';
+      qs.forEach(function (d) { if (!d.hidden) d.open = open; });
+    });
+  });
+  var input = document.getElementById('faq-search');
+  var status = document.getElementById('faq-status');
+  var empty = document.getElementById('faq-empty');
+  var texts = qs.map(function (d) { return d.textContent.toLowerCase(); });
+  var wasOpen = null;
+  function filter() {
+    var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    if (!words.length) {
+      qs.forEach(function (d, i) { d.hidden = false; if (wasOpen) d.open = wasOpen[i]; });
+      wasOpen = null;
+      topics.forEach(function (t) { t.hidden = false; });
+      navLinks.forEach(function (a) { a.parentNode.hidden = false; });
+      empty.hidden = true; status.textContent = '';
+      return;
+    }
+    if (!wasOpen) wasOpen = qs.map(function (d) { return d.open; });
+    var n = 0;
+    qs.forEach(function (d, i) {
+      var hit = words.every(function (w) { return texts[i].indexOf(w) !== -1; });
+      d.hidden = !hit; d.open = hit; if (hit) n++;
+    });
+    topics.forEach(function (t, i) {
+      var any = t.querySelector('details.faq-q:not([hidden])');
+      t.hidden = !any;
+      if (navLinks[i]) navLinks[i].parentNode.hidden = !any;
+    });
+    empty.hidden = n > 0;
+    status.textContent = n === 1 ? '1 question matches.' : n + ' questions match.';
+  }
+  if (input) input.addEventListener('input', filter);
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        navLinks.forEach(function (a) { a.classList.toggle('on', a.getAttribute('data-topic') === e.target.id); });
+      });
+    }, { rootMargin: '-90px 0px -65% 0px' });
+    topics.forEach(function (t) { io.observe(t); });
+  }
+})();
+</script>
 </body>
 </html>
