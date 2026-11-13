@@ -31,6 +31,47 @@ own and say nothing about the runs: 0 an explanation or a dry run was written; 2
 comparison that can't be explained (no report, a refused or could-not-check verdict, a run whose
 chain head is not the one the report checked); 3 the model couldn't be reached, or replied with no
 usable JSON. Never use it as a CI gate.</p>
+<h2 id="the-model-and-its-key-03">The model and its key (0.3)</h2>
+<p>The model is named in the <code>[model]</code> table of <code>~/.config/onetrace/explain.toml</code> (or the file
+<code>ONETRACE_EXPLAIN_CONFIG</code> names), or with <code>--model</code>. The key is never in that file. It is read at
+send time, from one of two places, as <code>key_source</code> says:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th><code>key_source</code></th>
+<th>Where the key is read</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&quot;env&quot;</code> (the default)</td>
+<td>the environment variable <code>key_env</code> names. A local server that takes no key needs no <code>key_env</code>.</td>
+</tr>
+<tr>
+<td><code>&quot;keyring&quot;</code> (0.3)</td>
+<td>the operating system's keychain (Windows Credential Manager, the macOS Keychain, the Secret Service on a Linux desktop), through the <code>keyring</code> package: <code>pip install &quot;onetrace-explain[keyring]&quot;</code>. Service <code>onetrace-explain</code>, user <code>&lt;provider&gt;:&lt;base_url&gt;</code>, or <code>&lt;provider&gt;:default</code> where the file names no <code>base_url</code>.</td>
+</tr>
+</tbody>
+</table></div>
+<div class="code"><pre><code class="language-toml">[model]
+provider = &quot;anthropic&quot;
+name = &quot;&lt;model name&gt;&quot;
+key_source = &quot;keyring&quot;     # or leave it out and name key_env = &quot;ANTHROPIC_API_KEY&quot;
+</code></pre></div>
+<p>The key is read before anything is sent. Where it can't be read, or holds a line end, another
+control character or a character outside ASCII (a variable set from a file with CRLF line ends, a
+zero-width space or a curly quote from a paste), nothing is sent
+and the model is not asked: <code>onetrace-explain REPORT_DIR</code> exits 2, and <code>onetrace-explain RUN_A RUN_B</code>
+records &quot;not asked&quot; with the reason, its exit code still <code>onetrace diff</code>'s. The message says where it
+looked and what to do, never the key: the variable and the file that names it; or the keychain entry,
+with the command that stores it (<code>python -m keyring set onetrace-explain &lt;provider&gt;:&lt;base_url&gt;</code>); or,
+where the keychain can't be read, to unlock it or use <code>key_env</code>; or the install line where the
+<code>keyring</code> extra is missing. An error met while a request carries the key is said by its type: an HTTP
+error by its status code alone, never the server's reason phrase; another network error by its reason
+(refused, timed out). Text holding the key, or any run of 8 of its characters, is never kept: an
+error's text is said by its type alone, and a model's reply holding it is not kept, its length and
+sha256 said in its place, with no explanation from it. Anyone who can run code as this user can read the
+key from the keychain, as from an environment variable.</p>
 <h2 id="two-runs-onetrace-explain-run_a-run_b-02">Two runs: <code>onetrace-explain RUN_A RUN_B</code> (0.2)</h2>
 <div class="code"><pre><code>onetrace-explain RUN_A RUN_B [--no-model] [--json] [--probes NAME,...] [--max-probes N] [--runs-root DIR]
                  [--mask FILE] [--model PROVIDER:NAME] [--yes] [--include-text] [--redact NAME]... [--out DIR]
@@ -166,7 +207,7 @@ What may have happened (AI-generated, may be wrong)
   model: fake:reply.json
   - note: The repeat set already varies at answer: `1` of `3` runs differ from its common output, and the candidate&#x27;s output is among the outputs it recorded.
     shown by: probe/P2
-  - possible culprit: The answer step&#x27;s output differs with its inputs the same; the model-call record is the place to look.
+  - where to look first: The answer step&#x27;s output differs with its inputs the same; the model-call record is the place to look.
     shown by: node/answer, probe/P4
   dropped: 1 says what caused a difference
 
@@ -298,7 +339,7 @@ and model name, settings: the request parameters; <code>reply.txt</code> out, th
 <p>Every explanation is shown under the label <strong>&quot;Suggested explanation — AI-generated, may be wrong&quot;</strong>,
 with its model, apart from the verdicts. Two explanations of one comparison can differ; each keeps
 its own record.</p>
-<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/format.html"><span>← Previous</span>Record format</a><a class="next" href="/onetrace/decisions.html"><span>Next →</span>onedoor decisions</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#the-command">The command</a><a href="#two-runs-onetrace-explain-run_a-run_b-02">Two runs: onetrace-explain RUN_A RUN_B (0.2)</a><a href="#the-evidence-packet-onetrace-explain-evidence01">The evidence packet, onetrace-explain-evidence/0.1</a><a href="#the-reply-and-the-post-check">The reply, and the post-check</a><a href="#what-it-writes-1">What it writes</a></aside></div>
+<nav class="pager" aria-label="Previous and next"><a class="prev" href="/onetrace/format.html"><span>← Previous</span>Record format</a><a class="next" href="/onetrace/decisions.html"><span>Next →</span>onedoor decisions</a></nav></main><aside class="docs-toc" aria-label="On this page"><b>On this page</b><a href="#the-command">The command</a><a href="#the-model-and-its-key-03">The model and its key (0.3)</a><a href="#two-runs-onetrace-explain-run_a-run_b-02">Two runs: onetrace-explain RUN_A RUN_B (0.2)</a><a href="#the-evidence-packet-onetrace-explain-evidence01">The evidence packet, onetrace-explain-evidence/0.1</a><a href="#the-reply-and-the-post-check">The reply, and the post-check</a><a href="#what-it-writes-1">What it writes</a></aside></div>
 <footer><div class="wrap stack-lg"><div class="foot">
 <div class="stack"><a class="brand" href="/"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="10" y="9" width="7" height="8" rx="2" fill="#a9b7cb"/><rect x="19" y="9" width="6" height="8" rx="2" fill="#f5a524"/><path d="M8 13h2M17 13h2" stroke="#a9b7cb" stroke-width="2"/></svg>onetrace <small>by oneproof</small></a><p>A checkable record of what your AI pipeline did, and the comparison that finds what changed.</p><p><a href="mailto:onetrace@oneproof.dev">onetrace@oneproof.dev</a></p></div>
 <div><h4>Start</h4><ul><li><a href="/developers.html#install">Install</a></li><li><a href="/developers.html#examples">Examples</a></li><li><a href="/developers.html#instrument">Instrument</a></li><li><a href="https://demo.oneproof.dev">Live demo</a></li><li><a href="/industries/">Examples by industry</a></li></ul></div>

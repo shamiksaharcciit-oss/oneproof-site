@@ -19,6 +19,39 @@ comparison that can't be explained (no report, a refused or could-not-check verd
 chain head is not the one the report checked); 3 the model couldn't be reached, or replied with no
 usable JSON. Never use it as a CI gate.
 
+## The model and its key (0.3)
+
+The model is named in the `[model]` table of `~/.config/onetrace/explain.toml` (or the file
+`ONETRACE_EXPLAIN_CONFIG` names), or with `--model`. The key is never in that file. It is read at
+send time, from one of two places, as `key_source` says:
+
+| `key_source` | Where the key is read |
+|---|---|
+| `"env"` (the default) | the environment variable `key_env` names. A local server that takes no key needs no `key_env`. |
+| `"keyring"` (0.3) | the operating system's keychain (Windows Credential Manager, the macOS Keychain, the Secret Service on a Linux desktop), through the `keyring` package: `pip install "onetrace-explain[keyring]"`. Service `onetrace-explain`, user `<provider>:<base_url>`, or `<provider>:default` where the file names no `base_url`. |
+
+```toml
+[model]
+provider = "anthropic"
+name = "<model name>"
+key_source = "keyring"     # or leave it out and name key_env = "ANTHROPIC_API_KEY"
+```
+
+The key is read before anything is sent. Where it can't be read, or holds a line end, another
+control character or a character outside ASCII (a variable set from a file with CRLF line ends, a
+zero-width space or a curly quote from a paste), nothing is sent
+and the model is not asked: `onetrace-explain REPORT_DIR` exits 2, and `onetrace-explain RUN_A RUN_B`
+records "not asked" with the reason, its exit code still `onetrace diff`'s. The message says where it
+looked and what to do, never the key: the variable and the file that names it; or the keychain entry,
+with the command that stores it (`python -m keyring set onetrace-explain <provider>:<base_url>`); or,
+where the keychain can't be read, to unlock it or use `key_env`; or the install line where the
+`keyring` extra is missing. An error met while a request carries the key is said by its type: an HTTP
+error by its status code alone, never the server's reason phrase; another network error by its reason
+(refused, timed out). Text holding the key, or any run of 8 of its characters, is never kept: an
+error's text is said by its type alone, and a model's reply holding it is not kept, its length and
+sha256 said in its place, with no explanation from it. Anyone who can run code as this user can read the
+key from the keychain, as from an environment variable.
+
 ## Two runs: `onetrace-explain RUN_A RUN_B` (0.2)
 
 ```
@@ -130,7 +163,7 @@ What may have happened (AI-generated, may be wrong)
   model: fake:reply.json
   - note: The repeat set already varies at answer: `1` of `3` runs differ from its common output, and the candidate's output is among the outputs it recorded.
     shown by: probe/P2
-  - possible culprit: The answer step's output differs with its inputs the same; the model-call record is the place to look.
+  - where to look first: The answer step's output differs with its inputs the same; the model-call record is the place to look.
     shown by: node/answer, probe/P4
   dropped: 1 says what caused a difference
 

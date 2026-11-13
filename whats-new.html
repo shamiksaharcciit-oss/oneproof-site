@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>What's new · onetrace</title>
-<meta name="description" content="onetrace releases, latest first: onetrace-console 0.7.0 with onetrace-explain 0.3.0, onetrace-console 0.6.1, onetrace 0.7.1, onetrace-console 0.6.0, onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
+<meta name="description" content="onetrace releases, latest first: onetrace 0.8.0 with onetrace-explain 0.3.1, onetrace-console 0.7.0 with onetrace-explain 0.3.0, onetrace-console 0.6.1, onetrace 0.7.1, onetrace-console 0.6.0, onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
 <link rel="canonical" href="https://oneproof.dev/whats-new.html">
 <meta property="og:title" content="What's new · onetrace">
-<meta property="og:description" content="onetrace releases, latest first: onetrace-console 0.7.0 with onetrace-explain 0.3.0, onetrace-console 0.6.1, onetrace 0.7.1, onetrace-console 0.6.0, onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
+<meta property="og:description" content="onetrace releases, latest first: onetrace 0.8.0 with onetrace-explain 0.3.1, onetrace-console 0.7.0 with onetrace-explain 0.3.0, onetrace-console 0.6.1, onetrace 0.7.1, onetrace-console 0.6.0, onetrace 0.7.0, onetrace-console 0.5.1 and onetrace-explain 0.2.0, then earlier releases.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://oneproof.dev/whats-new.html">
 <meta property="og:image" content="https://oneproof.dev/og.png">
@@ -34,6 +34,31 @@
 <section class="band" style="padding-top:24px">
   <div class="wrap">
     <span class="anchor" id="upgrade"></span>
+    <article class="rel" id="v080">
+      <div class="ver">onetrace 0.8.0<small>2026-11-13 · with onetrace-verify 0.8.0 and onetrace-auto 0.8.0, and onetrace-explain 0.3.1</small></div>
+      <div class="stack">
+        <h2 style="font-size:1.5rem">Record format 0.5: a step's store state, its kind and agent, messages between agents, and the link between services.</h2>
+        <div class="grid g3">
+          <div class="card"><h3>Store state</h3><p>Inside a step, <code>ot.state.read</code> and <code>ot.state.write</code> each add an entry to the receipt: the store, its kind, the key's digest, the version the store reported (<code>not observed</code> where none is given, never made up) and a digest of the data. onetrace-auto records a LangGraph checkpointer, psycopg, chromadb, pinecone, S3, Google Cloud Storage, Azure Blob, Iceberg and Delta; pinecone, Google Cloud Storage and Azure are tested against fakes with their public shape.</p></div>
+          <div class="card"><h3>Expectations checked during the run</h3><p>With <code>expect_mode="record"</code>, each expectation is read as its step returns and its result is recorded with it. With <code>"stop"</code>, one that reads FAIL stops the run after the failing step's receipt is written. <code>off</code>, the default, writes nothing. A stop never guards the step that failed, and an expectation that holds does not show the output was right.</p></div>
+          <div class="card"><h3>The cross-service link</h3><p>A step can send <code>onetrace-parent</code> to another service (<code>ot.outgoing_headers()</code>, or onetrace-auto to the hosts on <code>ONETRACE_PROPAGATE</code>), and the callee's run records the caller's run, step and chain head, and the origin: the run where the whole request started. <code>ot.wsgi</code> and <code>ot.asgi</code> run each request in a run of its own, and <code>onetrace diff --linked-run</code> follows the link.</p></div>
+        </div>
+        <details><summary>Also in 0.8.0</summary><div class="in">
+          <p><b>Record format 0.5:</b> every receipt is <code>stage-receipt/0.5</code>, and its new members are optional. onetrace-verify 0.6.1, 0.7.0, 0.7.1 and 0.8.0 read the golden example and both quickstart runs written at 0.5: exit 0, no FAIL row. After the rows of a run holding the new members, onetrace-verify prints what they do not show, and adds it to <code>--json</code>'s <code>non_claims</code>.</p>
+          <p><b>What kind of step this is, and which agent ran it:</b> <code>@ot.stage(kind=...)</code> takes one of eight kinds (model call, tool call, retrieval, decision, state read, state write, transform, other). With none given, the receipt says nothing ("kind not recorded"), never <code>other</code>. A tool call step writes its tool-call record. <code>@ot.run(agent=...)</code> names the run's agent, and a step's own agent is written where it differs.</p>
+          <p><b>Messages between agents:</b> <code>ctx.message(to, kind, body)</code> records a message a step sent, by its digest (its bytes kept where the run keeps outputs), and <code>ctx.received(ref)</code> records what a step took in. A message is not an output: it changes no verdict.</p>
+          <p><b>A re-run with parts chosen separately:</b> <code>onetrace reproduce RUN --config-of REF --only answer.model</code> takes only the parts named from REF's kept configuration; every other part stays RUN's. With <code>record_code=True</code> a run records its commit, and <code>--code-of B</code> re-runs the code at the commit run B recorded, in a temporary worktree, with today's environment. You are told what comes from where before it runs. It shows the combination today, with today's services and model: code from B with today's environment is not B's run.</p>
+          <p><b>The recipient confirmation:</b> <code>ot.permit_presented(token, request=...)</code> and <code>ot.confirmation(token)</code> record the permit a step presented, read without checking its signature, and the recipient's confirmation, its token kept beside the run. <code>onetrace-verify --recipients FILE</code> reads five confirmation rows. A confirmation is the recipient's word, signed, for an effect or a refusal.</p>
+          <p><b>The writer:</b> receipts are queued and written in batches, with a journal in the run's folder. When a decorated or auto-recorded run starts, a killed run in the same runs folder is recovered up to its last confirmed receipt, and its close says it was recovered; <code>onetrace recover RUN</code> does the same by hand.</p>
+          <p><b>onetrace-explain 0.3.1</b> releases with onetrace 0.8.0. Its pin admits onetrace 0.8 (<code>onetrace&gt;=0.6.1,&lt;0.9</code>), and a reply withheld for holding the key is said "not kept" once.</p>
+          <p class="note warn"><b>Upgrading:</b> the record format moves to 0.5. onetrace-console 0.7.0 pins the onetrace release it runs on, onetrace 0.7.1: with onetrace 0.8.0, give the console an environment of its own until a console release supports it.</p>
+          <p class="note"><b>Known gaps:</b> concurrent and multi-writer runs, and chunked tree digests for large outputs, are not in 0.8. <code>onetrace-run --per request</code> is refused: a run per request comes from <code>ONETRACE_AUTO_PER=request</code>, under Starlette and Flask. <code>model_usage.cost</code> is specified and not written.</p>
+        </div></details>
+        <div class="code"><div class="label"><span>Install</span><button class="copy" type="button">Copy</button></div><pre>pip install -U "onetrace[crypto]"
+pip install -U onetrace-auto onetrace-explain</pre></div>
+      </div>
+    </article>
+
     <article class="rel" id="console070">
       <div class="ver">onetrace-console 0.7.0<small>on onetrace 0.7.1, with onetrace-explain 0.3.0</small></div>
       <div class="stack">

@@ -205,8 +205,8 @@ and tell me the exact commands to run my program and open its runs in onetrace-c
       <div class="mini" id="auto">
         <div class="mini-head"><span class="n">4b</span><h3>Zero-config</h3><span class="tag">onetrace-auto</span></div>
         <p class="sub">Run your app as you do today, started through <code>onetrace-run</code>. Each call it makes through a supported library becomes a recorded step. Your code doesn't change.</p>
-        <div class="note"><b>Zero-config runs open in the console.</b> From console 0.7.0, the console runs on onetrace 0.7.1 and reads record format 0.4, so <code>pip install onetrace-auto</code> goes in step 1's environment, beside the console. A run it records shows the libraries it hooked and each gap.</div>
-        <div class="code"><div class="label"><span>In your app's environment</span><button class="copy" type="button">Copy</button></div><pre>pip install onetrace-auto
+        <div class="note"><b>Zero-config runs open in the console.</b> From console 0.7.0, the console runs on onetrace 0.7.1 and reads record format 0.4, so <code>pip install "onetrace-auto&lt;0.8"</code> goes in step 1's environment, beside the console. A run it records shows the libraries it hooked and each gap.</div>
+        <div class="code"><div class="label"><span>In your app's environment</span><button class="copy" type="button">Copy</button></div><pre>pip install "onetrace-auto&lt;0.8"
 onetrace-run python app.py        <span class="c"># or: ONETRACE_AUTO=1 python app.py</span>
 onetrace diff runs/&lt;run A&gt; runs/&lt;run B&gt;</pre></div>
         <div class="tbl"><table>

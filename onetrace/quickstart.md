@@ -2,7 +2,7 @@
 
 Add onetrace to a small pipeline in two steps: one stage first, then the rest. Then switch it off, and take it out. After the install, nothing here makes a network call; there's no model and no key, and it takes a few seconds.
 
-Use a fresh virtual environment with Python 3.10 or later. Each command runs from the folder you save the files in. The console (`onetrace-console`) needs Python 3.12 or later. From console 0.7.0 it runs on onetrace 0.7.1 and reads runs from onetrace 0.7 (record format 0.4) and earlier, in the same environment.
+Use a fresh virtual environment with Python 3.10 or later. The console (`onetrace-console`) needs Python 3.12 or later and pins the onetrace release it runs on (console 0.7.0: onetrace 0.7.1). With a newer onetrace, give the console an environment of its own until a console release supports it. Each command runs from the folder you save the files in.
 
 <!-- quickstart: run -->
 ```
@@ -188,7 +188,7 @@ onetrace: run written to runs/<run id>
 next: onetrace-verify --require-artifacts runs/<run id>
 ```
 
-That command verifies one run by name. In a terminal it looks like this. onetrace-verify 0.6.1 counts the close receipt as a stage, so this run of three steps reads `4 stages`. The first line is the verifier's summary, printed to stderr, so the rows on stdout stay exactly as the reference verifier prints them. When a row fails, it also prints to stderr, under the summary, a `fix (…)` line for each failing row: what to change, and the section of the errors page that explains it. `ONETRACE_QUIET=1` silences these stderr lines too, the summary and the fix lines alike:
+That command verifies one run by name. In a terminal it looks like this, as onetrace-verify 0.8.0 reads it; onetrace-verify 0.6.1 reads one pass row fewer, `104 pass`. The verifier counts the close receipt as a stage, so this run of three steps reads `4 stages`. The first line is the verifier's summary, printed to stderr, so the rows on stdout stay exactly as the reference verifier prints them. When a row fails, it also prints to stderr, under the summary, a `fix (…)` line for each failing row: what to change, and the section of the errors page that explains it. `ONETRACE_QUIET=1` silences these stderr lines too, the summary and the fix lines alike:
 
 <!-- not executed: the run id differs on every run -->
 ```
@@ -196,7 +196,7 @@ $ onetrace-verify --require-artifacts runs/<run id>
 record intact: 4 stages, 2 output files checked
 [PASS   ] receipts/01-intake.json: receipt format
 ...
-80 pass, 0 fail, 4 not-run  ->  PASS
+105 pass, 0 fail, 5 not-run  ->  PASS
 ```
 
 To compare two runs:

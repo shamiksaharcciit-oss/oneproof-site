@@ -39,7 +39,7 @@ Anyone can then check the record, and compare two runs, with tools that don't tr
 
 ## 2. Install
 
-Requirements: **Python 3.10 or newer**. Use a virtual environment. The console (`onetrace-console`) needs Python 3.12 or newer. From console 0.7.0 it runs on onetrace 0.7.1 and reads runs from onetrace 0.7 (record format 0.4) and earlier, in the same environment.
+Requirements: **Python 3.10 or newer**. The console (`onetrace-console`) needs Python 3.12 or later and pins the onetrace release it runs on (console 0.7.0: onetrace 0.7.1). With a newer onetrace, give the console an environment of its own until a console release supports it. Use a virtual environment.
 
 ```bash
 python -m venv .venv
@@ -58,7 +58,7 @@ This installs two packages:
 Check the install:
 
 ```bash
-python -c "import onetrace; print(onetrace.__version__)"   # 0.7.1
+python -c "import onetrace; print(onetrace.__version__)"   # 0.8.0
 ```
 
 To pin exactly what was published, take each file's sha256 from the **Download files** page of the project on PyPI and put it in a requirements file:
@@ -668,7 +668,7 @@ A release changes things nobody needs to look at: a version string, a generated 
  "fields":   [{"stage": "answer", "output": "return.json", "pointer": "/meta/generated_at"}]}
 ```
 
-- **`settings`:** names as the annotations name them (`instrument.version`, `assertions.constants.<key>`), for every stage or, as an object, for one. A masked setting is left out of the annotations and the cause, and listed as `masked at stage …: … (not counted as a change)`.
+- **`settings`:** names as the annotations name them (`instrument.version`, `assertions.constants.<key>`), for every stage or, as an object, for one. A masked setting is left out of the annotations and of the block at the first difference, and listed as `masked at stage …: … (not counted as a change)`.
 - **`values`:** from a fixed set only, no free-form patterns: ISO 8601 timestamps, UUIDs, onetrace run ids (both runs' own, and any in run-id form), absolute paths. For paths, each run's own folder is replaced whole first; then every other absolute path (a POSIX path of two names or more, a Windows path from a drive letter) keeps its last name and only the folders above it are replaced, so `/etc/app/prod.yaml` against `/etc/app/staging.yaml`, or the routes `/v1/refund/approve` against `/v1/refund/deny`, still differ. A path whose folders alone differ between the runs (`/opt/models/v1/model.bin` against `/opt/models/v2/model.bin`) is masked, and the report lists it under the mask line, so you can check it is the same file (a path under either run's own folder is masked whole and not listed; paths that share a last name are each listed, paired by the folders they share from the root, and a path with no partner reads `path | -`; the JSON carries up to 100 such paths per output and `folders_masked_count`, the number of all of them, and the text names the rest by count). In text that reads as JSON (one value, or any line that is one, whatever its media type; a string that is itself JSON text is read one level down), values are looked for inside each string as the string holds them, so a path after an escaped newline, or a Windows path with escaped backslashes, is found; a string the mask changes nothing in keeps its bytes. Each is replaced in the output's text with a placeholder, and nothing else about the bytes changes: a change in spacing or key order still differs.
 - **`fields`:** JSON pointers inside one stage's output (`output` left out: every JSON output of that stage). An output with fields named is read as JSON, the fields replaced, and compared as JSON, so its key order and spacing are not counted; the row says `as JSON`. A pointer that reaches no value in either run (a key neither has, or one that runs into a string or number before its end, such as a field inside JSON text held in a string) replaces nothing, and the mask line lists it under "masked fields no value reaches in either run".
 
@@ -676,7 +676,7 @@ Receipts hold digests, so a masked comparison reads both runs' kept output files
 
 **A key one run has and the other doesn't** (a config key a release added with its default, say) is a change, and a mask removes it only when a `fields` pointer names it exactly. The row then reads `same after masking (…), masking a key only one run has: /policy/redaction (only in candidate)`, and the mask line under the verdict lists every such key: masking one says its value doesn't matter, so the report keeps it in view.
 
-**`onetrace mask suggest A B`** prints a candidate mask from two runs' differences: each setting with `version` as a word of its name (`instrument.version`, `assertions.constants.app_version`; never `conversion_rate`) that differs, as one rule when it differs in every stage your code decorated, and each value kind that differs inside a differing kept text output, with where it was seen, and what `diff` would read with it. It writes no mask file: review each line (a version change can be the real cause), then save it. `--json` prints the mask alone, ready to save. Of fields, only one named like a version that changed is suggested (`/app/version`); which other fields are noise is your call. To help with that call, it lists the fields that differ in each JSON output where the comparison opens a difference, by pointer and how (`changed`, `only in baseline`, `only in candidate`), never by value, under `fields_to_review`. `onetrace doctor` adds a note (never a fix; its exit is unchanged) when the most recent run's outputs hold timestamps, uuids, run ids or absolute paths, naming the stages and the mask line that leaves them out; a fixed date or path in an output doesn't change between runs, so the note says where those values change, not that they always do.
+**`onetrace mask suggest A B`** prints a candidate mask from two runs' differences: each setting with `version` as a word of its name (`instrument.version`, `assertions.constants.app_version`; never `conversion_rate`) that differs, as one rule when it differs in every stage your code decorated, and each value kind that differs inside a differing kept text output, with where it was seen, and what `diff` would read with it. It writes no mask file: review each line (a version change can be the change that matters), then save it. `--json` prints the mask alone, ready to save. Of fields, only one named like a version that changed is suggested (`/app/version`); which other fields are noise is your call. To help with that call, it lists the fields that differ in each JSON output where the comparison opens a difference, by pointer and how (`changed`, `only in baseline`, `only in candidate`), never by value, under `fields_to_review`. `onetrace doctor` adds a note (never a fix; its exit is unchanged) when the most recent run's outputs hold timestamps, uuids, run ids or absolute paths, naming the stages and the mask line that leaves them out; a fixed date or path in an output doesn't change between runs, so the note says where those values change, not that they always do.
 
 **`onetrace doctor --entrypoint FILE`** (0.3.1) checks that the most recent run under `runs/` was recorded through `FILE`, the file holding the `@ot.run` function production calls. Every receipt of a decorated run records the sha256 of its manifest as its instrument's `manifest_digest`: that file, unless the `@ot.run` passes `manifest=`, in which case pass the file `manifest=` names. A run recorded through a separate runner or test harness records another file's. A mismatch is a fix: another file recorded the run, or `FILE` changed after it, and the fix line says to record a run the way production runs it after your last edit. Without `--entrypoint`, doctor checks nothing of this.
 
@@ -724,12 +724,12 @@ The trace never changes a verdict or the exit code.
 
 ```bash
 onetrace localize runs/tuesday                        # one run: first unclean stage
-onetrace localize runs/monday runs/tuesday --out r    # two runs: first difference and its cause
+onetrace localize runs/monday runs/tuesday --out r    # two runs: first difference and what changed there
 ```
 
 On one run, an unclean stage is a refusal, an error, or a failed check.
 
-On two runs, the cause names what changed at the first difference:
+On two runs, the block at the first difference names what changed there:
 - the instrument;
 - its config and constants;
 - the **corpus link** a query run records with `ot.corpus_from`, by digest: `corpus link changed: <digest> -> <digest>`.
@@ -738,7 +738,7 @@ The text report heads this block `FIRST DIFFERENCE at stage <n>, '<stage>'`, or 
 
 `diff` annotates a changed corpus link on every node that carries one, the way it annotates a changed setting.
 
-When nothing recorded differs at the first difference (the same instrument, version and settings), the cause says so in one sentence (0.3.0): `no recorded cause`, whether the step's instrument declares itself not rederivable (a model call, say, whose output can vary on its own), and the next later step with a recorded change, or `nothing recorded changes after it`. On a run recorded with a topology, the next change is one downstream of the first difference (reachable over the observed edges), never a change on another branch.
+When nothing recorded differs at the first difference (the same instrument, version and settings), the block says so in one sentence (0.3.0): `nothing recorded differs at '<step>' (same instrument, version and settings)`, whether the step's instrument declares itself not rederivable (a model call, say, whose output can vary on its own), and the next later step with a recorded change, or `nothing recorded changes after it`. On a run recorded with a topology, the next change is one downstream of the first difference (reachable over the observed edges), never a change on another branch.
 
 #### One output's path: `localize --for`
 
@@ -753,7 +753,7 @@ A release changes many things at once, and the first difference in chain order i
 - **The walk** goes back from the stage only through stages whose output differs, over links that carry a difference. A differing stage that no such link leads into is an **origin**: the change starts there (one per branch that changed). A difference on the path that the walk never reaches stopped before the stage (its effect reconverged, as a reworded document does once chunked), and is listed as not reaching it.
 - **Which links carry a difference.** A run recorded with `@ot.run(link_parts=True)` records, for each stage, which of its arguments came from which earlier stage, whole or as a part (the `onetrace.links` constant). A link that passed only parts whose recorded digests are the same in both runs carries nothing, and is not followed, unless the stage was also given an input that differs and that no recorded link names (a string or number taken out of a return): that input may have come from the earlier stage, so the link is followed and the stage stays an origin as well, naming the input. Otherwise: a stage that reads `config["policy"]` is an origin of its own change even when another part of the config changed. Without those records, every link from a differing stage is followed, so where two changes meet, a stage that changed and also reads a differing stage, the walk goes on past it; name the noise in a mask to see the second change.
 - **An input that differs at an origin.** An origin that was given an input that differs, which no recorded link traces to a stage, says so: the change may come from there. An input the record links, as a part, to a stage the comparison reads as the same once masked (a config section that gained a masked key, say), at the same place in both runs, is not counted. Nothing is matched by value: an input no recorded link names is always counted.
-- **The answer** prints first: where the change starts, what doesn't reach the stage, the path with each stage's reading (`same`, `differs`, `COULD NOT CHECK`), and under each origin the recorded change there, or the no-recorded-cause sentence. The full ladder follows, as without `--for`; its first differences are the run's, so a stage below a reconverged difference still reads `downstream` there.
+- **The answer** prints first: where the change starts, what doesn't reach the stage, the path with each stage's reading (`same`, `differs`, `COULD NOT CHECK`), and under each origin the recorded change there, or the sentence that nothing recorded differs there. The full ladder follows, as without `--for`; its first differences are the run's, so a stage below a reconverged difference still reads `downstream` there.
 - **The stage's own output must differ.** One that doesn't reads `its output does not differ between the runs; nothing to trace`, exit 0. A stage the walk meets that couldn't be checked makes the answer `COULD NOT CHECK`, exit 4, naming it. A name neither run has, or a bare name several instances share, is a usage error, exit 2, naming the choices.
 
 The verdicts are the ladder's own; `--for` only reads them along one output's path, and changes none. The JSON report carries the answer under `for` (`origins`, `not_reaching`, `given_differs`, `path`). The walk is as good as the links the runs recorded: a stage given a value built between stages (a new dict made from two returns), or a string or number taken out of a return, has no link for it, and the walk can stop early there, naming the stage as an origin given an input that differs.
@@ -934,7 +934,7 @@ onetrace diff runs/baseline runs/candidate --out r
 onetrace summary r --verify-json verify.json --title "release check"
 ```
 
-`onetrace summary DIR` (0.3.1) prints a short Markdown summary of what a `diff` or `localize` run wrote in `DIR`, and of `onetrace-verify --json`'s output if you pass it: the verifier's result and any failing row, the comparison's verdict and first difference, and, when the report holds them, the inputs-differ line, the mask used, the `--for` answer, the outputs that changed at the end and the cause sentence. It runs nothing and decides nothing: it repeats the verdicts already reached, and exits 0. Every string taken from a record is shown as inline code, so a record can't add a link, an image, HTML, a mention (`@name`) or an automatic link (a bare URL or address) to a comment; control characters (C0 and C1) are shown as `\xNN`, and format characters (right-to-left overrides, zero-width marks) as `\uNNNN`, so no text is reordered or hidden. The title you pass is escaped for Markdown, with `@` written as an entity. Its first line is the marker `<!-- onetrace summary -->`, so a CI job can find and update its own comment.
+`onetrace summary DIR` (0.3.1) prints a short Markdown summary of what a `diff` or `localize` run wrote in `DIR`, and of `onetrace-verify --json`'s output if you pass it: the verifier's result and any failing row, the comparison's verdict and first difference, and, when the report holds them, the inputs-differ line, the mask used, the `--for` answer, the outputs that changed at the end and the sentence that nothing recorded differs at the first difference. It runs nothing and decides nothing: it repeats the verdicts already reached, and exits 0. Every string taken from a record is shown as inline code, so a record can't add a link, an image, HTML, a mention (`@name`) or an automatic link (a bare URL or address) to a comment; control characters (C0 and C1) are shown as `\xNN`, and format characters (right-to-left overrides, zero-width marks) as `\uNNNN`, so no text is reordered or hidden. The title you pass is escaped for Markdown, with `@` written as an entity. Its first line is the marker `<!-- onetrace summary -->`, so a CI job can find and update its own comment.
 
 ### 10.5 Exit codes and reports
 
@@ -1096,7 +1096,7 @@ Keep a known-good run as `baselines/golden`. When a change is intended, regenera
 
 ```python
 import onetrace
-onetrace.__version__                         # "0.7.1"
+onetrace.__version__                         # "0.8.0"
 onetrace.digest(path_or_bytes) -> "sha256:<hex>"
 onetrace.current_stage()                     # the running step's context (its .name, its .write_json), or None
 onetrace.model_from(run, stages=[...], serve_stage=None)   # a model link, in the corpus-link form (16.20)

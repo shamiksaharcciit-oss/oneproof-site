@@ -7,9 +7,9 @@ This page is generated from `onetrace/errors.py`; edit the table there, not this
 
 ## run-declaration
 
-The run was opened without something every record needs: a run id, a non-empty list of distinct declared stages, or an emission policy (`fail-closed` or `fail-open`).
+The run was opened without something every record needs: a run id, a non-empty list of distinct declared stages, or an emission policy (`fail-closed` or `fail-open`). Or a cross-service `parent=` is not in the form `ot.incoming(headers)` gives (`{run, stage, head, origin}`, `head` `sha256:<64 hex>` or `-`, or `{status: "unreadable: <reason>"}` alone), or is given to a run nested in another's stage. Or the writer's `queue=` (else `ONETRACE_QUEUE`) is not `block` or `drop`, `queue_size=` is not a whole number of 1 or more, or `queue="drop"` is given with `policy="fail-closed"`, which discards a result whose receipt can't be written while a dropped step keeps its result with none. Or `keep_cap_bytes=` is not a whole number of bytes. Or `expect_mode=` is not `off`, `record` or `stop`. Or `record_code=` is not `True` or `False`, or `ONETRACE_RECORD_CODE` is not `1` or `0`.
 
-**Fix:** Give the run its id, its declared stages and its policy. With `@ot.run`, name the stages in `stages=[...]`.
+**Fix:** Give the run its id, its declared stages and its policy. With `@ot.run`, name the stages in `stages=[...]`. Pass a request's parent as parent=ot.incoming(request_headers), on a run that is not nested in another's stage. Give queue="block", or queue="drop" under policy="fail-open"; keep_cap_bytes as a whole number of bytes, or leave it unset. Give expect_mode="record" or "stop", or leave it unset. Give record_code=True or False, or ONETRACE_RECORD_CODE=1 or 0, or leave both unset.
 
 ## run-bytes-cap
 
@@ -55,9 +55,9 @@ Something that belongs to a stage (`ot.constant`, `ot.assertion`, the stage cont
 
 ## decision
 
-A step cited an onedoor decision with `ctx.decision`, but what it passed is not a decision-reference object, or the permit it passed is not a compact JWS string.
+A step cited an onedoor decision with `ctx.decision`, but what it passed is not a decision-reference object, or the permit it passed is not a compact JWS string. Or `ot.permit_presented` was given a permit that is not an ASCII string, or a request out of form, or was called twice in one step; or `ot.confirmation` was called with no permit presented in the step, twice, or with a token that is not an ASCII string.
 
-**Fix:** Pass the `onedoor-decision-ref/1` object as `ref`; pass the bound permit's compact JWS (a string) as `permit` where one was issued; pass the action object the step is about to send as `action`.
+**Fix:** Pass the `onedoor-decision-ref/1` object as `ref`; pass the bound permit's compact JWS (a string) as `permit` where one was issued; pass the action object the step is about to send as `action`. Give `ot.permit_presented` the permit as presented and request={"content_digest": ..., "signature_base": ... (or "signature_base_digest": ...), "keyid": ...}, the digests in the form `sha-256=:…:`, once per step; then `ot.confirmation` the token the recipient returned, once. A retry is a step of its own.
 
 ## verify-nested
 
@@ -191,6 +191,12 @@ A decorated stage was called in a child process (a fork of the run's process, as
 
 **Fix:** Pass effect="write" for a stage that acts on the world outside the run (sends, writes, orders), effect="read" for one that does not, or leave it unset to record no label.
 
+## step-declaration
+
+What a step says it is can't be recorded as given. `kind=` on `@ot.stage` or `Recorder.stage` is not one of the eight step kinds: `model call`, `tool call`, `retrieval`, `decision`, `state read`, `state write`, `transform`, `other` (the receipt's `step.kind`; the list is fixed). `ctx.tool_call(...)` was called on a step not of kind `tool call`, or names a `requested_by` step that is not an earlier step of the run of kind `model call`, or gives it without `call_id`. `agent=` (on `@ot.stage`, `Recorder.stage`, `@ot.run` or `Recorder`) is not `{name, role, runs_on}`, with `name` required and `runs_on` of kind `model` or `framework`. `ot.state.read` or `ot.state.write` was given an entry the format can't hold: a store kind outside the list, a version with no `version_kind` or a `version_kind` beside `not observed`, a value with a `digest_status`, or neither; or `keep=`, `keep_state=` or `state_at_open=` is not in its form. `ot.message` or `ctx.message` was given a `to`, `sender` or `media_type` that is not a non-empty string without control characters, a `kind` that is not 1 to 64 such characters, or a body that is not bytes, a string, or a value `canonical.canonicalize` can write; or `ctx.received` was given its own step's message, or something other than a `MessageRef` or a `sha256:` digest. Or a stage's `keep_cap_bytes=` is not a whole number of bytes, 0 or more, or its `expect_mode=` is not `off`, `record` or `stop`.
+
+**Fix:** Pass one of the eight kinds, as kind="tool call", or leave it unset: an unset kind reads "kind not recorded", never `other`. Call tool_call() only inside a tool step, naming the model step's node id and the call id. Give an agent as {"name": "billing-agent"}, with role and runs_on where known. Give a store read its value, a digest_status, or found=False, and a version with its version_kind. Give a message a plain to and kind, and a body of bytes, a string or a JSON object; hand the receiver the MessageRef message() returned. Give a stage's keep_cap_bytes as a whole number of bytes, or leave it unset and the run's holds; its expect_mode as "record" or "stop", or unset.
+
 ## keep-config
 
 `keep_config=` (on `@ot.stage`, `@ot.run` or `Recorder`) was given a value that is not `True` or `False`, or `keep_config_except=` is not a list of configuration keys. With `keep_config=True` a step's instrument configuration is kept as `config/<receipt stem>/config.json`, named by the receipt's `config_kept`; a key in `keep_config_except` is written as `not kept`.
@@ -199,7 +205,7 @@ A decorated stage was called in a child process (a fork of the run's process, as
 
 ## rerun-plan
 
-The process was given a re-run plan in `ONETRACE_RERUN_PLAN` that can't be read, or that is not as this build writes it. `onetrace reproduce` writes the plan and hands it to the pipeline it re-runs, so the produced run carries the re-run mark; a run is not recorded without the mark it was asked for.
+The process was given a re-run plan in `ONETRACE_RERUN_PLAN` that can't be read, or that is not as this build writes it: its `rerun` mark, and the `rerun_from` beside it of what a re-run took (parts of a kept configuration, the code at a recorded commit). `onetrace reproduce` writes the plan and hands it to the pipeline it re-runs, so the produced run carries the re-run mark; a run is not recorded without the mark it was asked for.
 
 **Fix:** Leave ONETRACE_RERUN_PLAN unset when you run the pipeline yourself; `onetrace reproduce` sets it for the re-run it starts.
 
@@ -211,9 +217,9 @@ The process was given a re-run plan in `ONETRACE_RERUN_PLAN` that can't be read,
 
 ## expectation
 
-An expectation given to a stage's `expect=` can't be recorded: it was not made by `ot.expect.range`, `unit`, `relation` or `member`; a bound (`lo`, `hi`, `within`) is not a decimal string; its target or `of=` names no member or JSON Pointer; or two expectations of one step share a name.
+An expectation given to a stage's `expect=` can't be recorded: it was not made by `ot.expect.range`, `unit`, `relation` or `member`; a bound (`lo`, `hi`, `within`) is not a decimal string; its target or `of=` names no member or JSON Pointer; or two expectations of one step share a name. Or its `mode=` is not `off`, `record` or `stop`; or its `stop_if_more_than=` is not a count, its target does not hold one `*` segment with a member after it, or it is given to a relation.
 
-**Fix:** Build each with `ot.expect.range`, `ot.expect.unit`, `ot.expect.relation` or `ot.expect.member`; give every bound as a decimal string, as `"0"` or `"0.01"`; give two expectations of one step two names with `name=`.
+**Fix:** Build each with `ot.expect.range`, `ot.expect.unit`, `ot.expect.relation` or `ot.expect.member`; give every bound as a decimal string, as `"0"` or `"0.01"`; give two expectations of one step two names with `name=`. Give `mode="record"` or `"stop"`, or leave it unset; give a batch threshold as `stop_if_more_than="3"` with a target such as `"/docs/*/score"`.
 
 ## meaning-fields
 
@@ -439,7 +445,7 @@ An output file a receipt names is missing from the run's artifacts/ folder, unre
 
 ## verify-model-call
 
-A model-call record an output names fails its check: it doesn't parse or isn't canonical, names a format this verifier doesn't implement, is missing or has a malformed field, holds a value where it is not observed, or carries a string shaped like an authorization header. A model-call-record/1.1 record also fails when its steps.* members are not in their states and values, its steps digest names no output of the step, its steps file is not lined up with steps.count, or, at L3, its runner, engine core, executor, sampling members or ending are not as L3 writes them. Each FAIL row names the record and the check.
+A model-call record an output names fails its check: it doesn't parse or isn't canonical, names a format this verifier doesn't implement, is missing or has a malformed field, holds a value where it is not observed, or carries a string shaped like an authorization header. A model-call-record/1.1 record also fails when its steps.* members are not in their states and values, its steps digest names no output of the step, its identity.digest does not recompute over the fields the format names, its steps file is not lined up with steps.count, or, at L3, its runner, engine core, executor, sampling members or ending are not as L3 writes them. Each FAIL row names the record and the check.
 
 **Fix:** Restore the record as it was written; a record is never edited. If the writer wrote it so, record the run again with a writer that writes the field, and write no credential into any recorded field.
 
@@ -475,13 +481,13 @@ A re-run's mark is not as format 0.4 gives it: the receipts disagree on it, the 
 
 ## verify-receipt-0-4
 
-A step's format 0.4 member fails: it is labelled read and records an external effect; its config_kept.digest is not instrument.config_digest with no partial, its partial is other than "true", or its kept file is not that digest; an expectation it declared, or one an expectations file declares after the run, does not hold, or its declaration_digest does not recompute; the expectations file's seal does not recompute over its content, or it names a step the run does not record, or gives two entries the same name for one step; or an output's empty is other than "true" or "false".
+A step's format 0.4 member fails: it is labelled read and records an external effect; its config_kept.digest is not instrument.config_digest with no partial, its partial is other than "true", or its kept file is not that digest; an expectation it declared, or one an expectations file declares after the run, does not hold, or its declaration_digest does not recompute; the expectations file's seal does not recompute over its content, or it names a step the run does not record, or gives two entries the same name for one step; an output's empty is other than "true" or "false"; or a return_holds entry is malformed, names a child the step did not call, or its held part is not the same in the caller's and the child's return.
 
 **Fix:** Restore the receipt and the files beside it as they were written; a record is never edited. For an expectation that does not hold, fix the step's output or the expectation, and record the run again.
 
 ## verify-embedding
 
-An embedding record an output names fails its check: it does not parse, its identity.digest does not recompute over the fields the format names, or its rows do not number batch.size with positions 0 to n-1 and output.count equal to it.
+An embedding record an output names fails its check: it does not parse or is not canonical, is missing or has a malformed field or one outside the format, holds a value where it is not observed, carries a string shaped like an authorization header, has a fingerprint that is not embedding-vectors or an exact one that is not output.vectors_digest, its identity.digest does not recompute over the fields the format names, or its rows do not number batch.size with positions 0 to n-1 and output.count equal to it.
 
 **Fix:** Restore the record as it was written; a record is never edited. If the writer wrote it so, record the call again with a writer that computes it.
 
